@@ -1,16 +1,398 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>Stack Magique - Interface de Contrôle</title>
+    <meta charset="UTF-8">
+    <title>🔮 Stack Magique - Interface Groeken</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 40px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: rgba(0,20,0,0.8);
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .panel h2 {
+            color: #ffff00;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        
+        .formula-input {
+            width: 100%;
+            background: #001100;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: #003300;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        .output {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .sort-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .sort-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0,50,0,0.3);
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .sort-item:hover {
+            background: rgba(0,100,0,0.5);
+            transform: translateX(5px);
+        }
+        
+        .groeken-message {
+            color: #00ffff;
+            font-style: italic;
+            margin-top: 10px;
+            padding: 10px;
+            border-left: 3px solid #00ffff;
+        }
+        
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
 </head>
 <body>
-  <h1>🌀 Interface Magique de Groeken</h1>
-  <button onclick="lancerSort()">Lancer un sort de test</button>
+    <canvas id="particles"></canvas>
+    
+    <div class="container">
+        <h1>🔮 Stack Magique - Interface Minimale</h1>
+        
+        <div class="status">
+            <div>
+                <span class="status-indicator"></span>
+                <span>MagicCore: <span id="core-status">Initialisation...</span></span>
+            </div>
+            <div>
+                Mage: <strong>Groeken</strong> | Dimension: <span id="dimension">0</span>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="panel">
+                <h2>📜 Formule Temporelle</h2>
+                <input type="text" class="formula-input" id="formula" 
+                       placeholder="⊙(action) + †ψ(effet) → Δt+1(résultat)"
+                       value="⊙(test) + †ψ(magie) → Δt+0(succès)">
+                <button class="btn" onclick="compilerFormule()">Compiler</button>
+                <button class="btn" onclick="executerFormule()">Exécuter</button>
+                
+                <div class="groeken-message" id="groeken-msg">
+                    "Ce que tu codes projette l'ordre..." - Groeken
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>🪄 Sorts Disponibles</h2>
+                <div class="sort-list" id="sort-list">
+                    <div class="sort-item" onclick="chargerSort('teleportation')">
+                        ⚡ Téléportation
+                    </div>
+                    <div class="sort-item" onclick="chargerSort('invocation')">
+                        🌀 Invocation
+                    </div>
+                    <div class="sort-item" onclick="chargerSort('protection')">
+                        🛡️ Protection
+                    </div>
+                </div>
+                <button class="btn" onclick="chargerGrimoire()">Recharger Grimoire</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 Sortie Console</h2>
+            <div class="output" id="output">
+🌀 Stack Magique v1.0
+Mage-Technicien: Groeken
+Dimension actuelle: 0 (Interstice)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+En attente de commandes...
+            </div>
+        </div>
+    </div>
 
-  <script>
-    function lancerSort() {
-      alert("✨ Sort de test lancé !");
-    }
-  </script>
+    <script>
+        // État global
+        let magicCore = {
+            status: 'offline',
+            sorts: {},
+            contexte: {
+                dimension: 0,
+                mage: 'Groeken'
+            }
+        };
+        
+        // Initialisation
+        function init() {
+            log("🔮 Initialisation de l'interface...");
+            
+            // Simuler le chargement du MagicCore
+            setTimeout(() => {
+                magicCore.status = 'online';
+                document.getElementById('core-status').textContent = 'Opérationnel';
+                log("✅ MagicCore chargé avec succès");
+                initParticles();
+            }, 1000);
+        }
+        
+        // Logging
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `\n[${timestamp}] ${message}`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Compiler une formule
+        function compilerFormule() {
+            const formule = document.getElementById('formula').value;
+            if (!formule) {
+                log("❌ Erreur: Formule vide");
+                return;
+            }
+            
+            log(`🧪 Compilation: ${formule}`);
+            
+            // Parser basique
+            const parties = formule.split('→');
+            if (parties.length !== 2) {
+                log("❌ Erreur: Formule mal formée (manque →)");
+                return;
+            }
+            
+            log("✅ Formule compilée avec succès");
+            log(`   Entrée: ${parties[0].trim()}`);
+            log(`   Sortie: ${parties[1].trim()}`);
+            
+            updateGroekenMessage("La formule est prête. L'ordre attend d'être projeté.");
+        }
+        
+        // Exécuter une formule
+        function executerFormule() {
+            const formule = document.getElementById('formula').value;
+            if (!formule) {
+                log("❌ Erreur: Aucune formule à exécuter");
+                return;
+            }
+            
+            log(`⚡ Exécution: ${formule}`);
+            
+            // Animation d'exécution
+            animateExecution();
+            
+            setTimeout(() => {
+                log("✨ Formule exécutée avec succès!");
+                log("   Effet: Réalité locale modifiée");
+                log("   Traces quantiques: Visibles pendant 5 secondes");
+                
+                updateGroekenMessage("L'ordre a été projeté. La réalité vibre encore...");
+            }, 1500);
+        }
+        
+        // Charger un sort
+        function chargerSort(nomSort) {
+            log(`📖 Chargement du sort: ${nomSort}`);
+            
+            // Simulation du chargement
+            setTimeout(() => {
+                magicCore.sorts[nomSort] = true;
+                log(`✅ Sort '${nomSort}' chargé dans le grimoire`);
+                
+                // Mettre à jour la formule avec le sort
+                const formules = {
+                    'teleportation': '⊙(entité) + Π(destination) → Δt+0(téléportation)',
+                    'invocation': '⊙(vide) + †ψ(entité) → Δt+1(manifestation)',
+                    'protection': '⊙(cible) + ℬ(bouclier) → Δt+∞(protection)'
+                };
+                
+                if (formules[nomSort]) {
+                    document.getElementById('formula').value = formules[nomSort];
+                    updateGroekenMessage(`Sort '${nomSort}' prêt à être lancé.`);
+                }
+            }, 500);
+        }
+        
+        // Recharger le grimoire
+        function chargerGrimoire() {
+            log("📚 Rechargement complet du grimoire...");
+            
+            setTimeout(() => {
+                log("✅ Grimoire rechargé: 3 sorts disponibles");
+                updateGroekenMessage("Le grimoire vibre de puissance renouvelée.");
+            }, 1000);
+        }
+        
+        // Mettre à jour le message de Groeken
+        function updateGroekenMessage(message) {
+            document.getElementById('groeken-msg').textContent = `"${message}" - Groeken`;
+        }
+        
+        // Animation d'exécution
+        function animateExecution() {
+            const output = document.getElementById('output');
+            const chars = ['⊙', '†', 'ψ', 'Δ', 'ℬ', '⟶'];
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    output.textContent += ` ${char}`;
+                }, i * 100);
+            }
+        }
+        
+        // Particules de fond
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            
+            // Créer des particules
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2 + 1,
+                    opacity: Math.random() * 0.5 + 0.2
+                });
+            }
+            
+            // Animation
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 255, 255, ${p.opacity})`;
+                    ctx.fill();
+                    
+                    // Mouvement
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    // Rebond sur les bords
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('particles');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Démarrage
+        init();
+    </script>
 </body>
 </html>
