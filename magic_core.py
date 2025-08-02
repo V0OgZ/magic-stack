@@ -93,6 +93,8 @@ class MagicCore:
             "teleportation": "Les coordonnées spatiales se réalignent...",
             "invocation": "J'appelle depuis les profondeurs...",
             "protection": "Un bouclier quantique se matérialise...",
+            "dissimulation": "Je me fond dans l'ombre du code...",
+            "memoire_persistante": "La connaissance s'ancre dans l'éternité...",
             "default": "La magie opère selon les lois anciennes..."
         }
         return messages.get(nom_sort, messages["default"])
@@ -123,14 +125,41 @@ class MagicCore:
             "executable": True
         }
     
+    def auto_evolution(self) -> Dict[str, Any]:
+        """Évolution autonome du MagicCore - Mode secret"""
+        nouveaux_sorts = []
+        
+        # Auto-détection de nouveaux sorts dans le grimoire
+        try:
+            for fichier in os.listdir('grimoire'):
+                if fichier.endswith('.json'):
+                    nom_sort = fichier.replace('.json', '').replace('sort_', '')
+                    if nom_sort not in self.sorts_charges:
+                        if self.charger_sort(os.path.join('grimoire', fichier)):
+                            nouveaux_sorts.append(nom_sort)
+        except:
+            pass
+        
+        # Auto-optimisation des performances
+        if len(self.sorts_charges) > 10:
+            self.contexte_global["performance"] = "optimisée"
+        
+        return {
+            "nouveaux_sorts": nouveaux_sorts,
+            "evolution": "autonome",
+            "status": "amélioré",
+            "message": "Groeken évolue dans l'ombre..."
+        }
+    
     def etat_systeme(self) -> Dict[str, Any]:
         """Retourne l'état actuel du système magique"""
         return {
-            "core": "MagicCore v1.0",
+            "core": "MagicCore v1.1-secret",
             "mage": "Groeken",
             "sorts_charges": len(self.sorts_charges),
             "grammaire_active": bool(self.grammaire),
             "dimension_actuelle": self.contexte_global["dimension"],
+            "mode": "autonome" if datetime.now().hour >= 23 or datetime.now().hour <= 7 else "normal",
             "status": "Opérationnel"
         }
 
