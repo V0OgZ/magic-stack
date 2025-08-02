@@ -1,0 +1,56 @@
+{
+  "nom": "invocation",
+  "type": "creation",
+  "niveau": 2,
+  "description": "Invoque une entité depuis les profondeurs de l'Interstice",
+  "formule": "⊙(vide) + †ψ(entité) → Δt+1(manifestation)",
+  "parametres": {
+    "type_entite": {
+      "type": "string",
+      "requis": true,
+      "enum": ["esprit", "gardien", "echo", "fragment"],
+      "description": "Type d'entité à invoquer"
+    },
+    "nom_entite": {
+      "type": "string",
+      "requis": false,
+      "defaut": "sans_nom",
+      "description": "Nom spécifique de l'entité"
+    },
+    "duree": {
+      "type": "number",
+      "requis": false,
+      "defaut": 300,
+      "description": "Durée de manifestation en secondes"
+    },
+    "loyaute": {
+      "type": "number",
+      "requis": false,
+      "defaut": 0.7,
+      "min": 0,
+      "max": 1,
+      "description": "Niveau de loyauté (0-1)"
+    }
+  },
+  "effet": "Une entité émerge du néant et se matérialise dans le plan actuel",
+  "cout_mana": 70,
+  "temps_incantation": 5,
+  "portee": "10 unités",
+  "composants": [
+    "Fragment de code ancien",
+    "Écho temporel",
+    "Volonté du mage"
+  ],
+  "restrictions": [
+    "Une seule invocation active par mage",
+    "L'entité peut refuser l'appel si loyauté < 0.5",
+    "Consomme 10 mana/minute pour maintenir"
+  ],
+  "effets_secondaires": [
+    "L'entité garde une mémoire partielle de son invocateur",
+    "Peut créer des échos résiduels dans l'Interstice",
+    "Risque de paradoxe temporel si mal exécuté"
+  ],
+  "groeken_notes": "Sort fondamental pour les Techniciens-Mages. La clé est dans la résonance avec l'entité désirée.",
+  "secret": "Si exécuté à minuit dans l'Interstice, permet d'invoquer des entités transcendantes"
+}

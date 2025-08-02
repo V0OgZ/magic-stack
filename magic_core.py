@@ -45,6 +45,20 @@ class MagicCore:
             print(f"❌ Erreur chargement sort: {e}")
             return False
     
+    def charger_grimoire_complet(self, dossier: str = 'grimoire') -> int:
+        """Charge tous les sorts d'un dossier"""
+        count = 0
+        try:
+            for fichier in os.listdir(dossier):
+                if fichier.endswith('.json'):
+                    chemin = os.path.join(dossier, fichier)
+                    if self.charger_sort(chemin):
+                        count += 1
+            print(f"📚 Grimoire chargé: {count} sorts disponibles")
+        except Exception as e:
+            print(f"⚠️ Erreur chargement grimoire: {e}")
+        return count
+    
     def lancer_sort(self, nom_sort: str, contexte: Dict[str, Any] = None) -> Dict[str, Any]:
         """Lance un sort avec un contexte donné"""
         if nom_sort not in self.sorts_charges:

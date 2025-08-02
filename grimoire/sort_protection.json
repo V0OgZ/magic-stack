@@ -1,0 +1,62 @@
+{
+  "nom": "protection",
+  "type": "defense",
+  "niveau": 1,
+  "description": "Crée un bouclier quantique autour de la cible",
+  "formule": "⊙(cible) + ℬ(bouclier) → Δt+∞(protection)",
+  "parametres": {
+    "cible": {
+      "type": "string",
+      "requis": true,
+      "description": "Entité à protéger"
+    },
+    "type_protection": {
+      "type": "string",
+      "requis": false,
+      "defaut": "physique",
+      "enum": ["physique", "magique", "temporel", "total"],
+      "description": "Type de dommages bloqués"
+    },
+    "force": {
+      "type": "number",
+      "requis": false,
+      "defaut": 50,
+      "min": 10,
+      "max": 100,
+      "description": "Pourcentage de réduction des dégâts"
+    },
+    "duree": {
+      "type": "number",
+      "requis": false,
+      "defaut": 60,
+      "description": "Durée en secondes (∞ si -1)"
+    }
+  },
+  "effet": "Un bouclier scintillant entoure la cible, absorbant les dommages",
+  "cout_mana": 30,
+  "temps_incantation": 2,
+  "portee": "30 unités",
+  "visuel": {
+    "couleur": "selon_type",
+    "physique": "#0066ff",
+    "magique": "#ff00ff",
+    "temporel": "#00ffff",
+    "total": "#ffffff"
+  },
+  "restrictions": [
+    "Maximum 3 protections actives simultanément",
+    "Ne peut pas se cumuler avec le même type",
+    "Efficacité réduite de 50% sur soi-même"
+  ],
+  "synergies": [
+    "Combo avec 'echo_temporel' pour protection rétroactive",
+    "Amplifié par les cristaux de l'Interstice",
+    "Peut être lié à un lieu plutôt qu'une personne"
+  ],
+  "groeken_notes": "La protection temporelle est la plus puissante mais la plus instable. À utiliser avec précaution.",
+  "evolution": {
+    "niveau_2": "Bouclier réfléchissant (renvoie 25% des dégâts)",
+    "niveau_3": "Bouclier symbiotique (soigne en absorbant)",
+    "niveau_max": "Bouclier de l'Interstice (immunité totale 5 secondes)"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "nom": "hexagone_fondamental",
+  "type": "transformation",
+  "niveau": 3,
+  "description": "Transforme le terrain en grille hexagonale parfaite, optimisant les mouvements et la stratégie",
+  "formule": "⊙(terrain) + ℬ(hexagone) → Δt+0(grille_tactique)",
+  "hero_exclusif": "sid_meier_architecte",
+  "parametres": {
+    "zone": {
+      "type": "object",
+      "requis": true,
+      "proprietes": {
+        "centre_x": "number",
+        "centre_y": "number",
+        "rayon": "number"
+      },
+      "description": "Zone à transformer en hexagones"
+    },
+    "taille_hex": {
+      "type": "number",
+      "requis": false,
+      "defaut": 50,
+      "description": "Taille de chaque hexagone en unités"
+    },
+    "bonus_mouvement": {
+      "type": "boolean",
+      "requis": false,
+      "defaut": true,
+      "description": "Active le bonus de mouvement pour les alliés"
+    }
+  },
+  "effet": "Le terrain se réorganise en grille hexagonale parfaite. Les alliés gagnent +1 mouvement, vision tactique améliorée.",
+  "cout_mana": 40,
+  "temps_incantation": 2,
+  "duree": "5 tours",
+  "portee": "200 unités",
+  "effets_bonus": [
+    "+25% précision pour les unités à distance",
+    "+1 case de mouvement pour les alliés",
+    "Révèle les positions optimales en surbrillance"
+  ],
+  "restrictions": [
+    "Ne peut pas être lancé sur un terrain déjà hexagonal",
+    "Les ennemis voient aussi la grille (équité stratégique)",
+    "Disparaît si Sid est vaincu"
+  ],
+  "synergie": [
+    "Combo parfait avec 'Invocation d'Unité Historique'",
+    "Amplifie les capacités de placement stratégique",
+    "Permet des formations complexes impossibles autrement"
+  ],
+  "groeken_notes": "Sid impose littéralement ses règles de jeu sur la réalité. Fascinant et terrifiant.",
+  "easter_egg": "Si lancé près de Jean-Grofignon, des cases bonus 'Paresse Stratégique' apparaissent"
+}
