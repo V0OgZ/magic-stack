@@ -1,0 +1,38 @@
+{
+  "id": "flux_causal_direct",
+  "nom": "Flux Causal Direct",
+  "categorie": "causalite",
+  "mecanique": "flux_causal",
+  "version": "1.0",
+  "formule_temporelle": "⊙(cause) → Δt+1(effet_immédiat)",
+  "description": "Établit un lien causal direct entre une action et son effet immédiat",
+  "cout_mana": 2,
+  "cooldown": 1,
+  "rareté": "commune",
+  "effet_tcg": {
+    "type": "causal_link",
+    "target": "any",
+    "effect": "immediate_consequence",
+    "duration": 1
+  },
+  "conditions": {
+    "min_level": 1,
+    "required_knowledge": ["causalite_base"],
+    "interdictions": ["paradoxe_temporel"]
+  },
+  "exemples_usage": [
+    "⊙(attaque) → Δt+1(Π(dégâts_3))",
+    "⊙(guérison) → Δt+1(Π(pv_restaurés_5))",
+    "⊙(buff) → Δt+1(Π(force_+2))"
+  ],
+  "interactions": {
+    "amplifie": ["resonance_causale"],
+    "annule": ["brisure_causale"],
+    "combine_avec": ["echo_causal"]
+  },
+  "lore": "Le flux causal direct est la base de toute magie temporelle. Il respecte l'ordre naturel du temps tout en permettant des effets précis et contrôlés.",
+  "createur": "MERLASH-TECHNOMANCIEN",
+  "date_creation": "DAY 7",
+  "validation_grut_6d": true,
+  "certification_walter": "approved"
+}
