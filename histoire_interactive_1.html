@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Quête du Portail Perdu</title>
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            height: 100vh;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hero-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+            to { text-shadow: 2px 2px 20px rgba(255,215,0,0.8); }
+        }
+        
+        .formule-magique {
+            background: rgba(255,215,0,0.2);
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .bouton-sort {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .bouton-sort:hover {
+            transform: scale(1.1);
+        }
+        
+        .moment-cle {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid #4ECDC4;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-title">La Quête du Portail Perdu</div>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>📖 Histoire</h2>
+            <h3>Protagoniste</h3>
+            <p>Lyra, la Marcheuse des Vents</p>
+            
+            <h3>Contexte</h3>
+            <p>Dans les ruines de l&#x27;ancienne citadelle</p>
+            
+            <h3>Objectif</h3>
+            <p>Rejoindre l&#x27;autre côté du gouffre temporel</p>
+            
+            <h3>Obstacle</h3>
+            <p>Le pont s&#x27;est effondré dans une faille dimensionnelle</p>
+        </div>
+        
+        <div class="panel">
+            <h2>🔮 Magie Interactive</h2>
+            
+            <div class="formule-magique">
+                <strong>Formule:</strong> ⊙(héros) + †ψ(destination) → Δt+0(téléportation)
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="bouton-sort" onclick="lancerSort()">
+                    ⚡ Lancer le Sort ⚡
+                </button>
+            </div>
+            
+            <div id="animation-zone" style="height: 300px; background: rgba(0,0,0,0.3); border-radius: 10px; margin: 20px 0;">
+                <canvas id="canvas-magique" width="400" height="300"></canvas>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🎭 Moments Clés</h2>
+            <div id="moments-cles">
+
+                <div class="moment-cle">
+                    <h4>Moment de Superposition</h4>
+                    <p>Lyra, la Marcheuse des Vents se concentre, sentant toutes les possibilités s&#x27;ouvrir simultanément.</p>
+                </div>
+
+                <div class="moment-cle">
+                    <h4>L&#x27;Effondrement Décisif</h4>
+                    <p>D&#x27;un geste ferme, Lyra, la Marcheuse des Vents choisit une réalité parmi toutes les autres.</p>
+                </div>
+
+                <div class="moment-cle">
+                    <h4>Le Voyage Temporel</h4>
+                    <p>Le temps se distord autour de Lyra, la Marcheuse des Vents, créant un passage vers l&#x27;objectif.</p>
+                </div>
+
+            </div>
+            
+            <div class="moment-cle" style="border-left-color: #FFD700;">
+                <h4>🏆 Résolution</h4>
+                <p>Grâce à la formule &#x27;⊙(héros) + †ψ(destination) → Δt+0(téléportation)&#x27;, le héros traverse instantanément l&#x27;obstacle et atteint sa destination, sauvant la situation.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function lancerSort() {
+            console.log("🔮 Lancement du sort: ⊙(héros) + †ψ(destination) → Δt+0(téléportation)");
+            
+            // Animation simple sur le canvas
+            const canvas = document.getElementById('canvas-magique');
+            const ctx = canvas.getContext('2d');
+            
+            // Effet magique simple
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Cercle magique
+            ctx.beginPath();
+            ctx.arc(200, 150, 50, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Texte magique
+            ctx.fillStyle = '#4ECDC4';
+            ctx.font = '16px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sort Lancé!', 200, 150);
+            
+            alert("🎉 Sort lancé avec succès! L'histoire continue...");
+        }
+    </script>
+</body>
+</html>

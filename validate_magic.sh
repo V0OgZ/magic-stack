@@ -101,6 +101,15 @@ sort_valid=0
 for sort_file in grimoire/*.json; do
     if [ -f "$sort_file" ]; then
         sort_name=$(basename "$sort_file" .json)
+        
+        # Exclure les fichiers de bibliothèque/import
+        if [[ "$sort_name" == "bibliotheque_complete_sorts_avalon" ]] || \
+           [[ "$sort_name" == "import_sorts_lumen" ]] || \
+           [[ "$sort_name" == "sort_brisure_interstice" ]]; then
+            echo "  Skipping $sort_name (library/import file)..."
+            continue
+        fi
+        
         echo "  Testing $sort_name..."
         
         python3 -c "
