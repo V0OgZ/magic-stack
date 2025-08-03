@@ -24,6 +24,7 @@ app.config['DEBUG'] = True
 GRIMOIRE_PATH = Path("./grimoire/")
 DOCS_PATH = Path("./docs/")
 BACKEND_URL = "http://localhost:8080"
+MAGIC_STACK_PORT = 8081
 
 # Chargement de la bibliothèque complète
 def charger_bibliotheque():
@@ -339,6 +340,47 @@ def backend_status():
             "mode": "SIMULATION_DISPONIBLE"
         })
 
+@app.route('/api/magic/cast', methods=['POST'])
+def magic_cast():
+    """🌀 Endpoint principal Magic Stack - Compatible AVALON TCG"""
+    try:
+        data = request.get_json()
+        
+        # Extraction des paramètres
+        formula_type = data.get('formulaType', 'MAGIC_STACK')
+        formula = data.get('formula', '')
+        caster_id = data.get('casterId', 'unknown')
+        parameters = data.get('parameters', {})
+        
+        # Validation de la formule si temporelle
+        if '⊙' in formula or '†ψ' in formula:
+            validation = valider_formule_temporelle(formula)
+            if not validation['valide']:
+                return jsonify({
+                    "success": False,
+                    "message": "Formule temporelle invalide",
+                    "validation": validation
+                }), 400
+        
+        # Résultat
+        return jsonify({
+            "success": True,
+            "message": f"Sort lancé via Magic Stack",
+            "formulaType": formula_type,
+            "formula": formula,
+            "casterId": caster_id,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "magicStackVersion": "2.0",
+            "quantumState": "stable",
+            "groeken": "BOSS_ENGINE"
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Erreur Magic Stack: {str(e)}"
+        }), 500
+
 # Gestion des erreurs
 @app.errorhandler(404)
 def not_found(error):
@@ -373,4 +415,4 @@ if __name__ == '__main__':
         print("⚠️ Erreur chargement bibliothèque")
     
     print("🚀 API Magic Stack prête !")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8081, debug=True)
