@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "description": "Mapping des classes de héros vers les modes de traduction des sorts selon Vincent",
+  "created": "Day 7 - Mission Spéciale Traduction",
+  "author": "LOUMEN/PHOENIX",
+  
+  "translation_modes": {
+    "literary": {
+      "id": "literary", 
+      "name": "Mode Littéraire",
+      "icon": "📖",
+      "description": "Descriptions narratives complètes et poétiques",
+      "example": "HERO(Arthur) → 'the valiant hero Arthur steps forward with noble intent'"
+    },
+    "icons": {
+      "id": "icons",
+      "name": "Mode Icônes", 
+      "icon": "🎨",
+      "description": "Représentation visuelle avec émojis et symboles",
+      "example": "HERO(Arthur) → 🧍(Arthur) ⚔️"
+    },
+    "runes": {
+      "id": "runes",
+      "name": "Mode Runes",
+      "icon": "🪬", 
+      "description": "Symboles anciens et formules quantiques",
+      "example": "HERO(Arthur) → ᚺ(Arthur) ⚡"
+    }
+  },
+
+  "class_mapping": {
+    "WARRIORS": {
+      "description": "Classes de combat physique et défense",
+      "translation_mode": "icons",
+      "classes": [
+        "Dragon Slayer",
+        "tank_guardian", 
+        "Gardien Défensif",
+        "Knight",
+        "Warrior",
+        "Guardian",
+        "Defender"
+      ],
+      "reasoning": "Guerriers → Représentation visuelle directe avec icônes ⚔️🛡️"
+    },
+    
+    "MAGES": {
+      "description": "Classes magiques et quantiques", 
+      "translation_mode": "runes",
+      "classes": [
+        "Reality Forger",
+        "World Weaver", 
+        "TEMPORAL_SPECIALIST",
+        "TIME_KEEPER",
+        "Mage",
+        "Wizard",
+        "Sorcerer",
+        "Quantum Manipulator"
+      ],
+      "reasoning": "Mages → Formules quantiques et runes anciennes 🪬⚡"
+    },
+    
+    "DRUIDS_NATURALS": {
+      "description": "Classes naturelles, chroniques et mystiques",
+      "translation_mode": "literary", 
+      "classes": [
+        "Nexus Guardian",
+        "Druid",
+        "Shaman", 
+        "Chronicler",
+        "Nature Guardian",
+        "Urz-Kôm"
+      ],
+      "reasoning": "Druides/Naturels → Descriptions chroniques et littéraires 📖🌿"
+    },
+    
+    "PALADINS_NOBLES": {
+      "description": "Classes nobles, héroïques et inspirantes",
+      "translation_mode": "literary",
+      "classes": [
+        "Paladin",
+        "Templar",
+        "Divine Knight",
+        "Hero",
+        "Champion",
+        "Noble Warrior"
+      ],
+      "reasoning": "Paladins → Mode littéraire noble et inspirant 📜⚡"
+    },
+
+    "ANOMALIES_SPECIAL": {
+      "description": "Classes spéciales et anomalies quantiques",
+      "translation_mode": "runes",
+      "classes": [
+        "Anomalie Bipersonnelle", 
+        "Duo Comique Restauré",
+        "Quantum Anomaly",
+        "Temporal Paradox"
+      ],
+      "reasoning": "Anomalies → Runes quantiques pour l'instabilité 🪬🌀"
+    }
+  },
+
+  "fallback_rules": {
+    "default_mode": "literary",
+    "unknown_class": "literary",
+    "rules": [
+      "Si classe contient 'guard' → icons",
+      "Si classe contient 'mage' ou 'wizard' → runes", 
+      "Si classe contient 'temporal' ou 'quantum' → runes",
+      "Si classe contient 'nature' ou 'druid' → literary",
+      "Si classe contient 'paladin' ou 'knight' → literary",
+      "Défaut → literary"
+    ]
+  },
+
+  "integration_notes": {
+    "magic_stack_integration": "Ce mapping sera utilisé par la Magic Stack pour déterminer le mode de traduction des sorts selon la classe du héros qui les lance",
+    "backend_service": "Utilise FormulaTranslationService via /api/translate",
+    "Vincent_specs": "Guerriers→icônes, Mages→quantique, Druides→chronique, Paladins→littéraire"
+  }
+}

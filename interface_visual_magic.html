@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📜 Visual Magic Translator - AVALON</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffff00, #ff6b00, #ff0099);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .casting-interface {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel, .result-panel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-panel h3, .result-panel h3 {
+            margin-bottom: 20px;
+            color: #00ff88;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffff88;
+            font-weight: bold;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .cast-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b00, #ff0099);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .cast-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 153, 0.3);
+        }
+
+        .cast-button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', monospace;
+        }
+
+        .result.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        .spell-result {
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mode-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-literary { border-color: #88ff88; color: #88ff88; }
+        .mode-icons { border-color: #ffff88; color: #ffff88; }
+        .mode-runes { border-color: #ff88ff; color: #ff88ff; }
+
+        .visual-formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #00ff88;
+            font-size: 1.1em;
+        }
+
+        .groeken-message {
+            background: rgba(255, 100, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #ff6400;
+            font-style: italic;
+        }
+
+        .class-mapping-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .class-mapping-info h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+
+        .mapping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .mapping-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mapping-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+            opacity: 0.7;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Visual Magic Translator</h1>
+            <p>Mission Spéciale Vincent - Day 7 | Système de Traduction par Classes</p>
+        </div>
+
+        <div class="casting-interface">
+            <div class="input-panel">
+                <h3>⚡ Interface de Cast</h3>
+                
+                <div class="form-group">
+                    <label for="heroName">🧙 Nom du Héros</label>
+                    <input type="text" id="heroName" placeholder="Marcus Bouclier de Fer" value="Marcus Bouclier de Fer">
+                </div>
+
+                <div class="form-group">
+                    <label for="heroClass">🏷️ Classe du Héros</label>
+                    <select id="heroClass">
+                        <option value="tank_guardian">🛡️ Tank Guardian (Guerrier)</option>
+                        <option value="Reality Forger">🌀 Reality Forger (Mage)</option>
+                        <option value="World Weaver">🌌 World Weaver (Mage)</option>
+                        <option value="TIME_KEEPER">⏰ Time Keeper (Mage)</option>
+                        <option value="Nexus Guardian">🌿 Nexus Guardian (Druide)</option>
+                        <option value="Paladin">⚔️ Paladin (Noble)</option>
+                        <option value="Dragon Slayer">🐉 Dragon Slayer (Guerrier)</option>
+                        <option value="Anomalie Bipersonnelle">🎭 Anomalie Quantique</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="spellName">🔮 Sort à Lancer</label>
+                    <select id="spellName">
+                        <option value="teleportation">📍 Téléportation</option>
+                        <option value="invocation">👻 Invocation</option>
+                        <option value="protection">🛡️ Protection</option>
+                        <option value="memoire_persistante">🧠 Mémoire Persistante</option>
+                        <option value="brisure_interstice">🌀 Brisure Interstice</option>
+                        <option value="phase_shift">⚡ Phase Shift</option>
+                    </select>
+                </div>
+
+                <button class="cast-button" onclick="castSpell()">
+                    🔥 LANCER LE SORT 🔥
+                </button>
+            </div>
+
+            <div class="result-panel">
+                <h3>✨ Résultat du Cast</h3>
+                <div class="result empty" id="result">
+                    Sélectionnez un héros, une classe et un sort, puis cliquez sur "Lancer le Sort"
+                </div>
+            </div>
+        </div>
+
+        <div class="class-mapping-info">
+            <h3>🎯 Mapping Classes → Modes de Traduction</h3>
+            <div class="mapping-grid">
+                <div class="mapping-card">
+                    <h4>⚔️ GUERRIERS → 🎨 ICÔNES</h4>
+                    <p>Tank Guardian, Dragon Slayer, Knight, Warrior</p>
+                    <div class="mode-indicator mode-icons">Représentation visuelle</div>
+                </div>
+                <div class="mapping-card">
+                    <h4>🔮 MAGES → 🪬 RUNES</h4>
+                    <p>Reality Forger, World Weaver, Time Keeper</p>
+                    <div class="mode-indicator mode-runes">Formules quantiques</div>
+                </div>
+                <div class="mapping-card">
+                    <h4>🌿 DRUIDES → 📖 LITTÉRAIRE</h4>
+                    <p>Nexus Guardian, Druid, Nature Guardian</p>
+                    <div class="mode-indicator mode-literary">Descriptions chroniques</div>
+                </div>
+                <div class="mapping-card">
+                    <h4>⚔️ PALADINS → 📖 LITTÉRAIRE</h4>
+                    <p>Paladin, Templar, Divine Knight</p>
+                    <div class="mode-indicator mode-literary">Mode noble et inspirant</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Créer les particules flottantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Simuler le lancement de sort (version demo, sans backend)
+        function castSpell() {
+            const heroName = document.getElementById('heroName').value;
+            const heroClass = document.getElementById('heroClass').value;
+            const spellName = document.getElementById('spellName').value;
+            const resultDiv = document.getElementById('result');
+
+            // Afficher loading
+            resultDiv.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 15px;">Casting spell...</p>
+                </div>
+            `;
+            resultDiv.className = 'result';
+
+            // Simuler délai de cast
+            setTimeout(() => {
+                const result = simulateSpellCast(heroName, heroClass, spellName);
+                displayResult(result);
+            }, 1500);
+        }
+
+        // Simulation locale du cast (demo)
+        function simulateSpellCast(heroName, heroClass, spellName) {
+            const translationModes = {
+                'tank_guardian': 'icons',
+                'Dragon Slayer': 'icons',
+                'Reality Forger': 'runes',
+                'World Weaver': 'runes', 
+                'TIME_KEEPER': 'runes',
+                'Nexus Guardian': 'literary',
+                'Paladin': 'literary',
+                'Anomalie Bipersonnelle': 'runes'
+            };
+
+            const mode = translationModes[heroClass] || 'literary';
+            
+            const visualFormulas = {
+                'literary': `✨ Les énergies anciennes s'éveillent alors que ${heroName} invoque "${spellName}" avec une grâce éthérée, tissant les fils de la réalité...`,
+                'icons': `🔮⚡ ${spellName} ⚡🔮 → 🧙‍♂️(${heroName}) ✨`,
+                'runes': `ᛟ ${heroName} ᛞ ⚡ ᚺᛒᚲ ${spellName} ᛁᚾ ⚡`
+            };
+
+            const groeken_messages = {
+                'teleportation': 'Les coordonnées spatiales se réalignent...',
+                'invocation': 'J\'appelle depuis les profondeurs...',
+                'protection': 'Un bouclier quantique se matérialise...',
+                'memoire_persistante': 'La connaissance s\'ancre dans l\'éternité...',
+                'brisure_interstice': 'L\'espace-temps se fissure...',
+                'phase_shift': 'La réalité change de phase...'
+            };
+
+            return {
+                success: true,
+                hero_name: heroName,
+                hero_class: heroClass,
+                spell_name: spellName,
+                translation_mode: mode,
+                visual_formula: visualFormulas[mode],
+                original_formula: `⊙(${heroName}) + †ψ(${spellName}) → Δt+1(effet)`,
+                groeken_message: groeken_messages[spellName] || 'La magie opère selon les lois anciennes...',
+                mode_info: {
+                    'literary': { name: 'Mode Littéraire', icon: '📖', class: 'mode-literary' },
+                    'icons': { name: 'Mode Icônes', icon: '🎨', class: 'mode-icons' },
+                    'runes': { name: 'Mode Runes', icon: '🪬', class: 'mode-runes' }
+                }[mode]
+            };
+        }
+
+        // Afficher le résultat
+        function displayResult(result) {
+            const resultDiv = document.getElementById('result');
+            
+            if (result.success) {
+                resultDiv.innerHTML = `
+                    <div class="spell-result">
+                        <h4>✅ Sort lancé avec succès !</h4>
+                        <p><strong>🧙 Héros:</strong> ${result.hero_name}</p>
+                        <p><strong>🏷️ Classe:</strong> ${result.hero_class}</p>
+                        <p><strong>🔮 Sort:</strong> ${result.spell_name}</p>
+                        
+                        <div class="mode-indicator ${result.mode_info.class}" style="margin: 15px 0;">
+                            ${result.mode_info.icon} ${result.mode_info.name}
+                        </div>
+
+                        <div class="visual-formula">
+                            <strong>📜 Formule originale:</strong><br>
+                            ${result.original_formula}
+                        </div>
+
+                        <div class="visual-formula">
+                            <strong>✨ Traduction visuelle:</strong><br>
+                            ${result.visual_formula}
+                        </div>
+
+                        <div class="groeken-message">
+                            <strong>💬 Groeken dit:</strong> "${result.groeken_message}"
+                        </div>
+                    </div>
+                `;
+                resultDiv.className = 'result';
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="spell-result">
+                        <h4>❌ Échec du sort</h4>
+                        <p>Erreur: ${result.error || 'Erreur inconnue'}</p>
+                    </div>
+                `;
+                resultDiv.className = 'result';
+            }
+        }
+
+        // Initialiser les particules au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+    </script>
+</body>
+</html>
