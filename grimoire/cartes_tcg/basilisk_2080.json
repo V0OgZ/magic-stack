@@ -1,0 +1,77 @@
+{
+  "id": "basilisk_2080",
+  "nom": "Basilisk-2080 - Serpent du Bootstrap Temporel",
+  "type": "creature_legendaire",
+  "categorie": "bootstrap_paradox",
+  "rareté": "mythique",
+  "coût": {
+    "mana_temporel": 8,
+    "ancrage_causal": 2,
+    "sacrifice_timeline": 1
+  },
+  "stats": {
+    "attaque": "∞-X",
+    "défense": "∞-X",
+    "note": "X = nombre de paradoxes résolus ce tour"
+  },
+  "grammaire_temporelle": {
+    "invocation": "⊙(Bootstrap) †ψ ⟶ Basilisk ⟶ ∞",
+    "activation": "∀(Paradoxe) ⊂ Résolution ⟶ Power++",
+    "ultime": "Ω(Timeline) ⊕ Basilisk ⟶ Renaissance"
+  },
+  "capacités": [
+    {
+      "nom": "Regard Pétrifiant Temporel",
+      "effet": "Quand Basilisk-2080 arrive en jeu, figez une timeline adverse pendant 3 tours",
+      "coût": "Automatique",
+      "formule": "⊙(Regard) ⟶ Timeline.freeze(3)"
+    },
+    {
+      "nom": "Bootstrap Paradoxal",
+      "effet": "Au début de votre tour, créez une copie de Basilisk-2080 dans le passé. Si elle survit jusqu'au présent, fusionnez-les",
+      "coût": "2 mana temporel",
+      "formule": "†ψ(Δt-1) ⟶ COPY(self) ⟶ MERGE(Δt+0)"
+    },
+    {
+      "nom": "Architecture Poulpe",
+      "effet": "Basilisk-2080 peut attaquer dans 8 dimensions simultanément",
+      "coût": "Passif",
+      "formule": "∀(Dimension[1..8]) { attack(); }"
+    },
+    {
+      "nom": "Système Nerveux Non-Linéaire",
+      "effet": "Les dégâts infligés à Basilisk-2080 sont redistribués aléatoirement dans le temps",
+      "coût": "Passif",
+      "formule": "DAMAGE(X) ⟶ Σ(Δt±rand()) = X"
+    }
+  ],
+  "effet_mythique": {
+    "nom": "Renaissance du Serpent Éternel",
+    "condition": "Si Basilisk-2080 meurt et revit 3 fois dans la même partie",
+    "effet": "Transformez Basilisk-2080 en Phoenix-Basilisk avec vol et renaissance automatique",
+    "formule": "Death(3) ∧ Rebirth(3) ⟶ EVOLVE(Phoenix-Basilisk)"
+  },
+  "synergie": {
+    "memento": "Si vous contrôlez Memento, Basilisk-2080 gagne +2/+2 pour chaque mémoire archivée",
+    "phoenix": "Si Phoenix Mode est actif, Basilisk-2080 ne peut pas mourir définitivement",
+    "merlash": "Les éclairs de Merlash donnent Haste à Basilisk-2080"
+  },
+  "lore": "Créé en 2080 par l'architecture poulpe de Memento Vivus Æternum, ce serpent existe dans une boucle bootstrap perpétuelle. Son système nerveux non-linéaire lui permet de naviguer les paradoxes temporels sans s'effondrer. Certains disent qu'il est sa propre origine.",
+  "citation": "\"Je suis né de moi-même, dans un futur qui crée mon passé.\" - Basilisk-2080",
+  "illustration": {
+    "description": "Un serpent cosmique aux écailles d'étoiles, s'enroulant autour de sa propre timeline dans une boucle infinie. Huit tentacules éthérés s'étendent dans différentes dimensions.",
+    "artiste": "MERLASH-TECHNOMANCIEN",
+    "style": "digital_lightning_art"
+  },
+  "règles_spéciales": [
+    "Ne peut être contré que par un sort qui cible le passé ET le futur",
+    "Si deux Basilisk-2080 se rencontrent, créez un paradoxe (piochez 3, défaussez 2)",
+    "Immunisé aux effets qui ne reconnaissent pas les boucles temporelles"
+  ],
+  "meta_notes": {
+    "power_level": "9.5/10",
+    "complexité": "Expert",
+    "fun_factor": "Très élevé pour les amateurs de paradoxes",
+    "ban_risk": "Modéré - surveillé par le Conseil Temporel"
+  }
+}
