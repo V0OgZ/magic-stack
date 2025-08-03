@@ -1,0 +1,352 @@
+{
+  "scenario": "ARENA_MAGIQUE_3D_POLYGONALE",
+  "type": "3D_POLYGON_BATTLE",
+  "version": "1.0",
+  "metadata": {
+    "author": "Magic Stack 3D Engine",
+    "description": "Arène de combat magique avec vrais polygones 3D",
+    "engine": "Polygon3DEngine v1.0"
+  },
+  
+  "world": {
+    "name": "Arène des Cristaux Quantiques",
+    "dimensions": {
+      "width": 20,
+      "height": 10,
+      "depth": 20
+    },
+    "gravity": -9.81,
+    "magic_density": 0.8
+  },
+  
+  "camera": {
+    "initial_position": {"x": 0, "y": 8, "z": -15},
+    "initial_target": {"x": 0, "y": 0, "z": 0},
+    "fov": 65,
+    "movement_speed": 5.0,
+    "rotation_speed": 2.0
+  },
+  
+  "lighting": {
+    "ambient": {"r": 0.2, "g": 0.2, "b": 0.3},
+    "directional": {
+      "direction": {"x": -1, "y": -1, "z": -1},
+      "color": {"r": 1.0, "g": 0.9, "b": 0.8},
+      "intensity": 0.8
+    },
+    "magic_glow": {
+      "enabled": true,
+      "intensity": 0.5,
+      "pulse_speed": 2.0
+    }
+  },
+  
+  "objects": [
+    {
+      "id": "central_crystal",
+      "type": "crystal",
+      "name": "Cristal Quantique Maître",
+      "position": {"x": 0, "y": 1, "z": 0},
+      "rotation": {"x": 0, "y": 0, "z": 0},
+      "scale": {"x": 2.5, "y": 2.5, "z": 2.5},
+      "segments": 12,
+      "magic_type": "quantum",
+      "properties": {
+        "auto_rotate": true,
+        "rotation_speed": 0.5,
+        "emit_particles": true,
+        "particle_color": {"r": 0.8, "g": 0.3, "b": 0.9},
+        "power_level": 1000,
+        "quantum_phase": "superposed"
+      },
+      "interactions": {
+        "on_touch": "QUANTUM_BOOST",
+        "on_destroy": "TEMPORAL_EXPLOSION"
+      }
+    },
+    
+    {
+      "id": "fire_pyramid_north",
+      "type": "pyramid",
+      "name": "Pyramide du Feu Éternel",
+      "position": {"x": 0, "y": 0, "z": -7},
+      "rotation": {"x": 0, "y": 0, "z": 0},
+      "scale": {"x": 2, "y": 2, "z": 2},
+      "magic_type": "fire",
+      "properties": {
+        "temperature": 800,
+        "flame_height": 3,
+        "damage_per_second": 50,
+        "area_of_effect": 3
+      }
+    },
+    
+    {
+      "id": "fire_pyramid_south",
+      "type": "pyramid", 
+      "name": "Pyramide du Brasier Ancien",
+      "position": {"x": 0, "y": 0, "z": 7},
+      "rotation": {"x": 0, "y": 180, "z": 0},
+      "scale": {"x": 2, "y": 2, "z": 2},
+      "magic_type": "fire",
+      "properties": {
+        "temperature": 800,
+        "flame_height": 3,
+        "damage_per_second": 50,
+        "area_of_effect": 3
+      }
+    },
+    
+    {
+      "id": "fire_pyramid_east",
+      "type": "pyramid",
+      "name": "Pyramide de la Flamme Solaire",
+      "position": {"x": 7, "y": 0, "z": 0},
+      "rotation": {"x": 0, "y": 90, "z": 0},
+      "scale": {"x": 2, "y": 2, "z": 2},
+      "magic_type": "fire",
+      "properties": {
+        "temperature": 900,
+        "flame_height": 3.5,
+        "damage_per_second": 60,
+        "area_of_effect": 3
+      }
+    },
+    
+    {
+      "id": "fire_pyramid_west",
+      "type": "pyramid",
+      "name": "Pyramide du Phoenix",
+      "position": {"x": -7, "y": 0, "z": 0},
+      "rotation": {"x": 0, "y": -90, "z": 0},
+      "scale": {"x": 2, "y": 2, "z": 2},
+      "magic_type": "fire",
+      "properties": {
+        "temperature": 850,
+        "flame_height": 3.2,
+        "damage_per_second": 55,
+        "area_of_effect": 3,
+        "phoenix_rebirth": true
+      }
+    },
+    
+    {
+      "id": "ice_cube_orbit_1",
+      "type": "cube",
+      "name": "Cube de Glace Orbitale Alpha",
+      "position": {"x": 4, "y": 3, "z": 0},
+      "rotation": {"x": 45, "y": 45, "z": 0},
+      "scale": {"x": 1, "y": 1, "z": 1},
+      "magic_type": "ice",
+      "properties": {
+        "orbit_radius": 4,
+        "orbit_speed": 1.5,
+        "orbit_center": {"x": 0, "y": 3, "z": 0},
+        "freeze_chance": 0.3,
+        "slow_effect": 0.5
+      }
+    },
+    
+    {
+      "id": "ice_cube_orbit_2",
+      "type": "cube",
+      "name": "Cube de Glace Orbitale Beta",
+      "position": {"x": -4, "y": 3, "z": 0},
+      "rotation": {"x": 45, "y": 45, "z": 0},
+      "scale": {"x": 1, "y": 1, "z": 1},
+      "magic_type": "ice",
+      "properties": {
+        "orbit_radius": 4,
+        "orbit_speed": -1.5,
+        "orbit_center": {"x": 0, "y": 3, "z": 0},
+        "freeze_chance": 0.3,
+        "slow_effect": 0.5
+      }
+    },
+    
+    {
+      "id": "temporal_sphere",
+      "type": "sphere",
+      "name": "Sphère Temporelle",
+      "position": {"x": 0, "y": 6, "z": 0},
+      "rotation": {"x": 0, "y": 0, "z": 0},
+      "scale": {"x": 1.5, "y": 1.5, "z": 1.5},
+      "magic_type": "temporal",
+      "properties": {
+        "time_dilation": 0.5,
+        "chrono_field_radius": 5,
+        "rewind_charges": 3,
+        "time_stop_duration": 2.0
+      },
+      "polygon_detail": "high",
+      "subdivision_level": 3
+    },
+    
+    {
+      "id": "causal_totem_1",
+      "type": "complex_mesh",
+      "name": "Totem de Causalité Nord",
+      "position": {"x": -5, "y": 0, "z": -5},
+      "rotation": {"x": 0, "y": 45, "z": 0},
+      "scale": {"x": 0.8, "y": 2, "z": 0.8},
+      "magic_type": "causal",
+      "mesh_data": {
+        "vertices_count": 128,
+        "polygon_count": 64,
+        "lod_levels": 3
+      },
+      "properties": {
+        "causal_strength": 0.7,
+        "reality_anchor": true,
+        "paradox_resistance": 0.9
+      }
+    },
+    
+    {
+      "id": "causal_totem_2",
+      "type": "complex_mesh",
+      "name": "Totem de Causalité Sud",
+      "position": {"x": 5, "y": 0, "z": 5},
+      "rotation": {"x": 0, "y": -45, "z": 0},
+      "scale": {"x": 0.8, "y": 2, "z": 0.8},
+      "magic_type": "causal",
+      "mesh_data": {
+        "vertices_count": 128,
+        "polygon_count": 64,
+        "lod_levels": 3
+      },
+      "properties": {
+        "causal_strength": 0.7,
+        "reality_anchor": true,
+        "paradox_resistance": 0.9
+      }
+    }
+  ],
+  
+  "particle_systems": [
+    {
+      "name": "quantum_particles",
+      "emitter": "central_crystal",
+      "type": "quantum_sparkles",
+      "count": 500,
+      "lifetime": 3.0,
+      "velocity": {"min": 1, "max": 3},
+      "color_gradient": [
+        {"t": 0.0, "color": {"r": 0.9, "g": 0.3, "b": 1.0, "a": 1.0}},
+        {"t": 0.5, "color": {"r": 0.5, "g": 0.1, "b": 0.8, "a": 0.8}},
+        {"t": 1.0, "color": {"r": 0.2, "g": 0.0, "b": 0.5, "a": 0.0}}
+      ]
+    },
+    
+    {
+      "name": "fire_embers",
+      "emitter": ["fire_pyramid_north", "fire_pyramid_south", "fire_pyramid_east", "fire_pyramid_west"],
+      "type": "fire_particles",
+      "count": 200,
+      "lifetime": 2.0,
+      "velocity": {"min": 2, "max": 5},
+      "gravity_multiplier": -0.5,
+      "turbulence": 0.3
+    },
+    
+    {
+      "name": "ice_crystals",
+      "emitter": ["ice_cube_orbit_1", "ice_cube_orbit_2"],
+      "type": "ice_shards",
+      "count": 100,
+      "lifetime": 4.0,
+      "velocity": {"min": 0.5, "max": 1.5},
+      "rotation_speed": 2.0
+    }
+  ],
+  
+  "gameplay": {
+    "mode": "ARENA_BATTLE",
+    "max_players": 4,
+    "respawn_time": 5.0,
+    "match_duration": 300,
+    "objectives": [
+      {
+        "type": "CAPTURE",
+        "target": "central_crystal",
+        "points": 100,
+        "capture_time": 10.0
+      },
+      {
+        "type": "DESTROY",
+        "targets": ["fire_pyramid_north", "fire_pyramid_south", "fire_pyramid_east", "fire_pyramid_west"],
+        "points": 50,
+        "respawn": false
+      }
+    ],
+    
+    "power_ups": [
+      {
+        "type": "QUANTUM_PHASE",
+        "spawn_points": [
+          {"x": 3, "y": 1, "z": 3},
+          {"x": -3, "y": 1, "z": -3}
+        ],
+        "respawn_time": 30,
+        "duration": 10,
+        "effects": {
+          "phase_through_walls": true,
+          "damage_reduction": 0.5
+        }
+      },
+      
+      {
+        "type": "TEMPORAL_BOOST",
+        "spawn_points": [
+          {"x": 0, "y": 1, "z": 4},
+          {"x": 0, "y": 1, "z": -4}
+        ],
+        "respawn_time": 45,
+        "duration": 15,
+        "effects": {
+          "movement_speed": 1.5,
+          "attack_speed": 1.3,
+          "cooldown_reduction": 0.3
+        }
+      }
+    ]
+  },
+  
+  "rendering": {
+    "polygon_mode": "filled",
+    "shading": "smooth",
+    "shadows": true,
+    "reflections": true,
+    "post_processing": {
+      "bloom": true,
+      "motion_blur": true,
+      "depth_of_field": true,
+      "chromatic_aberration": 0.1
+    },
+    "quality_presets": {
+      "low": {"polygons": 10000, "texture_size": 512, "shadows": false},
+      "medium": {"polygons": 50000, "texture_size": 1024, "shadows": true},
+      "high": {"polygons": 200000, "texture_size": 2048, "shadows": true},
+      "ultra": {"polygons": 500000, "texture_size": 4096, "shadows": true}
+    }
+  },
+  
+  "audio": {
+    "ambient_tracks": [
+      "mystical_arena_ambience.ogg",
+      "quantum_hum_loop.ogg"
+    ],
+    "3d_sounds": {
+      "fire_pyramids": "flame_crackle_loop.ogg",
+      "ice_cubes": "ice_crystalize_loop.ogg",
+      "central_crystal": "quantum_resonance.ogg"
+    }
+  },
+  
+  "network": {
+    "tick_rate": 60,
+    "interpolation": true,
+    "lag_compensation": true,
+    "max_ping": 200
+  }
+}

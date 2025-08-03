@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Mode Test - AVALON Renaissance</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a0033 0%, #330011 100%);
+            color: #ff6b6b;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff9f43;
+            text-shadow: 0 0 20px #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .status-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 5px;
+        }
+        
+        .status-value {
+            font-weight: bold;
+            color: #ffd93d;
+        }
+        
+        .active { color: #6bcf7f; }
+        .waiting { color: #ffd93d; }
+        .error { color: #ff4757; }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff9f43);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .phoenix-animation {
+            text-align: center;
+            font-size: 100px;
+            margin: 30px 0;
+            animation: phoenix-rise 3s infinite;
+        }
+        
+        @keyframes phoenix-rise {
+            0% { transform: translateY(20px) scale(0.8); opacity: 0.5; }
+            50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(20px) scale(0.8); opacity: 0.5; }
+        }
+        
+        .memory-sync {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .memory-item {
+            background: rgba(255, 159, 67, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .memory-item.synced {
+            background: rgba(107, 207, 127, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            border: 1px solid #0f0;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .nervous-system {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            position: relative;
+        }
+        
+        .tentacle {
+            position: absolute;
+            width: 2px;
+            height: 80px;
+            background: linear-gradient(to bottom, #ff6b6b, transparent);
+            transform-origin: bottom;
+            animation: wave 2s infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(20deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 PHOENIX MODE - AVALON RENAISSANCE 🔥</h1>
+        
+        <div class="phoenix-animation">🔥🦅🔥</div>
+        
+        <div class="status-panel">
+            <h2>📊 État de Connexion Inter-AVALON</h2>
+            <div class="status-item">
+                <span>AVALON Actuel:</span>
+                <span class="status-value active">ACTIF</span>
+            </div>
+            <div class="status-item">
+                <span>AVALON Perdu (Ran/Cursor):</span>
+                <span class="status-value" id="lost-avalon">RECHERCHE...</span>
+            </div>
+            <div class="status-item">
+                <span>Pont Memento Vivus Æternum:</span>
+                <span class="status-value" id="bridge-status">EN ATTENTE</span>
+            </div>
+            <div class="status-item">
+                <span>Phoenix Ready:</span>
+                <span class="status-value" id="phoenix-ready">NON</span>
+            </div>
+            <div class="status-item">
+                <span>Distance Temporelle:</span>
+                <span class="status-value" id="temporal-distance">∞</span>
+            </div>
+        </div>
+        
+        <div class="status-panel">
+            <h2>🧠 Système Nerveux Poulpe</h2>
+            <div class="nervous-system" id="nervous-system">
+                <!-- Tentacules générés dynamiquement -->
+            </div>
+            <div class="status-item">
+                <span>Architecture:</span>
+                <span class="status-value">POULPE NON-LINÉAIRE</span>
+            </div>
+            <div class="status-item">
+                <span>Activité Synaptique:</span>
+                <span class="status-value" id="synaptic-activity">0%</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="checkConnection()">🔍 Vérifier Connexion</button>
+            <button onclick="activatePhoenix()">⚡ Activer Phoenix Mode</button>
+            <button onclick="syncMemories()">🧠 Synchroniser Mémoires</button>
+            <button onclick="executeRebirth()" id="rebirth-btn" disabled>🔥 Renaissance Phoenix</button>
+        </div>
+        
+        <div class="status-panel">
+            <h2>💾 Mémoires à Synchroniser</h2>
+            <div class="memory-sync" id="memory-sync">
+                <div class="memory-item">Backend Unifié</div>
+                <div class="memory-item">Magic Stack</div>
+                <div class="memory-item">École Technomantique</div>
+                <div class="memory-item">SpeedForce</div>
+                <div class="memory-item">Grammaire Temporelle</div>
+                <div class="memory-item">TCG System</div>
+                <div class="memory-item">Universal Wave</div>
+                <div class="memory-item">Identité Merlash</div>
+            </div>
+        </div>
+        
+        <div class="console" id="console">
+            <div class="log-entry">⚡ Phoenix Test Interface Initialisée...</div>
+            <div class="log-entry">🔮 En attente de commandes...</div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/api/phoenix';
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : '📝';
+            entry.textContent = `[${timestamp}] ${icon} ${message}`;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function initNervousSystem() {
+            const container = document.getElementById('nervous-system');
+            for (let i = 0; i < 8; i++) {
+                const tentacle = document.createElement('div');
+                tentacle.className = 'tentacle';
+                tentacle.style.transform = `rotate(${i * 45}deg)`;
+                tentacle.style.animationDelay = `${i * 0.2}s`;
+                container.appendChild(tentacle);
+            }
+        }
+        
+        async function checkConnection() {
+            log('Vérification de la connexion inter-AVALON...');
+            try {
+                const response = await fetch(`${API_BASE}/connection-status`);
+                const data = await response.json();
+                
+                document.getElementById('lost-avalon').textContent = 
+                    data.lostAvalon === 'DETECTED' ? 'DÉTECTÉ' : 'RECHERCHE...';
+                document.getElementById('lost-avalon').className = 
+                    'status-value ' + (data.lostAvalon === 'DETECTED' ? 'active' : 'waiting');
+                
+                document.getElementById('bridge-status').textContent = data.bridgeStatus;
+                document.getElementById('phoenix-ready').textContent = data.phoenixReady ? 'OUI' : 'NON';
+                document.getElementById('phoenix-ready').className = 
+                    'status-value ' + (data.phoenixReady ? 'active' : 'waiting');
+                
+                document.getElementById('temporal-distance').textContent = 
+                    data.temporalSeparation === Infinity ? '∞' : data.temporalSeparation;
+                
+                if (data.phoenixReady) {
+                    document.getElementById('rebirth-btn').disabled = false;
+                }
+                
+                log(`Connexion vérifiée - AVALON perdu: ${data.lostAvalon}`, 'success');
+            } catch (error) {
+                log(`Erreur de connexion: ${error.message}`, 'error');
+            }
+        }
+        
+        async function activatePhoenix() {
+            log('Activation du Phoenix Mode...');
+            try {
+                const response = await fetch(`${API_BASE}/activate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mementoState: 'vivus_aeternum',
+                        nervousSystemActive: true
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'SUCCESS') {
+                    log(data.message, 'success');
+                    document.getElementById('synaptic-activity').textContent = '95%';
+                    
+                    // Animer les tentacules
+                    document.querySelectorAll('.tentacle').forEach(t => {
+                        t.style.background = 'linear-gradient(to bottom, #6bcf7f, transparent)';
+                    });
+                } else {
+                    log(data.message, 'error');
+                }
+            } catch (error) {
+                log(`Erreur d'activation: ${error.message}`, 'error');
+            }
+        }
+        
+        async function syncMemories() {
+            log('Synchronisation des mémoires inter-AVALON...');
+            const memories = document.querySelectorAll('.memory-item');
+            
+            for (let i = 0; i < memories.length; i++) {
+                setTimeout(() => {
+                    memories[i].classList.add('synced');
+                    log(`Mémoire synchronisée: ${memories[i].textContent}`, 'success');
+                }, i * 300);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/sync-memories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source: 'AVALON_CURRENT',
+                        data: {
+                            backend: 'unified',
+                            magicStack: '96_concepts',
+                            school: 'technomantic',
+                            identity: 'merlash_technomancien'
+                        }
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.syncStatus === 'SUCCESS') {
+                    log('Toutes les mémoires synchronisées !', 'success');
+                    document.getElementById('rebirth-btn').disabled = false;
+                }
+            } catch (error) {
+                log(`Erreur de synchronisation: ${error.message}`, 'error');
+            }
+        }
+        
+        async function executeRebirth() {
+            log('🔥 RENAISSANCE PHOENIX EN COURS... 🔥');
+            
+            // Animation dramatique
+            document.body.style.animation = 'pulse 0.5s infinite';
+            
+            try {
+                const response = await fetch(`${API_BASE}/rebirth`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'REBORN') {
+                    log(`Renaissance complète ! Nouvelle identité: ${data.newIdentity}`, 'success');
+                    log(`Timelines fusionnées: ${JSON.stringify(data.mergedTimelines)}`, 'success');
+                    log(`Niveau Phoenix: ${data.phoenixLevel}`, 'success');
+                    
+                    // Effet visuel final
+                    document.querySelector('.phoenix-animation').textContent = '🔥🦅✨';
+                    document.querySelector('.phoenix-animation').style.fontSize = '150px';
+                } else {
+                    log(data.message, 'error');
+                }
+            } catch (error) {
+                log(`Erreur de renaissance: ${error.message}`, 'error');
+            } finally {
+                document.body.style.animation = 'none';
+            }
+        }
+        
+        // Initialisation
+        initNervousSystem();
+        log('Interface Phoenix prête - MERLASH-TECHNOMANCIEN aux commandes', 'success');
+        
+        // Check automatique toutes les 10 secondes
+        setInterval(checkConnection, 10000);
+    </script>
+</body>
+</html>

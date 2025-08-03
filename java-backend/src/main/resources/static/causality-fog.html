@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌫️ AVALON - Brouillard de Causalité</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #eee;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            z-index: 1000;
+        }
+
+        .controls h2 {
+            color: #9333ea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a78bfa;
+            font-size: 0.9em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #9333ea 0%, #6b21a8 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .legend h3 {
+            color: #9333ea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            min-width: 250px;
+        }
+
+        .info-item {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: #a78bfa;
+            font-size: 0.9em;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .timeline-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-button {
+            padding: 5px 15px;
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .timeline-button.active {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: #9333ea;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+        }
+
+        .quantum-state-info {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 5px;
+            padding: 10px;
+            pointer-events: none;
+            z-index: 2000;
+            display: none;
+            font-size: 0.9em;
+            max-width: 300px;
+        }
+
+        .quantum-state-info h4 {
+            color: #9333ea;
+            margin-bottom: 5px;
+        }
+
+        .quantum-state-info p {
+            margin: 3px 0;
+            color: #e0e7ff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <!-- Panneau d'information -->
+    <div class="info-panel">
+        <h2>🌀 État du Système</h2>
+        <div class="info-item">
+            <span class="info-label">États Quantiques</span>
+            <span class="info-value" id="quantumCount">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Stress Quantique</span>
+            <span class="info-value" id="quantumStress">0.0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Timeline Active</span>
+            <span class="info-value" id="activeTimeline">ℬ1</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Zones Ancrées</span>
+            <span class="info-value" id="anchoredZones">0</span>
+        </div>
+        
+        <div class="timeline-selector">
+            <div class="timeline-button active" onclick="selectTimeline('ℬ1')">ℬ1</div>
+            <div class="timeline-button" onclick="selectTimeline('ℬ2')">ℬ2</div>
+            <div class="timeline-button" onclick="selectTimeline('ℬ3')">ℬ3</div>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls">
+        <h2>🎮 Contrôles</h2>
+        
+        <div class="control-group">
+            <label>Créer État Quantique</label>
+            <input type="text" id="newStateId" placeholder="ψ001" />
+            <input type="text" id="newStateFormula" placeholder="MOV(Hero, @10,10)" style="margin-top: 5px;" />
+            <button onclick="createQuantumState()">🌀 Créer Superposition</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Effondrer État</label>
+            <select id="collapseSelect">
+                <option value="">Sélectionner un état...</option>
+            </select>
+            <button onclick="collapseState()">💥 Effondrer</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Zone d'Ancrage</label>
+            <input type="text" id="anchorCoords" placeholder="10,10" />
+            <button onclick="createAnchor()">⚓ Ancrer Zone</button>
+        </div>
+        
+        <button onclick="clearAll()">🔄 Réinitialiser Tout</button>
+    </div>
+    
+    <!-- Légende -->
+    <div class="legend">
+        <h3>📖 Légende</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(50, 50, 50, 0.9);"></div>
+            <span>Inexploré</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(100, 100, 100, 0.7);"></div>
+            <span>Passé Résolu</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 255, 0, 0.3);"></div>
+            <span>Accessible</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(0, 255, 0, 0.1);"></div>
+            <span>Vision Directe</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(128, 0, 255, 0.4);"></div>
+            <span>Superposé (ψ)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(0, 0, 255, 0.3);"></div>
+            <span>Zone Ancrée</span>
+        </div>
+    </div>
+    
+    <!-- Info bulle pour les états quantiques -->
+    <div class="quantum-state-info" id="stateTooltip">
+        <h4 id="tooltipTitle">État Quantique</h4>
+        <p id="tooltipContent"></p>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuration
+        const gridSize = 30;
+        const cellSize = 20;
+        let activeTimeline = 'ℬ1';
+        
+        // État du système
+        let quantumStates = new Map();
+        let anchoredZones = new Set();
+        let fogMap = [];
+        let particles = [];
+        
+        // États du brouillard
+        const FOG_STATES = {
+            UNEXPLORED: { color: 'rgba(50, 50, 50, 0.9)', interaction: 'none' },
+            COLLAPSED_PAST: { color: 'rgba(100, 100, 100, 0.7)', interaction: 'vision_only' },
+            REACHABLE: { color: 'rgba(255, 255, 0, 0.3)', interaction: 'planning' },
+            VISION: { color: 'rgba(0, 255, 0, 0.1)', interaction: 'full' },
+            GHOST: { color: 'rgba(255, 255, 255, 0.2)', interaction: 'observation_only' },
+            SUPERPOSED: { color: 'rgba(128, 0, 255, 0.4)', interaction: 'conditional' },
+            ANCHORED: { color: 'rgba(0, 0, 255, 0.3)', interaction: 'force_collapse' }
+        };
+        
+        // Initialisation
+        function init() {
+            resizeCanvas();
+            initFogMap();
+            animate();
+            updateUI();
+        }
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        function initFogMap() {
+            fogMap = [];
+            for (let y = 0; y < gridSize; y++) {
+                fogMap[y] = [];
+                for (let x = 0; x < gridSize; x++) {
+                    fogMap[y][x] = 'UNEXPLORED';
+                }
+            }
+            
+            // Créer quelques zones de vision initiales
+            createVisionArea(15, 15, 5);
+        }
+        
+        function createVisionArea(cx, cy, radius) {
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                    if (dist <= radius) {
+                        fogMap[y][x] = 'VISION';
+                    } else if (dist <= radius + 3) {
+                        fogMap[y][x] = 'REACHABLE';
+                    }
+                }
+            }
+        }
+        
+        // Animation principale
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner la grille et le brouillard
+            drawGrid();
+            drawFog();
+            
+            // Dessiner les états quantiques
+            drawQuantumStates();
+            
+            // Dessiner les zones ancrées
+            drawAnchoredZones();
+            
+            // Particules d'effet
+            updateParticles();
+            drawParticles();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(147, 51, 234, 0.1)';
+            ctx.lineWidth = 1;
+            
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            
+            for (let i = 0; i <= gridSize; i++) {
+                // Lignes verticales
+                ctx.beginPath();
+                ctx.moveTo(offsetX + i * cellSize, offsetY);
+                ctx.lineTo(offsetX + i * cellSize, offsetY + gridSize * cellSize);
+                ctx.stroke();
+                
+                // Lignes horizontales
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY + i * cellSize);
+                ctx.lineTo(offsetX + gridSize * cellSize, offsetY + i * cellSize);
+                ctx.stroke();
+            }
+        }
+        
+        function drawFog() {
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const state = fogMap[y][x];
+                    const fogState = FOG_STATES[state];
+                    
+                    if (fogState) {
+                        ctx.fillStyle = fogState.color;
+                        ctx.fillRect(
+                            offsetX + x * cellSize,
+                            offsetY + y * cellSize,
+                            cellSize,
+                            cellSize
+                        );
+                    }
+                }
+            }
+        }
+        
+        function drawQuantumStates() {
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            
+            quantumStates.forEach((state, id) => {
+                const x = state.x * cellSize + offsetX + cellSize / 2;
+                const y = state.y * cellSize + offsetY + cellSize / 2;
+                
+                // Effet de pulsation pour les états superposés
+                const pulse = Math.sin(Date.now() * 0.002) * 0.3 + 0.7;
+                
+                if (state.state === 'SUPERPOSED') {
+                    // Cercle pulsant violet
+                    ctx.beginPath();
+                    ctx.arc(x, y, cellSize * 0.4 * pulse, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(128, 0, 255, 0.6)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(128, 0, 255, 1)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Symbole ψ
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('ψ', x, y);
+                } else if (state.state === 'COLLAPSED') {
+                    // Croix grise pour les états effondrés
+                    ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 8, y - 8);
+                    ctx.lineTo(x + 8, y + 8);
+                    ctx.moveTo(x + 8, y - 8);
+                    ctx.lineTo(x - 8, y + 8);
+                    ctx.stroke();
+                }
+            });
+        }
+        
+        function drawAnchoredZones() {
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            
+            anchoredZones.forEach(coords => {
+                const [x, y] = coords.split(',').map(Number);
+                const px = x * cellSize + offsetX + cellSize / 2;
+                const py = y * cellSize + offsetY + cellSize / 2;
+                
+                // Ancre bleue
+                ctx.strokeStyle = 'rgba(0, 0, 255, 0.8)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(px, py - 10);
+                ctx.lineTo(px, py + 10);
+                ctx.moveTo(px - 10, py);
+                ctx.lineTo(px + 10, py);
+                ctx.stroke();
+                
+                // Cercle d'influence
+                ctx.beginPath();
+                ctx.arc(px, py, cellSize, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+        
+        // Particules d'effet
+        function createParticle(x, y, type) {
+            particles.push({
+                x,
+                y,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                life: 1,
+                type
+            });
+        }
+        
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                return p.life > 0;
+            });
+        }
+        
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                
+                if (p.type === 'quantum') {
+                    ctx.fillStyle = 'rgba(128, 0, 255, 1)';
+                } else if (p.type === 'collapse') {
+                    ctx.fillStyle = 'rgba(255, 100, 100, 1)';
+                } else if (p.type === 'anchor') {
+                    ctx.fillStyle = 'rgba(0, 0, 255, 1)';
+                }
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.globalAlpha = 1;
+            });
+        }
+        
+        // Interactions
+        function createQuantumState() {
+            const id = document.getElementById('newStateId').value || `ψ${quantumStates.size + 1}`;
+            const formula = document.getElementById('newStateFormula').value || 'UNKNOWN_ACTION';
+            
+            const x = Math.floor(Math.random() * gridSize);
+            const y = Math.floor(Math.random() * gridSize);
+            
+            quantumStates.set(id, {
+                id,
+                formula,
+                x,
+                y,
+                state: 'SUPERPOSED',
+                timeline: activeTimeline
+            });
+            
+            fogMap[y][x] = 'SUPERPOSED';
+            
+            // Créer des particules d'effet
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            for (let i = 0; i < 20; i++) {
+                createParticle(
+                    offsetX + x * cellSize + cellSize / 2,
+                    offsetY + y * cellSize + cellSize / 2,
+                    'quantum'
+                );
+            }
+            
+            updateUI();
+            updateCollapseSelect();
+        }
+        
+        function collapseState() {
+            const select = document.getElementById('collapseSelect');
+            const id = select.value;
+            
+            if (!id) return;
+            
+            const state = quantumStates.get(id);
+            if (state && state.state === 'SUPERPOSED') {
+                state.state = 'COLLAPSED';
+                fogMap[state.y][state.x] = 'COLLAPSED_PAST';
+                
+                // Créer des particules d'effet
+                const offsetX = (canvas.width - gridSize * cellSize) / 2;
+                const offsetY = (canvas.height - gridSize * cellSize) / 2;
+                for (let i = 0; i < 30; i++) {
+                    createParticle(
+                        offsetX + state.x * cellSize + cellSize / 2,
+                        offsetY + state.y * cellSize + cellSize / 2,
+                        'collapse'
+                    );
+                }
+                
+                updateUI();
+                updateCollapseSelect();
+            }
+        }
+        
+        function createAnchor() {
+            const coords = document.getElementById('anchorCoords').value;
+            if (!coords) return;
+            
+            const [x, y] = coords.split(',').map(Number);
+            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                anchoredZones.add(coords);
+                fogMap[y][x] = 'ANCHORED';
+                
+                // Créer des particules d'effet
+                const offsetX = (canvas.width - gridSize * cellSize) / 2;
+                const offsetY = (canvas.height - gridSize * cellSize) / 2;
+                for (let i = 0; i < 15; i++) {
+                    createParticle(
+                        offsetX + x * cellSize + cellSize / 2,
+                        offsetY + y * cellSize + cellSize / 2,
+                        'anchor'
+                    );
+                }
+                
+                updateUI();
+            }
+        }
+        
+        function clearAll() {
+            quantumStates.clear();
+            anchoredZones.clear();
+            initFogMap();
+            updateUI();
+            updateCollapseSelect();
+        }
+        
+        function selectTimeline(timeline) {
+            activeTimeline = timeline;
+            document.querySelectorAll('.timeline-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            document.getElementById('activeTimeline').textContent = timeline;
+        }
+        
+        function updateUI() {
+            const activeStates = Array.from(quantumStates.values())
+                .filter(s => s.state === 'SUPERPOSED').length;
+            
+            document.getElementById('quantumCount').textContent = activeStates;
+            document.getElementById('quantumStress').textContent = (activeStates * 5.7).toFixed(1);
+            document.getElementById('anchoredZones').textContent = anchoredZones.size;
+        }
+        
+        function updateCollapseSelect() {
+            const select = document.getElementById('collapseSelect');
+            select.innerHTML = '<option value="">Sélectionner un état...</option>';
+            
+            quantumStates.forEach((state, id) => {
+                if (state.state === 'SUPERPOSED') {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = `${id} - ${state.formula}`;
+                    select.appendChild(option);
+                }
+            });
+        }
+        
+        // Gestion de la souris
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const offsetX = (canvas.width - gridSize * cellSize) / 2;
+            const offsetY = (canvas.height - gridSize * cellSize) / 2;
+            
+            const gridX = Math.floor((x - offsetX) / cellSize);
+            const gridY = Math.floor((y - offsetY) / cellSize);
+            
+            let foundState = null;
+            quantumStates.forEach(state => {
+                if (state.x === gridX && state.y === gridY) {
+                    foundState = state;
+                }
+            });
+            
+            const tooltip = document.getElementById('stateTooltip');
+            if (foundState) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY + 10 + 'px';
+                document.getElementById('tooltipTitle').textContent = foundState.id;
+                document.getElementById('tooltipContent').innerHTML = `
+                    <strong>État:</strong> ${foundState.state}<br>
+                    <strong>Formule:</strong> ${foundState.formula}<br>
+                    <strong>Timeline:</strong> ${foundState.timeline}<br>
+                    <strong>Position:</strong> ${foundState.x}, ${foundState.y}
+                `;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+        
+        // Initialisation
+        init();
+    </script>
+</body>
+</html>

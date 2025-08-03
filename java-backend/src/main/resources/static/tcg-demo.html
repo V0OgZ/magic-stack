@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ AVALON TCG - Demo Integration</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffff00;
+            text-shadow: 0 0 20px #ffff00;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            display: inline-block;
+            width: 150px;
+            height: 200px;
+            background: #1a1a1a;
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
+            border-color: #ff00ff;
+        }
+
+        .card.selected {
+            border-color: #ffff00;
+            box-shadow: 0 0 30px #ffff00;
+        }
+
+        .card-name {
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .card-formula {
+            font-size: 10px;
+            color: #ff00ff;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .card-description {
+            font-size: 12px;
+            color: #00ff00;
+        }
+
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: #ffff00;
+            transform: scale(1.1);
+        }
+
+        .button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        #log {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .target-zone {
+            min-height: 100px;
+            border: 2px dashed #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .enemy {
+            display: inline-block;
+            padding: 20px;
+            margin: 10px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .enemy:hover {
+            background: rgba(255, 0, 0, 0.4);
+        }
+
+        .enemy.targeted {
+            border-color: #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+        }
+
+        .effect-animation {
+            position: fixed;
+            pointer-events: none;
+            font-size: 30px;
+            font-weight: bold;
+            animation: effect 2s ease-out forwards;
+        }
+
+        @keyframes effect {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-50px) scale(1.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+        }
+
+        .lightning {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, #00ffff, transparent);
+            opacity: 0;
+            animation: lightning 0.5s ease-out;
+        }
+
+        @keyframes lightning {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ AVALON TCG - Demo Integration ⚡</h1>
+
+        <div class="status">
+            <div>Backend: <span id="backend-status">🔴 Déconnecté</span></div>
+            <div>Mode: <span id="mode">Debug</span></div>
+        </div>
+
+        <div class="section">
+            <h2>🎴 Mon Deck - Éclairs de Merlash</h2>
+            <div id="deck">
+                <!-- Les cartes seront chargées ici -->
+            </div>
+            <button class="button" onclick="loadDeck()">Charger Deck</button>
+            <button class="button" onclick="tcg.enableDebugMode()">Mode Debug</button>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Zone de Combat</h2>
+            <div class="target-zone">
+                <div class="enemy" data-id="enemy1">
+                    <div>Ennemi 1</div>
+                    <div>HP: <span id="enemy1-hp">100</span></div>
+                </div>
+                <div class="enemy" data-id="enemy2">
+                    <div>Ennemi 2</div>
+                    <div>HP: <span id="enemy2-hp">100</span></div>
+                </div>
+            </div>
+            <button class="button" id="play-button" onclick="playSelectedCard()" disabled>
+                Jouer la Carte
+            </button>
+            <button class="button" onclick="resetCombat()">Reset Combat</button>
+        </div>
+
+        <div class="section">
+            <h2>📊 État du Combat</h2>
+            <button class="button" onclick="getCombatState()">Rafraîchir État</button>
+            <div id="combat-state"></div>
+        </div>
+
+        <div class="section">
+            <h2>📜 Logs</h2>
+            <div id="log"></div>
+            <button class="button" onclick="clearLog()">Clear</button>
+        </div>
+    </div>
+
+    <script src="avalon-tcg-sdk.js"></script>
+    <script>
+        // Initialisation du SDK
+        const tcg = new AvalonTCG();
+        tcg.setPlayer('demo-player');
+        tcg.setCombat('demo-combat-001');
+
+        let selectedCard = null;
+        let selectedTarget = null;
+
+        // Deck de démonstration
+        const DEMO_DECK = [
+            {
+                id: "eclair-primordial",
+                name: "Éclair Primordial",
+                formula: "GROFI: ψ = e^(iπ/4) × |tempête⟩",
+                description: "Invoque la première foudre qui fractura le ciel d'Avalon"
+            },
+            {
+                id: "foudre-compilee",
+                name: "Foudre Compilée",
+                formula: "API: compile(magic) → executable",
+                description: "Transforme la magie brute en énergie pure exécutable"
+            },
+            {
+                id: "orage-quantique",
+                name: "Orage Quantique",
+                formula: "GRUT: Σ(éclair × dimension)",
+                description: "Fait pleuvoir des éclairs depuis toutes les dimensions"
+            },
+            {
+                id: "tonnerre-binaire",
+                name: "Tonnerre Binaire",
+                formula: "WALTER: paradox_check(thunder)",
+                description: "Un coup de tonnerre qui résonne en 0 et 1"
+            },
+            {
+                id: "nexus-electrique",
+                name: "Nexus Électrique",
+                formula: "TEMPORAL: t = t₀ + Δ(voltage)",
+                description: "Crée un pont temporel chargé d'électricité"
+            }
+        ];
+
+        // Fonctions UI
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff0000' : 
+                         type === 'success' ? '#00ff00' : 
+                         type === 'warning' ? '#ffff00' : '#00ffff';
+            
+            logDiv.innerHTML += `<span style="color: ${color}">[${time}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function checkBackend() {
+            try {
+                const response = await fetch('http://localhost:8080/api/formulas');
+                if (response.ok) {
+                    document.getElementById('backend-status').textContent = '🟢 Connecté';
+                    log('Backend connecté!', 'success');
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('backend-status').textContent = '🔴 Déconnecté';
+                log('Backend non disponible. Mode démo activé.', 'warning');
+                return false;
+            }
+        }
+
+        function loadDeck() {
+            const deckDiv = document.getElementById('deck');
+            deckDiv.innerHTML = '';
+
+            DEMO_DECK.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.cardId = card.id;
+                cardEl.innerHTML = `
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-formula">${card.formula}</div>
+                    <div class="card-description">${card.description}</div>
+                `;
+                
+                cardEl.onclick = () => selectCard(card, cardEl);
+                deckDiv.appendChild(cardEl);
+            });
+
+            log('Deck chargé: ' + DEMO_DECK.length + ' cartes');
+        }
+
+        function selectCard(card, element) {
+            // Désélectionner l'ancienne carte
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+            
+            // Sélectionner la nouvelle
+            element.classList.add('selected');
+            selectedCard = card;
+            
+            log(`Carte sélectionnée: ${card.name}`);
+            updatePlayButton();
+        }
+
+        function selectTarget(targetId) {
+            // Désélectionner l'ancienne cible
+            document.querySelectorAll('.enemy').forEach(e => e.classList.remove('targeted'));
+            
+            // Sélectionner la nouvelle
+            const enemy = document.querySelector(`[data-id="${targetId}"]`);
+            enemy.classList.add('targeted');
+            selectedTarget = targetId;
+            
+            log(`Cible sélectionnée: ${targetId}`);
+            updatePlayButton();
+        }
+
+        function updatePlayButton() {
+            const button = document.getElementById('play-button');
+            button.disabled = !selectedCard || !selectedTarget;
+            
+            if (selectedCard && selectedTarget) {
+                button.textContent = `Jouer ${selectedCard.name} sur ${selectedTarget}`;
+            }
+        }
+
+        async function playSelectedCard() {
+            if (!selectedCard || !selectedTarget) {
+                log('Sélectionnez une carte et une cible!', 'error');
+                return;
+            }
+
+            log(`Lancement de ${selectedCard.name} sur ${selectedTarget}...`);
+
+            try {
+                // Effet visuel immédiat
+                showCardEffect(selectedCard, selectedTarget);
+
+                // Appel backend
+                const result = await tcg.playCard(selectedCard.id, selectedTarget);
+                
+                log(`Résultat: ${JSON.stringify(result)}`, 'success');
+
+                // Appliquer les dégâts
+                if (result.damage) {
+                    applyDamage(selectedTarget, result.damage);
+                }
+
+                // Effets spéciaux
+                if (result.effects) {
+                    result.effects.forEach(effect => showEffect(effect, selectedTarget));
+                }
+
+                // Reset sélection
+                selectedCard = null;
+                selectedTarget = null;
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                document.querySelectorAll('.enemy').forEach(e => e.classList.remove('targeted'));
+                updatePlayButton();
+
+            } catch (error) {
+                log(`Erreur: ${error.message}`, 'error');
+                
+                // Mode démo si backend non disponible
+                simulateCardPlay();
+            }
+        }
+
+        function simulateCardPlay() {
+            log('Mode démo: simulation locale', 'warning');
+            
+            const damage = Math.floor(Math.random() * 50) + 10;
+            applyDamage(selectedTarget, damage);
+            
+            showEffect('damage', selectedTarget);
+            showEffect('⚡ ' + damage, selectedTarget);
+        }
+
+        function applyDamage(targetId, damage) {
+            const hpSpan = document.getElementById(`${targetId}-hp`);
+            let currentHp = parseInt(hpSpan.textContent);
+            currentHp = Math.max(0, currentHp - damage);
+            hpSpan.textContent = currentHp;
+            
+            if (currentHp === 0) {
+                log(`${targetId} est vaincu!`, 'success');
+            }
+        }
+
+        function showCardEffect(card, targetId) {
+            const enemy = document.querySelector(`[data-id="${targetId}"]`);
+            const lightning = document.createElement('div');
+            lightning.className = 'lightning';
+            enemy.appendChild(lightning);
+            
+            setTimeout(() => lightning.remove(), 500);
+        }
+
+        function showEffect(effect, targetId) {
+            const enemy = document.querySelector(`[data-id="${targetId}"]`);
+            const rect = enemy.getBoundingClientRect();
+            
+            const effectEl = document.createElement('div');
+            effectEl.className = 'effect-animation';
+            effectEl.textContent = effect;
+            effectEl.style.left = rect.left + rect.width / 2 + 'px';
+            effectEl.style.top = rect.top + 'px';
+            effectEl.style.color = effect.includes('damage') ? '#ff0000' : '#00ff00';
+            
+            document.body.appendChild(effectEl);
+            
+            setTimeout(() => effectEl.remove(), 2000);
+        }
+
+        async function getCombatState() {
+            try {
+                const state = await tcg.getCombatState();
+                document.getElementById('combat-state').innerHTML = 
+                    `<pre>${JSON.stringify(state, null, 2)}</pre>`;
+                log('État du combat récupéré', 'success');
+            } catch (error) {
+                log(`Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        function resetCombat() {
+            document.getElementById('enemy1-hp').textContent = '100';
+            document.getElementById('enemy2-hp').textContent = '100';
+            selectedCard = null;
+            selectedTarget = null;
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.enemy').forEach(e => e.classList.remove('targeted'));
+            updatePlayButton();
+            log('Combat réinitialisé', 'success');
+        }
+
+        // Event listeners
+        document.querySelectorAll('.enemy').forEach(enemy => {
+            enemy.onclick = () => selectTarget(enemy.dataset.id);
+        });
+
+        // Initialisation
+        window.onload = async () => {
+            log('⚡ AVALON TCG Demo - Initialisation...', 'info');
+            await checkBackend();
+            loadDeck();
+            log('Prêt! Sélectionnez une carte et une cible.', 'success');
+        };
+    </script>
+</body>
+</html>
