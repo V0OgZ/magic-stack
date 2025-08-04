@@ -1,0 +1,37 @@
+{
+  "name": "mobius_battlefield",
+  "id": "spell_mobius_001",
+  "category": "geometrie_non_euclidienne",
+  "level": 80,
+  "description": "Transforme le terrain en ruban de Möbius - une seule surface continue",
+  "formula": "⊙(surface) + ∞(torsion) + ∂(bord=0) → Δt+0(möbius_strip)",
+  "effects": {
+    "primary": {
+      "type": "topology_twist",
+      "surface": "mobius_strip",
+      "twists": 1,
+      "seamless": true
+    },
+    "visual": {
+      "shader": "mobius_surface",
+      "texture_mapping": "continuous_twist",
+      "gravity_arrows": "following_surface"
+    },
+    "gameplay": {
+      "gravity_follows_surface": true,
+      "no_edges": true,
+      "upside_down_combat": true,
+      "continuous_chase": true
+    }
+  },
+  "cost": {
+    "mana": 250,
+    "topology_tokens": 1,
+    "orientation": "lost"
+  },
+  "3d_transformation": {
+    "mesh_generation": "parametric_mobius",
+    "collision": "surface_aligned",
+    "camera": "auto_rotate_with_surface"
+  }
+}

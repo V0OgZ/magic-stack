@@ -1,0 +1,43 @@
+{
+  "name": "tesseract_prison",
+  "id": "spell_tesseract_001",
+  "category": "geometrie_non_euclidienne",
+  "level": 95,
+  "description": "Emprisonne des zones dans un hypercube 4D - 8 cubes connectés",
+  "formula": "⊙(cube³) + ∇(dimension+1) + ⊗(hypercube) → Δt+0(prison_4D)",
+  "effects": {
+    "primary": {
+      "type": "dimensional_prison",
+      "structure": "tesseract",
+      "dimensions": 4,
+      "cells": 8,
+      "connectivity": "4d_adjacency"
+    },
+    "visual": {
+      "shader": "tesseract_projection",
+      "wireframe": "4d_to_3d_shadow",
+      "rotation": "4d_gimbal"
+    },
+    "gameplay": {
+      "trap_enemies": true,
+      "navigation_puzzle": true,
+      "4d_movement": true,
+      "perspective_shifts": true
+    }
+  },
+  "cost": {
+    "mana": 500,
+    "dimensional_anchors": 8,
+    "spatial_lock": true
+  },
+  "3d_transformation": {
+    "projection_method": "stereographic",
+    "shadow_casting": "4d_to_3d",
+    "interaction": "quaternion_based"
+  },
+  "prison_mechanics": {
+    "escape_difficulty": "extreme",
+    "internal_space": "non_euclidean",
+    "time_dilation": 0.1
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "fractal_dimension_cascade",
+  "id": "spell_fractal_001",
+  "category": "geometrie_non_euclidienne",
+  "level": 90,
+  "description": "Génère des dimensions fractales infinies - zoom = nouveaux mondes",
+  "formula": "⊙(dimension) + ℱ(mandelbrot) + ∞(récursion) → Δt+∞(cascade_fractale)",
+  "effects": {
+    "primary": {
+      "type": "fractal_generation",
+      "algorithm": "mandelbrot_3d",
+      "iterations": "infinite_lazy_evaluation",
+      "dimension": 2.7182818
+    },
+    "visual": {
+      "shader": "fractal_raymarch",
+      "particles": "recursive_spiral",
+      "color_palette": "psychedelic_gradient"
+    },
+    "gameplay": {
+      "zoom_creates_levels": true,
+      "infinite_detail": true,
+      "fractal_creatures_spawn": true,
+      "self_similar_puzzles": true
+    }
+  },
+  "cost": {
+    "mana": 400,
+    "computation_crystals": 10,
+    "gpu_temperature": "+20°C"
+  },
+  "3d_transformation": {
+    "rendering": "raymarching",
+    "lod": "fractal_based",
+    "tessellation": "adaptive_infinite"
+  },
+  "special_mechanics": {
+    "zoom_threshold": 0.001,
+    "new_world_generation": "procedural_fractal",
+    "memory_optimization": "lazy_chunk_loading"
+  }
+}
