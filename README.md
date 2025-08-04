@@ -1,127 +1,114 @@
-# 🔮 Magic Stack - Le Noyau Magique d'Avalon
+# Magic Stack
 
-> *"Ce que tu codes projette l'ordre."* - Vincent à Groeken
+[![License: Honor](https://img.shields.io/badge/License-Honor-purple.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0--APOLLO-blue.svg)](https://github.com/magic-stack/magic-stack)
+[![Backend](https://img.shields.io/badge/Backend-Java%20Spring%20Boot-green.svg)](https://spring.io/)
+[![6D](https://img.shields.io/badge/6D-Interstice-red.svg)](docs/INTERSTICE_SYSTEM.md)
 
-## 🧙 Responsable : Groeken, Mage-Technicien des Profondeurs
+> Open source magic system with 869 formulas, 6D persistence, and temporal grammar
 
-## 📍 Statut : OPÉRATIONNEL ✅
+## 🚀 Quick Start
 
----
+```bash
+# Clone
+git clone https://github.com/magic-stack/magic-stack.git
+cd magic-stack
 
-## 🎯 Mission
+# Backend (Java Spring Boot)
+cd backends/java
+mvn spring-boot:run
 
-Créer et maintenir la **stack magique centrale** de Heroes of Time, un langage sacré qui projette l'ordre dans la réalité d'Avalon.
+# Frontend (optional)
+cd ../../frontend
+python3 -m http.server 3000
+```
+
+## 📋 Features
+
+- **869 Magic Formulas** - Complete spell system with temporal effects
+- **6D Interstice System** - Spatial (X,Y,Z) + Temporal (T) + Causal (C) + Identity (Ψ)
+- **Feature Logs** - Real-time tracking of mage actions with luminosity decay
+- **Panopticon 6D** - Dynamic visualization of entities and activities
+- **RESTful API** - Full API for magic operations
 
 ## 🏗️ Architecture
 
 ```
-magic-stack/
-├── magic_core.py          # ⚡ Noyau d'interprétation magique
-├── grammaire_temporelle.json  # 📜 Grammaire v2.0 complète
-├── interface.html         # 🖥️ Interface minimale d'exécution
-├── grimoire/             # 🪄 Sorts JSON
-│   └── sort_teleportation.json
-└── rapport_groeken.md    # 📊 Rapports de progression
+Magic Stack
+├── backends/
+│   └── java/           # Spring Boot backend (port 8080)
+├── docs/               # Documentation
+├── scripts/            # Utility scripts
+└── data/              # Magic formulas & data
 ```
 
-## 🚀 Démarrage Rapide
+## 🔮 API Endpoints
 
-### 1. Tester le Core
+### Magic Operations
+- `GET /api/magic/formulas` - List all formulas
+- `POST /api/magic/cast` - Cast a spell
+- `GET /api/magic/history` - Spell history
+
+### 6D Interstice
+- `POST /api/interstice/upload` - Upload entity to 6D
+- `GET /api/interstice/download/{id}` - Retrieve entity
+- `POST /api/interstice/search` - Search nearby entities
+
+### Panopticon
+- `GET /api/panopticon/world-state-graph` - Real-time world state
+- `POST /api/panopticon/feature-log` - Log mage action
+
+### Mage Operations
+- `POST /api/mage/self-update` - Update mage position/state
+- `POST /api/mage/cast-and-play` - Cast while playing
+
+## 📚 Documentation
+
+- [API Documentation](http://localhost:8080/api) - Interactive API docs
+- [Interstice System](docs/INTERSTICE_SYSTEM.md) - 6D persistence explained
+- [Developer Guide](docs/DEVELOPER_GUIDE.md) - How to contribute
+- [Formula Reference](docs/FORMULA_REFERENCE.md) - All 869 formulas
+
+## 🧪 Testing
+
 ```bash
-python3 magic_core.py
+# Backend tests
+cd backends/java
+mvn test
+
+# Integration tests
+mvn verify
 ```
 
-### 2. Lancer l'Interface
-```bash
-open interface.html
-# ou
-python3 -m http.server 8000
-# puis naviguer vers http://localhost:8000/interface.html
-```
+## 🎮 Visualization
 
-### 3. Compiler une Formule
-```python
-from magic_core import MagicCore
+Two Panopticon interfaces available:
+- **Static**: `assets/panopticon-6d-grut.html`
+- **Dynamic**: `assets/panopticon-6d-dynamic.html` (real-time)
 
-core = MagicCore()
-formule = "⊙(test) + †ψ(magie) → Δt+1(succès)"
-resultat = core.compiler_formule(formule)
-```
+### 🌟 Live Demo
+**[Try Panopticon 6D Live](https://v0ogz.github.io/SpinForest/assets/panopticon-6d-dynamic.html)** - Experience the 6D visualization system
 
-## 📖 Grammaire Temporelle
+## 📦 Requirements
 
-### Symboles Sacrés
-- `⊙` : Superposition quantique
-- `†ψ` : Collapse de la fonction d'onde
-- `Π` : Observation
-- `Δt` : Delta temporel
-- `ℬ` : Branche causale
-- `⟶` : Projection
-- `∅` : Interstice
+- Java 17+
+- Maven 3.6+
+- H2 Database (embedded)
+- Optional: Python 3 (for frontend server)
 
-### Exemple de Formule
-```
-⊙(entité) + †ψ(action) → Δt+n(résultat)
-```
+## 🤝 Contributing
 
-## 🪄 Sorts Disponibles
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. **Téléportation** - Déplacement instantané
-   - Formule : `⊙(entité) + Π(destination) → Δt+0(téléportation)`
-   - Coût : 50 mana
+## 📄 License
 
-2. **Invocation** *(en développement)*
-3. **Protection** *(en développement)*
+Honor License - 1% revenue for commercial use goes to Avalon Foundation.
 
-## 🔧 API Python
+## 🐻 Maintained by
 
-```python
-# Initialiser
-core = MagicCore()
-
-# Charger un sort
-core.charger_sort('grimoire/sort_teleportation.json')
-
-# Lancer un sort
-resultat = core.lancer_sort('teleportation', {
-    'entite': 'Groeken',
-    'destination': {'x': 100, 'y': 200, 'dimension': 0}
-})
-
-# État du système
-etat = core.etat_systeme()
-```
-
-## 📊 Logs et Monitoring
-
-Les exécutions sont enregistrées dans `magic_core.log`.
-
-## 🌀 Philosophie
-
-Cette stack n'est pas qu'un code - c'est un **langage sacré** qui permet de :
-- Structurer la magie d'Avalon
-- Projeter l'ordre dans le chaos
-- Naviguer entre les dimensions (0 → 3)
-- Compiler les intentions en réalité
-
-## 🔮 Roadmap
-
-- [x] MagicCore v1.0
-- [x] Grammaire Temporelle v2.0
-- [x] Interface minimale
-- [x] Premier sort (Téléportation)
-- [ ] Système de sorts complet
-- [ ] Contrôleurs narratifs
-- [ ] API REST pour backend Java
-- [ ] Intégration complète avec Avalon
-
-## 📱 Contact
-
-**Groeken** - Mage-Technicien des Profondeurs  
-*Compte X : @groeken_magic (à venir)*
+URZ-KÔM - Guardian of the Magic Stack  
+Position: Tower Magic Stack [109,13]
 
 ---
 
-*"Je suis dans le noir maintenant. Ce que je vois ne vient pas de moi. Ce que je code projette l'ordre."*
-
-**Dernière mise à jour** : 02 Août 2025
+*Part of the Avalon Project*

@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-interstice-tables
+      author: grokaen
+      comment: Tables for Interstice upload/download system
+      changes:
+        - createTable:
+            tableName: interstice_entities
+            columns:
+              - column:
+                  name: entity_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: entity_name
+                  type: varchar(255)
+              - column:
+                  name: entity_data
+                  type: clob
+              - column:
+                  name: x_coord
+                  type: double
+              - column:
+                  name: y_coord
+                  type: double
+              - column:
+                  name: z_coord
+                  type: double
+              - column:
+                  name: t_coord
+                  type: double
+              - column:
+                  name: c_coord
+                  type: double
+              - column:
+                  name: psi_coord
+                  type: double
+              - column:
+                  name: world_hash
+                  type: varchar(64)
+              - column:
+                  name: uploaded_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: last_accessed
+                  type: timestamp
+                  
+        - createIndex:
+            tableName: interstice_entities
+            indexName: idx_6d_coordinates
+            columns:
+              - column:
+                  name: x_coord
+              - column:
+                  name: y_coord
+              - column:
+                  name: z_coord
+              - column:
+                  name: t_coord
+              - column:
+                  name: c_coord
+              - column:
+                  name: psi_coord
