@@ -26,13 +26,13 @@ launch_backend() {
     cd "$(dirname "$0")"
     
     # Build si necessaire
-    if [ ! -f "target/debug/magic-stack-rust" ]; then
+    if [ ! -f "target/debug/magic-stack-server" ]; then
         echo "Build du backend Rust..."
         cargo build
     fi
     
     # Lancer le backend
-    ./target/debug/magic-stack-rust >> "$LOG_FILE" 2>&1 &
+    ./target/debug/magic-stack-server >> "$LOG_FILE" 2>&1 &
     NEW_PID=$!
     echo $NEW_PID > "$PID_FILE"
     echo "Backend Rust lance avec PID: $NEW_PID"
