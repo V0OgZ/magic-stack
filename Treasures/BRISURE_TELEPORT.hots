@@ -1,0 +1,35 @@
+// Scénario: BRISURE TELEPORT
+// Héros: Sid Meier
+// Objectif: Téléportation à travers la BRISURE
+
+HERO Sid_Meier "Architecte de Mondes" {
+  position: @0,0
+  energy: 100
+  state: NORMAL
+}
+
+ENV Brisure_Interstice {
+  dimensions: 6
+  stability: 0.8
+  paradox_risk: 0.3
+}
+
+// Formule Runique via Grammaire Temporelle
+FORMULA psi_brisure "ψ001: ⊙(Δt+1 @10,10 ⟶ MOV(Sid_Meier, @10,10))" {
+  type: TEMPORAL_TELEPORT
+  cost: 50 energy
+  effect: "Téléportation interdimensionnelle"
+}
+
+// Événement de la BRISURE
+EVENT brisure_open {
+  trigger: FORMULA psi_brisure
+  actions: [
+    USE WSG_Connect "Ouvrir pont interdimensionnel",
+    BATTLE Sid_Meier vs Paradox_Guardian "Défendre contre paradoxe",
+    IF success THEN REWARD "Artefact Brisure" ELSE PENALTY "Perte énergie 20"
+  ]
+}
+
+// Fin du scénario
+END IF energy > 0 THEN VICTORY "BRISURE TRAVERSÉE !" ELSE DEFEAT "BRISURE FERMÉE !" 
