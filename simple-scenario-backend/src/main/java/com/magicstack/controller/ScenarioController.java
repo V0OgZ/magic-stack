@@ -79,4 +79,34 @@ public class ScenarioController {
         
         return result;
     }
+
+    @PostMapping("/use-artifact")
+    public Map<String, Object> useArtifact(@RequestBody Map<String, Object> artifactData) {
+        System.out.println("🪙 Utilisation d'artefact");
+        System.out.println("📝 Données: " + artifactData);
+        
+        try {
+            Map<String, Object> result = scenarioService.useArtifact(artifactData);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("artifact", result.get("artifact"));
+            response.put("effect", result.get("effect"));
+            response.put("damage", result.get("damage"));
+            response.put("healing", result.get("healing"));
+            response.put("narrative", result.get("narrative"));
+            response.put("hero_state", result.get("hero_state"));
+            response.put("target_affected", result.get("target_affected"));
+            
+            System.out.println("✅ Artefact utilisé: " + result.get("artifact"));
+            
+            return response;
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return error;
+        }
+    }
 }
