@@ -28,6 +28,9 @@ async fn main() {
         // Health check
         .route("/health", get(health_check))
         
+        // OpenAPI Documentation
+        .route("/openapi", get(openapi_handler))
+        
         // 6D Search System
         .route("/api/search", post(search_6d_handler))
         .route("/api/upload", post(upload_data_handler))

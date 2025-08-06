@@ -10,6 +10,151 @@ use chrono;
 use crate::models::*;
 use crate::services::*;
 
+// OpenAPI Documentation Handler
+pub async fn openapi_handler() -> ResponseJson<serde_json::Value> {
+    let openapi = serde_json::json!({
+        "openapi": "3.0.0",
+        "info": {
+            "title": "Heroes of Time - Rust Backend API",
+            "version": "1.0.0",
+            "description": "🦀 Backend Rust - Couche 4: MagicStack 6D - Recherche spatiotemporelle ultra-rapide"
+        },
+        "servers": [{
+            "url": "http://localhost:3001",
+            "description": "Rust Backend - MagicStack 6D"
+        }],
+        "paths": {
+            "/health": {
+                "get": {
+                    "summary": "Health Check",
+                    "description": "Vérification santé du backend Rust",
+                    "responses": {
+                        "200": {
+                            "description": "Backend Rust opérationnel"
+                        }
+                    }
+                }
+            },
+            "/api/search": {
+                "post": {
+                    "summary": "🔍 6D Search",
+                    "description": "Recherche spatiotemporelle dans l'espace 6D",
+                    "tags": ["MagicStack 6D"],
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "query": {
+                                            "type": "string",
+                                            "example": "fireball"
+                                        },
+                                        "center_x": {
+                                            "type": "number",
+                                            "example": 0
+                                        },
+                                        "center_y": {
+                                            "type": "number", 
+                                            "example": 0
+                                        },
+                                        "center_z": {
+                                            "type": "number",
+                                            "example": 0
+                                        },
+                                        "radius": {
+                                            "type": "number",
+                                            "example": 10
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Résultats de recherche 6D"
+                        }
+                    }
+                }
+            },
+            "/api/formula": {
+                "post": {
+                    "summary": "⚡ Execute Formula",
+                    "description": "Exécution de formules temporelles avancées",
+                    "tags": ["MagicStack 6D"],
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "formula": {
+                                            "type": "string",
+                                            "example": "⊙(temps) + †ψ(présent) → ∆t(arrêt)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Formule exécutée avec effets temporels"
+                        }
+                    }
+                }
+            },
+            "/api/qstar/search": {
+                "post": {
+                    "summary": "🌟 Q* Search",
+                    "description": "Algorithme Q* pour recherche optimisée 6D",
+                    "tags": ["MagicStack 6D"],
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "objective": {
+                                            "type": "string",
+                                            "example": "find_treasure"
+                                        },
+                                        "start_position": {
+                                            "type": "object",
+                                            "properties": {
+                                                "x": {"type": "number", "example": 0},
+                                                "y": {"type": "number", "example": 0},
+                                                "z": {"type": "number", "example": 0},
+                                                "t": {"type": "number", "example": 0},
+                                                "c": {"type": "number", "example": 0},
+                                                "psi": {"type": "number", "example": 0}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Chemin optimal trouvé par Q*"
+                        }
+                    }
+                }
+            }
+        },
+        "tags": [
+            {
+                "name": "MagicStack 6D",
+                "description": "🌌 Couche 4: Recherche spatiotemporelle et formules avancées"
+            }
+        ]
+    });
+    
+    ResponseJson(openapi)
+}
+
 // 6D Search Handler
 pub async fn search_6d_handler(
     Json(request): Json<Search6DRequest>,
