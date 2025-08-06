@@ -1,51 +1,35 @@
-# Build outputs
+# Fichiers compilés Java
+*.class
 target/
 *.jar
-*.class
+
+# Fichiers temporaires
 *.log
+*.tmp
+.DS_Store
 
-# Large files (until Git LFS is configured)
-backends/java/target/
-backends/rust/target/
-*.pkg
-*.dylib
-
-# IDE files
+# IDE
 .idea/
 *.iml
 .vscode/
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Test artifacts
-test_results/
-*.test
-*.tmp
-
-# Dependencies
-node_modules/
-vendor/
-
-# Environment
-.env
-.env.local
+# Base de données H2
+*.mv.db
+*.trace.db
 
 # Rust
-Cargo.lock
-**/*.rs.bk
+/backends/rust/target/
+/backends/rust/core
 
-# Java/Maven
-.mvn/
-.m2/
+# Node
+node_modules/
+npm-debug.log*
 
 # Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-pip-log.txt
+.env
+
+# Logs
+logs/
+*.log
