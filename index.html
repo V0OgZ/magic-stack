@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Magic Stack - 6D Engine & Spell System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 6px #00ffff;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 255, 0.1), transparent, rgba(255, 0, 255, 0.1), transparent);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ffff00, #ff6b00, #ff0099, #9400d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            font-weight: bold;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: #00ffff;
+            opacity: 0.9;
+        }
+
+        .hero .description {
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        /* Feature Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background: rgba(0, 20, 40, 0.6);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            padding: 2px;
+            background: linear-gradient(45deg, #00ffff, #ffff00, #ff6b00);
+            border-radius: inherit;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 255, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #ffff00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .feature-card p {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* Performance Stats */
+        .stats {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 50px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .stats h2 {
+            color: #00ff00;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff00;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-size: 0.9em;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b00, #ff0099);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #00ff00, #80ff00);
+            color: #000;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .architecture h2 {
+            color: #ffff00;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .arch-diagram {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .arch-component {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid;
+            position: relative;
+        }
+
+        .arch-component.java {
+            border-color: #ff6b00;
+        }
+
+        .arch-component.rust {
+            border-color: #ff0099;
+        }
+
+        .arch-component.python {
+            border-color: #00ff00;
+        }
+
+        .arch-component h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .arch-arrow {
+            font-size: 2em;
+            color: #00ffff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 50px;
+        }
+
+        .footer p {
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .footer .version {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5em;
+            }
+            
+            .arch-diagram {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .arch-arrow {
+                transform: rotate(90deg);
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>🔮 Magic Stack</h1>
+            <div class="subtitle">High-Performance 6D Engine & Spell System</div>
+            <p class="description">
+                Une architecture hybride révolutionnaire combinant Java, Rust et Python pour créer 
+                un moteur de recherche 6D ultra-performant avec un système de sorts complet de 869 formules magiques.
+            </p>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="features">
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3>Système 6D</h3>
+                <p>Positionnement spatial (x,y,z), temporel (t), causal (c) et identité (ψ) pour une recherche ultra-précise dans les mondes virtuels.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Algorithme Q*</h3>
+                <p>Pathfinding A* adapté à l'espace 6D avec optimisations Rust pour des performances exceptionnelles.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🔧</span>
+                <h3>Architecture Hybride</h3>
+                <p>Java pour la logique métier, Rust pour les calculs critiques, Python pour le routage intelligent.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📜</span>
+                <h3>869 Formules Magiques</h3>
+                <p>Système complet de sorts avec grammaire temporelle et traduction visuelle automatique.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3>Production Ready</h3>
+                <p>1,600+ req/s de throughput sur hardware standard avec monitoring et logs complets.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🎨</span>
+                <h3>Interfaces Visuelles</h3>
+                <p>Interfaces modernes avec traduction visuelle des sorts et contrôles en temps réel.</p>
+            </div>
+        </section>
+
+        <!-- Performance Stats -->
+        <section class="stats">
+            <h2>🏆 Performances Exceptionnelles</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">37x</span>
+                    <span class="stat-label">Plus rapide que les embeddings traditionnels</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">256x</span>
+                    <span class="stat-label">Moins de mémoire par entité</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">5ms</span>
+                    <span class="stat-label">Temps de recherche moyen</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1600+</span>
+                    <span class="stat-label">Requêtes par seconde</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section class="architecture">
+            <h2>🏗️ Architecture du Système</h2>
+            <div class="arch-diagram">
+                <div class="arch-component java">
+                    <h3>☕ Backend Java</h3>
+                    <p>Spring Boot<br>Port 8082<br>Logique métier<br>API REST<br>Base H2</p>
+                </div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-component rust">
+                    <h3>🦀 Backend Rust</h3>
+                    <p>Tokio/Axum<br>Port 3001<br>Recherche Q*<br>Calculs 6D<br>Index spatial</p>
+                </div>
+                <div class="arch-arrow">⟷</div>
+                <div class="arch-component python">
+                    <h3>🐍 Router Python</h3>
+                    <p>Flask<br>Port 5000<br>Routage unifié<br>Load balancing<br>Monitoring</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="actions">
+            <a href="interfaces/interface_visual_magic.html" class="btn btn-primary">
+                <span>🎨</span> Interface Visuelle
+            </a>
+            <a href="interfaces/interface.html" class="btn btn-secondary">
+                <span>🔮</span> Console Groeken
+            </a>
+            <a href="interfaces/interface_nocturne.html" class="btn btn-success">
+                <span>🌙</span> Mode Nocturne
+            </a>
+        </section>
+
+        <!-- Quick Start -->
+        <section class="stats">
+            <h2>🚀 Démarrage Rapide</h2>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <pre style="background: rgba(0,0,0,0.6); padding: 20px; border-radius: 10px; color: #00ff00; overflow-x: auto;">
+<span style="color: #ffff00;"># Cloner le repository</span>
+git clone https://github.com/V0OgZ/magic-stack.git
+cd magic-stack
+
+<span style="color: #ffff00;"># Lancer tous les services</span>
+./launch_magic_stack.sh
+
+<span style="color: #ffff00;"># Ou démarrage autonome</span>
+./start-magic-autonome.sh
+                </pre>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Développé par <strong>URZ-KÔM</strong> - Backend Guardian</p>
+        <p class="version">Magic Stack v1.0 - Honor License</p>
+        <p>🌟 1% revenue share pour usage commercial</p>
+    </footer>
+
+    <script>
+        // Create animated particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // Random animation delay
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                
+                // Random size
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Random color
+                const colors = ['#00ffff', '#ffff00', '#ff6b00', '#ff0099', '#9400d3'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.background = color;
+                particle.style.boxShadow = `0 0 6px ${color}`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles when page loads
+        document.addEventListener('DOMContentLoaded', createParticles);
+
+        // Add smooth scrolling for any internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Add subtle hover effects to feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
