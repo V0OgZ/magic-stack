@@ -192,6 +192,12 @@ case "${1:-menu}" in
     "stop")
         stop_backends
         ;;
+    "restart")
+        echo -e "${YELLOW}🔄 REDÉMARRAGE DES BACKENDS MAGIQUES...${NC}"
+        stop_backends
+        sleep 3
+        start_backends
+        ;;
     "sync")
         git_sync
         ;;
