@@ -1,23 +1,18 @@
 use axum::{
-    extract::Query,
-    http::StatusCode,
     response::Json,
     routing::{get, post},
     Router,
 };
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
-use uuid::Uuid;
+use chrono;
 
 mod handlers;
 mod models;
 mod services;
 
 use handlers::*;
-use models::*;
 
 #[tokio::main]
 async fn main() {
