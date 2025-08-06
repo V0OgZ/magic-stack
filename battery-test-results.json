@@ -1,0 +1,965 @@
+{
+  "timestamp": "2025-08-06T04:00:55.940719",
+  "summary": {
+    "total_tests": 20,
+    "passed_tests": 16,
+    "failed_tests": 4,
+    "success_rate": 80.0,
+    "layers": {
+      "Couche 1 (Strat\u00e9gique)": [
+        {
+          "test": "1.1 Spawn H\u00e9ros",
+          "success": true,
+          "details": "Jean-Grofignon spawn\u00e9 avec succ\u00e8s",
+          "response": {
+            "scenarioName": "spawn-hero",
+            "success": false,
+            "message": "Unknown scenario format: spawn-hero",
+            "steps": null,
+            "data": null,
+            "startTime": 1754452855838,
+            "endTime": 1754452855838,
+            "duration": 0
+          },
+          "timestamp": "2025-08-06T04:00:55.852216"
+        },
+        {
+          "test": "1.2 D\u00e9placement H\u00e9ros",
+          "success": false,
+          "details": "Erreur 404",
+          "response": null,
+          "timestamp": "2025-08-06T04:00:55.867173"
+        },
+        {
+          "test": "1.3 Liste Sc\u00e9narios",
+          "success": true,
+          "details": "21 sc\u00e9narios disponibles",
+          "response": {
+            "total": 21,
+            "scenarios": [
+              "BRISURE_TELEPORT.hots",
+              "vince_vega_gun_perdu.hots",
+              "test-grammaire-morgana.hots",
+              "epreuve-morgana-temporelle.hots",
+              "DOMBURG_ANCRAGE_DEMO.json",
+              "HERO_MEMENTO_TEST.json",
+              "GROFI_CAUSAL_DEMO.json",
+              "SCENARIOS_INDEX.json",
+              "panopticon_axis_test.json",
+              "DUEL_COLLAPSE.json",
+              "SOUFFLE_DU_DRAGON.json",
+              "VOL_DE_LAME.json",
+              "ECLAT_MONDES_DISSOLUS.json",
+              "CAUSALITY_WALL_TEST.json",
+              "DANSE_ILLUSOIRE.json",
+              "GROFI_LEGENDS_DUEL.json",
+              "FRACTURE_BINAIRE.json",
+              "GARDE_DU_NEXUS.json",
+              "GROFI_QUICK_TEST.json",
+              "OEIL_DE_WIGNER.json",
+              "bataille_temporelle.json"
+            ]
+          },
+          "timestamp": "2025-08-06T04:00:55.878194"
+        }
+      ],
+      "Couche 2 (Combat TCG)": [
+        {
+          "test": "2.1 D\u00e9marrer Combat",
+          "success": true,
+          "details": "Combat vs dragon-rouge",
+          "response": {
+            "success": true,
+            "hero_hp": 100,
+            "enemy_hp": 150,
+            "hero": "jean-grofignon",
+            "enemy": "dragon-rouge",
+            "turn": 1,
+            "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
+            "combat_id": "combat_1754452855880",
+            "available_cards": [
+              "fireball",
+              "shield",
+              "heal",
+              "ultimate_collapse",
+              "temporal_strike"
+            ]
+          },
+          "timestamp": "2025-08-06T04:00:55.881649"
+        },
+        {
+          "test": "2.2 Jouer Fireball",
+          "success": true,
+          "details": "34 d\u00e9g\u00e2ts inflig\u00e9s",
+          "response": {
+            "card_played": "fireball",
+            "combat_finished": false,
+            "damage_dealt": 34,
+            "winner": null,
+            "next_available_cards": [
+              "fireball",
+              "shield"
+            ],
+            "success": true,
+            "hero_hp": 77,
+            "narrative": "\ud83d\udd25 jean-grofignon lance une boule de feu! 34 d\u00e9g\u00e2ts de flammes!",
+            "enemy_hp": 116,
+            "combat_id": "combat_1754452855880"
+          },
+          "timestamp": "2025-08-06T04:00:55.884844"
+        },
+        {
+          "test": "2.3 Ultimate Collapse",
+          "success": true,
+          "details": "41 d\u00e9g\u00e2ts, Combat fini: False, Vainqueur: None",
+          "response": {
+            "card_played": "ultimate_collapse",
+            "combat_finished": false,
+            "damage_dealt": 41,
+            "winner": null,
+            "next_available_cards": [
+              "fireball",
+              "shield"
+            ],
+            "success": true,
+            "hero_hp": 47,
+            "narrative": "\ud83c\udf00 jean-grofignon d\u00e9clenche l'Effondrement Ultime! 41 d\u00e9g\u00e2ts cataclysmiques!",
+            "enemy_hp": 75,
+            "combat_id": "combat_1754452855880"
+          },
+          "timestamp": "2025-08-06T04:00:55.887974"
+        },
+        {
+          "test": "2.4 Statut Combat",
+          "success": true,
+          "details": "H\u00e9ros: 47HP, Ennemi: 75HP, Tour: 3",
+          "response": {
+            "combat_log": [
+              "\u2694\ufe0f jean-grofignon fait face \u00e0 dragon-rouge! Le combat commence!",
+              "\ud83d\udd25 jean-grofignon lance une boule de feu! 34 d\u00e9g\u00e2ts de flammes!",
+              "\ud83d\udc09 Le dragon rouge crache des flammes! 23 d\u00e9g\u00e2ts!",
+              "\ud83c\udf00 jean-grofignon d\u00e9clenche l'Effondrement Ultime! 41 d\u00e9g\u00e2ts cataclysmiques!",
+              "\ud83d\udc09 Le dragon rouge crache des flammes! 30 d\u00e9g\u00e2ts!"
+            ],
+            "hero_hp": 47,
+            "enemy_hp": 75,
+            "hero": "jean-grofignon",
+            "enemy": "dragon-rouge",
+            "finished": false,
+            "turn": 3,
+            "combat_id": "combat_1754452855880",
+            "available_cards": [
+              "fireball",
+              "shield"
+            ]
+          },
+          "timestamp": "2025-08-06T04:00:55.890498"
+        }
+      ],
+      "Couche 3 (Interstice)": [
+        {
+          "test": "3.1 Anomalie Temporelle",
+          "success": true,
+          "details": "\u23f0 Anomalie Temporelle D\u00e9tect\u00e9e, 3 choix disponibles",
+          "response": {
+            "event_id": "event_1754452855892",
+            "event_type": "temporal_anomaly",
+            "success": true,
+            "description": "L'espace-temps se distord devant vous. Des \u00e9chos du pass\u00e9 et du futur se m\u00e9langent, cr\u00e9ant une br\u00e8che dans la causalit\u00e9.",
+            "location": {
+              "x": 5,
+              "y": 3
+            },
+            "hero": "jean-grofignon",
+            "timeline_impact": "MODERATE",
+            "title": "\u23f0 Anomalie Temporelle D\u00e9tect\u00e9e",
+            "choices": [
+              {
+                "description": "Peut r\u00e9v\u00e9ler des secrets temporels",
+                "id": "investigate",
+                "text": "\ud83d\udd0d Investiguer l'anomalie",
+                "type": "RISQU\u00c9"
+              },
+              {
+                "description": "\u00c9vite les complications mais perd l'opportunit\u00e9",
+                "id": "bypass",
+                "text": "\ud83d\udeb6 Contourner prudemment",
+                "type": "S\u00dbR"
+              },
+              {
+                "description": "Force l'observation et collapse les possibilit\u00e9s",
+                "id": "wiener_eye",
+                "text": "\ud83d\udc41\ufe0f Utiliser l'\u0152il de Wiener",
+                "type": "PUISSANT"
+              }
+            ],
+            "message": "\u00c9v\u00e9nement narratif d\u00e9clench\u00e9! Faites votre choix."
+          },
+          "timestamp": "2025-08-06T04:00:55.894019"
+        },
+        {
+          "test": "3.2 Choix \u0152il de Wiener",
+          "success": true,
+          "details": "Cons\u00e9quence: COLLAPSE, Timeline chang\u00e9e: True, 2 capacit\u00e9s",
+          "response": {
+            "consequence": "COLLAPSE",
+            "event_id": "event_1754452855892",
+            "success": true,
+            "timeline_changed": true,
+            "next_events": null,
+            "new_timeline_id": "timeline_collapsed_1754452855896",
+            "unlocked_abilities": [
+              "Collapse Quantique",
+              "Ma\u00eetrise Causale"
+            ],
+            "narrative_text": "\ud83d\udc41\ufe0f L'\u0152il de Wiener force l'observation! La r\u00e9alit\u00e9 se fixe selon votre volont\u00e9!",
+            "hero_state": null,
+            "choice_made": "wiener_eye"
+          },
+          "timestamp": "2025-08-06T04:00:55.898009"
+        },
+        {
+          "test": "3.3 Br\u00e8che Causale",
+          "success": true,
+          "details": "\ud83c\udf00 Br\u00e8che Causale, Impact: HIGH",
+          "response": {
+            "event_id": "event_1754452855899",
+            "event_type": "causality_breach",
+            "success": true,
+            "description": "La trame du temps s'effiloche. Vos actions pass\u00e9es cr\u00e9ent des ondulations qui menacent la stabilit\u00e9 de votre timeline.",
+            "location": {
+              "x": 7,
+              "y": 8
+            },
+            "hero": "jean-grofignon",
+            "timeline_impact": "HIGH",
+            "title": "\ud83c\udf00 Br\u00e8che Causale",
+            "choices": [
+              {
+                "description": "Restaure la stabilit\u00e9 temporelle",
+                "id": "repair",
+                "text": "\ud83d\udd27 R\u00e9parer la br\u00e8che",
+                "type": "TECHNIQUE"
+              },
+              {
+                "description": "Gagne du pouvoir mais d\u00e9stabilise davantage",
+                "id": "exploit",
+                "text": "\u26a1 Exploiter la br\u00e8che",
+                "type": "OPPORTUNISTE"
+              },
+              {
+                "description": "Laisse le probl\u00e8me s'aggraver",
+                "id": "ignore",
+                "text": "\ud83d\ude48 Ignorer et continuer",
+                "type": "N\u00c9GLIGENT"
+              }
+            ],
+            "message": "\u00c9v\u00e9nement narratif d\u00e9clench\u00e9! Faites votre choix."
+          },
+          "timestamp": "2025-08-06T04:00:55.900768"
+        },
+        {
+          "test": "3.3b R\u00e9parer Br\u00e8che",
+          "success": true,
+          "details": "Br\u00e8che r\u00e9par\u00e9e avec succ\u00e8s",
+          "response": {
+            "consequence": "RESTORATION",
+            "event_id": "event_1754452855899",
+            "success": true,
+            "timeline_changed": false,
+            "next_events": null,
+            "new_timeline_id": null,
+            "unlocked_abilities": [
+              "R\u00e9paration Temporelle",
+              "Stabilit\u00e9 Causale"
+            ],
+            "narrative_text": "\ud83d\udd27 Vous r\u00e9parez habilement la br\u00e8che causale, restaurant l'ordre temporel.",
+            "hero_state": null,
+            "choice_made": "repair"
+          },
+          "timestamp": "2025-08-06T04:00:55.903206"
+        },
+        {
+          "test": "3.4 Timeline H\u00e9ros",
+          "success": true,
+          "details": "Timeline: timeline_collapsed_1754452855896, 2 \u00e9v\u00e9nements, Dette: 0",
+          "response": {
+            "timeline_history": [
+              {
+                "consequence": "COLLAPSE",
+                "event_id": "event_1754452855892",
+                "event_type": "temporal_anomaly",
+                "choice_made": "wiener_eye",
+                "timestamp": 1754452855896
+              },
+              {
+                "consequence": "RESTORATION",
+                "event_id": "event_1754452855899",
+                "event_type": "causality_breach",
+                "choice_made": "repair",
+                "timestamp": 1754452855902
+              }
+            ],
+            "success": true,
+            "branching_points": [],
+            "current_timeline": "timeline_collapsed_1754452855896",
+            "hero_id": "jean-grofignon",
+            "fixed_events": [],
+            "causal_debt": 0
+          },
+          "timestamp": "2025-08-06T04:00:55.906207"
+        },
+        {
+          "test": "3.5 Saut Temporel",
+          "success": true,
+          "details": "R\u00e9ussi: False, Co\u00fbt: 1043, Stabilit\u00e9: UNSTABLE",
+          "response": {
+            "timeline_stability": "UNSTABLE",
+            "available_actions": [
+              "Attendre",
+              "Essayer plus tard"
+            ],
+            "success": true,
+            "jump_successful": false,
+            "narrative_consequence": "\ud83c\udf00 Le saut temporel \u00e9choue! La causalit\u00e9 r\u00e9siste...",
+            "destination_time": "2025-01-16T14:30:00",
+            "causality_cost": 1043,
+            "origin_time": "2025-01-15T10:00:00"
+          },
+          "timestamp": "2025-08-06T04:00:55.910841"
+        },
+        {
+          "test": "3.6 Toile Causale",
+          "success": true,
+          "details": "5 n\u0153uds, 3 connexions, Stabilit\u00e9: 0.85",
+          "response": {
+            "temporal_connections": [
+              {
+                "strength": 0.5316144336166508,
+                "from": "node_0",
+                "to": "node_1"
+              },
+              {
+                "strength": 0.9693413458415955,
+                "from": "node_1",
+                "to": "node_2"
+              },
+              {
+                "strength": 0.7581527383246627,
+                "from": "node_2",
+                "to": "node_3"
+              }
+            ],
+            "success": true,
+            "causality_nodes": [
+              {
+                "impact": 0,
+                "id": "node_0",
+                "type": "CAUSAL_EVENT",
+                "stability": 0.9663417133139832
+              },
+              {
+                "impact": 21,
+                "id": "node_1",
+                "type": "CAUSAL_EVENT",
+                "stability": 0.8386449022231268
+              },
+              {
+                "impact": 95,
+                "id": "node_2",
+                "type": "CAUSAL_EVENT",
+                "stability": 0.9649349904451826
+              },
+              {
+                "impact": 47,
+                "id": "node_3",
+                "type": "CAUSAL_EVENT",
+                "stability": 0.922016729857015
+              },
+              {
+                "impact": 95,
+                "id": "node_4",
+                "type": "CAUSAL_EVENT",
+                "stability": 0.944004280146185
+              }
+            ],
+            "paradox_risks": [
+              "\u26a0\ufe0f Risque de boucle temporelle si vous rencontrez votre pass\u00e9",
+              "\u26a0\ufe0f Paradoxe du grand-p\u00e8re en cas d'intervention majeure",
+              "\u26a0\ufe0f Effondrement causal si trop de modifications simultan\u00e9es"
+            ],
+            "hero_id": "jean-grofignon",
+            "butterfly_effects": [
+              "\ud83e\udd8b Votre sourire \u00e0 un inconnu change sa journ\u00e9e",
+              "\ud83e\udd8b Un livre d\u00e9plac\u00e9 influence un futur lecteur",
+              "\ud83e\udd8b Une d\u00e9cision mineure cr\u00e9e une cascade d'\u00e9v\u00e9nements"
+            ],
+            "stability_index": 0.8467285300220693
+          },
+          "timestamp": "2025-08-06T04:00:55.916257"
+        },
+        {
+          "test": "3.7 Tatouage M\u00e9moriel",
+          "success": true,
+          "details": "Tatouage: tattoo_1754452855918, Pouvoir: \ud83d\udcab Pouvoir narratif: Peut invoquer l'essence de 'Premi\u00e8re victoire contre le dragon rouge' pour influencer la r\u00e9alit\u00e9",
+          "response": {
+            "tattoo_id": "tattoo_1754452855918",
+            "causality_protection": "ACTIVE",
+            "success": true,
+            "narrative_power": "\ud83d\udcab Pouvoir narratif: Peut invoquer l'essence de 'Premi\u00e8re victoire contre le dragon rouge' pour influencer la r\u00e9alit\u00e9",
+            "memory_encoded": "Premi\u00e8re victoire contre le dragon rouge",
+            "temporal_anchor": "2025-01-15T15:30:00"
+          },
+          "timestamp": "2025-08-06T04:00:55.919389"
+        }
+      ],
+      "Couche 4 (MagicStack)": [
+        {
+          "test": "4.1 Health Rust",
+          "success": true,
+          "details": "Backend Rust op\u00e9rationnel",
+          "response": {
+            "status": "OK",
+            "version": "0.1.0",
+            "components": {
+              "performance": "OPTIMIZED",
+              "qstar_engine": "0 entities",
+              "world_state": "0 nodes"
+            }
+          },
+          "timestamp": "2025-08-06T04:00:55.920458"
+        },
+        {
+          "test": "4.2 Recherche 6D",
+          "success": false,
+          "details": "Erreur HTTP 404",
+          "response": null,
+          "timestamp": "2025-08-06T04:00:55.921282"
+        },
+        {
+          "test": "4.3 Upload 6D",
+          "success": false,
+          "details": "Erreur HTTP 404",
+          "response": null,
+          "timestamp": "2025-08-06T04:00:55.922061"
+        }
+      ],
+      "Int\u00e9gration": [
+        {
+          "test": "I.1 Sc\u00e9nario H\u00e9ros vs Dragon",
+          "success": false,
+          "details": "Combat non termin\u00e9 apr\u00e8s 3 tours",
+          "response": null,
+          "timestamp": "2025-08-06T04:00:55.933491"
+        },
+        {
+          "test": "I.2 Sc\u00e9nario Temporel",
+          "success": true,
+          "details": "Saut r\u00e9ussi: False",
+          "response": {
+            "timeline_stability": "UNSTABLE",
+            "available_actions": [
+              "Attendre",
+              "Essayer plus tard"
+            ],
+            "success": true,
+            "jump_successful": false,
+            "narrative_consequence": "\ud83c\udf00 Le saut temporel \u00e9choue! La causalit\u00e9 r\u00e9siste...",
+            "destination_time": "2025-01-17T16:00:00",
+            "causality_cost": 2060,
+            "origin_time": "2025-01-15T10:00:00"
+          },
+          "timestamp": "2025-08-06T04:00:55.940397"
+        }
+      ]
+    },
+    "failed_details": [
+      {
+        "test": "1.2 D\u00e9placement H\u00e9ros",
+        "success": false,
+        "details": "Erreur 404",
+        "response": null,
+        "timestamp": "2025-08-06T04:00:55.867173"
+      },
+      {
+        "test": "4.2 Recherche 6D",
+        "success": false,
+        "details": "Erreur HTTP 404",
+        "response": null,
+        "timestamp": "2025-08-06T04:00:55.921282"
+      },
+      {
+        "test": "4.3 Upload 6D",
+        "success": false,
+        "details": "Erreur HTTP 404",
+        "response": null,
+        "timestamp": "2025-08-06T04:00:55.922061"
+      },
+      {
+        "test": "I.1 Sc\u00e9nario H\u00e9ros vs Dragon",
+        "success": false,
+        "details": "Combat non termin\u00e9 apr\u00e8s 3 tours",
+        "response": null,
+        "timestamp": "2025-08-06T04:00:55.933491"
+      }
+    ]
+  },
+  "detailed_results": [
+    {
+      "test": "1.1 Spawn H\u00e9ros",
+      "success": true,
+      "details": "Jean-Grofignon spawn\u00e9 avec succ\u00e8s",
+      "response": {
+        "scenarioName": "spawn-hero",
+        "success": false,
+        "message": "Unknown scenario format: spawn-hero",
+        "steps": null,
+        "data": null,
+        "startTime": 1754452855838,
+        "endTime": 1754452855838,
+        "duration": 0
+      },
+      "timestamp": "2025-08-06T04:00:55.852216"
+    },
+    {
+      "test": "1.2 D\u00e9placement H\u00e9ros",
+      "success": false,
+      "details": "Erreur 404",
+      "response": null,
+      "timestamp": "2025-08-06T04:00:55.867173"
+    },
+    {
+      "test": "1.3 Liste Sc\u00e9narios",
+      "success": true,
+      "details": "21 sc\u00e9narios disponibles",
+      "response": {
+        "total": 21,
+        "scenarios": [
+          "BRISURE_TELEPORT.hots",
+          "vince_vega_gun_perdu.hots",
+          "test-grammaire-morgana.hots",
+          "epreuve-morgana-temporelle.hots",
+          "DOMBURG_ANCRAGE_DEMO.json",
+          "HERO_MEMENTO_TEST.json",
+          "GROFI_CAUSAL_DEMO.json",
+          "SCENARIOS_INDEX.json",
+          "panopticon_axis_test.json",
+          "DUEL_COLLAPSE.json",
+          "SOUFFLE_DU_DRAGON.json",
+          "VOL_DE_LAME.json",
+          "ECLAT_MONDES_DISSOLUS.json",
+          "CAUSALITY_WALL_TEST.json",
+          "DANSE_ILLUSOIRE.json",
+          "GROFI_LEGENDS_DUEL.json",
+          "FRACTURE_BINAIRE.json",
+          "GARDE_DU_NEXUS.json",
+          "GROFI_QUICK_TEST.json",
+          "OEIL_DE_WIGNER.json",
+          "bataille_temporelle.json"
+        ]
+      },
+      "timestamp": "2025-08-06T04:00:55.878194"
+    },
+    {
+      "test": "2.1 D\u00e9marrer Combat",
+      "success": true,
+      "details": "Combat vs dragon-rouge",
+      "response": {
+        "success": true,
+        "hero_hp": 100,
+        "enemy_hp": 150,
+        "hero": "jean-grofignon",
+        "enemy": "dragon-rouge",
+        "turn": 1,
+        "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
+        "combat_id": "combat_1754452855880",
+        "available_cards": [
+          "fireball",
+          "shield",
+          "heal",
+          "ultimate_collapse",
+          "temporal_strike"
+        ]
+      },
+      "timestamp": "2025-08-06T04:00:55.881649"
+    },
+    {
+      "test": "2.2 Jouer Fireball",
+      "success": true,
+      "details": "34 d\u00e9g\u00e2ts inflig\u00e9s",
+      "response": {
+        "card_played": "fireball",
+        "combat_finished": false,
+        "damage_dealt": 34,
+        "winner": null,
+        "next_available_cards": [
+          "fireball",
+          "shield"
+        ],
+        "success": true,
+        "hero_hp": 77,
+        "narrative": "\ud83d\udd25 jean-grofignon lance une boule de feu! 34 d\u00e9g\u00e2ts de flammes!",
+        "enemy_hp": 116,
+        "combat_id": "combat_1754452855880"
+      },
+      "timestamp": "2025-08-06T04:00:55.884844"
+    },
+    {
+      "test": "2.3 Ultimate Collapse",
+      "success": true,
+      "details": "41 d\u00e9g\u00e2ts, Combat fini: False, Vainqueur: None",
+      "response": {
+        "card_played": "ultimate_collapse",
+        "combat_finished": false,
+        "damage_dealt": 41,
+        "winner": null,
+        "next_available_cards": [
+          "fireball",
+          "shield"
+        ],
+        "success": true,
+        "hero_hp": 47,
+        "narrative": "\ud83c\udf00 jean-grofignon d\u00e9clenche l'Effondrement Ultime! 41 d\u00e9g\u00e2ts cataclysmiques!",
+        "enemy_hp": 75,
+        "combat_id": "combat_1754452855880"
+      },
+      "timestamp": "2025-08-06T04:00:55.887974"
+    },
+    {
+      "test": "2.4 Statut Combat",
+      "success": true,
+      "details": "H\u00e9ros: 47HP, Ennemi: 75HP, Tour: 3",
+      "response": {
+        "combat_log": [
+          "\u2694\ufe0f jean-grofignon fait face \u00e0 dragon-rouge! Le combat commence!",
+          "\ud83d\udd25 jean-grofignon lance une boule de feu! 34 d\u00e9g\u00e2ts de flammes!",
+          "\ud83d\udc09 Le dragon rouge crache des flammes! 23 d\u00e9g\u00e2ts!",
+          "\ud83c\udf00 jean-grofignon d\u00e9clenche l'Effondrement Ultime! 41 d\u00e9g\u00e2ts cataclysmiques!",
+          "\ud83d\udc09 Le dragon rouge crache des flammes! 30 d\u00e9g\u00e2ts!"
+        ],
+        "hero_hp": 47,
+        "enemy_hp": 75,
+        "hero": "jean-grofignon",
+        "enemy": "dragon-rouge",
+        "finished": false,
+        "turn": 3,
+        "combat_id": "combat_1754452855880",
+        "available_cards": [
+          "fireball",
+          "shield"
+        ]
+      },
+      "timestamp": "2025-08-06T04:00:55.890498"
+    },
+    {
+      "test": "3.1 Anomalie Temporelle",
+      "success": true,
+      "details": "\u23f0 Anomalie Temporelle D\u00e9tect\u00e9e, 3 choix disponibles",
+      "response": {
+        "event_id": "event_1754452855892",
+        "event_type": "temporal_anomaly",
+        "success": true,
+        "description": "L'espace-temps se distord devant vous. Des \u00e9chos du pass\u00e9 et du futur se m\u00e9langent, cr\u00e9ant une br\u00e8che dans la causalit\u00e9.",
+        "location": {
+          "x": 5,
+          "y": 3
+        },
+        "hero": "jean-grofignon",
+        "timeline_impact": "MODERATE",
+        "title": "\u23f0 Anomalie Temporelle D\u00e9tect\u00e9e",
+        "choices": [
+          {
+            "description": "Peut r\u00e9v\u00e9ler des secrets temporels",
+            "id": "investigate",
+            "text": "\ud83d\udd0d Investiguer l'anomalie",
+            "type": "RISQU\u00c9"
+          },
+          {
+            "description": "\u00c9vite les complications mais perd l'opportunit\u00e9",
+            "id": "bypass",
+            "text": "\ud83d\udeb6 Contourner prudemment",
+            "type": "S\u00dbR"
+          },
+          {
+            "description": "Force l'observation et collapse les possibilit\u00e9s",
+            "id": "wiener_eye",
+            "text": "\ud83d\udc41\ufe0f Utiliser l'\u0152il de Wiener",
+            "type": "PUISSANT"
+          }
+        ],
+        "message": "\u00c9v\u00e9nement narratif d\u00e9clench\u00e9! Faites votre choix."
+      },
+      "timestamp": "2025-08-06T04:00:55.894019"
+    },
+    {
+      "test": "3.2 Choix \u0152il de Wiener",
+      "success": true,
+      "details": "Cons\u00e9quence: COLLAPSE, Timeline chang\u00e9e: True, 2 capacit\u00e9s",
+      "response": {
+        "consequence": "COLLAPSE",
+        "event_id": "event_1754452855892",
+        "success": true,
+        "timeline_changed": true,
+        "next_events": null,
+        "new_timeline_id": "timeline_collapsed_1754452855896",
+        "unlocked_abilities": [
+          "Collapse Quantique",
+          "Ma\u00eetrise Causale"
+        ],
+        "narrative_text": "\ud83d\udc41\ufe0f L'\u0152il de Wiener force l'observation! La r\u00e9alit\u00e9 se fixe selon votre volont\u00e9!",
+        "hero_state": null,
+        "choice_made": "wiener_eye"
+      },
+      "timestamp": "2025-08-06T04:00:55.898009"
+    },
+    {
+      "test": "3.3 Br\u00e8che Causale",
+      "success": true,
+      "details": "\ud83c\udf00 Br\u00e8che Causale, Impact: HIGH",
+      "response": {
+        "event_id": "event_1754452855899",
+        "event_type": "causality_breach",
+        "success": true,
+        "description": "La trame du temps s'effiloche. Vos actions pass\u00e9es cr\u00e9ent des ondulations qui menacent la stabilit\u00e9 de votre timeline.",
+        "location": {
+          "x": 7,
+          "y": 8
+        },
+        "hero": "jean-grofignon",
+        "timeline_impact": "HIGH",
+        "title": "\ud83c\udf00 Br\u00e8che Causale",
+        "choices": [
+          {
+            "description": "Restaure la stabilit\u00e9 temporelle",
+            "id": "repair",
+            "text": "\ud83d\udd27 R\u00e9parer la br\u00e8che",
+            "type": "TECHNIQUE"
+          },
+          {
+            "description": "Gagne du pouvoir mais d\u00e9stabilise davantage",
+            "id": "exploit",
+            "text": "\u26a1 Exploiter la br\u00e8che",
+            "type": "OPPORTUNISTE"
+          },
+          {
+            "description": "Laisse le probl\u00e8me s'aggraver",
+            "id": "ignore",
+            "text": "\ud83d\ude48 Ignorer et continuer",
+            "type": "N\u00c9GLIGENT"
+          }
+        ],
+        "message": "\u00c9v\u00e9nement narratif d\u00e9clench\u00e9! Faites votre choix."
+      },
+      "timestamp": "2025-08-06T04:00:55.900768"
+    },
+    {
+      "test": "3.3b R\u00e9parer Br\u00e8che",
+      "success": true,
+      "details": "Br\u00e8che r\u00e9par\u00e9e avec succ\u00e8s",
+      "response": {
+        "consequence": "RESTORATION",
+        "event_id": "event_1754452855899",
+        "success": true,
+        "timeline_changed": false,
+        "next_events": null,
+        "new_timeline_id": null,
+        "unlocked_abilities": [
+          "R\u00e9paration Temporelle",
+          "Stabilit\u00e9 Causale"
+        ],
+        "narrative_text": "\ud83d\udd27 Vous r\u00e9parez habilement la br\u00e8che causale, restaurant l'ordre temporel.",
+        "hero_state": null,
+        "choice_made": "repair"
+      },
+      "timestamp": "2025-08-06T04:00:55.903206"
+    },
+    {
+      "test": "3.4 Timeline H\u00e9ros",
+      "success": true,
+      "details": "Timeline: timeline_collapsed_1754452855896, 2 \u00e9v\u00e9nements, Dette: 0",
+      "response": {
+        "timeline_history": [
+          {
+            "consequence": "COLLAPSE",
+            "event_id": "event_1754452855892",
+            "event_type": "temporal_anomaly",
+            "choice_made": "wiener_eye",
+            "timestamp": 1754452855896
+          },
+          {
+            "consequence": "RESTORATION",
+            "event_id": "event_1754452855899",
+            "event_type": "causality_breach",
+            "choice_made": "repair",
+            "timestamp": 1754452855902
+          }
+        ],
+        "success": true,
+        "branching_points": [],
+        "current_timeline": "timeline_collapsed_1754452855896",
+        "hero_id": "jean-grofignon",
+        "fixed_events": [],
+        "causal_debt": 0
+      },
+      "timestamp": "2025-08-06T04:00:55.906207"
+    },
+    {
+      "test": "3.5 Saut Temporel",
+      "success": true,
+      "details": "R\u00e9ussi: False, Co\u00fbt: 1043, Stabilit\u00e9: UNSTABLE",
+      "response": {
+        "timeline_stability": "UNSTABLE",
+        "available_actions": [
+          "Attendre",
+          "Essayer plus tard"
+        ],
+        "success": true,
+        "jump_successful": false,
+        "narrative_consequence": "\ud83c\udf00 Le saut temporel \u00e9choue! La causalit\u00e9 r\u00e9siste...",
+        "destination_time": "2025-01-16T14:30:00",
+        "causality_cost": 1043,
+        "origin_time": "2025-01-15T10:00:00"
+      },
+      "timestamp": "2025-08-06T04:00:55.910841"
+    },
+    {
+      "test": "3.6 Toile Causale",
+      "success": true,
+      "details": "5 n\u0153uds, 3 connexions, Stabilit\u00e9: 0.85",
+      "response": {
+        "temporal_connections": [
+          {
+            "strength": 0.5316144336166508,
+            "from": "node_0",
+            "to": "node_1"
+          },
+          {
+            "strength": 0.9693413458415955,
+            "from": "node_1",
+            "to": "node_2"
+          },
+          {
+            "strength": 0.7581527383246627,
+            "from": "node_2",
+            "to": "node_3"
+          }
+        ],
+        "success": true,
+        "causality_nodes": [
+          {
+            "impact": 0,
+            "id": "node_0",
+            "type": "CAUSAL_EVENT",
+            "stability": 0.9663417133139832
+          },
+          {
+            "impact": 21,
+            "id": "node_1",
+            "type": "CAUSAL_EVENT",
+            "stability": 0.8386449022231268
+          },
+          {
+            "impact": 95,
+            "id": "node_2",
+            "type": "CAUSAL_EVENT",
+            "stability": 0.9649349904451826
+          },
+          {
+            "impact": 47,
+            "id": "node_3",
+            "type": "CAUSAL_EVENT",
+            "stability": 0.922016729857015
+          },
+          {
+            "impact": 95,
+            "id": "node_4",
+            "type": "CAUSAL_EVENT",
+            "stability": 0.944004280146185
+          }
+        ],
+        "paradox_risks": [
+          "\u26a0\ufe0f Risque de boucle temporelle si vous rencontrez votre pass\u00e9",
+          "\u26a0\ufe0f Paradoxe du grand-p\u00e8re en cas d'intervention majeure",
+          "\u26a0\ufe0f Effondrement causal si trop de modifications simultan\u00e9es"
+        ],
+        "hero_id": "jean-grofignon",
+        "butterfly_effects": [
+          "\ud83e\udd8b Votre sourire \u00e0 un inconnu change sa journ\u00e9e",
+          "\ud83e\udd8b Un livre d\u00e9plac\u00e9 influence un futur lecteur",
+          "\ud83e\udd8b Une d\u00e9cision mineure cr\u00e9e une cascade d'\u00e9v\u00e9nements"
+        ],
+        "stability_index": 0.8467285300220693
+      },
+      "timestamp": "2025-08-06T04:00:55.916257"
+    },
+    {
+      "test": "3.7 Tatouage M\u00e9moriel",
+      "success": true,
+      "details": "Tatouage: tattoo_1754452855918, Pouvoir: \ud83d\udcab Pouvoir narratif: Peut invoquer l'essence de 'Premi\u00e8re victoire contre le dragon rouge' pour influencer la r\u00e9alit\u00e9",
+      "response": {
+        "tattoo_id": "tattoo_1754452855918",
+        "causality_protection": "ACTIVE",
+        "success": true,
+        "narrative_power": "\ud83d\udcab Pouvoir narratif: Peut invoquer l'essence de 'Premi\u00e8re victoire contre le dragon rouge' pour influencer la r\u00e9alit\u00e9",
+        "memory_encoded": "Premi\u00e8re victoire contre le dragon rouge",
+        "temporal_anchor": "2025-01-15T15:30:00"
+      },
+      "timestamp": "2025-08-06T04:00:55.919389"
+    },
+    {
+      "test": "4.1 Health Rust",
+      "success": true,
+      "details": "Backend Rust op\u00e9rationnel",
+      "response": {
+        "status": "OK",
+        "version": "0.1.0",
+        "components": {
+          "performance": "OPTIMIZED",
+          "qstar_engine": "0 entities",
+          "world_state": "0 nodes"
+        }
+      },
+      "timestamp": "2025-08-06T04:00:55.920458"
+    },
+    {
+      "test": "4.2 Recherche 6D",
+      "success": false,
+      "details": "Erreur HTTP 404",
+      "response": null,
+      "timestamp": "2025-08-06T04:00:55.921282"
+    },
+    {
+      "test": "4.3 Upload 6D",
+      "success": false,
+      "details": "Erreur HTTP 404",
+      "response": null,
+      "timestamp": "2025-08-06T04:00:55.922061"
+    },
+    {
+      "test": "I.1 Sc\u00e9nario H\u00e9ros vs Dragon",
+      "success": false,
+      "details": "Combat non termin\u00e9 apr\u00e8s 3 tours",
+      "response": null,
+      "timestamp": "2025-08-06T04:00:55.933491"
+    },
+    {
+      "test": "I.2 Sc\u00e9nario Temporel",
+      "success": true,
+      "details": "Saut r\u00e9ussi: False",
+      "response": {
+        "timeline_stability": "UNSTABLE",
+        "available_actions": [
+          "Attendre",
+          "Essayer plus tard"
+        ],
+        "success": true,
+        "jump_successful": false,
+        "narrative_consequence": "\ud83c\udf00 Le saut temporel \u00e9choue! La causalit\u00e9 r\u00e9siste...",
+        "destination_time": "2025-01-17T16:00:00",
+        "causality_cost": 2060,
+        "origin_time": "2025-01-15T10:00:00"
+      },
+      "timestamp": "2025-08-06T04:00:55.940397"
+    }
+  ]
+}
