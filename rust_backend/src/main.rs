@@ -82,16 +82,12 @@ async fn main() {
 // Health check endpoint
 async fn health_check() -> Json<serde_json::Value> {
     Json(serde_json::json!({
-        "status": "ok",
-        "service": "magicstack_rust",
-        "version": "1.0.0",
-        "capabilities": [
-            "6d_search",
-            "formula_execution", 
-            "qstar_algorithm",
-            "performance_analytics"
-        ],
-        "timestamp": chrono::Utc::now().to_rfc3339(),
-        "message": "🔮 MagicStack Rust - Heroes of Time - Prêt pour la magie!"
+        "status": "OK",
+        "version": "1.0.0", 
+        "components": {
+            "world_state": "0 nodes",
+            "qstar_engine": "0 entities", 
+            "performance": "OPTIMIZED"
+        }
     }))
 }
