@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 Non-Euclidean Geometry Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+            max-width: 300px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #00ffff;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            background: #333;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            background: #00ffff;
+        }
+
+        .control-group select {
+            width: 100%;
+            background: #333;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 5px;
+        }
+
+        .value-display {
+            color: #ffff00;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ff6b00;
+            max-width: 400px;
+            font-size: 12px;
+        }
+
+        .geometry-title {
+            color: #ff6b00;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .controls-info {
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        #fps {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            color: #00ff00;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="controls">
+            <h3 style="color: #00ffff; margin-bottom: 15px;">🌀 Géométrie Non-Euclidienne</h3>
+            
+            <div class="control-group">
+                <label>Type de Géométrie</label>
+                <select id="geometryType">
+                    <option value="hyperbolic">Hyperbolique (H³)</option>
+                    <option value="spherical">Sphérique (S³)</option>
+                    <option value="euclidean">Euclidienne (E³)</option>
+                    <option value="h2xe">H² × E</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Courbure K</label>
+                <input type="range" id="curvature" min="-2" max="2" step="0.1" value="-1">
+                <div class="value-display" id="curvatureValue">-1.0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Rayon de Tiling</label>
+                <input type="range" id="tilingRadius" min="0.5" max="3" step="0.1" value="1.5">
+                <div class="value-display" id="tilingRadiusValue">1.5</div>
+            </div>
+
+            <div class="control-group">
+                <label>Paramètre P</label>
+                <input type="range" id="paramP" min="3" max="12" step="1" value="7">
+                <div class="value-display" id="paramPValue">7</div>
+            </div>
+
+            <div class="control-group">
+                <label>Paramètre Q</label>
+                <input type="range" id="paramQ" min="3" max="12" step="1" value="3">
+                <div class="value-display" id="paramQValue">3</div>
+            </div>
+
+            <div class="control-group">
+                <label>Animation Speed</label>
+                <input type="range" id="animSpeed" min="0" max="2" step="0.1" value="1">
+                <div class="value-display" id="animSpeedValue">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Distance Max</label>
+                <input type="range" id="maxDistance" min="5" max="50" step="1" value="20">
+                <div class="value-display" id="maxDistanceValue">20</div>
+            </div>
+        </div>
+
+        <div id="info">
+            <div class="geometry-title" id="geometryTitle">Géométrie Hyperbolique (H³)</div>
+            <div class="controls-info">
+                <strong>Contrôles:</strong><br>
+                • WASD: Déplacement<br>
+                • Souris: Rotation caméra<br>
+                • Scroll: Zoom<br>
+                • Espace: Pause animation<br><br>
+                <strong>Géométrie:</strong><br>
+                <span id="geometryDesc">Espace hyperbolique avec courbure négative constante. Les triangles ont une somme d'angles < π.</span>
+            </div>
+        </div>
+
+        <div id="fps">FPS: <span id="fpsValue">60</span></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+    <script>
+        // Variables globales
+        let scene, camera, renderer, material;
+        let uniforms;
+        let clock = new THREE.Clock();
+        let frameCount = 0;
+        let lastTime = 0;
+        let isPaused = false;
+
+        // Contrôles
+        let keys = {};
+        let mouse = { x: 0, y: 0 };
+        let cameraRotation = { x: 0, y: 0 };
+        let cameraPosition = { x: 0, y: 0, z: 0 };
+
+        // Vertex shader simple
+        const vertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        // Fragment shader pour géométries non-euclidiennes
+        const fragmentShader = `
+            uniform float u_time;
+            uniform vec2 u_resolution;
+            uniform int u_geometry;
+            uniform float u_curvature;
+            uniform float u_tilingRadius;
+            uniform float u_paramP;
+            uniform float u_paramQ;
+            uniform float u_maxDistance;
+            uniform vec3 u_cameraPos;
+            uniform vec2 u_cameraRot;
+            
+            varying vec2 vUv;
+
+            #define MAX_STEPS 100
+            #define MIN_DIST 0.001
+            #define PI 3.14159265359
+
+            // Rotation matrices
+            mat3 rotateX(float a) {
+                float c = cos(a), s = sin(a);
+                return mat3(1, 0, 0, 0, c, -s, 0, s, c);
+            }
+
+            mat3 rotateY(float a) {
+                float c = cos(a), s = sin(a);
+                return mat3(c, 0, s, 0, 1, 0, -s, 0, c);
+            }
+
+            mat3 rotateZ(float a) {
+                float c = cos(a), s = sin(a);
+                return mat3(c, -s, 0, s, c, 0, 0, 0, 1);
+            }
+
+            // Distance functions pour différentes géométries
+            float hyperbolicDistance(vec3 p) {
+                // Modèle de Poincaré pour H³
+                float r = length(p.xy);
+                if (r >= 1.0) return 1000.0; // En dehors du disque
+                
+                float z = p.z;
+                float factor = 2.0 / (1.0 - r*r - z*z);
+                return factor;
+            }
+
+            float sphericalDistance(vec3 p) {
+                // Géométrie sphérique S³
+                return length(p) - u_tilingRadius;
+            }
+
+            // SDF pour tiling hyperbolique {p,q}
+            float hyperbolicTiling(vec3 pos) {
+                vec2 p = pos.xy;
+                float r = length(p);
+                
+                if (r >= 0.99) return 0.1; // Bord du disque de Poincaré
+                
+                // Transformation hyperbolique
+                float angle = atan(p.y, p.x);
+                float hypR = 2.0 * atanh(r);
+                
+                // Tiling parameters
+                float angleStep = 2.0 * PI / u_paramP;
+                float radialStep = log(3.0) / u_paramQ; // Approximation
+                
+                // Répétition angulaire
+                float modAngle = mod(angle + PI/u_paramP, angleStep) - angleStep/2.0;
+                
+                // Répétition radiale
+                float modRadius = mod(hypR, radialStep) - radialStep/2.0;
+                
+                // Distance aux lignes du tiling
+                float angleDist = abs(modAngle) * r * 50.0;
+                float radialDist = abs(modRadius) * 20.0;
+                
+                return min(angleDist, radialDist) - 0.02;
+            }
+
+            // SDF pour tiling sphérique
+            float sphericalTiling(vec3 pos) {
+                vec3 p = normalize(pos) * u_tilingRadius;
+                
+                // Coordonnées sphériques
+                float theta = acos(p.z / length(p));
+                float phi = atan(p.y, p.x);
+                
+                // Répétition
+                float thetaStep = PI / u_paramP;
+                float phiStep = 2.0 * PI / u_paramQ;
+                
+                float modTheta = mod(theta, thetaStep) - thetaStep/2.0;
+                float modPhi = mod(phi + PI/u_paramQ, phiStep) - phiStep/2.0;
+                
+                float thetaDist = abs(modTheta) * u_tilingRadius * 10.0;
+                float phiDist = abs(modPhi) * sin(theta) * u_tilingRadius * 10.0;
+                
+                return min(thetaDist, phiDist) - 0.05;
+            }
+
+            // SDF principal
+            float sceneSDF(vec3 pos) {
+                if (u_geometry == 0) { // Hyperbolique
+                    return hyperbolicTiling(pos);
+                } else if (u_geometry == 1) { // Sphérique
+                    return sphericalTiling(pos);
+                } else if (u_geometry == 2) { // Euclidienne
+                    vec2 p = pos.xy;
+                    vec2 grid = abs(fract(p) - 0.5) - 0.4;
+                    return min(max(grid.x, grid.y), 0.0) + length(max(grid, 0.0)) - 0.02;
+                } else { // H² × E
+                    float h2 = hyperbolicTiling(vec3(pos.xy, 0.0));
+                    float e1 = abs(mod(pos.z, 1.0) - 0.5) - 0.4;
+                    return max(h2, e1);
+                }
+            }
+
+            // Raymarching
+            float rayMarch(vec3 ro, vec3 rd) {
+                float t = 0.0;
+                
+                for (int i = 0; i < MAX_STEPS; i++) {
+                    vec3 pos = ro + t * rd;
+                    float d = sceneSDF(pos);
+                    
+                    if (d < MIN_DIST) break;
+                    if (t > u_maxDistance) break;
+                    
+                    t += d * 0.8; // Sous-relaxation pour stabilité
+                }
+                
+                return t;
+            }
+
+            // Calcul des normales
+            vec3 calcNormal(vec3 pos) {
+                vec2 e = vec2(0.001, 0.0);
+                return normalize(vec3(
+                    sceneSDF(pos + e.xyy) - sceneSDF(pos - e.xyy),
+                    sceneSDF(pos + e.yxy) - sceneSDF(pos - e.yxy),
+                    sceneSDF(pos + e.yyx) - sceneSDF(pos - e.yyx)
+                ));
+            }
+
+            // Éclairage
+            vec3 lighting(vec3 pos, vec3 normal, vec3 viewDir) {
+                vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+                vec3 lightColor = vec3(1.0, 0.9, 0.8);
+                
+                // Diffuse
+                float diff = max(dot(normal, lightDir), 0.0);
+                vec3 diffuse = diff * lightColor;
+                
+                // Specular
+                vec3 reflectDir = reflect(-lightDir, normal);
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+                vec3 specular = spec * lightColor * 0.5;
+                
+                // Ambient
+                vec3 ambient = vec3(0.1, 0.1, 0.2);
+                
+                // Couleur basée sur la géométrie
+                vec3 baseColor;
+                if (u_geometry == 0) {
+                    baseColor = vec3(0.8, 0.3, 1.0); // Violet pour hyperbolique
+                } else if (u_geometry == 1) {
+                    baseColor = vec3(0.3, 0.8, 1.0); // Cyan pour sphérique
+                } else if (u_geometry == 2) {
+                    baseColor = vec3(0.8, 0.8, 0.3); // Jaune pour euclidienne
+                } else {
+                    baseColor = vec3(1.0, 0.5, 0.3); // Orange pour H²×E
+                }
+                
+                return baseColor * (ambient + diffuse) + specular;
+            }
+
+            void main() {
+                vec2 uv = (vUv - 0.5) * 2.0;
+                uv.x *= u_resolution.x / u_resolution.y;
+                
+                // Configuration caméra
+                vec3 ro = u_cameraPos;
+                vec3 rd = normalize(vec3(uv, 1.0));
+                
+                // Rotation de la caméra
+                rd = rotateX(u_cameraRot.y) * rotateY(u_cameraRot.x) * rd;
+                
+                // Raymarching
+                float t = rayMarch(ro, rd);
+                
+                vec3 color = vec3(0.0);
+                
+                if (t < u_maxDistance) {
+                    vec3 pos = ro + t * rd;
+                    vec3 normal = calcNormal(pos);
+                    vec3 viewDir = -rd;
+                    
+                    color = lighting(pos, normal, viewDir);
+                    
+                    // Fog basé sur la distance
+                    float fog = exp(-t * 0.1);
+                    color = mix(vec3(0.0, 0.0, 0.1), color, fog);
+                } else {
+                    // Background gradient
+                    color = mix(vec3(0.0, 0.0, 0.1), vec3(0.1, 0.0, 0.2), uv.y * 0.5 + 0.5);
+                }
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // Uniforms
+            uniforms = {
+                u_time: { value: 0 },
+                u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                u_geometry: { value: 0 }, // 0=hyperbolique, 1=sphérique, 2=euclidienne, 3=H²×E
+                u_curvature: { value: -1.0 },
+                u_tilingRadius: { value: 1.5 },
+                u_paramP: { value: 7 },
+                u_paramQ: { value: 3 },
+                u_maxDistance: { value: 20.0 },
+                u_cameraPos: { value: new THREE.Vector3(0, 0, 0) },
+                u_cameraRot: { value: new THREE.Vector2(0, 0) }
+            };
+
+            // Material
+            material = new THREE.ShaderMaterial({
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                uniforms: uniforms
+            });
+
+            // Geometry (fullscreen quad)
+            const geometry = new THREE.PlaneGeometry(2, 2);
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            // Event listeners
+            setupControls();
+            setupUI();
+            
+            // Start animation
+            animate();
+        }
+
+        function setupControls() {
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    isPaused = !isPaused;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            // Mouse
+            let isMouseDown = false;
+            
+            renderer.domElement.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isMouseDown) {
+                    const sensitivity = 0.005;
+                    cameraRotation.x += e.movementX * sensitivity;
+                    cameraRotation.y -= e.movementY * sensitivity;
+                    cameraRotation.y = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.y));
+                }
+            });
+
+            // Scroll pour zoom
+            renderer.domElement.addEventListener('wheel', (e) => {
+                const zoomSpeed = 0.1;
+                cameraPosition.z += e.deltaY * zoomSpeed * 0.01;
+                cameraPosition.z = Math.max(-5, Math.min(5, cameraPosition.z));
+            });
+        }
+
+        function setupUI() {
+            const geometryDescriptions = {
+                'hyperbolic': 'Espace hyperbolique avec courbure négative constante. Les triangles ont une somme d\'angles < π.',
+                'spherical': 'Espace sphérique avec courbure positive constante. Les triangles ont une somme d\'angles > π.',
+                'euclidean': 'Espace euclidien plat avec courbure nulle. Les triangles ont une somme d\'angles = π.',
+                'h2xe': 'Produit d\'un plan hyperbolique H² avec une ligne euclidienne E.'
+            };
+
+            const geometryTitles = {
+                'hyperbolic': 'Géométrie Hyperbolique (H³)',
+                'spherical': 'Géométrie Sphérique (S³)',
+                'euclidean': 'Géométrie Euclidienne (E³)',
+                'h2xe': 'Géométrie H² × E'
+            };
+
+            // Setup sliders
+            const sliders = ['curvature', 'tilingRadius', 'paramP', 'paramQ', 'animSpeed', 'maxDistance'];
+            sliders.forEach(name => {
+                const slider = document.getElementById(name);
+                const display = document.getElementById(name + 'Value');
+                
+                slider.addEventListener('input', () => {
+                    const value = parseFloat(slider.value);
+                    display.textContent = value.toFixed(1);
+                    
+                    if (name === 'curvature') uniforms.u_curvature.value = value;
+                    else if (name === 'tilingRadius') uniforms.u_tilingRadius.value = value;
+                    else if (name === 'paramP') uniforms.u_paramP.value = value;
+                    else if (name === 'paramQ') uniforms.u_paramQ.value = value;
+                    else if (name === 'maxDistance') uniforms.u_maxDistance.value = value;
+                });
+            });
+
+            // Geometry selector
+            document.getElementById('geometryType').addEventListener('change', (e) => {
+                const type = e.target.value;
+                const geometryMap = {
+                    'hyperbolic': 0,
+                    'spherical': 1,
+                    'euclidean': 2,
+                    'h2xe': 3
+                };
+                
+                uniforms.u_geometry.value = geometryMap[type];
+                document.getElementById('geometryTitle').textContent = geometryTitles[type];
+                document.getElementById('geometryDesc').textContent = geometryDescriptions[type];
+            });
+        }
+
+        function updateCamera() {
+            const speed = 0.02;
+            
+            if (keys['KeyW']) cameraPosition.y += speed;
+            if (keys['KeyS']) cameraPosition.y -= speed;
+            if (keys['KeyA']) cameraPosition.x -= speed;
+            if (keys['KeyD']) cameraPosition.x += speed;
+            
+            uniforms.u_cameraPos.value.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+            uniforms.u_cameraRot.value.set(cameraRotation.x, cameraRotation.y);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastTime >= 1000) {
+                document.getElementById('fpsValue').textContent = Math.round(frameCount * 1000 / (currentTime - lastTime));
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            if (!isPaused) {
+                const animSpeed = parseFloat(document.getElementById('animSpeed').value);
+                uniforms.u_time.value = clock.getElapsedTime() * animSpeed;
+            }
+            
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
