@@ -233,4 +233,120 @@ public class ScenarioService {
             return null;
         }
     }
+
+    public Map<String, Object> useArtifact(Map<String, Object> artifactData) {
+        String hero = (String) artifactData.get("hero");
+        String artifact = (String) artifactData.get("artifact");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> artifactStats = (Map<String, Object>) artifactData.get("artifact_stats");
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("artifact", artifact);
+        result.put("hero", hero);
+        
+        // Traiter selon le type d'artefact
+        switch (artifact.toLowerCase()) {
+            case "excalibur":
+                processExcalibur(artifactData, result);
+                break;
+            case "healing_potion":
+                processHealingPotion(artifactData, result);
+                break;
+            case "fireball_scroll":
+                processFireballScroll(artifactData, result);
+                break;
+            case "teleport_ring":
+                processTeleportRing(artifactData, result);
+                break;
+            default:
+                processGenericArtifact(artifactData, result);
+                break;
+        }
+        
+        System.out.println("🪙 Artefact traité: " + artifact + " par " + hero);
+        return result;
+    }
+    
+    private void processExcalibur(Map<String, Object> artifactData, Map<String, Object> result) {
+        String target = (String) artifactData.get("target");
+        
+        result.put("effect", "LEGENDARY_STRIKE");
+        result.put("damage", 100);
+        result.put("special_effects", Arrays.asList("DIVINE_LIGHT", "TEMPORAL_CUT"));
+        result.put("narrative", "⚔️ Excalibur brille d'une lumière divine! La lame légendaire tranche la réalité elle-même!");
+        result.put("target_affected", target);
+        result.put("energy_cost", 80);
+        result.put("rarity", "legendary");
+    }
+    
+    private void processHealingPotion(Map<String, Object> artifactData, Map<String, Object> result) {
+        String hero = (String) artifactData.get("hero");
+        
+        result.put("effect", "HEALING");
+        result.put("healing", 50);
+        result.put("special_effects", Arrays.asList("HEALING_GLOW"));
+        result.put("narrative", "✨ " + hero + " boit la potion! Une lueur curative l'enveloppe, restaurant sa vitalité!");
+        result.put("target_affected", hero);
+        result.put("energy_cost", 10);
+        result.put("rarity", "common");
+        
+        // Mettre à jour l'état du héros
+        Map<String, Object> heroState = new HashMap<>();
+        heroState.put("hp_restored", 50);
+        heroState.put("status", "healed");
+        result.put("hero_state", heroState);
+    }
+    
+    private void processFireballScroll(Map<String, Object> artifactData, Map<String, Object> result) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> targetArea = (Map<String, Object>) artifactData.get("target_area");
+        
+        result.put("effect", "AREA_DAMAGE");
+        result.put("damage", 40);
+        result.put("area_radius", 2);
+        result.put("special_effects", Arrays.asList("FIRE_EXPLOSION"));
+        result.put("narrative", "🔥 Le parchemin s'embrase! Une boule de feu explose en une gerbe de flammes destructrices!");
+        result.put("target_affected", targetArea);
+        result.put("energy_cost", 35);
+        result.put("rarity", "rare");
+    }
+    
+    private void processTeleportRing(Map<String, Object> artifactData, Map<String, Object> result) {
+        String hero = (String) artifactData.get("hero");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> targetPos = (Map<String, Object>) artifactData.get("target_position");
+        
+        result.put("effect", "TELEPORTATION");
+        result.put("teleport_distance", calculateDistance(targetPos));
+        result.put("special_effects", Arrays.asList("TELEPORT_FLASH"));
+        result.put("narrative", "🌀 " + hero + " active l'anneau! Un flash lumineux et il disparaît, réapparaissant instantanément ailleurs!");
+        result.put("target_affected", hero);
+        result.put("new_position", targetPos);
+        result.put("energy_cost", 40);
+        result.put("rarity", "rare");
+        
+        // Mettre à jour l'état du héros
+        Map<String, Object> heroState = new HashMap<>();
+        heroState.put("position", targetPos);
+        heroState.put("teleported", true);
+        result.put("hero_state", heroState);
+    }
+    
+    private void processGenericArtifact(Map<String, Object> artifactData, Map<String, Object> result) {
+        String artifact = (String) artifactData.get("artifact");
+        String hero = (String) artifactData.get("hero");
+        
+        result.put("effect", "GENERIC_MAGIC");
+        result.put("damage", 15);
+        result.put("narrative", "⚡ " + hero + " utilise " + artifact + "! L'artefact libère son pouvoir magique!");
+        result.put("energy_cost", 25);
+        result.put("rarity", "uncommon");
+    }
+    
+    private double calculateDistance(Map<String, Object> targetPos) {
+        // Calcul simple de distance pour la téléportation
+        int x = (Integer) targetPos.getOrDefault("x", 0);
+        int y = (Integer) targetPos.getOrDefault("y", 0);
+        return Math.sqrt(x * x + y * y);
+    }
 }

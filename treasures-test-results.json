@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-08-06T04:06:22.931518",
+  "timestamp": "2025-08-06T04:20:35.908260",
   "summary": {
     "total_tests": 12,
-    "passed_tests": 4,
-    "success_rate": 33.33333333333333,
+    "passed_tests": 11,
+    "success_rate": 91.66666666666666,
     "categories": {
       "Cr\u00e9atures": [
         {
@@ -18,7 +18,7 @@
             "enemy": "quantum_phoenix",
             "turn": 1,
             "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-            "combat_id": "combat_1754453182890",
+            "combat_id": "combat_1754454035830",
             "available_cards": [
               "fireball",
               "shield",
@@ -27,14 +27,14 @@
               "temporal_strike"
             ]
           },
-          "timestamp": "2025-08-06T04:06:22.891861"
+          "timestamp": "2025-08-06T04:20:35.832829"
         },
         {
           "test": "C.1b Capacit\u00e9 quantum_rebirth",
           "success": false,
           "details": "Capacit\u00e9 non support\u00e9e (normal)",
           "response": null,
-          "timestamp": "2025-08-06T04:06:22.896939"
+          "timestamp": "2025-08-06T04:20:35.855645"
         },
         {
           "test": "C.2 Combat Chevalier Quantique",
@@ -48,7 +48,7 @@
             "enemy": "quantum_knight",
             "turn": 1,
             "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-            "combat_id": "combat_1754453182898",
+            "combat_id": "combat_1754454035857",
             "available_cards": [
               "fireball",
               "shield",
@@ -57,7 +57,7 @@
               "temporal_strike"
             ]
           },
-          "timestamp": "2025-08-06T04:06:22.899631"
+          "timestamp": "2025-08-06T04:20:35.858496"
         },
         {
           "test": "C.3 Combat Liche Quantique",
@@ -71,7 +71,7 @@
             "enemy": "quantum_lich",
             "turn": 1,
             "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-            "combat_id": "combat_1754453182901",
+            "combat_id": "combat_1754454035860",
             "available_cards": [
               "fireball",
               "shield",
@@ -80,83 +80,165 @@
               "temporal_strike"
             ]
           },
-          "timestamp": "2025-08-06T04:06:22.902088"
+          "timestamp": "2025-08-06T04:20:35.861347"
         }
       ],
       "Artefacts": [
         {
           "test": "A.1 Utiliser Excalibur",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.905685"
+          "success": true,
+          "details": "Excalibur utilis\u00e9e: LEGENDARY_STRIKE(target, 100) + DIVINE_LIGHT(area, 3) + TEMPORAL_CUT(reality)",
+          "response": {
+            "artifact": "excalibur",
+            "damage": 100,
+            "healing": null,
+            "success": true,
+            "effect": "LEGENDARY_STRIKE",
+            "narrative": "\u2694\ufe0f Excalibur brille d'une lumi\u00e8re divine! La lame l\u00e9gendaire tranche la r\u00e9alit\u00e9 elle-m\u00eame!",
+            "hero_state": null,
+            "target_affected": "quantum_dragon"
+          },
+          "timestamp": "2025-08-06T04:20:35.864677"
         },
         {
           "test": "A.2 Potion de Soin",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.908728"
+          "success": true,
+          "details": "Potion utilis\u00e9e: +50 HP",
+          "response": {
+            "artifact": "healing_potion",
+            "damage": null,
+            "healing": 50,
+            "success": true,
+            "effect": "HEALING",
+            "narrative": "\u2728 jean-grofignon boit la potion! Une lueur curative l'enveloppe, restaurant sa vitalit\u00e9!",
+            "hero_state": {
+              "hp_restored": 50,
+              "status": "healed"
+            },
+            "target_affected": "jean-grofignon"
+          },
+          "timestamp": "2025-08-06T04:20:35.869247"
         },
         {
           "test": "A.3 Parchemin Boule de Feu",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.911530"
+          "success": true,
+          "details": "Boule de feu: 40 d\u00e9g\u00e2ts zone",
+          "response": {
+            "artifact": "fireball_scroll",
+            "damage": 40,
+            "healing": null,
+            "success": true,
+            "effect": "AREA_DAMAGE",
+            "narrative": "\ud83d\udd25 Le parchemin s'embrase! Une boule de feu explose en une gerbe de flammes destructrices!",
+            "hero_state": null,
+            "target_affected": {
+              "x": 10,
+              "y": 10,
+              "radius": 2
+            }
+          },
+          "timestamp": "2025-08-06T04:20:35.872437"
         },
         {
           "test": "A.4 Anneau T\u00e9l\u00e9portation",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.914601"
+          "success": true,
+          "details": "T\u00e9l\u00e9portation vers (50,50)",
+          "response": {
+            "artifact": "teleport_ring",
+            "damage": null,
+            "healing": null,
+            "success": true,
+            "effect": "TELEPORTATION",
+            "narrative": "\ud83c\udf00 jean-grofignon active l'anneau! Un flash lumineux et il dispara\u00eet, r\u00e9apparaissant instantan\u00e9ment ailleurs!",
+            "hero_state": {
+              "teleported": true,
+              "position": {
+                "x": 50,
+                "y": 50
+              }
+            },
+            "target_affected": "jean-grofignon"
+          },
+          "timestamp": "2025-08-06T04:20:35.875391"
         }
       ],
       "Formules": [
         {
           "test": "F.1 Formule Temporelle",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.917863"
+          "success": true,
+          "details": "Formule temporelle: Fige le moment pr\u00e9sent",
+          "response": {
+            "caster": "jean-grofignon",
+            "reality_altered": true,
+            "success": true,
+            "effect": "TIME_FREEZE",
+            "narrative": "\u23f0 jean-grofignon fige le moment pr\u00e9sent! Le temps s'arr\u00eate autour de lui, cr\u00e9ant une bulle temporelle!",
+            "timeline_affected": false,
+            "formula": "\u2299(temps) + \u2020\u03c8(pr\u00e9sent) \u2192 \u0394t+0(maintenant)",
+            "temporal_impact": "LOCAL_TIME_STOP",
+            "power_level": "MODERATE",
+            "energy_consumed": 30
+          },
+          "timestamp": "2025-08-06T04:20:35.878871"
         },
         {
           "test": "F.2 Formule Paradoxe",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.920913"
+          "success": true,
+          "details": "Formule de paradoxe: R\u00e9sout les paradoxes temporels",
+          "response": {
+            "caster": "jean-grofignon",
+            "reality_altered": true,
+            "success": true,
+            "effect": "PARADOX_RESOLUTION",
+            "narrative": "\ud83c\udf00 jean-grofignon r\u00e9sout les paradoxes temporels! Les branches conflictuelles se fusionnent harmonieusement!",
+            "timeline_affected": true,
+            "formula": "\u03a0(paradoxe) + \u212c7(branches) \u27f6 \u0394t+\u221e(r\u00e9solution)",
+            "temporal_impact": "PARADOX_ELIMINATED",
+            "power_level": "HIGH",
+            "energy_consumed": 60
+          },
+          "timestamp": "2025-08-06T04:20:35.881936"
         },
         {
           "test": "F.3 Formule Victoire",
-          "success": false,
-          "details": "Erreur HTTP 404",
-          "response": null,
-          "timestamp": "2025-08-06T04:06:22.923465"
+          "success": true,
+          "details": "Formule ultime: Unifie les timelines pour la victoire",
+          "response": {
+            "caster": "jean-grofignon",
+            "reality_altered": true,
+            "success": true,
+            "effect": "ULTIMATE_VICTORY",
+            "narrative": "\ud83c\udf1f jean-grofignon unifie toutes les timelines! Un pouvoir cosmique \u00e9mane de lui, forgeant la victoire ultime!",
+            "timeline_affected": true,
+            "formula": "\u2299(h\u00e9ros) + \u2299(timeline) + \u2020\u03c8(fusion) \u2192 \u0394t+1(victoire)",
+            "temporal_impact": "TIMELINE_CONVERGENCE",
+            "power_level": "LEGENDARY",
+            "energy_consumed": 100
+          },
+          "timestamp": "2025-08-06T04:20:35.885202"
         }
       ],
       "Sc\u00e9narios": [
         {
           "test": "S.1 Sc\u00e9nario Excalibur vs Liche",
           "success": true,
-          "details": "Excalibur vs Liche: 22 d\u00e9g\u00e2ts, Fini: False, Vainqueur: None",
+          "details": "Excalibur vs Liche: 20 d\u00e9g\u00e2ts, Fini: False, Vainqueur: None",
           "response": {
             "card_played": "excalibur_strike",
             "combat_finished": false,
-            "damage_dealt": 22,
+            "damage_dealt": 20,
             "winner": null,
             "next_available_cards": [
               "fireball",
               "shield"
             ],
             "success": true,
-            "hero_hp": 83,
-            "narrative": "\u26a1 arthur-quantique utilise excalibur_strike! 22 d\u00e9g\u00e2ts!",
-            "enemy_hp": 78,
-            "combat_id": "combat_1754453182927"
+            "hero_hp": 88,
+            "narrative": "\u26a1 arthur-quantique utilise excalibur_strike! 20 d\u00e9g\u00e2ts!",
+            "enemy_hp": 80,
+            "combat_id": "combat_1754454035900"
           },
-          "timestamp": "2025-08-06T04:06:22.931304"
+          "timestamp": "2025-08-06T04:20:35.907209"
         }
       ]
     }
@@ -174,7 +256,7 @@
         "enemy": "quantum_phoenix",
         "turn": 1,
         "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-        "combat_id": "combat_1754453182890",
+        "combat_id": "combat_1754454035830",
         "available_cards": [
           "fireball",
           "shield",
@@ -183,14 +265,14 @@
           "temporal_strike"
         ]
       },
-      "timestamp": "2025-08-06T04:06:22.891861"
+      "timestamp": "2025-08-06T04:20:35.832829"
     },
     {
       "test": "C.1b Capacit\u00e9 quantum_rebirth",
       "success": false,
       "details": "Capacit\u00e9 non support\u00e9e (normal)",
       "response": null,
-      "timestamp": "2025-08-06T04:06:22.896939"
+      "timestamp": "2025-08-06T04:20:35.855645"
     },
     {
       "test": "C.2 Combat Chevalier Quantique",
@@ -204,7 +286,7 @@
         "enemy": "quantum_knight",
         "turn": 1,
         "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-        "combat_id": "combat_1754453182898",
+        "combat_id": "combat_1754454035857",
         "available_cards": [
           "fireball",
           "shield",
@@ -213,7 +295,7 @@
           "temporal_strike"
         ]
       },
-      "timestamp": "2025-08-06T04:06:22.899631"
+      "timestamp": "2025-08-06T04:20:35.858496"
     },
     {
       "test": "C.3 Combat Liche Quantique",
@@ -227,7 +309,7 @@
         "enemy": "quantum_lich",
         "turn": 1,
         "message": "Combat initi\u00e9! Choisissez votre premi\u00e8re carte.",
-        "combat_id": "combat_1754453182901",
+        "combat_id": "combat_1754454035860",
         "available_cards": [
           "fireball",
           "shield",
@@ -236,77 +318,159 @@
           "temporal_strike"
         ]
       },
-      "timestamp": "2025-08-06T04:06:22.902088"
+      "timestamp": "2025-08-06T04:20:35.861347"
     },
     {
       "test": "A.1 Utiliser Excalibur",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.905685"
+      "success": true,
+      "details": "Excalibur utilis\u00e9e: LEGENDARY_STRIKE(target, 100) + DIVINE_LIGHT(area, 3) + TEMPORAL_CUT(reality)",
+      "response": {
+        "artifact": "excalibur",
+        "damage": 100,
+        "healing": null,
+        "success": true,
+        "effect": "LEGENDARY_STRIKE",
+        "narrative": "\u2694\ufe0f Excalibur brille d'une lumi\u00e8re divine! La lame l\u00e9gendaire tranche la r\u00e9alit\u00e9 elle-m\u00eame!",
+        "hero_state": null,
+        "target_affected": "quantum_dragon"
+      },
+      "timestamp": "2025-08-06T04:20:35.864677"
     },
     {
       "test": "A.2 Potion de Soin",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.908728"
+      "success": true,
+      "details": "Potion utilis\u00e9e: +50 HP",
+      "response": {
+        "artifact": "healing_potion",
+        "damage": null,
+        "healing": 50,
+        "success": true,
+        "effect": "HEALING",
+        "narrative": "\u2728 jean-grofignon boit la potion! Une lueur curative l'enveloppe, restaurant sa vitalit\u00e9!",
+        "hero_state": {
+          "hp_restored": 50,
+          "status": "healed"
+        },
+        "target_affected": "jean-grofignon"
+      },
+      "timestamp": "2025-08-06T04:20:35.869247"
     },
     {
       "test": "A.3 Parchemin Boule de Feu",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.911530"
+      "success": true,
+      "details": "Boule de feu: 40 d\u00e9g\u00e2ts zone",
+      "response": {
+        "artifact": "fireball_scroll",
+        "damage": 40,
+        "healing": null,
+        "success": true,
+        "effect": "AREA_DAMAGE",
+        "narrative": "\ud83d\udd25 Le parchemin s'embrase! Une boule de feu explose en une gerbe de flammes destructrices!",
+        "hero_state": null,
+        "target_affected": {
+          "x": 10,
+          "y": 10,
+          "radius": 2
+        }
+      },
+      "timestamp": "2025-08-06T04:20:35.872437"
     },
     {
       "test": "A.4 Anneau T\u00e9l\u00e9portation",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.914601"
+      "success": true,
+      "details": "T\u00e9l\u00e9portation vers (50,50)",
+      "response": {
+        "artifact": "teleport_ring",
+        "damage": null,
+        "healing": null,
+        "success": true,
+        "effect": "TELEPORTATION",
+        "narrative": "\ud83c\udf00 jean-grofignon active l'anneau! Un flash lumineux et il dispara\u00eet, r\u00e9apparaissant instantan\u00e9ment ailleurs!",
+        "hero_state": {
+          "teleported": true,
+          "position": {
+            "x": 50,
+            "y": 50
+          }
+        },
+        "target_affected": "jean-grofignon"
+      },
+      "timestamp": "2025-08-06T04:20:35.875391"
     },
     {
       "test": "F.1 Formule Temporelle",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.917863"
+      "success": true,
+      "details": "Formule temporelle: Fige le moment pr\u00e9sent",
+      "response": {
+        "caster": "jean-grofignon",
+        "reality_altered": true,
+        "success": true,
+        "effect": "TIME_FREEZE",
+        "narrative": "\u23f0 jean-grofignon fige le moment pr\u00e9sent! Le temps s'arr\u00eate autour de lui, cr\u00e9ant une bulle temporelle!",
+        "timeline_affected": false,
+        "formula": "\u2299(temps) + \u2020\u03c8(pr\u00e9sent) \u2192 \u0394t+0(maintenant)",
+        "temporal_impact": "LOCAL_TIME_STOP",
+        "power_level": "MODERATE",
+        "energy_consumed": 30
+      },
+      "timestamp": "2025-08-06T04:20:35.878871"
     },
     {
       "test": "F.2 Formule Paradoxe",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.920913"
+      "success": true,
+      "details": "Formule de paradoxe: R\u00e9sout les paradoxes temporels",
+      "response": {
+        "caster": "jean-grofignon",
+        "reality_altered": true,
+        "success": true,
+        "effect": "PARADOX_RESOLUTION",
+        "narrative": "\ud83c\udf00 jean-grofignon r\u00e9sout les paradoxes temporels! Les branches conflictuelles se fusionnent harmonieusement!",
+        "timeline_affected": true,
+        "formula": "\u03a0(paradoxe) + \u212c7(branches) \u27f6 \u0394t+\u221e(r\u00e9solution)",
+        "temporal_impact": "PARADOX_ELIMINATED",
+        "power_level": "HIGH",
+        "energy_consumed": 60
+      },
+      "timestamp": "2025-08-06T04:20:35.881936"
     },
     {
       "test": "F.3 Formule Victoire",
-      "success": false,
-      "details": "Erreur HTTP 404",
-      "response": null,
-      "timestamp": "2025-08-06T04:06:22.923465"
+      "success": true,
+      "details": "Formule ultime: Unifie les timelines pour la victoire",
+      "response": {
+        "caster": "jean-grofignon",
+        "reality_altered": true,
+        "success": true,
+        "effect": "ULTIMATE_VICTORY",
+        "narrative": "\ud83c\udf1f jean-grofignon unifie toutes les timelines! Un pouvoir cosmique \u00e9mane de lui, forgeant la victoire ultime!",
+        "timeline_affected": true,
+        "formula": "\u2299(h\u00e9ros) + \u2299(timeline) + \u2020\u03c8(fusion) \u2192 \u0394t+1(victoire)",
+        "temporal_impact": "TIMELINE_CONVERGENCE",
+        "power_level": "LEGENDARY",
+        "energy_consumed": 100
+      },
+      "timestamp": "2025-08-06T04:20:35.885202"
     },
     {
       "test": "S.1 Sc\u00e9nario Excalibur vs Liche",
       "success": true,
-      "details": "Excalibur vs Liche: 22 d\u00e9g\u00e2ts, Fini: False, Vainqueur: None",
+      "details": "Excalibur vs Liche: 20 d\u00e9g\u00e2ts, Fini: False, Vainqueur: None",
       "response": {
         "card_played": "excalibur_strike",
         "combat_finished": false,
-        "damage_dealt": 22,
+        "damage_dealt": 20,
         "winner": null,
         "next_available_cards": [
           "fireball",
           "shield"
         ],
         "success": true,
-        "hero_hp": 83,
-        "narrative": "\u26a1 arthur-quantique utilise excalibur_strike! 22 d\u00e9g\u00e2ts!",
-        "enemy_hp": 78,
-        "combat_id": "combat_1754453182927"
+        "hero_hp": 88,
+        "narrative": "\u26a1 arthur-quantique utilise excalibur_strike! 20 d\u00e9g\u00e2ts!",
+        "enemy_hp": 80,
+        "combat_id": "combat_1754454035900"
       },
-      "timestamp": "2025-08-06T04:06:22.931304"
+      "timestamp": "2025-08-06T04:20:35.907209"
     }
   ]
 }

@@ -197,4 +197,36 @@ public class IntersticeController {
             return error;
         }
     }
+
+    @PostMapping("/cast-formula")
+    public Map<String, Object> castFormula(@RequestBody Map<String, Object> formulaData) {
+        System.out.println("⚡ Lancement de formule magique");
+        System.out.println("📝 Données: " + formulaData);
+        
+        try {
+            Map<String, Object> result = intersticeService.castMagicalFormula(formulaData);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("formula", result.get("formula"));
+            response.put("caster", result.get("caster"));
+            response.put("effect", result.get("effect"));
+            response.put("power_level", result.get("power_level"));
+            response.put("energy_consumed", result.get("energy_consumed"));
+            response.put("narrative", result.get("narrative"));
+            response.put("temporal_impact", result.get("temporal_impact"));
+            response.put("reality_altered", result.get("reality_altered"));
+            response.put("timeline_affected", result.get("timeline_affected"));
+            
+            System.out.println("✅ Formule lancée: " + result.get("formula"));
+            
+            return response;
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return error;
+        }
+    }
 }

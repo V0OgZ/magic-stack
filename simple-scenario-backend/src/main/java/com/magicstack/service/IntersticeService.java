@@ -160,6 +160,156 @@ public class IntersticeService {
         return result;
     }
 
+    public Map<String, Object> castMagicalFormula(Map<String, Object> formulaData) {
+        String caster = (String) formulaData.get("caster");
+        String formula = (String) formulaData.get("formula");
+        String context = (String) formulaData.get("context");
+        Integer energyCost = (Integer) formulaData.getOrDefault("energy_cost", 30);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("formula", formula);
+        result.put("caster", caster);
+        result.put("context", context);
+        result.put("energy_consumed", energyCost);
+        
+        // Analyser et traiter la formule selon son type
+        if (formula.contains("⊙(temps)") && formula.contains("†ψ(présent)")) {
+            processTimeFreeze(formulaData, result);
+        } else if (formula.contains("Π(paradoxe)") && formula.contains("ℬ7(branches)")) {
+            processParadoxResolution(formulaData, result);
+        } else if (formula.contains("⊙(héros)") && formula.contains("†ψ(fusion)")) {
+            processUltimateVictory(formulaData, result);
+        } else if (formula.contains("LEGENDARY_STRIKE")) {
+            processLegendaryStrike(formulaData, result);
+        } else if (formula.contains("MODIFY_ENERGY")) {
+            processEnergyModification(formulaData, result);
+        } else if (formula.contains("AREA_DAMAGE")) {
+            processAreaDamage(formulaData, result);
+        } else if (formula.contains("TELEPORT_HERO")) {
+            processTeleportation(formulaData, result);
+        } else {
+            processGenericFormula(formulaData, result);
+        }
+        
+        System.out.println("⚡ Formule magique traitée: " + formula + " par " + caster);
+        return result;
+    }
+    
+    private void processTimeFreeze(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "TIME_FREEZE");
+        result.put("power_level", "MODERATE");
+        result.put("narrative", "⏰ " + caster + " fige le moment présent! Le temps s'arrête autour de lui, créant une bulle temporelle!");
+        result.put("temporal_impact", "LOCAL_TIME_STOP");
+        result.put("reality_altered", true);
+        result.put("timeline_affected", false);
+        result.put("duration", "30_seconds");
+    }
+    
+    private void processParadoxResolution(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "PARADOX_RESOLUTION");
+        result.put("power_level", "HIGH");
+        result.put("narrative", "🌀 " + caster + " résout les paradoxes temporels! Les branches conflictuelles se fusionnent harmonieusement!");
+        result.put("temporal_impact", "PARADOX_ELIMINATED");
+        result.put("reality_altered", true);
+        result.put("timeline_affected", true);
+        result.put("branches_resolved", 7);
+        result.put("stability_gained", 0.8);
+    }
+    
+    private void processUltimateVictory(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "ULTIMATE_VICTORY");
+        result.put("power_level", "LEGENDARY");
+        result.put("narrative", "🌟 " + caster + " unifie toutes les timelines! Un pouvoir cosmique émane de lui, forgeant la victoire ultime!");
+        result.put("temporal_impact", "TIMELINE_CONVERGENCE");
+        result.put("reality_altered", true);
+        result.put("timeline_affected", true);
+        result.put("victory_achieved", true);
+        result.put("cosmic_power", true);
+    }
+    
+    private void processLegendaryStrike(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "LEGENDARY_STRIKE");
+        result.put("power_level", "LEGENDARY");
+        result.put("narrative", "⚔️ " + caster + " déchaîne une frappe légendaire! La réalité tremble sous la puissance divine!");
+        result.put("temporal_impact", "REALITY_CUT");
+        result.put("reality_altered", true);
+        result.put("timeline_affected", false);
+        result.put("damage", 100);
+        result.put("divine_light", true);
+    }
+    
+    private void processEnergyModification(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "ENERGY_MODIFICATION");
+        result.put("power_level", "MODERATE");
+        result.put("narrative", "✨ " + caster + " manipule l'énergie vitale! Les flux magiques se réorganisent selon sa volonté!");
+        result.put("temporal_impact", "ENERGY_FLOW_ALTERED");
+        result.put("reality_altered", false);
+        result.put("timeline_affected", false);
+        result.put("energy_modified", 50);
+        result.put("healing_glow", true);
+    }
+    
+    private void processAreaDamage(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "AREA_DAMAGE");
+        result.put("power_level", "HIGH");
+        result.put("narrative", "🔥 " + caster + " déchaîne une explosion destructrice! Les flammes magiques ravagent tout sur leur passage!");
+        result.put("temporal_impact", "LOCALIZED_DESTRUCTION");
+        result.put("reality_altered", false);
+        result.put("timeline_affected", false);
+        result.put("damage", 40);
+        result.put("area_radius", 2);
+        result.put("fire_explosion", true);
+    }
+    
+    private void processTeleportation(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        
+        result.put("effect", "TELEPORTATION");
+        result.put("power_level", "MODERATE");
+        result.put("narrative", "🌀 " + caster + " se téléporte instantanément! L'espace se plie à sa volonté!");
+        result.put("temporal_impact", "SPACE_FOLDING");
+        result.put("reality_altered", false);
+        result.put("timeline_affected", false);
+        result.put("teleport_flash", true);
+        result.put("instant_travel", true);
+    }
+    
+    private void processGenericFormula(Map<String, Object> formulaData, Map<String, Object> result) {
+        String caster = (String) formulaData.get("caster");
+        String formula = (String) formulaData.get("formula");
+        
+        result.put("effect", "GENERIC_MAGIC");
+        result.put("power_level", "MODERATE");
+        result.put("narrative", "⚡ " + caster + " lance une formule mystérieuse! L'énergie magique crépite dans l'air!");
+        result.put("temporal_impact", "MINOR_DISTURBANCE");
+        result.put("reality_altered", false);
+        result.put("timeline_affected", false);
+        result.put("magic_energy", true);
+        
+        // Analyser les symboles dans la formule pour plus de détails
+        if (formula.contains("⊙")) {
+            result.put("circle_power", true);
+        }
+        if (formula.contains("ψ")) {
+            result.put("psi_energy", true);
+        }
+        if (formula.contains("∆")) {
+            result.put("delta_change", true);
+        }
+    }
+
     // === MÉTHODES PRIVÉES ===
 
     private void generateTemporalAnomalyEvent(NarrativeEvent event) {
