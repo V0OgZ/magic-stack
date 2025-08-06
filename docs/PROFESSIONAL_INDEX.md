@@ -1,102 +1,76 @@
-# Magic Stack - Professional Documentation Index
+# 🎯 PROFESSIONAL INDEX - HEROES OF TIME
+*Complete documentation index for professional developers*
 
-## 📋 Complete Documentation Overview
+## 🎮 **GAMEPLAY DOCUMENTATION**
 
-### 🎮 Game Design Documentation
+- **[6D System Explained](6D_SYSTEM_EXPLAINED.md)** - Core 6D positioning system and mechanics
+- **[Temporal Grammar](TEMPORAL_GRAMMAR_FOR_DUDES.md)** - Time manipulation syntax and formulas
+- **[Formula Reference](FORMULA_REFERENCE.md)** - Complete catalog of magical formulas
+- **[AVALON Vision Manifest](AVALON_VISION_MANIFEST.md)** - Design philosophy and world-building principles
 
-#### Core Gameplay
-- **[Gameplay Essentials](gameplay/GAMEPLAY_ESSENTIAL_EN.md)** - Core mechanics and player experience
-- **[Ontology & Vision](gameplay/ONTOLOGY_VISION_EN.md)** - Design philosophy and world-building principles
+## 🔧 **DEVELOPER DOCUMENTATION**
 
-#### Game Physics
-- **[Physics & Formulas](dev/PHYSICS_FORMULAS_EN.md)** - Mathematical foundations and game mechanics
-- **[Temporal Grammar](grammaire/)** - Time manipulation syntax and rules
+- **[Getting Started](GETTING_STARTED_SIMPLE.md)** - Quick 5-minute setup guide
+- **[Installation Guide](INSTALLATION.md)** - Complete setup instructions
+- **[Developer Guide](DEVELOPER_GUIDE.md)** - Development workflow and standards
+- **[Technical Overview](TECHNICAL_OVERVIEW.md)** - Architecture and components
+- **[API Quick Reference](API_QUICK_REFERENCE.md)** - REST API endpoints and usage
 
-### 🔧 Technical Documentation
+## 📚 **ARCHITECTURE REFERENCE**
 
-#### Implementation Guides  
-- **[Technical Implementation](dev/DEV_TECHNICAL_EN.md)** - Development standards and practices
-- **[Visual Integration](dev/VISUAL_INTEGRATION_GUIDE_EN.md)** - UI/UX integration patterns
-- **[Architecture Overview](architecture/)** - System design and component relationships
-
-#### Development Tools
-- **[Testing Framework](tests/)** - Quality assurance and validation tools
-- **[API Reference](dev/)** - Interface specifications and examples
-
-### 🌍 Multilingual Support
-
-#### English Documentation (Primary)
-All core documents are maintained in English as the primary language:
-- Complete technical specifications
-- Full gameplay documentation  
-- Comprehensive API references
-
-#### French Documentation (Complete)
-Full French translations available for:
-- All gameplay guides
-- Technical implementation docs
-- Architecture specifications
-
-#### Russian Documentation (Selected)
-Key documents translated to Russian:
-- Core gameplay concepts
-- Essential technical guides
-- Selected architecture docs
-
-## 📂 Directory Structure
-
+### 🏗️ **Core Systems**
 ```
 docs/
-├── gameplay/              # Game design and mechanics
-│   ├── GAMEPLAY_ESSENTIAL_EN.md
-│   ├── ONTOLOGY_VISION_EN.md
-│   └── [French/Russian translations]
-├── dev/                   # Technical implementation
-│   ├── DEV_TECHNICAL_EN.md
-│   ├── PHYSICS_FORMULAS_EN.md
-│   ├── VISUAL_INTEGRATION_GUIDE_EN.md
-│   └── [API references]
-├── architecture/          # System design
-│   └── [Architecture specifications]
-├── grammaire/            # Grammar and syntax
-│   └── [Temporal grammar rules]
-└── tests/                # Testing and validation
-    └── [Test specifications]
+├── README.md                          # Main documentation index
+├── GETTING_STARTED_SIMPLE.md         # Quick start guide
+├── INSTALLATION.md                   # Setup instructions
+├── DEVELOPER_GUIDE.md               # Development workflow
+├── TECHNICAL_OVERVIEW.md            # System architecture
+├── 6D_SYSTEM_EXPLAINED.md           # Core 6D concepts
+├── API_QUICK_REFERENCE.md           # API endpoints
+├── FORMULA_REFERENCE.md             # Magic formulas
+├── TEMPORAL_GRAMMAR_FOR_DUDES.md    # Time syntax
+├── AVALON_VISION_MANIFEST.md        # Project vision
+├── PROFESSIONAL_INDEX.md            # This file
+├── archive/                         # Archived documentation
+└── international/                   # Internationalization docs
 ```
 
-## 🎯 Quick Navigation
+### 🎯 **Quick Navigation**
 
-### For New Developers
-1. Start with [Gameplay Essentials](gameplay/GAMEPLAY_ESSENTIAL_EN.md)
-2. Review [Technical Implementation](dev/DEV_TECHNICAL_EN.md)
-3. Explore [Architecture Overview](architecture/)
+#### 🚀 **For New Developers**
+1. Start with [Getting Started](GETTING_STARTED_SIMPLE.md)
+2. Review [Technical Overview](TECHNICAL_OVERVIEW.md)
+3. Follow [Developer Guide](DEVELOPER_GUIDE.md)
 
-### For Game Designers
-1. Read [Ontology & Vision](gameplay/ONTOLOGY_VISION_EN.md)
-2. Study [Physics & Formulas](dev/PHYSICS_FORMULAS_EN.md)
-3. Reference [Visual Integration Guide](dev/VISUAL_INTEGRATION_GUIDE_EN.md)
+#### 🎮 **For Game Designers**
+1. Read [AVALON Vision Manifest](AVALON_VISION_MANIFEST.md)
+2. Study [Formula Reference](FORMULA_REFERENCE.md)
+3. Understand [6D System](6D_SYSTEM_EXPLAINED.md)
 
-### For Content Creators
-1. Learn [Temporal Grammar](grammaire/)
-2. Use [Testing Framework](tests/)
-3. Follow [Implementation Standards](dev/DEV_TECHNICAL_EN.md)
-
-## 📊 Documentation Standards
-
-### Quality Assurance
-- All documentation follows professional technical writing standards
-- Code examples are tested and validated
-- Multilingual consistency maintained across translations
-
-### Maintenance
-- Regular updates synchronized with framework development
-- Version control for all documentation changes
-- Community feedback integration process
-
-## 🔄 Updates and Versioning
-
-This documentation is actively maintained and updated with each framework release. For the latest version and changelog, refer to the main repository.
+#### ⚡ **For Integration**
+1. Check [API Quick Reference](API_QUICK_REFERENCE.md)
+2. Review [Installation Guide](INSTALLATION.md)
+3. Follow [Developer Guide](DEVELOPER_GUIDE.md)
 
 ---
 
-*Professional documentation for Magic Stack framework*
+## 🔮 **HEROES OF TIME ECOSYSTEM**
+
+### 📡 **Communication System**
+- **ANSIBLE/**: Interdimensional communication system
+- **MAGE_CLAUDE_LABORATORY/**: Dimension 1 Littéraire workspace
+
+### 🏺 **Content & Assets**
+- **Treasures/**: Game assets (creatures, artifacts, formulas)
+- **grimoire/**: Magical formulas and spells
+
+### 🧪 **Testing & Validation**
+- **test-vision-complete.py**: 4-layer architecture tests
+- **treasures-integration-test.py**: Asset integration tests
+- **test-traducteur-fractal.py**: Translation system tests
+
+---
+
+*Last updated: 2024-12-28 by MAGE CLAUDE*  
+*Version: 2.0.0 - Heroes of Time Architecture Edition*
