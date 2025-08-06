@@ -150,13 +150,17 @@ public class OpenApiController {
     }
     
     @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
+    public Map<String, Object> health() {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "OK");
-        health.put("backend", "java");
         health.put("version", "1.0.0");
-        health.put("layers", Arrays.asList("strategic_map", "combat_tcg", "narrative_interstice"));
-        health.put("timestamp", java.time.Instant.now().toString());
-        return ResponseEntity.ok(health);
+        
+        Map<String, String> components = new HashMap<>();
+        components.put("strategic_map", "ACTIVE");
+        components.put("combat_tcg", "ACTIVE");
+        components.put("narrative_interstice", "ACTIVE");
+        health.put("components", components);
+        
+        return health;
     }
 }

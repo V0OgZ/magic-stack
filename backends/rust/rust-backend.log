@@ -1,12 +1,12 @@
-    Finished `release` profile [optimized] target(s) in 0.12s
+    Finished `release` profile [optimized] target(s) in 0.16s
      Running `target/release/magic-stack-server`
-[2m2025-08-06T09:34:34.925913Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🦀 Magic Stack Rust Server starting...
-[2m2025-08-06T09:34:34.939800Z[0m [31mERROR[0m [2mmagic_stack_core::java_connector[0m[2m:[0m ❌ Failed to connect to Java backend: error sending request for url (http://localhost:8080/api/magic/status): error trying to connect: tcp connect error: Connection refused (os error 111)
-[2m2025-08-06T09:34:34.939844Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m ⚠️ Java backend not available: Vector operation failed: Java connection failed: error sending request for url (http://localhost:8080/api/magic/status): error trying to connect: tcp connect error: Connection refused (os error 111)
-[2m2025-08-06T09:34:34.939933Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🚀 Magic Stack Rust Server listening on 0.0.0.0:3001
-[2m2025-08-06T09:34:34.939941Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🌀 Q* Algorithm: READY
-[2m2025-08-06T09:34:34.939944Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🌐 World State Graph: READY
-[2m2025-08-06T09:34:34.939946Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m ⚡ High-performance mode: ENABLED
+[2m2025-08-06T09:51:23.801567Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🦀 Magic Stack Rust Server starting...
+[2m2025-08-06T09:51:23.821532Z[0m [33m WARN[0m [2mmagic_stack_core::java_connector[0m[2m:[0m ⚠️ Java backend responded with status: 404 Not Found
+[2m2025-08-06T09:51:23.821578Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m ⚠️ Java backend connection issues
+[2m2025-08-06T09:51:23.821646Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🚀 Magic Stack Rust Server listening on 0.0.0.0:3001
+[2m2025-08-06T09:51:23.821656Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🌀 Q* Algorithm: READY
+[2m2025-08-06T09:51:23.821660Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m 🌐 World State Graph: READY
+[2m2025-08-06T09:51:23.821663Z[0m [32m INFO[0m [2mmagic_stack_server[0m[2m:[0m ⚡ High-performance mode: ENABLED
 thread 'main' panicked at src/main.rs:122:63:
 called `Result::unwrap()` on an `Err` value: Os { code: 98, kind: AddrInUse, message: "Address already in use" }
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
