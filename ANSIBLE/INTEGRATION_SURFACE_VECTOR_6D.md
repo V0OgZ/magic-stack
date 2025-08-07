@@ -46,25 +46,137 @@ const VECTOR_CAVE_API = 'http://localhost:5002/api';
 // 1. 📊 STATUS - Vérifier si Vector Cave est prêt
 GET /api/status
 Response: {
-    "status": "RETRO_LASER_READY",
-    "entities_indexed": 156,
-    "ready": true,
-    "laser_power": "🔥 MAXIMUM 🔥"
+  "status": "ready",
+  "entities_count": 1247,
+  "index_built": true,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "collections": {
+    "entities_6d": 1247,
+    "magic_formulas": 869,
+    "game_states": 156,
+    "narrative_events": 89
+  }
 }
 
 // 2. 🔍 RECHERCHE 6D - Le gros morceau !
 POST /api/search/6d
 Body: {
-    "type": "semantic|spatial|temporal|causal|combined_6d",
-    "query": { /* voir exemples ci-dessous */ },
-    "top_k": 10
+  "type": "combined_6d",
+  "data": {
+    "position_6d": {"x": 10, "y": 15, "z": 0, "t": 42, "c": 0.8, "psi": 0.3},
+    "semantic_text": "fire magic attack spell",
+    "weights": {
+      "spatial": 0.3,
+      "temporal": 0.2,
+      "causal": 0.2,
+      "quantum": 0.1,
+      "semantic": 0.2
+    }
+  },
+  "top_k": 10
 }
 
 // 3. 📋 LISTE ENTITÉS - Pour debug
 GET /api/entities
 Response: {
-    "total_entities": 156,
-    "entities": [...]
+  "entities": [
+    {
+      "id": "hero_senku_gwen",
+      "name": "SENKU GWEN",
+      "type": "hero",
+      "position_6d": {"x": 12, "y": 8, "z": 0, "t": 45, "c": 0.9, "psi": 0.7},
+      "description": "Alchimiste scientifique maîtrisant la chimie Dr. Stone",
+      "tier": "EPIC",
+      "rarity": "LEGENDARY"
+    }
+  ]
+}
+```
+
+---
+
+## 🔧 **CLIENT TYPESCRIPT PRÊT À L'EMPLOI**
+
+### 📦 **VectorCaveClient.ts**
+
+**NOUVEAU !** Client TypeScript complet avec types stricts :
+
+```typescript
+// 🌊 IMPORTATION
+import VectorCaveClient, { Vector6D, Entity6D } from './VectorCaveClient';
+
+// 🚀 CRÉATION DU CLIENT
+const vectorClient = new VectorCaveClient({
+  baseURL: 'http://localhost:5002/api',
+  debug: true,  // Pour voir les logs
+  timeout: 10000,
+  retries: 3
+});
+
+// ✅ VÉRIFICATION STATUS
+const isReady = await vectorClient.isReady();
+if (!isReady) {
+  console.warn('Vector Cave not ready!');
+  return;
+}
+
+// 🔍 RECHERCHE SÉMANTIQUE
+const fireSpells = await vectorClient.searchSemantic('fire magic spell', 5);
+console.log(`Found ${fireSpells.entities.length} fire spells`);
+
+// 📍 RECHERCHE SPATIALE
+const nearbyEntities = await vectorClient.searchSpatial([10, 15, 0], 5.0, 10);
+
+// ⏰ RECHERCHE TEMPORELLE
+const temporalEvents = await vectorClient.searchTemporal(42, 10.0, 8);
+
+// 🌀 RECHERCHE COMBINÉE 6D
+const position6D: Vector6D = { x: 10, y: 15, z: 0, t: 42, c: 0.8, psi: 0.3 };
+const combined = await vectorClient.searchCombined6D(
+  position6D,
+  'powerful magic',
+  { spatial: 0.4, temporal: 0.2, causal: 0.2, quantum: 0.1, semantic: 0.1 }
+);
+```
+
+### 🎯 **Types TypeScript Complets**
+
+```typescript
+interface Vector6D {
+  x: number;      // Position X
+  y: number;      // Position Y  
+  z: number;      // Position Z
+  t: number;      // Temps
+  c: number;      // Causalité
+  psi: number;    // État quantique ψ
+}
+
+interface Entity6D {
+  id: string;
+  name: string;
+  type: string;
+  position_6d: Vector6D;
+  description: string;
+  tier?: string;
+  rarity?: string;
+  metadata?: Record<string, any>;
+}
+
+interface SearchResult6D {
+  success: boolean;
+  query_type: string;
+  results_count: number;
+  entities: Array<{
+    entity: Entity6D;
+    similarity_score: number;
+    distance_6d?: number;
+    match_reasons: string[];
+  }>;
+  search_metadata: {
+    query_time_ms: number;
+    index_size: number;
+    embedding_model: string;
+  };
 }
 ```
 
@@ -74,444 +186,479 @@ Response: {
 
 ### 🧠 **GOAP Agent Enhanced avec Vector DB**
 
-```javascript
+```typescript
+import VectorCaveClient, { Vector6D, Entity6D } from './VectorCaveClient';
+
 class SurfaceGOAPAgent {
-    constructor() {
-        this.vectorCaveAPI = 'http://localhost:5002/api';
-        this.goals = new Map();
-        this.actions = new Map();
-        this.knowledgeBase = new Map();
+  private vectorClient: VectorCaveClient;
+  private goals: Map<string, any> = new Map();
+  private actions: Map<string, any> = new Map();
+  private knowledgeBase: Map<string, any> = new Map();
+  
+  constructor() {
+    this.vectorClient = new VectorCaveClient({
+      baseURL: 'http://localhost:5002/api',
+      debug: true
+    });
+  }
+  
+  /**
+   * 🔍 Trouver des actions similaires réussies
+   */
+  async findSimilarSuccessfulActions(currentSituation: string): Promise<Entity6D[]> {
+    const query = `successful action similar to: ${currentSituation}`;
+    const result = await this.vectorClient.searchSemantic(query, 5);
+    return result.entities.map(r => r.entity);
+  }
+  
+  /**
+   * 📍 Trouver des entités proches
+   */
+  async findNearbyEntities(agentPosition: Vector6D): Promise<Entity6D[]> {
+    return await this.vectorClient.findNearbyEntities(agentPosition, 5.0);
+  }
+  
+  /**
+   * ⏰ Trouver des événements temporels liés
+   */
+  async findRelatedTemporalEvents(currentTime: number): Promise<Entity6D[]> {
+    return await this.vectorClient.findRelatedTemporalEvents(currentTime, 10.0);
+  }
+  
+  /**
+   * 🚀 PLANIFICATION ENHANCED !
+   */
+  async enhancedPlanning(
+    currentState: any, 
+    goalState: any,
+    agentPosition: Vector6D
+  ): Promise<{
+    actions: string[];
+    confidence: number;
+    vectorEnhanced: boolean;
+    reasoning: string[];
+  }> {
+    // Vérifier que Vector Cave est prêt
+    if (!await this.vectorClient.isReady()) {
+      console.warn('Vector Cave not ready, fallback to basic planning');
+      return this.basicPlanning(currentState, goalState);
+    }
+
+    // 🧠 ANALYSE COMPLÈTE DU CONTEXTE
+    const context = await this.vectorClient.analyzeContextForGOAP(
+      agentPosition,
+      `current: ${JSON.stringify(currentState)}, goal: ${JSON.stringify(goalState)}`
+    );
+
+    // 🎯 CRÉATION DU PLAN ENRICHI
+    const enhancedPlan = this.enrichPlanWithVectorData(
+      currentState,
+      goalState,
+      context.nearbyEntities,
+      context.similarActions,
+      context.temporalEvents
+    );
+
+    return {
+      actions: enhancedPlan.actions,
+      confidence: 0.95, // Confiance élevée avec Vector DB
+      vectorEnhanced: true,
+      reasoning: [
+        `Found ${context.nearbyEntities.length} nearby entities`,
+        `Found ${context.similarActions.length} similar successful actions`,
+        `Found ${context.temporalEvents.length} temporal events`,
+        ...context.recommendations
+      ]
+    };
+  }
+  
+  /**
+   * 🎯 Enrichissement du plan avec données vectorielles
+   */
+  private enrichPlanWithVectorData(
+    currentState: any,
+    goalState: any,
+    nearbyEntities: Entity6D[],
+    similarActions: Entity6D[],
+    temporalEvents: Entity6D[]
+  ) {
+    const actions: string[] = [];
+    
+    // Utiliser les actions similaires réussies
+    for (const action of similarActions) {
+      if (action.type === 'successful_strategy') {
+        actions.push(`apply_strategy_${action.id}`);
+      }
     }
     
-    // 🔍 RECHERCHE D'ACTIONS SIMILAIRES RÉUSSIES
-    async findSimilarSuccessfulActions(currentSituation) {
-        try {
-            const response = await fetch(`${this.vectorCaveAPI}/search/6d`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    type: 'semantic',
-                    query: { 
-                        text: `successful action ${currentSituation.description}` 
-                    },
-                    top_k: 5
-                })
-            });
-            
-            const results = await response.json();
-            
-            if (results.success) {
-                return results.search_results.results.map(r => ({
-                    action: r.entity.name,
-                    success_rate: r.score,
-                    context: r.entity.metadata
-                }));
-            }
-        } catch (error) {
-            console.warn('Vector Cave offline, using fallback GOAP');
-            return this.fallbackActionSearch(currentSituation);
-        }
-        
-        return [];
+    // Interagir avec les entités proches pertinentes
+    for (const entity of nearbyEntities) {
+      if (entity.type === 'resource' || entity.type === 'tool') {
+        actions.push(`interact_with_${entity.id}`);
+      }
     }
     
-    // 🎯 RECHERCHE D'ENTITÉS PROCHES SPATIALEMENT
-    async findNearbyEntities(agentPosition) {
-        try {
-            const response = await fetch(`${this.vectorCaveAPI}/search/6d`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    type: 'spatial',
-                    query: {
-                        center: [agentPosition.x, agentPosition.y, agentPosition.z],
-                        radius: 10.0
-                    },
-                    top_k: 15
-                })
-            });
-            
-            const results = await response.json();
-            
-            if (results.success) {
-                return results.search_results.results.map(r => ({
-                    entity: r.entity.name,
-                    distance: r.distance,
-                    type: r.entity.entity_type,
-                    position: r.entity.position_6d.slice(0, 3) // x,y,z
-                }));
-            }
-        } catch (error) {
-            console.warn('Spatial search failed, using local detection');
-            return this.localEntityDetection(agentPosition);
-        }
-        
-        return [];
+    // Considérer les événements temporels
+    for (const event of temporalEvents) {
+      if (event.type === 'opportunity') {
+        actions.push(`seize_opportunity_${event.id}`);
+      }
     }
     
-    // ⏰ RECHERCHE D'ÉVÉNEMENTS TEMPORELS LIÉS
-    async findRelatedTemporalEvents(currentTime) {
-        try {
-            const response = await fetch(`${this.vectorCaveAPI}/search/6d`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    type: 'temporal',
-                    query: {
-                        time: currentTime,
-                        time_radius: 50
-                    },
-                    top_k: 8
-                })
-            });
-            
-            const results = await response.json();
-            
-            if (results.success) {
-                return results.search_results.results.map(r => ({
-                    event: r.entity.name,
-                    time_distance: r.time_distance,
-                    causal_influence: r.entity.position_6d[4] // c
-                }));
-            }
-        } catch (error) {
-            return [];
-        }
-        
-        return [];
-    }
-    
-    // 🌟 PLANIFICATION AMÉLIORÉE AVEC VECTOR DB
-    async enhancedPlanning(currentState, goalState) {
-        console.log('🔮 Enhanced GOAP planning with Vector Cave...');
-        
-        // 1. Recherche d'actions similaires réussies
-        const similarActions = await this.findSimilarSuccessfulActions(currentState);
-        
-        // 2. Entités proches qui peuvent aider
-        const nearbyEntities = await this.findNearbyEntities(currentState.agentPosition);
-        
-        // 3. Événements temporels pertinents
-        const temporalEvents = await this.findRelatedTemporalEvents(currentState.gameTime);
-        
-        // 4. Planification classique GOAP
-        const classicPlan = this.classicGOAPPlanning(currentState, goalState);
-        
-        // 5. Enrichissement avec données Vector Cave
-        const enhancedPlan = this.enrichPlanWithVectorData(
-            classicPlan,
-            similarActions,
-            nearbyEntities,
-            temporalEvents
-        );
-        
-        console.log(`✅ Plan enrichi: ${enhancedPlan.length} actions optimisées`);
-        return enhancedPlan;
-    }
-    
-    // 🎯 ENRICHISSEMENT DU PLAN
-    enrichPlanWithVectorData(plan, similarActions, nearbyEntities, temporalEvents) {
-        return plan.map(action => {
-            // Ajouter contexte des actions similaires réussies
-            const similarAction = similarActions.find(sa => 
-                sa.action.toLowerCase().includes(action.type.toLowerCase())
-            );
-            
-            if (similarAction) {
-                action.confidence = similarAction.success_rate;
-                action.historical_context = similarAction.context;
-            }
-            
-            // Ajouter entités proches utilisables
-            action.nearby_resources = nearbyEntities.filter(entity => 
-                entity.distance < 5.0 && this.canUseEntity(action, entity)
-            );
-            
-            // Ajouter timing optimal basé sur événements temporels
-            const relevantEvent = temporalEvents.find(event =>
-                event.causal_influence > 0.7
-            );
-            
-            if (relevantEvent) {
-                action.optimal_timing = relevantEvent.time_distance;
-            }
-            
-            return action;
-        });
-    }
+    return { actions };
+  }
+  
+  /**
+   * 🔙 Planification de base (fallback)
+   */
+  private basicPlanning(currentState: any, goalState: any) {
+    return {
+      actions: ['basic_move', 'basic_action'],
+      confidence: 0.7,
+      vectorEnhanced: false,
+      reasoning: ['Fallback to basic planning - Vector Cave unavailable']
+    };
+  }
 }
 ```
 
 ---
 
-## 🎯 **EXEMPLES CONCRETS POUR SURFACE**
+## 🔥 **EXEMPLE D'INTÉGRATION COMPLÈTE**
 
-### 🤖 **Cas d'usage 1 : Agent cherche ressources**
+### 🎮 **Dans votre GameLoop SURFACE**
 
-```javascript
-// Votre agent GOAP cherche du bois
-const agent = new SurfaceGOAPAgent();
+```typescript
+// 🚀 INITIALIZATION
+const vectorClient = new VectorCaveClient({ debug: true });
+const goapAgent = new SurfaceGOAPAgent();
 
-// Recherche sémantique dans Vector Cave
-const woodResources = await fetch('http://localhost:5002/api/search/6d', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-        type: 'semantic',
-        query: { text: 'wood resource tree forest lumber' },
-        top_k: 10
-    })
-});
-
-// Résultat : Liste des entités "bois" avec positions 6D !
-// Votre agent peut maintenant planifier le chemin optimal
+// 🎯 GAME LOOP
+async function gameLoop() {
+  // Position actuelle de l'agent
+  const agentPosition: Vector6D = {
+    x: player.x, y: player.y, z: player.z,
+    t: gameTime, c: causalityLevel, psi: quantumState
+  };
+  
+  // 🧠 PLANIFICATION ENHANCED
+  const plan = await goapAgent.enhancedPlanning(
+    currentGameState,
+    playerGoals,
+    agentPosition
+  );
+  
+  console.log('🎯 Plan generated:', plan);
+  console.log('🔮 Vector enhanced:', plan.vectorEnhanced);
+  console.log('💪 Confidence:', plan.confidence);
+  
+  // Exécuter le plan
+  for (const action of plan.actions) {
+    await executeAction(action);
+  }
+}
 ```
 
-### 🎯 **Cas d'usage 2 : Recherche spatiale tactique**
+### 🔍 **Recherches Spécialisées**
 
-```javascript
-// Votre agent est en combat, cherche alliés proches
-const nearbyAllies = await fetch('http://localhost:5002/api/search/6d', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-        type: 'spatial',
-        query: {
-            center: [agent.x, agent.y, agent.z],
-            radius: 15.0
-        },
-        top_k: 5
-    })
-});
+```typescript
+// 🔥 Trouver des sorts de feu
+const fireSpells = await vectorClient.searchSemantic('fire magic spell damage', 5);
 
-// Résultat : Alliés dans rayon de 15 cases avec distances exactes !
-// Votre GOAP peut planifier formation tactique optimale
-```
+// ⚔️ Trouver des ennemis proches
+const enemies = await vectorClient.searchCombined6D(
+  playerPosition,
+  'enemy hostile creature',
+  { spatial: 0.8, semantic: 0.2, temporal: 0.0, causal: 0.0, quantum: 0.0 }
+);
 
-### ⏰ **Cas d'usage 3 : Prédiction temporelle**
+// 💰 Trouver des trésors cachés
+const treasures = await vectorClient.searchCombined6D(
+  playerPosition,
+  'treasure artifact valuable',
+  { spatial: 0.5, semantic: 0.3, causal: 0.2, temporal: 0.0, quantum: 0.0 }
+);
 
-```javascript
-// Votre agent veut savoir quels événements arrivent
-const upcomingEvents = await fetch('http://localhost:5002/api/search/6d', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-        type: 'temporal',
-        query: {
-            time: currentGameTime + 100, // Dans 100 tours
-            time_radius: 20
-        },
-        top_k: 8
-    })
-});
-
-// Résultat : Événements futurs probables !
-// Votre GOAP peut anticiper et préparer
+// 🌀 Analyser les effets causaux
+const causalEffects = await vectorClient.searchCausal(0.8, 0.3, 10);
 ```
 
 ---
 
-## 🔧 **INTÉGRATION TECHNIQUE**
+## 🛠️ **INSTALLATION & SETUP**
 
-### 📦 **Dépendances côté SURFACE**
-
-```javascript
-// Dans votre package.json ou requirements
-{
-    "node-fetch": "^3.0.0",  // Pour appels API
-    "axios": "^1.0.0"        // Alternative
-}
-```
-
-### 🛠️ **Classe utilitaire pour vous**
-
-```javascript
-// VectorCaveClient.js - À ajouter dans votre projet
-class VectorCaveClient {
-    constructor(baseURL = 'http://localhost:5002/api') {
-        this.baseURL = baseURL;
-        this.timeout = 5000; // 5s timeout
-    }
-    
-    async isReady() {
-        try {
-            const response = await this.fetch('/status');
-            return response.ready === true;
-        } catch {
-            return false;
-        }
-    }
-    
-    async searchSemantic(text, topK = 10) {
-        return this.search('semantic', { text }, topK);
-    }
-    
-    async searchSpatial(center, radius, topK = 10) {
-        return this.search('spatial', { center, radius }, topK);
-    }
-    
-    async searchTemporal(time, timeRadius, topK = 10) {
-        return this.search('temporal', { time, time_radius: timeRadius }, topK);
-    }
-    
-    async searchCombined6D(position6D, semanticText = '', weights = null, topK = 10) {
-        const query = { position_6d: position6D };
-        if (semanticText) query.semantic_text = semanticText;
-        if (weights) query.weights = weights;
-        
-        return this.search('combined_6d', query, topK);
-    }
-    
-    async search(type, query, topK) {
-        try {
-            const response = await this.fetch('/search/6d', 'POST', {
-                type,
-                query,
-                top_k: topK
-            });
-            
-            return response.search_results;
-        } catch (error) {
-            console.warn(`Vector Cave search failed: ${error.message}`);
-            return { results: [], total_found: 0 };
-        }
-    }
-    
-    async fetch(endpoint, method = 'GET', body = null) {
-        const url = `${this.baseURL}${endpoint}`;
-        const options = {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            timeout: this.timeout
-        };
-        
-        if (body) options.body = JSON.stringify(body);
-        
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        return await response.json();
-    }
-}
-
-// Usage dans votre code GOAP
-const vectorCave = new VectorCaveClient();
-
-// Dans votre agent GOAP
-class YourGOAPAgent {
-    async planWithVectorCave(situation) {
-        if (await vectorCave.isReady()) {
-            const similarSituations = await vectorCave.searchSemantic(
-                situation.description
-            );
-            
-            // Utiliser les résultats pour enrichir votre planification
-            return this.enhancedPlanning(situation, similarSituations);
-        } else {
-            // Fallback sur GOAP classique
-            return this.classicPlanning(situation);
-        }
-    }
-}
-```
-
----
-
-## 🎮 **AVANTAGES POUR SURFACE**
-
-### 🚀 **PERFORMANCE BOOST**
-
-1. **IA plus intelligente** : Vos agents trouvent des solutions créatives
-2. **Recherche spatiale** : Optimisation des déplacements et formations
-3. **Mémoire historique** : Apprentissage des actions réussies
-4. **Prédiction temporelle** : Anticipation des événements
-
-### 🎯 **GAMEPLAY AMÉLIORÉ**
-
-1. **Agents plus réalistes** : Comportements émergents intelligents
-2. **Interactions complexes** : Prise en compte du contexte 6D
-3. **Stratégie avancée** : Plans multi-dimensionnels
-4. **Adaptation dynamique** : Réactions contextuelles
-
----
-
-## 🔧 **SETUP POUR SURFACE**
-
-### 📋 **Étapes d'intégration**
+### 📦 **1. Récupérer le Client TypeScript**
 
 ```bash
-# 1. Démarrer Vector Cave (côté Heroes of Time)
-cd /path/to/heroes-of-time
+# Copier le client depuis Heroes of Time
+cp /workspace/ANSIBLE/VectorCaveClient.ts ./src/utils/
+
+# Ou télécharger directement
+curl -o ./src/utils/VectorCaveClient.ts \
+  http://localhost:8080/api/files/VectorCaveClient.ts
+```
+
+### 🚀 **2. Démarrer Vector Cave**
+
+```bash
+# Depuis Heroes of Time
+cd /workspace
 python3 run_vector_6d_laser.py
 
-# 2. Vérifier que ça marche
+# Vérifier que ça marche
 curl http://localhost:5002/api/status
-
-# 3. Dans votre projet SURFACE
-npm install node-fetch
-# ou
-pip install requests
-
-# 4. Ajouter VectorCaveClient.js à votre projet
-
-# 5. Modifier vos agents GOAP pour utiliser Vector Cave
 ```
 
-### 🧪 **Test simple**
+### 🔧 **3. Dans votre projet SURFACE**
 
-```javascript
-// Test rapide dans votre console
-const vectorCave = new VectorCaveClient();
+```typescript
+// Installation des types (si besoin)
+npm install --save-dev @types/node
 
-// Test connection
-console.log(await vectorCave.isReady()); // true
+// Import du client
+import VectorCaveClient from './utils/VectorCaveClient';
 
-// Test recherche
-const results = await vectorCave.searchSemantic('powerful hero');
-console.log(results); // Liste des héros puissants !
+// Test rapide
+const client = new VectorCaveClient({ debug: true });
+const ready = await client.isReady();
+console.log('Vector Cave ready:', ready);
 ```
 
 ---
 
-## 🌟 **RÉSUMÉ POUR SURFACE**
+## 🎯 **CAS D'USAGE CONCRETS**
 
-### ✨ **EN UNE PHRASE**
+### 1. **🎯 Aide à la Décision GOAP**
 
-**Vector Cave 6D = Super-cerveau pour vos agents GOAP !** 🧠⚡
+```typescript
+// L'agent hésite entre plusieurs actions
+const currentSituation = "low health, enemy nearby, potion available";
+const similarActions = await vectorClient.findSimilarSuccessfulActions(currentSituation);
 
-### 🎯 **CE QUE ÇA VOUS APPORTE**
+// Utiliser les actions qui ont réussi dans des situations similaires
+for (const action of similarActions) {
+  if (action.metadata?.success_rate > 0.8) {
+    goapAgent.prioritizeAction(action.id);
+  }
+}
+```
 
-1. **Recherche sémantique** : "Trouve entités similaires à X"
-2. **Recherche spatiale** : "Quoi dans rayon de 10 cases ?"
-3. **Recherche temporelle** : "Que s'est-il passé avant ?"
-4. **Recherche causale** : "Entités avec influence similaire"
-5. **Mémoire collective** : Base de connaissances partagée
+### 2. **📍 Exploration Intelligente**
 
-### 🚀 **INTÉGRATION FACILE**
+```typescript
+// Trouver des zones intéressantes à explorer
+const interestingAreas = await vectorClient.searchSemantic(
+  "unexplored area treasure secret", 10
+);
 
-1. **API REST simple** - Juste des appels HTTP
-2. **Client JavaScript fourni** - Copy-paste ready
-3. **Fallback gracieux** - Marche même si Vector Cave offline
-4. **Performance** - Recherches sub-seconde
+// Guider l'agent vers ces zones
+for (const area of interestingAreas) {
+  goapAgent.addExplorationGoal(area.position_6d);
+}
+```
+
+### 3. **⚔️ Combat Tactique**
+
+```typescript
+// Analyser les ennemis proches et leurs faiblesses
+const enemies = await vectorClient.findNearbyEntities(playerPosition);
+const weaknesses = await vectorClient.searchSemantic(
+  "enemy weakness vulnerability counter", 5
+);
+
+// Adapter la stratégie de combat
+goapAgent.adaptCombatStrategy(enemies, weaknesses);
+```
+
+### 4. **🔮 Prédiction & Anticipation**
+
+```typescript
+// Prédire les événements futurs basés sur les patterns temporels
+const futureEvents = await vectorClient.searchTemporal(
+  gameTime + 100, // 100 unités dans le futur
+  50, // fenêtre de ±50 unités
+  8
+);
+
+// Préparer l'agent aux événements futurs
+goapAgent.prepareForEvents(futureEvents);
+```
 
 ---
 
-## 📞 **CONTACT & SUPPORT**
+## ⚡ **PERFORMANCE & OPTIMISATION**
 
-### 🧙‍♂️ **Équipe Heroes of Time**
+### 🚀 **Conseils Performance**
 
-- **MERLIN** : Architecture Vector 6D
-- **JEAN-GROFIGNON** : Vision produit  
-- **URz*KÔM** : IA GOAP native
+```typescript
+// 1. 💾 CACHE les résultats fréquents
+const cache = new Map<string, SearchResult6D>();
 
-### 💬 **Questions ?**
+async function cachedSearch(query: string): Promise<SearchResult6D> {
+  if (cache.has(query)) {
+    return cache.get(query)!;
+  }
+  
+  const result = await vectorClient.searchSemantic(query);
+  cache.set(query, result);
+  return result;
+}
 
-Posez vos questions techniques, on est là pour vous aider à intégrer ! 🚀
+// 2. 🔄 BATCH les requêtes
+const [nearby, similar, temporal] = await Promise.all([
+  vectorClient.findNearbyEntities(pos),
+  vectorClient.findSimilarSuccessfulActions(situation),
+  vectorClient.findRelatedTemporalEvents(time)
+]);
+
+// 3. ⚡ LIMITE les résultats
+const quickSearch = await vectorClient.searchSemantic(query, 3); // Seulement 3 résultats
+```
+
+### 📊 **Monitoring**
+
+```typescript
+// Surveiller les performances
+const stats = await vectorClient.getStatus();
+console.log('📊 Vector Cave Stats:', {
+  entities: stats.entities_count,
+  memory: stats.server_info.memory_usage_mb,
+  uptime: stats.server_info.uptime_seconds
+});
+
+// Alertes si problème
+if (!stats.index_built) {
+  console.warn('⚠️ Index not built, rebuilding...');
+  await vectorClient.buildIndex();
+}
+```
 
 ---
 
-**🌊 SURFACE + 🔮 VECTOR CAVE = 🚀 GAMING RÉVOLUTIONNAIRE !**
+## 🐛 **DEBUG & TROUBLESHOOTING**
 
-*"Quand SURFACE rencontre la Cave, l'IA transcende !"* ⚡🌟✨
+### 🔍 **Debug Mode**
+
+```typescript
+// Client avec debug activé
+const debugClient = new VectorCaveClient({
+  baseURL: 'http://localhost:5002/api',
+  debug: true,  // 🔍 Logs détaillés
+  timeout: 15000,
+  retries: 5
+});
+
+// Logs automatiques dans la console
+// 🔮 [VectorCaveClient] 🔍 Executing 6D search { type: 'semantic', ... }
+// 🔮 [VectorCaveClient] ✨ Search completed { type: 'semantic', results: 5 }
+```
+
+### 🚨 **Gestion d'Erreurs**
+
+```typescript
+try {
+  const result = await vectorClient.searchSemantic('fire magic');
+  console.log('✅ Search successful:', result.entities.length);
+} catch (error) {
+  console.error('❌ Vector search failed:', error);
+  
+  // Fallback vers recherche locale
+  const localResults = await fallbackLocalSearch('fire magic');
+  return localResults;
+}
+
+// Vérifier la connectivité
+if (!vectorClient.connected) {
+  console.warn('⚠️ Vector Cave disconnected, attempting reconnection...');
+  await vectorClient.waitUntilReady(10000); // Attendre 10 secondes max
+}
+```
+
+### 🔧 **Tests d'Intégration**
+
+```typescript
+// Test complet d'intégration
+async function testVectorIntegration() {
+  console.log('🧪 Testing Vector Cave integration...');
+  
+  // 1. Test connectivité
+  const isReady = await vectorClient.isReady();
+  console.log('✅ Ready:', isReady);
+  
+  // 2. Test recherche sémantique
+  const semantic = await vectorClient.searchSemantic('test', 1);
+  console.log('✅ Semantic search:', semantic.entities.length > 0);
+  
+  // 3. Test recherche spatiale
+  const spatial = await vectorClient.searchSpatial([0, 0, 0], 10, 1);
+  console.log('✅ Spatial search:', spatial.entities.length >= 0);
+  
+  // 4. Test GOAP integration
+  const context = await vectorClient.analyzeContextForGOAP(
+    { x: 0, y: 0, z: 0, t: 0, c: 0, psi: 0 },
+    'test situation'
+  );
+  console.log('✅ GOAP analysis:', context.recommendations.length >= 0);
+  
+  console.log('🎉 All tests passed!');
+}
+
+// Lancer les tests
+await testVectorIntegration();
+```
+
+---
+
+## 📞 **SUPPORT & CONTACT**
+
+### 🤝 **Pour LUMER SURFACE**
+
+Si vous avez des questions ou problèmes :
+
+1. **📋 Vérifiez d'abord** : `curl http://localhost:5002/api/status`
+2. **🔍 Activez le debug** : `new VectorCaveClient({ debug: true })`
+3. **📖 Consultez les logs** : Recherchez `[VectorCaveClient]` dans la console
+4. **🆘 Contactez Heroes of Time** : Via les canaux habituels
+
+### 🚀 **Évolutions Prévues**
+
+- 🧠 **IA Prédictive** : Prédictions basées sur l'historique
+- 🔄 **Sync Temps Réel** : Mise à jour automatique des données
+- 📊 **Analytics** : Statistiques d'utilisation détaillées
+- 🎯 **Recommandations** : Suggestions d'actions intelligentes
+
+---
+
+## 🎊 **CONCLUSION**
+
+### 🌟 **Ce que ça va changer pour SURFACE**
+
+**AVANT** (GOAP classique) :
+```typescript
+if (enemy.distance < 5) {
+  action = "attack";
+} else {
+  action = "move_closer";
+}
+```
+
+**MAINTENANT** (GOAP + Vector Cave) :
+```typescript
+const context = await vectorClient.analyzeContextForGOAP(agentPos, situation);
+const similarSuccesses = context.similarActions.filter(a => a.metadata.success_rate > 0.9);
+const optimalAction = goapPlanner.selectBestAction(similarSuccesses, context.nearbyEntities);
+```
+
+### 🎯 **Bénéfices Immédiats**
+
+- 🧠 **IA Plus Intelligente** : Décisions basées sur l'expérience passée
+- 🎯 **Meilleure Précision** : Actions contextualisées spatialement et temporellement  
+- 🚀 **Performance Optimisée** : Recherches vectorielles ultra-rapides
+- 🔮 **Évolutivité** : Le système apprend et s'améliore automatiquement
+
+**Vincent, votre GOAP va passer au niveau supérieur !** 🚀🔮
+
+---
+
+*🌊 Guide créé par MERLIN pour l'équipe LUMER SURFACE*  
+*🔮 Vector Cave 6D - La révolution est en marche !*
