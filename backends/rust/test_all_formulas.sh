@@ -45,7 +45,7 @@ test_formula() {
             }" 2>/dev/null)
     else
         # Test avec le backend Java (port 8080)
-        response=$(curl -s -w "%{http_code}" -X POST http://localhost:8080/api/magic/cast \
+        response=$(curl -s -w "%{http_code}" -X POST http://localhost:8082/api/magic/cast \
             -H "Content-Type: application/json" \
             -d "{
                 \"formulaType\": \"SIMPLE\",
@@ -71,7 +71,7 @@ echo "🚀 Starting backends..."
 echo "========================"
 
 # Vérifier si Java backend tourne
-if ! curl -s http://localhost:8080/api/magic/status > /dev/null; then
+if ! curl -s http://localhost:8082/api/magic/status > /dev/null; then
     echo -e "${YELLOW}⚠️  Java backend not running, starting...${NC}"
     cd ../../java && mvn spring-boot:run > /dev/null 2>&1 &
     JAVA_PID=$!
@@ -127,7 +127,7 @@ echo "========================================="
 
 # Tests ShamanCardService
 echo -n "Testing Shaman Spirit Cast... "
-response=$(curl -s -w "%{http_code}" -X POST http://localhost:8080/api/shaman/cast-spirit \
+response=$(curl -s -w "%{http_code}" -X POST http://localhost:8082/api/shaman/cast-spirit \
     -H "Content-Type: application/json" \
     -d '{"cardName": "Spirit Wolf", "powerLevel": 100}' 2>/dev/null)
 status_code="${response: -3}"
@@ -185,7 +185,7 @@ rust_response=$(curl -s -X POST http://localhost:3001/api/qstar/search \
 
 if echo "$rust_response" | grep -q "results"; then
     # Si Rust trouve quelque chose, tester Java
-    java_response=$(curl -s -X POST http://localhost:8080/api/magic/cast \
+    java_response=$(curl -s -X POST http://localhost:8082/api/magic/cast \
         -H "Content-Type: application/json" \
         -d '{
             "formulaType": "SIMPLE",

@@ -74,7 +74,7 @@ pub struct IntegratedFormulaResult {
 impl JavaConnector {
     /// Create new Java connector
     pub fn new(java_base_url: Option<String>) -> Self {
-        let base_url = java_base_url.unwrap_or_else(|| "http://localhost:8080".to_string());
+        let base_url = java_base_url.unwrap_or_else(|| "http://localhost:8082".to_string());
         
         JavaConnector {
             client: Client::new(),
@@ -350,8 +350,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_java_connector_creation() {
-        let connector = JavaConnector::new(Some("http://localhost:8080".to_string()));
-        assert_eq!(connector.java_base_url, "http://localhost:8080");
+        let connector = JavaConnector::new(Some("http://localhost:8082".to_string()));
+        assert_eq!(connector.java_base_url, "http://localhost:8082");
     }
 
     #[tokio::test]

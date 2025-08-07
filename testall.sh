@@ -92,7 +92,7 @@ echo "================================"
 
 # Check Java Backend
 JAVA_ONLINE=false
-if check_backend "http://localhost:8080/health" "Java Backend (8080)"; then
+if check_backend "http://localhost:8082/health" "Java Backend (8080)"; then
     JAVA_ONLINE=true
 fi
 
@@ -113,7 +113,7 @@ if $JAVA_ONLINE; then
     
     # Test 1: Spawn Hero
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/scenario/spawn-hero \
+    response=$(curl -s -X POST http://localhost:8082/api/scenario/spawn-hero \
         -H "Content-Type: application/json" \
         -d '{"hero":"TestHero","position":{"x":0,"y":0,"z":0}}' 2>/dev/null)
     
@@ -126,7 +126,7 @@ if $JAVA_ONLINE; then
     
     # Test 2: Use Artifact
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/scenario/use-artifact \
+    response=$(curl -s -X POST http://localhost:8082/api/scenario/use-artifact \
         -H "Content-Type: application/json" \
         -d '{"hero":"TestHero","artifact":"excalibur"}' 2>/dev/null)
     
@@ -139,7 +139,7 @@ if $JAVA_ONLINE; then
     
     # Test 3: Cast Formula
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/interstice/cast-formula \
+    response=$(curl -s -X POST http://localhost:8082/api/interstice/cast-formula \
         -H "Content-Type: application/json" \
         -d '{"caster":"TestHero","formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' 2>/dev/null)
     
@@ -207,7 +207,7 @@ if $JAVA_ONLINE && $RUST_ONLINE; then
     
     # Test 1: Simple API Response
     log_info "Round 1: Health Check Speed"
-    java_health_time=$(perf_test "http://localhost:8080/health" "" "Java Health")
+    java_health_time=$(perf_test "http://localhost:8082/health" "" "Java Health")
     rust_health_time=$(perf_test "http://localhost:3001/health" "" "Rust Health")
     
     if [[ $java_health_time -lt $rust_health_time ]]; then
@@ -220,7 +220,7 @@ if $JAVA_ONLINE && $RUST_ONLINE; then
     
     # Test 2: Complex Logic
     log_info "Round 2: Formula Processing Speed"
-    java_formula_time=$(perf_test "http://localhost:8080/api/interstice/cast-formula" \
+    java_formula_time=$(perf_test "http://localhost:8082/api/interstice/cast-formula" \
         '{"caster":"TestHero","formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' "Java Formula")
     rust_formula_time=$(perf_test "http://localhost:3001/api/formula" \
         '{"formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' "Rust Formula")

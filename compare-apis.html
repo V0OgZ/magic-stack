@@ -359,12 +359,12 @@
         // Initialize
         async function init() {
             // Check statuses
-            const javaOnline = await checkBackendStatus('http://localhost:8080/health', 'java-status');
+            const javaOnline = await checkBackendStatus('http://localhost:8082/health', 'java-status');
             const rustOnline = await checkBackendStatus('http://localhost:3001/health', 'rust-status');
 
             // Load API specs
             if (javaOnline) {
-                await loadApiSpec('http://localhost:8080/openapi', 'java-endpoints');
+                await loadApiSpec('http://localhost:8082/openapi', 'java-endpoints');
             } else {
                 document.getElementById('java-endpoints').innerHTML = '<div class="error">❌ Backend Java offline</div>';
             }

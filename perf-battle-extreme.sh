@@ -51,7 +51,7 @@ health_battle() {
     
     echo -n "Java: "
     for i in {1..100}; do
-        local time=$(measure_time "http://localhost:8080/health")
+        local time=$(measure_time "http://localhost:8082/health")
         if [ "$time" -lt 5000 ]; then
             java_total=$((java_total + time))
             java_success=$((java_success + 1))
@@ -110,7 +110,7 @@ formula_battle() {
     for i in {1..50}; do
         local formula_idx=$((i % 5))
         local formula="${formulas[$formula_idx]}"
-        local time=$(measure_time "http://localhost:8080/api/interstice/cast-formula" "POST" "$formula")
+        local time=$(measure_time "http://localhost:8082/api/interstice/cast-formula" "POST" "$formula")
         if [ "$time" -lt 5000 ]; then
             java_total=$((java_total + time))
             java_success=$((java_success + 1))
@@ -148,7 +148,7 @@ artifact_battle() {
     for i in {1..30}; do
         local artifact_idx=$((i % 4))
         local artifact="${artifacts[$artifact_idx]}"
-        local time=$(measure_time "http://localhost:8080/api/scenario/use-artifact" "POST" "$artifact")
+        local time=$(measure_time "http://localhost:8082/api/scenario/use-artifact" "POST" "$artifact")
         if [ "$time" -lt 5000 ]; then
             java_total=$((java_total + time))
             java_success=$((java_success + 1))
@@ -181,7 +181,7 @@ concurrent_battle() {
     # Launch 20 concurrent Java requests
     for i in {1..20}; do
         (
-            local time=$(measure_time "http://localhost:8080/health")
+            local time=$(measure_time "http://localhost:8082/health")
             echo "$time" >> "$java_results"
         ) &
     done
@@ -264,7 +264,7 @@ ultimate_battle() {
         
         # Alternate between Java and Rust
         if [ $((i % 2)) -eq 0 ]; then
-            local time=$(measure_time "http://localhost:8080/health")
+            local time=$(measure_time "http://localhost:8082/health")
             if [ "$time" -lt 5000 ]; then
                 java_success=$((java_success + 1))
                 echo -n "☕"
@@ -298,7 +298,7 @@ ultimate_battle() {
 show_banner
 
 echo -e "${CYAN}🔍 Checking backends status...${NC}"
-if ! curl -s http://localhost:8080/health > /dev/null; then
+if ! curl -s http://localhost:8082/health > /dev/null; then
     echo -e "${RED}❌ Java backend is offline!${NC}"
     exit 1
 fi

@@ -1,5 +1,5 @@
-/Users/vincent/Interstice/SpinForest/magic-stack/backends/rust/target/release/build/serde-19c75b0de006010e/build_script_build-19c75b0de006010e.d: /Users/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.219/build.rs
+/Users/vincent/Interstice/SpinForest/spells/stack/backends/rust/target/release/build/serde-19c75b0de006010e/build_script_build-19c75b0de006010e.d: /Users/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.219/build.rs
 
-/Users/vincent/Interstice/SpinForest/magic-stack/backends/rust/target/release/build/serde-19c75b0de006010e/build_script_build-19c75b0de006010e: /Users/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.219/build.rs
+/Users/vincent/Interstice/SpinForest/spells/stack/backends/rust/target/release/build/serde-19c75b0de006010e/build_script_build-19c75b0de006010e: /Users/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.219/build.rs
 
 /Users/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.219/build.rs:

@@ -46,7 +46,7 @@ show_status() {
     # Test de connectivité
     echo -e "${CYAN}🔍 Tests de connectivité:${NC}"
     
-    if curl -s http://localhost:8080/health > /dev/null 2>&1; then
+    if curl -s http://localhost:8082/health > /dev/null 2>&1; then
         echo -e "  ☕ Java Backend (8080): ${GREEN}✅ ONLINE${NC}"
     else
         echo -e "  ☕ Java Backend (8080): ${RED}❌ OFFLINE${NC}"
@@ -62,8 +62,8 @@ show_status() {
     echo -e "${CYAN}📈 Statistiques rapides:${NC}"
     
     # Test de performance rapide
-    if curl -s http://localhost:8080/health > /dev/null 2>&1; then
-        local java_time=$(curl -w "%{time_total}" -s -o /dev/null http://localhost:8080/health)
+    if curl -s http://localhost:8082/health > /dev/null 2>&1; then
+        local java_time=$(curl -w "%{time_total}" -s -o /dev/null http://localhost:8082/health)
         echo -e "  ☕ Java Response Time: ${GREEN}${java_time}s${NC}"
     fi
     
@@ -155,7 +155,7 @@ show_logs() {
 performance_test() {
     echo -e "${YELLOW}⚡ TEST DE PERFORMANCE RAPIDE...${NC}"
     
-    if ! curl -s http://localhost:8080/health > /dev/null || ! curl -s http://localhost:3001/health > /dev/null; then
+    if ! curl -s http://localhost:8082/health > /dev/null || ! curl -s http://localhost:3001/health > /dev/null; then
         echo -e "${RED}❌ Un ou plusieurs backends sont offline!${NC}"
         return 1
     fi
@@ -165,7 +165,7 @@ performance_test() {
     # Test Java
     local java_total=0
     for i in {1..10}; do
-        local time=$(curl -w "%{time_total}" -s -o /dev/null http://localhost:8080/health)
+        local time=$(curl -w "%{time_total}" -s -o /dev/null http://localhost:8082/health)
         local time_ms=$(echo "$time * 1000" | bc)
         java_total=$(echo "$java_total + $time_ms" | bc)
         echo -n "☕"

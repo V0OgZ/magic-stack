@@ -23,7 +23,7 @@ show_status() {
     echo -e "${YELLOW}📊 STATUS MAGIQUE:${NC}"
     
     # Check Java Backend
-    if curl -s http://localhost:8080/api/magic/health > /dev/null 2>&1; then
+    if curl -s http://localhost:8082/api/magic/health > /dev/null 2>&1; then
         echo -e "  ☕ Backend Java (8080): ${GREEN}✅ ONLINE${NC}"
     else
         echo -e "  ☕ Backend Java (8080): ${RED}❌ OFFLINE${NC}"

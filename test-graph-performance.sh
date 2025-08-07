@@ -157,7 +157,7 @@ test_comparative_performance() {
     local formula='{"formula":"PATHFIND_OPTIMAL","start_x":0,"start_y":0,"goal_x":10,"goal_y":10}'
     
     echo -n "☕ Java Formula: "
-    local java_result=$(measure_time "http://localhost:8080/api/interstice/cast-formula" "POST" "$formula")
+    local java_result=$(measure_time "http://localhost:8082/api/interstice/cast-formula" "POST" "$formula")
     local java_time=$(echo "$java_result" | cut -d'|' -f1)
     if [ "$java_time" -lt 5000 ]; then
         echo -e "${GREEN}✅ ${java_time}ms${NC}"
@@ -228,7 +228,7 @@ stress_test_graphs() {
 show_banner
 
 echo -e "${CYAN}🔍 Checking backends status...${NC}"
-if ! curl -s http://localhost:8080/health > /dev/null; then
+if ! curl -s http://localhost:8082/health > /dev/null; then
     echo -e "${RED}❌ Java backend is offline!${NC}"
     exit 1
 fi
