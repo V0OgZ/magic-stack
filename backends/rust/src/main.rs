@@ -50,6 +50,10 @@ struct AppState {
     heroes: Arc<RwLock<HashMap<String, HeroStatus>>>,
     processed_resolve: Arc<RwLock<HashSet<String>>>,
     processed_collapse: Arc<RwLock<HashSet<String>>>,
+    // Orchestrator session/idempotency (MVP)
+    orchestrator_sessions: Arc<RwLock<HashSet<String>>>,
+    orchestrator_idempotency: Arc<RwLock<HashMap<String, HashSet<String>>>>,
+    orchestrator_tick: Arc<RwLock<u64>>,
 }
 
 /// Health check response
@@ -207,6 +211,9 @@ async fn main() {
     let heroes = Arc::new(RwLock::new(HashMap::<String, HeroStatus>::new()));
     let processed_resolve = Arc::new(RwLock::new(HashSet::<String>::new()));
     let processed_collapse = Arc::new(RwLock::new(HashSet::<String>::new()));
+    let orchestrator_sessions = Arc::new(RwLock::new(HashSet::<String>::new()));
+    let orchestrator_idempotency = Arc::new(RwLock::new(HashMap::<String, HashSet<String>>::new()));
+    let orchestrator_tick = Arc::new(RwLock::new(0u64));
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -227,6 +234,9 @@ async fn main() {
         heroes,
         processed_resolve,
         processed_collapse,
+        orchestrator_sessions,
+        orchestrator_idempotency,
+        orchestrator_tick,
     };
     
     // Build router
@@ -287,6 +297,11 @@ async fn main() {
         .route("/api/hero/status", get(hero_status))
         .route("/api/hero/add-xp", post(hero_add_xp))
         .route("/api/hero/apply-perk", post(hero_apply_perk))
+        // Orchestrator (MVP)
+        .route("/orchestrator/session", post(orc_session))
+        .route("/orchestrator/intent", post(orc_intent))
+        .route("/orchestrator/decision-policy", get(orc_policy))
+        .route("/orchestrator/snapshot", get(orc_snapshot))
         .layer(cors)
         .with_state(app_state);
     
@@ -1269,6 +1284,97 @@ fn add_xp_to_hero(hero: &mut HeroStatus, amount: u32) -> bool {
     leveled
 }
 
+// ===== Orchestrator (MVP) =====
+#[derive(Deserialize, Serialize, Clone)]
+struct OrcSessionReq { heroId: Option<String>, clientVersion: Option<String> }
+
+#[derive(Serialize, Clone)]
+struct OrcSessionResp { sessionId: String, tick: u64, idempotencySalt: String }
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(tag = "type")] 
+enum OrcIntentInner {
+    MOVE { heroId: String, to: Position6DDto },
+    COLLECT { heroId: String, spotId: String },
+    OBSERVE { heroId: String, node_ids: Option<Vec<String>>, center: Option<Position6DDto>, radius: Option<f64> },
+    REQUEST_RESOLVE { heroId: Option<String>, mode: Option<String>, center: Option<Position6DDto>, radius: Option<f64> },
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct OrcIntentReq { sessionId: String, intent: OrcIntentInner }
+
+#[derive(Serialize, Clone)]
+struct OrcIntentResp { accepted: bool, willApplyAtTick: u64, seq: u64 }
+
+async fn orc_session(State(state): State<AppState>, Json(_req): Json<OrcSessionReq>) -> Json<OrcSessionResp> {
+    let session_id = format!("sess_{}", Uuid::new_v4());
+    {
+        let mut s = state.orchestrator_sessions.write().await;
+        s.insert(session_id.clone());
+    }
+    let salt = format!("{}", Uuid::new_v4());
+    let tick = { *state.orchestrator_tick.read().await };
+    Json(OrcSessionResp { sessionId: session_id, tick, idempotencySalt: salt })
+}
+
+async fn orc_intent(State(state): State<AppState>, headers: axum::http::HeaderMap, Json(req): Json<OrcIntentReq>) -> Json<OrcIntentResp> {
+    // Idempotency (per-session)
+    let idempotency_key = headers.get("Idempotency-Key").and_then(|v| v.to_str().ok()).unwrap_or("").to_string();
+    if !idempotency_key.is_empty() {
+        let mut map = state.orchestrator_idempotency.write().await;
+        let set = map.entry(req.sessionId.clone()).or_insert_with(HashSet::new);
+        if set.contains(&idempotency_key) {
+            let tick = { *state.orchestrator_tick.read().await } + 1;
+            return Json(OrcIntentResp { accepted: true, willApplyAtTick: tick, seq: 0 });
+        }
+        set.insert(idempotency_key);
+    }
+
+    // Very small scheduler: apply next tick
+    let mut apply_tick = state.orchestrator_tick.write().await;
+    *apply_tick += 1;
+    let will_tick = *apply_tick;
+    drop(apply_tick);
+
+    // Proxy intents to existing endpoints (MVP)
+    match req.intent {
+        OrcIntentInner::COLLECT { heroId: _h, spotId } => {
+            let payload = CollectRequest { spotId, playerId: None };
+            let _ = economy_collect(State(state.clone()), Json(payload)).await;
+        }
+        OrcIntentInner::OBSERVE { heroId, node_ids, center, radius } => {
+            let payload = CollapseRequest { node_ids, center, radius, description: Some("orchestrator_observe".into()), playerId: Some(heroId) };
+            let _ = observation_collapse(State(state.clone()), Json(payload)).await;
+        }
+        OrcIntentInner::REQUEST_RESOLVE { heroId: _h, mode, center, radius } => {
+            let m = match mode.as_deref() { Some("QUANTUM") => Some(ResolutionMode::QUANTUM), Some("TCG") => Some(ResolutionMode::TCG), _ => None };
+            let payload = ResolveRequest { node_ids: None, center, radius, mode: m, seed: None };
+            let _ = causality_resolve(State(state.clone()), Json(payload)).await;
+        }
+        OrcIntentInner::MOVE { .. } => {
+            // TODO: integrate with world-state movement; placeholder accept
+        }
+    }
+
+    Json(OrcIntentResp { accepted: true, willApplyAtTick: will_tick, seq: will_tick })
+}
+
+#[derive(Serialize, Clone)]
+struct OrcPolicy { tauPsi: f64, tauLow: f64, tauHigh: f64, tauObs: u32, pvpEnabled: bool, escapeHorizonTicks: u64 }
+
+async fn orc_policy() -> Json<OrcPolicy> {
+    Json(OrcPolicy { tauPsi: 0.65, tauLow: 0.35, tauHigh: 0.8, tauObs: 3, pvpEnabled: true, escapeHorizonTicks: 40 })
+}
+
+#[derive(Serialize, Clone)]
+struct OrcSnapshot { tick: u64, fullOrDelta: String }
+
+async fn orc_snapshot(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>) -> Json<OrcSnapshot> {
+    let since = q.get("sinceTick").and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+    let t = { *state.orchestrator_tick.read().await };
+    let kind = if since == 0 { "full" } else { "delta" };
+    Json(OrcSnapshot { tick: t, fullOrDelta: kind.to_string() })
+}
 async fn award_hero_xp(state: &AppState, hero_id: &str, amount: u32) {
     let mut heroes = state.heroes.write().await;
     let entry = heroes.entry(hero_id.to_string()).or_insert_with(default_hero);

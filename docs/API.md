@@ -172,3 +172,25 @@ Notes: Kind is inferred from the spot node.
 
 ## Port and CORS
 - Port via env `RUST_PORT` (default 3001). CORS allows GET/POST/OPTIONS with any origin/headers.
+
+---
+
+## Orchestrator (MVP)
+
+- POST `/orchestrator/session`
+  - Body: `{ "heroId": "hero:alice", "clientVersion": "1.2" }`
+  - Resp: `{ "sessionId": "sess_...", "tick": 0, "idempotencySalt": "..." }`
+- POST `/orchestrator/intent`
+  - Headers: `Idempotency-Key: <nonce>`
+  - Body: `{ "sessionId":"sess_...", "intent": { "type":"OBSERVE", "heroId":"hero:alice", "center": {"x":10,"y":20,"z":0,"t":0,"c":1}, "radius":5 } }`
+  - Resp: `{ "accepted": true, "willApplyAtTick": 1, "seq": 1 }`
+- GET `/orchestrator/decision-policy`
+  - Resp: `{ "tauPsi": 0.65, "tauLow": 0.35, "tauHigh": 0.8, "tauObs": 3, "pvpEnabled": true, "escapeHorizonTicks": 40 }`
+- GET `/orchestrator/snapshot?sinceTick=0`
+  - Resp: `{ "tick": 42, "fullOrDelta": "full|delta" }`
+
+### Intent types supported (MVP)
+- `MOVE { heroId, to: Pos }` (placeholder)
+- `COLLECT { heroId, spotId }` → proxies `/api/economy/collect`
+- `OBSERVE { heroId, node_ids? | center+radius? }` → proxies `/api/world-state/collapse`
+- `REQUEST_RESOLVE { heroId?, mode?: "QUANTUM"|"TCG", center?, radius? }` → proxies `/api/causality/resolve`
