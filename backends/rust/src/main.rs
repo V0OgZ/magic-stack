@@ -137,6 +137,8 @@ struct MapDto {
 struct AgentDto {
     speed_multiplier: Option<f64>,
     alpha_causal: Option<f64>,
+    // If negative, le temps « recule ». On utilise la valeur du signe uniquement ici
+    time_velocity: Option<f64>,
 }
 
 // ==== Causality Resolution DTOs ====
@@ -267,16 +269,17 @@ async fn agents_plan(Json(req): Json<PlanRequest>) -> Json<PlanResponse> {
     let start = req.start.unwrap_or(Position2D { x: 0, y: 0, tl: default_tl() });
     let goal = req.goal.unwrap_or(Position2D { x: 5, y: 0, tl: default_tl() });
     if let Some(map) = req.map.clone() {
-        let agent = req.agent.clone().unwrap_or(AgentDto { speed_multiplier: Some(1.0), alpha_causal: Some(0.0) });
+        let agent = req.agent.clone().unwrap_or(AgentDto { speed_multiplier: Some(1.0), alpha_causal: Some(0.0), time_velocity: Some(1.0) });
         let speed = agent.speed_multiplier.unwrap_or(1.0).max(0.01);
         let alpha = agent.alpha_causal.unwrap_or(0.0).max(0.0);
+        let inverted_time = agent.time_velocity.unwrap_or(1.0) < 0.0;
 
         let terrain_ref = map.terrain.as_ref().map(|v| v.as_slice());
         let causal_ref = map.causal_c.as_ref().map(|v| v.as_slice());
         let start_c = PfCell { x: start.x, y: start.y };
         let goal_c = PfCell { x: goal.x, y: goal.y };
         let opts = Some(PfOpts { allow_diagonal: false });
-        match a_star_path_weighted(&map.obstacles, terrain_ref, causal_ref, start_c, goal_c, opts, speed, alpha) {
+        match a_star_path_weighted(&map.obstacles, terrain_ref, causal_ref, start_c, goal_c, opts, speed, alpha, inverted_time) {
             Some((cells, cost)) => {
                 let path = cells.into_iter().map(|c| Position2D { x: c.x, y: c.y, tl: start.tl.clone() }).collect();
                 return Json(PlanResponse { path, cost, ok: true });
@@ -820,8 +823,51 @@ struct MapInitResponse { created: usize }
 
 /// Initialize some treasures/creatures in 6D with simple time windows
 async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest>) -> Json<MapInitResponse> {
-    // MVP: just acknowledge; a full init would create nodes with periodicity in properties
-    Json(MapInitResponse { created: 0 })
+    // Simple implementation: place a few treasures/creatures with temporal windows
+    // using map biomes as hints.
+    let mut created = 0usize;
+    let mut to_create: Vec<world_state::StateNode> = Vec::new();
+
+    // Heuristics: one entity per 24 cells approximately
+    let h = _req.map.biomes.len();
+    let w = if h>0 { _req.map.biomes[0].len() } else { 0 };
+    if h>0 && w>0 {
+        let step_y = (h.max(1) / 6).max(1);
+        let step_x = (w.max(1) / 8).max(1);
+        for y in (0..h).step_by(step_y) {
+            for x in (0..w).step_by(step_x) {
+                let biome = _req.map.biomes[y][x].clone();
+                let id = format!("ent_{}_{}_{}", biome, x, y);
+                let t = 0.0;
+                let c = _req.map.causal_c.get(y).and_then(|r| r.get(x)).copied().unwrap_or(1.0);
+                let psi = 0.5;
+                if let Ok(pos) = Position6D::new(x as f64, y as f64, 0.0, t, c, psi) {
+                    let mut props = HashMap::new();
+                    props.insert("biome".to_string(), serde_json::json!(biome));
+                    props.insert("time_window".to_string(), serde_json::json!({"start": 2, "end": 8, "period": 12}));
+                    props.insert("recurrence".to_string(), serde_json::json!({"every": "lunar_day", "count": 9999}));
+                    let node = world_state::StateNode {
+                        id,
+                        position: pos,
+                        node_type: world_state::NodeType::Entity,
+                        properties: props,
+                        connections: std::collections::HashSet::new(),
+                        last_updated: now_ms(),
+                        identity_id: None,
+                        timeline_id: Some("principale".to_string()),
+                    };
+                    to_create.push(node);
+                }
+            }
+        }
+    }
+
+    if !to_create.is_empty() {
+        let _ = state.world_state.batch_update(to_create).ok();
+        created = state.world_state.node_count();
+    }
+
+    Json(MapInitResponse { created })
 }
 
 /// Request for integrated formula casting

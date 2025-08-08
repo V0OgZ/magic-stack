@@ -150,6 +150,10 @@ pub fn a_star_path(
 
 /// Weighted A* considering terrain costs, causal stability and speed.
 /// Returns (path, total_cost).
+///
+/// If `inverted_time` is true, the causal penalty is applied on high stability
+/// cells (penalize C), emulant une « marche à rebours » où les zones très stables
+/// sont plus coûteuses à traverser. Sinon, on pénalise les faibles C (1-C).
 pub fn a_star_path_weighted(
     obstacles: &[Vec<u8>],
     terrain_costs: Option<&[Vec<f64>]>,
@@ -159,6 +163,7 @@ pub fn a_star_path_weighted(
     options: Option<PathfindingOptions>,
     speed_multiplier: f64,
     alpha_causal: f64,
+    inverted_time: bool,
 ) -> Option<(Vec<Cell>, f64)> {
     if obstacles.is_empty() || obstacles[0].is_empty() { return None; }
     let opts = options.unwrap_or_default();
@@ -220,7 +225,10 @@ pub fn a_star_path_weighted(
             step_cost_f += get_terrain(nb) * 10.0;
             // add causal penalty
             let c_val = get_c(nb).clamp(0.0, 1.0);
-            step_cost_f += alpha_causal * (1.0 - c_val) * 10.0;
+            // normal time: penalize low-C (uncertain zones)
+            // inverted time: penalize high-C (zones trop stables pour remonter le temps)
+            let causal_penalty = if inverted_time { c_val } else { 1.0 - c_val };
+            step_cost_f += alpha_causal * causal_penalty * 10.0;
 
             // scale to i32 for g_score
             let step_cost_i = (step_cost_f * 10.0).round() as i32; // x10 for precision
