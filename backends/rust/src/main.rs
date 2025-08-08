@@ -960,8 +960,9 @@ async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest
     }
 
     if !to_create.is_empty() {
+        let created_now = to_create.len();
         let _ = state.world_state.batch_update(to_create).ok();
-        created = state.world_state.node_count();
+        created = created_now;
     }
 
     Json(MapInitResponse { created })

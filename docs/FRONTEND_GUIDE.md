@@ -8,6 +8,7 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
 - GET `/openapi/all` — Agrégation Rust + Java (`{"rust":{...},"java":{...}}`)
 - POST `/agents/plan`
   - Entrée: `{ start:{x,y,tl}, goal:{x,y,tl}, map:{ obstacles, terrain?, causal_c? }, agent:{ speed_multiplier?, alpha_causal?, time_velocity? } }`
+  - Note: la carte doit être suffisamment grande pour couvrir `start/goal` (sinon `ok:false`).
   - Paramètres agent:
     - `speed_multiplier` (float > 0): vitesse relative.
     - `alpha_causal` (float ≥ 0): pondération du brouillard causal (C).
@@ -19,7 +20,7 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
   - Effet: marque `observed=true` et enregistre `ObservationCollapse`.
 
 - POST `/api/causality/resolve`
-  - Entrée: `{ node_ids:[...] | center+radius, mode:"QUANTUM"|"TCG", seed? }`
+  - Entrée: `{ node_ids:[...] | center+radius, mode:"QUANTUM"|"TCG", seed? }` (pas de champ `agent` pour l’instant)
   - Sortie: `{ mode, involved:[ids], winner?:id, started_match_id?:id }`
 
 - POST `/agents/fork` / POST `/agents/merge`
@@ -45,10 +46,11 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
       "time_windows": [ { "start": 2, "end": 8, "period": 12 } ]
     }
     ```
-  - Sortie: `{ created: <nb_total_noeuds> }`
+  - Sortie: `{ created: <nb_crees_dans_cet_appel> }`
 
 - GET `/openapi`
   - Spéc Rust minimale (pour compare-apis).
+  - Note: si le Java n’est pas démarré, `GET /openapi/all` aura `java: { error: ... }`.
 
 ## Java backends
 
