@@ -16,12 +16,16 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use axum::extract::Path as AxPath;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{info, error};
 use tracing_subscriber;
+use uuid::Uuid;
+use tower_http::cors::{Any, CorsLayer};
+use axum::http::Method;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -29,6 +33,7 @@ struct AppState {
     qstar_engine: Arc<RwLock<QStarEngine>>,
     world_state: Arc<WorldStateGraph>,
     java_connector: Arc<JavaConnector>,
+    matches: Arc<RwLock<HashMap<String, MatchState>>>,
 }
 
 /// Health check response
@@ -73,6 +78,57 @@ struct Position6DDto {
     psi: f64,
 }
 
+// ==== Agents DTOs ====
+#[derive(Deserialize)]
+struct TickViewport {
+    width: Option<u32>,
+    height: Option<u32>,
+    portals: Option<Vec<serde_json::Value>>, // future
+    entities: Option<Vec<serde_json::Value>>, // future
+}
+
+#[derive(Deserialize)]
+struct TickMeta {
+    mode: Option<String>,
+    difficulty: Option<String>,
+    matchId: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct TickRequest { viewport: Option<TickViewport>, meta: Option<TickMeta> }
+
+#[derive(Serialize)]
+struct TickResponse { commands: Vec<serde_json::Value>, serverTime: u64, nextTickMs: u64 }
+
+#[derive(Deserialize)]
+struct PlanRequest {
+    start: Option<Position2D>,
+    goal: Option<Position2D>,
+    opts: Option<HashMap<String, serde_json::Value>>,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct Position2D { x: i32, y: i32, #[serde(default="default_tl")] tl: String }
+
+fn default_tl() -> String { "principale".to_string() }
+
+#[derive(Serialize)]
+struct PlanResponse { path: Vec<Position2D>, cost: f64, ok: bool }
+
+#[derive(Deserialize)]
+struct CreateMatchRequest {
+    mode: Option<String>,
+    seed: Option<String>,
+    map: Option<HashMap<String, i32>>,
+    agents: Option<Vec<HashMap<String, serde_json::Value>>>,
+}
+
+#[derive(Serialize, Clone)]
+struct MatchState { tick: u64, entities: Vec<serde_json::Value>, score: HashMap<String, f64> }
+
+#[derive(Serialize)]
+struct CreateMatchResponse { matchId: String }
+
 #[tokio::main]
 async fn main() {
     // Initialize tracing
@@ -84,6 +140,7 @@ async fn main() {
     let qstar_engine = Arc::new(RwLock::new(QStarEngine::new()));
     let world_state = Arc::new(WorldStateGraph::new());
     let java_connector = Arc::new(JavaConnector::new(None));
+    let matches = Arc::new(RwLock::new(HashMap::<String, MatchState>::new()));
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -96,10 +153,23 @@ async fn main() {
         qstar_engine,
         world_state,
         java_connector,
+        matches,
     };
     
     // Build router
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers(Any);
+
     let app = Router::new()
+        // Agents endpoints (MVP)
+        .route("/health", post(agents_health))
+        .route("/agents/tick", post(agents_tick))
+        .route("/agents/plan", post(agents_plan))
+        .route("/matches", post(create_match))
+        .route("/matches/:id/state", get(get_match_state))
+        // Existing endpoints
         .route("/health", get(health_check))
         .route("/api/qstar/search", post(qstar_search))
         .route("/api/world-state/nodes", post(create_node))
@@ -108,6 +178,7 @@ async fn main() {
         .route("/api/world-state/nodes/radius", get(get_nodes_in_radius))
         .route("/api/test/all-formulas", post(test_all_formulas))
         .route("/api/integration/formula-cast", post(integrated_formula_cast))
+        .layer(cors)
         .with_state(app_state);
     
     // Start server
@@ -122,6 +193,56 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
+// ==== Agents Handlers (MVP) ====
+async fn agents_health() -> Json<serde_json::Value> {
+    Json(serde_json::json!({"ok": true, "version": env!("CARGO_PKG_VERSION"), "timestamp": now_ms()}))
+}
+
+async fn agents_tick(Json(_req): Json<TickRequest>) -> Json<TickResponse> {
+    let cmd = serde_json::json!({
+        "type": "say",
+        "text": "Agents tick processed",
+        "level": "info"
+    });
+    Json(TickResponse { commands: vec![cmd], serverTime: now_ms(), nextTickMs: 1000 })
+}
+
+async fn agents_plan(Json(req): Json<PlanRequest>) -> Json<PlanResponse> {
+    let start = req.start.unwrap_or(Position2D { x: 0, y: 0, tl: default_tl() });
+    let goal = req.goal.unwrap_or(Position2D { x: 5, y: 0, tl: default_tl() });
+    let mut path = Vec::new();
+    let dx = if goal.x >= start.x { 1 } else { -1 };
+    let mut x = start.x;
+    while x != goal.x { path.push(Position2D { x, y: start.y, tl: start.tl.clone() }); x += dx; }
+    path.push(Position2D { x: goal.x, y: goal.y, tl: start.tl.clone() });
+    Json(PlanResponse { path, cost: (goal.x - start.x).abs() as f64, ok: true })
+}
+
+async fn create_match(State(state): State<AppState>, Json(_req): Json<CreateMatchRequest>) -> Json<CreateMatchResponse> {
+    let id = Uuid::new_v4().to_string();
+    let mut score = HashMap::new();
+    score.insert("A".to_string(), 0.0);
+    score.insert("B".to_string(), 0.0);
+    let st = MatchState { tick: 0, entities: vec![], score };
+    state.matches.write().await.insert(id.clone(), st);
+    Json(CreateMatchResponse { matchId: id })
+}
+
+async fn get_match_state(State(state): State<AppState>, AxPath(id): AxPath<String>) -> Result<Json<MatchState>, StatusCode> {
+    let mut guard = state.matches.write().await;
+    if let Some(mut st) = guard.get(&id).cloned() {
+        st.tick += 1;
+        guard.insert(id.clone(), st.clone());
+        Ok(Json(st))
+    } else {
+        Err(StatusCode::NOT_FOUND)
+    }
+}
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64
+}
+
 
 /// Health check endpoint
 async fn health_check(State(state): State<AppState>) -> Json<HealthResponse> {
