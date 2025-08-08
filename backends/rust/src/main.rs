@@ -9,7 +9,7 @@
 //! It works alongside the Java Spring Boot backend, handling performance-critical tasks.
 
 use magic_stack_core::*;
-use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts};
+use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts, Topology as PfTopology};
 use magic_stack_core::mapgen::{generate_map, MapGenParams};
 use axum::{
     extract::{Query, State},
@@ -292,13 +292,14 @@ async fn agents_plan(Json(req): Json<PlanRequest>) -> Json<PlanResponse> {
         let speed = agent.speed_multiplier.unwrap_or(1.0).max(0.01);
         let alpha = agent.alpha_causal.unwrap_or(0.0).max(0.0);
         let inverted_time = agent.time_velocity.unwrap_or(1.0) < 0.0;
+        let topology = req.opts.as_ref().and_then(|o| o.get("topology").and_then(|v| v.as_str())).map(|s| PfTopology::from_str(s)).unwrap_or(PfTopology::Plane);
 
         let terrain_ref = map.terrain.as_ref().map(|v| v.as_slice());
         let causal_ref = map.causal_c.as_ref().map(|v| v.as_slice());
         let start_c = PfCell { x: start.x, y: start.y };
         let goal_c = PfCell { x: goal.x, y: goal.y };
         let opts = Some(PfOpts { allow_diagonal: false });
-        match a_star_path_weighted(&map.obstacles, terrain_ref, causal_ref, start_c, goal_c, opts, speed, alpha, inverted_time) {
+        match a_star_path_weighted(&map.obstacles, terrain_ref, causal_ref, start_c, goal_c, opts, speed, alpha, inverted_time, topology) {
             Some((cells, cost)) => {
                 let path = cells.into_iter().map(|c| Position2D { x: c.x, y: c.y, tl: start.tl.clone() }).collect();
                 return Json(PlanResponse { path, cost, ok: true });

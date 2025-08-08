@@ -22,6 +22,44 @@ impl Default for PathfindingOptions {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Topology {
+    Plane,
+    Torus,
+    Mobius,
+    Klein,
+}
+
+impl Topology {
+    pub fn from_str(name: &str) -> Self {
+        match name.to_lowercase().as_str() {
+            "torus" | "tore" => Topology::Torus,
+            "mobius" | "möbius" | "moebius" => Topology::Mobius,
+            "klein" => Topology::Klein,
+            _ => Topology::Plane,
+        }
+    }
+}
+
+// Keep a simple neighbors helper for classic A* (plane topology)
+fn neighbors(c: Cell, allow_diagonal: bool) -> Vec<Cell> {
+    let mut result = vec![
+        Cell { x: c.x + 1, y: c.y },
+        Cell { x: c.x - 1, y: c.y },
+        Cell { x: c.x, y: c.y + 1 },
+        Cell { x: c.x, y: c.y - 1 },
+    ];
+    if allow_diagonal {
+        result.extend_from_slice(&[
+            Cell { x: c.x + 1, y: c.y + 1 },
+            Cell { x: c.x + 1, y: c.y - 1 },
+            Cell { x: c.x - 1, y: c.y + 1 },
+            Cell { x: c.x - 1, y: c.y - 1 },
+        ]);
+    }
+    result
+}
+
 #[derive(Clone, Eq, PartialEq)]
 struct Node {
     cell: Cell,
@@ -71,22 +109,50 @@ fn is_blocked(grid: &[Vec<u8>], c: Cell) -> bool {
     grid[c.y as usize][c.x as usize] != 0
 }
 
-fn neighbors(c: Cell, allow_diagonal: bool) -> Vec<Cell> {
-    let mut result = vec![
+fn neighbors_topology(c: Cell, allow_diagonal: bool, width: i32, height: i32, topology: Topology) -> Vec<Cell> {
+    let mut base = vec![
         Cell { x: c.x + 1, y: c.y },
         Cell { x: c.x - 1, y: c.y },
         Cell { x: c.x, y: c.y + 1 },
         Cell { x: c.x, y: c.y - 1 },
     ];
     if allow_diagonal {
-        result.extend_from_slice(&[
+        base.extend_from_slice(&[
             Cell { x: c.x + 1, y: c.y + 1 },
             Cell { x: c.x + 1, y: c.y - 1 },
             Cell { x: c.x - 1, y: c.y + 1 },
             Cell { x: c.x - 1, y: c.y - 1 },
         ]);
     }
-    result
+
+    base
+        .into_iter()
+        .map(|nb| match topology {
+            Topology::Plane => nb,
+            Topology::Torus => {
+                let mut x = nb.x % width; if x < 0 { x += width; }
+                let mut y = nb.y % height; if y < 0 { y += height; }
+                Cell { x, y }
+            }
+            Topology::Mobius => {
+                let mut x = nb.x;
+                let mut y = nb.y;
+                if x < 0 { x = width - 1; y = (height - 1) - (y.rem_euclid(height)); }
+                else if x >= width { x = 0; y = (height - 1) - (y.rem_euclid(height)); }
+                // Vertical borders are not wrapped (will be filtered by in_bounds)
+                Cell { x, y }
+            }
+            Topology::Klein => {
+                let mut x = nb.x;
+                let mut y = nb.y;
+                if x < 0 { x = width - 1; y = (height - 1) - (y.rem_euclid(height)); }
+                else if x >= width { x = 0; y = (height - 1) - (y.rem_euclid(height)); }
+                if y < 0 { y = height - 1; x = (width - 1) - (x.rem_euclid(width)); }
+                else if y >= height { y = 0; x = (width - 1) - (x.rem_euclid(width)); }
+                Cell { x, y }
+            }
+        })
+        .collect()
 }
 
 /// Find a path using A* from start to goal on a grid. Returns a list of cells including goal.
@@ -164,6 +230,7 @@ pub fn a_star_path_weighted(
     speed_multiplier: f64,
     alpha_causal: f64,
     inverted_time: bool,
+    topology: Topology,
 ) -> Option<(Vec<Cell>, f64)> {
     if obstacles.is_empty() || obstacles[0].is_empty() { return None; }
     let opts = options.unwrap_or_default();
@@ -194,6 +261,9 @@ pub fn a_star_path_weighted(
             .unwrap_or(1.0)
     };
 
+    let h_i32 = obstacles.len() as i32;
+    let w_i32 = if h_i32 > 0 { obstacles[0].len() as i32 } else { 0 };
+
     while let Some(current) = open_set.pop() {
         if current.cell == goal {
             // reconstruct path
@@ -213,7 +283,8 @@ pub fn a_star_path_weighted(
         if closed.contains(&current.cell) { continue; }
         closed.insert(current.cell);
 
-        for nb in neighbors(current.cell, opts.allow_diagonal) {
+        for nb_raw in neighbors_topology(current.cell, opts.allow_diagonal, w_i32, h_i32, topology) {
+            let nb = nb_raw;
             if !in_bounds(obstacles, nb) || is_blocked(obstacles, nb) { continue; }
             if closed.contains(&nb) { continue; }
 
