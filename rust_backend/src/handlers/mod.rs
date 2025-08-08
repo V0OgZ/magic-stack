@@ -6,12 +6,14 @@ use axum::{
 use std::time::Instant;
 use uuid::Uuid;
 use chrono;
+use std::env;
 
 use crate::models::*;
 use crate::services::*;
 
 // OpenAPI Documentation Handler
 pub async fn openapi_handler() -> ResponseJson<serde_json::Value> {
+    let port = env::var("RUST_PORT").unwrap_or_else(|_| "3001".to_string());
     let openapi = serde_json::json!({
         "openapi": "3.0.0",
         "info": {
@@ -20,7 +22,7 @@ pub async fn openapi_handler() -> ResponseJson<serde_json::Value> {
             "description": "🦀 Backend Rust - Couche 4: MagicStack 6D - Recherche spatiotemporelle ultra-rapide"
         },
         "servers": [{
-            "url": "http://localhost:3001",
+            "url": format!("http://localhost:{}", port),
             "description": "Rust Backend - MagicStack 6D"
         }],
         "paths": {

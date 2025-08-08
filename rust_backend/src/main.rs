@@ -7,6 +7,7 @@ use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use chrono;
+use std::env;
 
 mod handlers;
 mod models;
@@ -19,9 +20,12 @@ async fn main() {
     // Initialize logging
     env_logger::init();
     
+    let port = env::var("RUST_PORT").unwrap_or_else(|_| "3001".to_string());
+    let bind_addr = format!("0.0.0.0:{}", port);
+    
     println!("🔮✨ DÉMARRAGE MAGICSTACK RUST - HEROES OF TIME ✨🔮");
     println!("🌌 Moteur 6D - Recherche Spatiotemporelle Ultra-Rapide");
-    println!("⚡ Port 3001 - Prêt pour connexion avec Java Backend");
+    println!("⚡ Port {} - Prêt pour connexion avec Java Backend", port);
     
     // Build application routes
     let app = Router::new()
@@ -60,11 +64,11 @@ async fn main() {
         );
 
     // Start server
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
+    let listener = tokio::net::TcpListener::bind(&bind_addr)
         .await
-        .expect("❌ Impossible de binder le port 3001");
+        .expect("❌ Impossible de binder l'adresse");
     
-    println!("🚀 MagicStack Rust ONLINE sur http://localhost:3001");
+    println!("🚀 MagicStack Rust ONLINE sur http://localhost:{}", port);
     println!("📡 Endpoints disponibles:");
     println!("   GET  /health                    - Status check");
     println!("   POST /api/search                - Recherche 6D");

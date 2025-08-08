@@ -12,13 +12,14 @@ Ports:
 from flask import Flask, request, jsonify, Response
 import requests
 import json
+import os
 
 app = Flask(__name__)
 
 # Configuration des backends
 BACKENDS = {
-    "java": "http://localhost:8082",
-    "rust": "http://localhost:3001"
+    "java": os.environ.get("JAVA_BACKEND_URL", "http://localhost:8082"),
+    "rust": os.environ.get("RUST_BACKEND_URL", "http://localhost:3001"),
 }
 
 @app.route('/')
@@ -123,4 +124,4 @@ if __name__ == '__main__':
     print("📡 Routing to:")
     print(f"   - Java Backend: {BACKENDS['java']}")
     print(f"   - Rust Backend: {BACKENDS['rust']}")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get("ROUTER_PORT", "5000")), debug=True)

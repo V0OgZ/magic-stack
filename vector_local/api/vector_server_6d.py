@@ -71,9 +71,9 @@ class VectorDB6D:
         logger.info("🚀 INITIALISATION VECTOR DB 6D RETRO LASER...")
         
         # 🔮 Configuration
-        self.workspace_path = "/workspace"
-        self.embeddings_path = "vector_local/embeddings"
-        self.data_path = "vector_local/data"
+        self.workspace_path = os.environ.get("VECTOR_WORKSPACE", "/workspace")
+        self.embeddings_path = os.environ.get("VECTOR_EMBEDDINGS_PATH", "vector_local/embeddings")
+        self.data_path = os.environ.get("VECTOR_DATA_PATH", "vector_local/data")
         
         # 🧠 Modèle d'embedding optimisé M4
         logger.info("🧠 Chargement modèle embedding...")
