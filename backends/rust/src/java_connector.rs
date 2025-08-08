@@ -161,6 +161,31 @@ impl JavaConnector {
             Err(e) => Err(MagicError::VectorOperationFailed(format!("Request failed: {}", e))),
         }
     }
+
+    /// Try to fetch Java OpenAPI spec (springdoc). Fallback to legacy /api doc.
+    pub async fn get_openapi_spec(&self) -> MagicResult<serde_json::Value> {
+        // primary: /v3/api-docs
+        let url1 = format!("{}/v3/api-docs", self.java_base_url);
+        if let Ok(resp) = self.client.get(&url1).send().await {
+            if resp.status().is_success() {
+                if let Ok(val) = resp.json::<serde_json::Value>().await {
+                    return Ok(val);
+                }
+            }
+        }
+        // fallback: legacy JSON doc at /api
+        let url2 = format!("{}/api", self.java_base_url);
+        match self.client.get(&url2).send().await {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    resp.json::<serde_json::Value>().await.map_err(|e| MagicError::VectorOperationFailed(e.to_string()))
+                } else {
+                    Err(MagicError::VectorOperationFailed(format!("HTTP {} on {}", resp.status(), url2)))
+                }
+            }
+            Err(e) => Err(MagicError::VectorOperationFailed(format!("Request failed: {}", e)))
+        }
+    }
     
     /// Execute magic formula on Java backend
     pub async fn cast_formula(&self, request: JavaMagicRequest) -> MagicResult<JavaMagicResponse> {

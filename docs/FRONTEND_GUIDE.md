@@ -4,6 +4,8 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
 
 ## Rust server (par défaut: http://localhost:3001)
 
+- GET `/openapi` — Spéc Rust minimale (OpenAPI JSON)
+- GET `/openapi/all` — Agrégation Rust + Java (`{"rust":{...},"java":{...}}`)
 - POST `/agents/plan`
   - Entrée: `{ start:{x,y,tl}, goal:{x,y,tl}, map:{ obstacles, terrain?, causal_c? }, agent:{ speed_multiplier?, alpha_causal?, time_velocity? } }`
   - Paramètres agent:
@@ -51,7 +53,8 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
 ## Java backends
 
 - Backend principal (Spring): jar `backends/java/target/magic-stack-backend-1.0.0-APOLLO.jar`
-  - OpenAPI (selon config): `GET /openapi` (voir `compare-apis.html`).
+  - OpenAPI standard: `GET /v3/api-docs` (si springdoc actif)
+  - Fallback doc JSON: `GET /api`
 
 - Simple Scenario Backend: `simple-scenario-backend/target/simple-scenario-backend-1.0.0.jar`
   - `OpenApiController` expose `GET /openapi` (mode démo).

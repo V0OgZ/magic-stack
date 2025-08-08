@@ -234,6 +234,7 @@ async fn main() {
         .route("/api/test/all-formulas", post(test_all_formulas))
         .route("/api/integration/formula-cast", post(integrated_formula_cast))
         .route("/openapi", get(openapi_handler))
+        .route("/openapi/all", get(openapi_all_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
         .layer(cors)
@@ -809,6 +810,19 @@ async fn openapi_handler() -> Json<serde_json::Value> {
             "/api/map/generate": {"post": {"summary":"Generate contiguous biome map"}},
             "/api/map/init": {"post": {"summary":"Initialize 6D entities from map"}}
         }
+    }))
+}
+
+/// Aggregate OpenAPI: Rust + Java
+async fn openapi_all_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
+    let rust = openapi_handler().await.0;
+    let java = match state.java_connector.get_openapi_spec().await {
+        Ok(spec) => spec,
+        Err(e) => serde_json::json!({"error":"java_openapi_unavailable","message":format!("{}", e)}),
+    };
+    Json(serde_json::json!({
+        "rust": rust,
+        "java": java
     }))
 }
 
