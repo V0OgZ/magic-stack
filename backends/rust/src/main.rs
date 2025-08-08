@@ -41,6 +41,7 @@ struct AppState {
     java_connector: Arc<JavaConnector>,
     matches: Arc<RwLock<HashMap<String, MatchState>>>,
     vector_api_base: String,
+    inventories: Arc<RwLock<HashMap<String, Vec<InventoryItem>>>>,
 }
 
 /// Health check response
@@ -192,6 +193,7 @@ async fn main() {
     let java_connector = Arc::new(JavaConnector::new(None));
     let matches = Arc::new(RwLock::new(HashMap::<String, MatchState>::new()));
     let vector_api_base = std::env::var("VECTOR_API_BASE").unwrap_or_else(|_| "http://localhost:5001".to_string());
+    let inventories = Arc::new(RwLock::new(HashMap::<String, Vec<InventoryItem>>::new()));
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -206,6 +208,7 @@ async fn main() {
         java_connector,
         matches,
         vector_api_base,
+        inventories,
     };
     
     // Build router
@@ -246,6 +249,16 @@ async fn main() {
         .route("/api/archives/status", get(archives_status))
         .route("/api/archives/search", post(archives_search))
         .route("/api/archives/build", post(archives_build))
+        // Economy / Craft / Runes
+        .route("/api/economy/inventory", get(get_inventory))
+        .route("/api/economy/collect", post(economy_collect))
+        .route("/api/economy/arcade-result", post(economy_arcade_result))
+        .route("/api/craft/potion", post(craft_potion))
+        .route("/api/craft/crystal", post(craft_crystal))
+        .route("/api/craft/artifact", post(craft_artifact))
+        .route("/api/mage/learn-runes", post(mage_learn_runes))
+        // Nearby (WSG)
+        .route("/api/panopticon/world-state-graph/nearby", get(get_nodes_in_radius))
         .layer(cors)
         .with_state(app_state);
     
@@ -395,6 +408,8 @@ async fn agents_control(State(state): State<AppState>, Json(req): Json<ControlRe
 #[derive(Deserialize)]
 struct CastRequest {
     formula: String,
+    target: Option<String>,
+    power: Option<i32>,
     formula_type: Option<String>,
     caster_node_id: String,
     parameters: Option<HashMap<String, serde_json::Value>>,
@@ -403,7 +418,9 @@ struct CastRequest {
 
 /// Cast a power/formula via Java backend
 async fn agents_cast(State(state): State<AppState>, Json(req): Json<CastRequest>) -> Result<Json<java_connector::JavaMagicResponse>, StatusCode> {
-    let params = req.parameters.unwrap_or_default();
+    let mut params = req.parameters.unwrap_or_default();
+    if let Some(t) = req.target { params.insert("target".to_string(), serde_json::json!(t)); }
+    if let Some(p) = req.power { params.insert("power".to_string(), serde_json::json!(p)); }
     let caster_id = req.caster_identity.unwrap_or(req.caster_node_id);
     let request = java_connector::JavaMagicRequest {
         formula_type: req.formula_type.unwrap_or_else(|| "SIMPLE".to_string()),
@@ -916,7 +933,7 @@ async fn map_generate(Json(req): Json<MapGenerateRequest>) -> Json<MapGenerateRe
 struct MapInitRequest { map: MapGenerateResponse, time_windows: Option<Vec<serde_json::Value>> }
 
 #[derive(Serialize)]
-struct MapInitResponse { created: usize }
+struct MapInitResponse { created: usize, total: usize }
 
 /// Initialize some treasures/creatures in 6D with simple time windows
 async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest>) -> Json<MapInitResponse> {
@@ -959,13 +976,15 @@ async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest
         }
     }
 
+    let mut total = state.world_state.node_count();
     if !to_create.is_empty() {
         let created_now = to_create.len();
         let _ = state.world_state.batch_update(to_create).ok();
         created = created_now;
+        total = state.world_state.node_count();
     }
 
-    Json(MapInitResponse { created })
+    Json(MapInitResponse { created, total })
 }
 
 /// Request for integrated formula casting
@@ -974,4 +993,87 @@ struct IntegratedCastRequest {
     formula: String,
     formula_type: Option<String>,
     caster_id: Option<String>,
+}
+
+// ===== Economy / Craft / Runes =====
+#[derive(Clone, Serialize, Deserialize)]
+struct InventoryItem { id: String, kind: String, qty: u32, #[serde(skip_serializing_if="Option::is_none")] quality: Option<f64>, #[serde(skip_serializing_if="Option::is_none")] purity: Option<f64>, #[serde(skip_serializing_if="Option::is_none")] stability: Option<f64>, #[serde(skip_serializing_if="Option::is_none")] affinity: Option<String> }
+
+#[derive(Deserialize)]
+struct CollectRequest { spotId: String, #[serde(default)] playerId: Option<String> }
+
+async fn get_inventory(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>) -> Json<serde_json::Value> {
+    let player_id = q.get("playerId").cloned().unwrap_or_else(|| "anonymous".to_string());
+    let inv = state.inventories.read().await;
+    let items = inv.get(&player_id).cloned().unwrap_or_default();
+    Json(serde_json::json!({"items": items}))
+}
+
+async fn economy_collect(State(state): State<AppState>, Json(req): Json<CollectRequest>) -> Json<serde_json::Value> {
+    let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player_id.clone()).or_default();
+    // MVP: générer une herbe à partir du spot
+    let item = InventoryItem { id: format!("herb_{}_{}", req.spotId, now_ms()), kind: "herb".into(), qty: 1, quality: Some(0.6), purity: Some(0.5), stability: Some(0.7), affinity: Some("nature".into()) };
+    entry.push(item.clone());
+    Json(serde_json::json!({"added": [item], "inventory": entry}))
+}
+
+#[derive(Deserialize)]
+struct ArcadeResultReq { gameId: String, success: bool, rewards: Option<Vec<HashMap<String, serde_json::Value>>>, #[serde(default)] playerId: Option<String> }
+
+async fn economy_arcade_result(State(state): State<AppState>, Json(req): Json<ArcadeResultReq>) -> Json<serde_json::Value> {
+    let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player_id.clone()).or_default();
+    if req.success {
+        if let Some(rews) = req.rewards {
+            for r in rews {
+                let kind = r.get("kind").and_then(|v| v.as_str()).unwrap_or("token");
+                let qty = r.get("qty").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
+                entry.push(InventoryItem { id: format!("{}_{}", kind, now_ms()), kind: kind.to_string(), qty, quality: None, purity: None, stability: None, affinity: None });
+            }
+        }
+    }
+    Json(serde_json::json!({"ok": true, "inventory": entry}))
+}
+
+#[derive(Deserialize)]
+struct CraftReq { recipeId: String, ingredients: Option<Vec<HashMap<String, serde_json::Value>>>, #[serde(default)] playerId: Option<String> }
+
+async fn craft_potion(State(state): State<AppState>, Json(req): Json<CraftReq>) -> Json<serde_json::Value> {
+    let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player_id.clone()).or_default();
+    // MVP: ne consomme pas réellement, ajoute la potion
+    let crafted = InventoryItem { id: format!("potion_{}_{}", req.recipeId, now_ms()), kind: "potion".into(), qty: 1, quality: Some(0.8), purity: Some(0.7), stability: Some(0.9), affinity: Some("healing".into()) };
+    entry.push(crafted.clone());
+    Json(serde_json::json!({"item": crafted, "inventory": entry}))
+}
+
+async fn craft_crystal(State(state): State<AppState>, Json(req): Json<CraftReq>) -> Json<serde_json::Value> {
+    let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player_id.clone()).or_default();
+    let crafted = InventoryItem { id: format!("crystal_{}_{}", req.recipeId, now_ms()), kind: "crystal".into(), qty: 1, quality: Some(0.85), purity: Some(0.9), stability: Some(0.95), affinity: Some("earth".into()) };
+    entry.push(crafted.clone());
+    Json(serde_json::json!({"item": crafted, "inventory": entry}))
+}
+
+async fn craft_artifact(State(state): State<AppState>, Json(req): Json<CraftReq>) -> Json<serde_json::Value> {
+    let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player_id.clone()).or_default();
+    let crafted = InventoryItem { id: format!("artifact_{}_{}", req.recipeId, now_ms()), kind: "artifact".into(), qty: 1, quality: Some(0.92), purity: Some(0.92), stability: Some(0.92), affinity: Some("legend".into()) };
+    entry.push(crafted.clone());
+    Json(serde_json::json!({"item": crafted, "inventory": entry}))
+}
+
+#[derive(Deserialize)]
+struct LearnRunesReq { miniGameResult: Option<HashMap<String, serde_json::Value>>, #[serde(default)] playerId: Option<String> }
+
+async fn mage_learn_runes(Json(req): Json<LearnRunesReq>) -> Json<serde_json::Value> {
+    let score = req.miniGameResult.as_ref().and_then(|m| m.get("score")).and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let unlocked = if score >= 80.0 { vec!["SIGMA", "TAU", "OMEGA"] } else if score >= 50.0 { vec!["SIGMA"] } else { vec![] };
+    Json(serde_json::json!({"unlocked": unlocked}))
 }
