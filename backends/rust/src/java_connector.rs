@@ -59,6 +59,16 @@ pub struct ShamanCastResponse {
     pub timestamp: String,
 }
 
+// ===== Regulators integration DTOs =====
+#[derive(Debug, Serialize)]
+pub struct RegulatorsTemporalEventRequest {
+    #[serde(rename = "playerId")]
+    pub player_id: String,
+    #[serde(rename = "eventType")]
+    pub event_type: String,
+    pub context: std::collections::HashMap<String, serde_json::Value>,
+}
+
 /// Formula execution result combining Rust search + Java execution
 #[derive(Debug, Serialize)]
 pub struct IntegratedFormulaResult {
@@ -84,7 +94,8 @@ impl JavaConnector {
     
     /// Test connection to Java backend
     pub async fn test_connection(&self) -> MagicResult<bool> {
-        let url = format!("{}/api/magic/status", self.java_base_url);
+        // Use health endpoint (status was 404 on some builds)
+        let url = format!("{}/api/magic/health", self.java_base_url);
         
         match self.client.get(&url).send().await {
             Ok(response) => {
@@ -100,6 +111,54 @@ impl JavaConnector {
                 error!("❌ Failed to connect to Java backend: {}", e);
                 Err(MagicError::VectorOperationFailed(format!("Java connection failed: {}", e)))
             }
+        }
+    }
+
+    // ===== Regulators integration =====
+
+    /// GET /api/regulators/status
+    pub async fn get_regulators_status(&self) -> MagicResult<serde_json::Value> {
+        let url = format!("{}/api/regulators/status", self.java_base_url);
+        match self.client.get(&url).send().await {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<serde_json::Value>().await {
+                        Ok(val) => Ok(val),
+                        Err(e) => Err(MagicError::VectorOperationFailed(format!("Parse status failed: {}", e))),
+                    }
+                } else {
+                    Err(MagicError::VectorOperationFailed(format!("Status HTTP {}", resp.status())))
+                }
+            }
+            Err(e) => Err(MagicError::VectorOperationFailed(format!("Request failed: {}", e))),
+        }
+    }
+
+    /// POST /api/regulators/hunter/record-event
+    pub async fn record_hunter_event(
+        &self,
+        player_id: &str,
+        event_type: &str,
+        context: std::collections::HashMap<String, serde_json::Value>,
+    ) -> MagicResult<()> {
+        let url = format!("{}/api/regulators/hunter/record-event", self.java_base_url);
+        let body = RegulatorsTemporalEventRequest {
+            player_id: player_id.to_string(),
+            event_type: event_type.to_string(),
+            context,
+        };
+        match self.client.post(&url).json(&body).send().await {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    Ok(())
+                } else {
+                    Err(MagicError::VectorOperationFailed(format!(
+                        "Hunter record-event HTTP {}",
+                        resp.status()
+                    )))
+                }
+            }
+            Err(e) => Err(MagicError::VectorOperationFailed(format!("Request failed: {}", e))),
         }
     }
     

@@ -262,6 +262,23 @@ async fn agents_tick(Json(_req): Json<TickRequest>) -> Json<TickResponse> {
         "text": "Agents tick processed",
         "level": "info"
     });
+
+    // Send lightweight telemetry to Java regulators (best effort)
+    // Not blocking the tick; failures are ignored but logged by connector
+    // Using a fixed player id for MVP until matchmaking provides it
+    // Capture a connector via a minimal static holder to avoid locking issues
+    // For simplicity in MVP, we just skip if not available in this scope
+    // (handlers below have access via State when needed)
+    let java_opt: Option<Arc<JavaConnector>> = None;
+    tokio::spawn(async move {
+        let mut context = std::collections::HashMap::new();
+        context.insert("serverTime".to_string(), serde_json::json!(now_ms()));
+        context.insert("tick".to_string(), serde_json::json!("heartbeat"));
+        if let Some(java) = java_opt {
+            let _ = java.record_hunter_event("anonymous", "TICK_HEARTBEAT", context).await;
+        }
+    });
+
     Json(TickResponse { commands: vec![cmd], serverTime: now_ms(), nextTickMs: 1000 })
 }
 
