@@ -90,15 +90,21 @@ perf_test() {
 echo "🔍 PHASE 1: BACKEND STATUS CHECK"
 echo "================================"
 
+# Configurable endpoints
+JAVA_PORT=${JAVA_PORT:-8082}
+RUST_PORT=${RUST_PORT:-3001}
+JAVA_BASE=${JAVA_BACKEND_URL:-http://localhost:$JAVA_PORT}
+RUST_BASE=${RUST_BACKEND_URL:-http://localhost:$RUST_PORT}
+
 # Check Java Backend
 JAVA_ONLINE=false
-if check_backend "http://localhost:8080/api/health" "Java Backend (8080)"; then
+if check_backend "$JAVA_BASE/api/health" "Java Backend ($JAVA_PORT)"; then
     JAVA_ONLINE=true
 fi
 
 # Check Rust Backend  
 RUST_ONLINE=false
-if check_backend "http://localhost:3001/health" "Rust Backend (3001)"; then
+if check_backend "$RUST_BASE/health" "Rust Backend ($RUST_PORT)"; then
     RUST_ONLINE=true
 fi
 
@@ -113,7 +119,7 @@ if $JAVA_ONLINE; then
     
     # Test 1: Spawn Hero
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/scenario/spawn-hero \
+    response=$(curl -s -X POST "$JAVA_BASE/api/scenario/spawn-hero" \
         -H "Content-Type: application/json" \
         -d '{"hero":"TestHero","position":{"x":0,"y":0,"z":0}}' 2>/dev/null)
     
@@ -126,7 +132,7 @@ if $JAVA_ONLINE; then
     
     # Test 2: Use Artifact
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/scenario/use-artifact \
+    response=$(curl -s -X POST "$JAVA_BASE/api/scenario/use-artifact" \
         -H "Content-Type: application/json" \
         -d '{"hero":"TestHero","artifact":"excalibur"}' 2>/dev/null)
     
@@ -139,7 +145,7 @@ if $JAVA_ONLINE; then
     
     # Test 3: Cast Formula
     JAVA_TESTS=$((JAVA_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:8080/api/interstice/cast-formula \
+    response=$(curl -s -X POST "$JAVA_BASE/api/interstice/cast-formula" \
         -H "Content-Type: application/json" \
         -d '{"caster":"TestHero","formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' 2>/dev/null)
     
@@ -158,7 +164,7 @@ if $RUST_ONLINE; then
     
     # Test 1: 6D Search
     RUST_TESTS=$((RUST_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:3001/api/qstar/search \
+    response=$(curl -s -X POST "$RUST_BASE/api/qstar/search" \
         -H "Content-Type: application/json" \
         -d '{"query":"fireball","center_x":0,"center_y":0,"center_z":0,"center_t":0,"center_c":0,"center_psi":0,"radius":10}' 2>/dev/null)
     
@@ -171,7 +177,7 @@ if $RUST_ONLINE; then
     
     # Test 2: Formula Execution
     RUST_TESTS=$((RUST_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:3001/api/integration/formula-cast \
+    response=$(curl -s -X POST "$RUST_BASE/api/integration/formula-cast" \
         -H "Content-Type: application/json" \
         -d '{"formula":"TELEPORT_HERO","formula_type":"SIMPLE","caster_id":"testall"}' 2>/dev/null)
     
@@ -184,7 +190,7 @@ if $RUST_ONLINE; then
     
     # Test 3: Q* Search
     RUST_TESTS=$((RUST_TESTS + 1))
-    response=$(curl -s -X POST http://localhost:3001/api/qstar/search \
+    response=$(curl -s -X POST "$RUST_BASE/api/qstar/search" \
         -H "Content-Type: application/json" \
         -d '{"query":"find_treasure","center_x":0,"center_y":0,"center_z":0,"center_t":0,"center_c":0,"center_psi":0,"radius":10}' 2>/dev/null)
     
@@ -207,8 +213,8 @@ if $JAVA_ONLINE && $RUST_ONLINE; then
     
     # Test 1: Simple API Response
     log_info "Round 1: Health Check Speed"
-    java_health_time=$(perf_test "http://localhost:8080/api/health" "" "Java Health")
-    rust_health_time=$(perf_test "http://localhost:3001/health" "" "Rust Health")
+    java_health_time=$(perf_test "$JAVA_BASE/api/health" "" "Java Health")
+    rust_health_time=$(perf_test "$RUST_BASE/health" "" "Rust Health")
     
     if [[ $java_health_time -lt $rust_health_time ]]; then
         log_perf "🏆 Winner Round 1: JAVA (${java_health_time}ms vs ${rust_health_time}ms)"
@@ -220,9 +226,9 @@ if $JAVA_ONLINE && $RUST_ONLINE; then
     
     # Test 2: Complex Logic
     log_info "Round 2: Formula Processing Speed"
-    java_formula_time=$(perf_test "http://localhost:8080/api/interstice/cast-formula" \
+    java_formula_time=$(perf_test "$JAVA_BASE/api/interstice/cast-formula" \
         '{"caster":"TestHero","formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' "Java Formula")
-    rust_formula_time=$(perf_test "http://localhost:3001/api/formula" \
+    rust_formula_time=$(perf_test "$RUST_BASE/api/formula" \
         '{"formula":"⊙(temps) + †ψ(présent) → ∆t(arrêt)"}' "Rust Formula")
     
     if [[ $java_formula_time -lt $rust_formula_time ]]; then
@@ -266,16 +272,16 @@ echo "├─────────────────┼─────�
 
 if $JAVA_ONLINE; then
     java_percent=$((JAVA_SUCCESS * 100 / JAVA_TESTS))
-    printf "│ ☕ Java (8080)   │ %7d │ %7d │ %10d%% │\n" $JAVA_TESTS $JAVA_SUCCESS $java_percent
+    printf "│ ☕ Java (%-4s)  │ %7d │ %7d │ %10d%% │\n" "$JAVA_PORT" $JAVA_TESTS $JAVA_SUCCESS $java_percent
 else
-    printf "│ ☕ Java (8080)   │ OFFLINE │ OFFLINE │    OFFLINE  │\n"
+    printf "│ ☕ Java (%-4s)  │ OFFLINE │ OFFLINE │    OFFLINE  │\n" "$JAVA_PORT"
 fi
 
 if $RUST_ONLINE; then
     rust_percent=$((RUST_SUCCESS * 100 / RUST_TESTS))
-    printf "│ 🦀 Rust (3001)   │ %7d │ %7d │ %10d%% │\n" $RUST_TESTS $RUST_SUCCESS $rust_percent
+    printf "│ 🦀 Rust (%-4s)  │ %7d │ %7d │ %10d%% │\n" "$RUST_PORT" $RUST_TESTS $RUST_SUCCESS $rust_percent
 else
-    printf "│ 🦀 Rust (3001)   │ OFFLINE │ OFFLINE │    OFFLINE  │\n"
+    printf "│ 🦀 Rust (%-4s)  │ OFFLINE │ OFFLINE │    OFFLINE  │\n" "$RUST_PORT"
 fi
 
 echo "└─────────────────┴─────────┴─────────┴─────────────┘"
