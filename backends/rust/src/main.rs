@@ -9,6 +9,8 @@
 //! It works alongside the Java Spring Boot backend, handling performance-critical tasks.
 
 use magic_stack_core::*;
+use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts};
+use magic_stack_core::mapgen::{generate_map, MapGenParams};
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -26,6 +28,9 @@ use tracing_subscriber;
 use uuid::Uuid;
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
+use rand::prelude::*;
+use rand::SeedableRng;
+use rand::distributions::Distribution;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -68,7 +73,7 @@ struct CreateNodeRequest {
     properties: HashMap<String, serde_json::Value>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 struct Position6DDto {
     x: f64,
     y: f64,
@@ -105,6 +110,9 @@ struct PlanRequest {
     start: Option<Position2D>,
     goal: Option<Position2D>,
     opts: Option<HashMap<String, serde_json::Value>>,
+    // New: map and agent parameters
+    map: Option<MapDto>,
+    agent: Option<AgentDto>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -114,6 +122,44 @@ fn default_tl() -> String { "principale".to_string() }
 
 #[derive(Serialize)]
 struct PlanResponse { path: Vec<Position2D>, cost: f64, ok: bool }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct MapDto {
+    // 0 free, 1 obstacle
+    obstacles: Vec<Vec<u8>>,            
+    // optional per-cell additive terrain cost (relative)
+    terrain: Option<Vec<Vec<f64>>>,
+    // optional per-cell causal stability C in [0,1]
+    causal_c: Option<Vec<Vec<f64>>>,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct AgentDto {
+    speed_multiplier: Option<f64>,
+    alpha_causal: Option<f64>,
+}
+
+// ==== Causality Resolution DTOs ====
+#[derive(Deserialize, Serialize, Clone)]
+enum ResolutionMode { QUANTUM, TCG }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct ResolveRequest {
+    // Area to check: either explicit node_ids or a 6D zone
+    node_ids: Option<Vec<String>>,
+    center: Option<Position6DDto>,
+    radius: Option<f64>,
+    mode: Option<ResolutionMode>,
+    seed: Option<u64>,
+}
+
+#[derive(Serialize)]
+struct ResolveOutcome {
+    mode: ResolutionMode,
+    involved: Vec<String>,
+    winner: Option<String>,
+    started_match_id: Option<String>,
+}
 
 #[derive(Deserialize)]
 struct CreateMatchRequest {
@@ -167,6 +213,10 @@ async fn main() {
         .route("/health", post(agents_health))
         .route("/agents/tick", post(agents_tick))
         .route("/agents/plan", post(agents_plan))
+        .route("/agents/fork", post(agents_fork))
+        .route("/agents/merge", post(agents_merge))
+        .route("/agents/control", post(agents_control))
+        .route("/agents/cast", post(agents_cast))
         .route("/matches", post(create_match))
         .route("/matches/:id/state", get(get_match_state))
         // Existing endpoints
@@ -175,9 +225,15 @@ async fn main() {
         .route("/api/world-state/nodes", post(create_node))
         .route("/api/world-state/nodes/:id", get(get_node))
         .route("/api/world-state/nodes/:id/position", post(update_position))
+        .route("/api/world-state/identities/:id/doubles", get(get_identity_doubles))
         .route("/api/world-state/nodes/radius", get(get_nodes_in_radius))
+        .route("/api/world-state/collapse", post(observation_collapse))
+        .route("/api/causality/resolve", post(causality_resolve))
         .route("/api/test/all-formulas", post(test_all_formulas))
         .route("/api/integration/formula-cast", post(integrated_formula_cast))
+        .route("/openapi", get(openapi_handler))
+        .route("/api/map/generate", post(map_generate))
+        .route("/api/map/init", post(map_init))
         .layer(cors)
         .with_state(app_state);
     
@@ -210,6 +266,28 @@ async fn agents_tick(Json(_req): Json<TickRequest>) -> Json<TickResponse> {
 async fn agents_plan(Json(req): Json<PlanRequest>) -> Json<PlanResponse> {
     let start = req.start.unwrap_or(Position2D { x: 0, y: 0, tl: default_tl() });
     let goal = req.goal.unwrap_or(Position2D { x: 5, y: 0, tl: default_tl() });
+    if let Some(map) = req.map.clone() {
+        let agent = req.agent.clone().unwrap_or(AgentDto { speed_multiplier: Some(1.0), alpha_causal: Some(0.0) });
+        let speed = agent.speed_multiplier.unwrap_or(1.0).max(0.01);
+        let alpha = agent.alpha_causal.unwrap_or(0.0).max(0.0);
+
+        let terrain_ref = map.terrain.as_ref().map(|v| v.as_slice());
+        let causal_ref = map.causal_c.as_ref().map(|v| v.as_slice());
+        let start_c = PfCell { x: start.x, y: start.y };
+        let goal_c = PfCell { x: goal.x, y: goal.y };
+        let opts = Some(PfOpts { allow_diagonal: false });
+        match a_star_path_weighted(&map.obstacles, terrain_ref, causal_ref, start_c, goal_c, opts, speed, alpha) {
+            Some((cells, cost)) => {
+                let path = cells.into_iter().map(|c| Position2D { x: c.x, y: c.y, tl: start.tl.clone() }).collect();
+                return Json(PlanResponse { path, cost, ok: true });
+            }
+            None => {
+                return Json(PlanResponse { path: vec![], cost: f64::INFINITY, ok: false });
+            }
+        }
+    }
+
+    // Fallback: simple straight line along X
     let mut path = Vec::new();
     let dx = if goal.x >= start.x { 1 } else { -1 };
     let mut x = start.x;
@@ -236,6 +314,75 @@ async fn get_match_state(State(state): State<AppState>, AxPath(id): AxPath<Strin
         Ok(Json(st))
     } else {
         Err(StatusCode::NOT_FOUND)
+    }
+}
+
+#[derive(Deserialize)]
+struct ForkRequest { from_node_id: String, new_node_id: String, timeline_id: String, position: Position6DDto }
+
+async fn agents_fork(State(state): State<AppState>, Json(req): Json<ForkRequest>) -> Result<Json<world_state::StateNode>, StatusCode> {
+    let pos = Position6D::new(req.position.x, req.position.y, req.position.z, req.position.t, req.position.c, req.position.psi)
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
+    match state.world_state.fork_identity(&req.from_node_id, &req.new_node_id, &req.timeline_id, pos) {
+        Ok(node) => Ok(Json(node)),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+#[derive(Deserialize)]
+struct MergeRequest { identity_id: String, into_node_id: String, merged_node_id: String }
+
+async fn agents_merge(State(state): State<AppState>, Json(req): Json<MergeRequest>) -> Result<Json<String>, StatusCode> {
+    match state.world_state.merge_identity(&req.identity_id, &req.into_node_id, &req.merged_node_id) {
+        Ok(()) => Ok(Json("OK".to_string())),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+async fn get_identity_doubles(State(state): State<AppState>, AxPath(identity_id): AxPath<String>) -> Json<Vec<world_state::StateNode>> {
+    let nodes = state.world_state.get_identity_doubles(&identity_id);
+    Json(nodes)
+}
+
+#[derive(Deserialize)]
+struct ControlRequest { node_id: String, mode: String }
+
+/// Set control mode for a node ("player" or "ai")
+async fn agents_control(State(state): State<AppState>, Json(req): Json<ControlRequest>) -> Result<Json<world_state::StateNode>, StatusCode> {
+    let mut node = match state.world_state.get_node(&req.node_id) {
+        Some(n) => n,
+        None => return Err(StatusCode::NOT_FOUND),
+    };
+    let mode = if req.mode.to_lowercase() == "player" { "player" } else { "ai" };
+    node.properties.insert("controller".to_string(), serde_json::json!(mode));
+    match state.world_state.update_node(node.clone()) {
+        Ok(()) => Ok(Json(node)),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+#[derive(Deserialize)]
+struct CastRequest {
+    formula: String,
+    formula_type: Option<String>,
+    caster_node_id: String,
+    parameters: Option<HashMap<String, serde_json::Value>>,
+    caster_identity: Option<String>,
+}
+
+/// Cast a power/formula via Java backend
+async fn agents_cast(State(state): State<AppState>, Json(req): Json<CastRequest>) -> Result<Json<java_connector::JavaMagicResponse>, StatusCode> {
+    let params = req.parameters.unwrap_or_default();
+    let caster_id = req.caster_identity.unwrap_or(req.caster_node_id);
+    let request = java_connector::JavaMagicRequest {
+        formula_type: req.formula_type.unwrap_or_else(|| "SIMPLE".to_string()),
+        formula: req.formula,
+        caster_id,
+        parameters: params,
+    };
+    match state.java_connector.cast_formula(request).await {
+        Ok(resp) => Ok(Json(resp)),
+        Err(_) => Err(StatusCode::BAD_GATEWAY),
     }
 }
 
@@ -348,6 +495,8 @@ async fn create_node(
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_millis() as u64,
+        identity_id: None,
+        timeline_id: None,
     };
     
     match state.world_state.update_node(node) {
@@ -454,6 +603,120 @@ async fn get_nodes_in_radius(
     }
 }
 
+/// Resolve causality collisions inside an area or among explicit nodes
+async fn causality_resolve(
+    State(state): State<AppState>,
+    Json(req): Json<ResolveRequest>,
+) -> Result<Json<ResolveOutcome>, StatusCode> {
+    // Collect candidates
+    let mut ids: Vec<String> = req.node_ids.unwrap_or_default();
+    if ids.is_empty() {
+        if let (Some(center_dto), Some(radius)) = (req.center.clone(), req.radius) {
+            let center = Position6D::new(
+                center_dto.x, center_dto.y, center_dto.z,
+                center_dto.t, center_dto.c, center_dto.psi,
+            ).map_err(|_| StatusCode::BAD_REQUEST)?;
+            let nodes = state.world_state.get_nodes_in_radius(&center, radius).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            ids = nodes.into_iter().map(|n| n.id).collect();
+        }
+    }
+
+    // Filter by identity groups if desired: for MVP we just take all
+    let mode = req.mode.unwrap_or(ResolutionMode::QUANTUM);
+
+    if ids.len() <= 1 {
+        // Nothing to resolve
+        return Ok(Json(ResolveOutcome { mode, involved: ids, winner: None, started_match_id: None }));
+    }
+
+    match mode {
+        ResolutionMode::QUANTUM => {
+            // Simple probabilistic winner based on causal stability C and identity Ψ
+            let nodes: Vec<_> = ids.iter().filter_map(|id| state.world_state.get_node(id)).collect();
+            if nodes.is_empty() {
+                return Ok(Json(ResolveOutcome { mode, involved: ids, winner: None, started_match_id: None }));
+            }
+            let mut weights: Vec<f64> = nodes.iter().map(|n| (n.position.c.max(0.0) + n.position.psi.max(0.0)) / 2.0 ).collect();
+            // Normalize or fallback
+            let sum: f64 = weights.iter().sum();
+            if sum <= 0.0 { for w in &mut weights { *w = 1.0; } }
+
+            // Deterministic RNG with seed for reproducibility if provided
+            let seed = req.seed.unwrap_or(0);
+            let mut rng = if seed == 0 { rand::rngs::StdRng::from_entropy() } else { rand::rngs::StdRng::seed_from_u64(seed) };
+            let dist = rand::distributions::WeightedIndex::new(&weights).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let winner_idx = dist.sample(&mut rng);
+            let winner = nodes[winner_idx].id.clone();
+
+            // Collapse: mark observed and keep winner flagged
+            let _ = state.world_state.mark_observed(&ids, "causality_resolution");
+            if let Some(mut win_node) = state.world_state.get_node(&winner) {
+                let mut props = win_node.properties.clone();
+                props.insert("resolution_winner".to_string(), serde_json::json!(true));
+                win_node.properties = props;
+                let _ = state.world_state.update_node(win_node);
+            }
+            Ok(Json(ResolveOutcome { mode, involved: ids, winner: Some(winner), started_match_id: None }))
+        }
+        ResolutionMode::TCG => {
+            // Start a match with involved entities
+            let match_id = uuid::Uuid::new_v4().to_string();
+            let mut score = HashMap::new();
+            for (i, id) in ids.iter().enumerate() {
+                score.insert(format!("P{}", i+1), 0.0);
+            }
+            let st = MatchState { tick: 0, entities: ids.iter().map(|id| serde_json::json!({"id": id})).collect(), score };
+            state.matches.write().await.insert(match_id.clone(), st);
+
+            // Mark area observed (collapse) upon entering combat
+            let _ = state.world_state.mark_observed(&ids, "tcg_match_started");
+            Ok(Json(ResolveOutcome { mode, involved: ids, winner: None, started_match_id: Some(match_id) }))
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct CollapseRequest {
+    node_ids: Option<Vec<String>>,
+    center: Option<Position6DDto>,
+    radius: Option<f64>,
+    description: Option<String>,
+}
+
+/// Trigger an observation collapse on selected nodes (by ids or by radius around a 6D center)
+async fn observation_collapse(
+    State(state): State<AppState>,
+    Json(request): Json<CollapseRequest>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let mut ids: Vec<String> = request.node_ids.unwrap_or_default();
+
+    if ids.is_empty() {
+        if let (Some(center_dto), Some(radius)) = (request.center, request.radius) {
+            let center = Position6D::new(
+                center_dto.x, center_dto.y, center_dto.z,
+                center_dto.t, center_dto.c, center_dto.psi,
+            ).map_err(|_| StatusCode::BAD_REQUEST)?;
+            match state.world_state.get_nodes_in_radius(&center, radius) {
+                Ok(nodes) => {
+                    ids = nodes.into_iter().map(|n| n.id).collect();
+                }
+                Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+            }
+        }
+    }
+
+    if ids.is_empty() {
+        return Ok(Json(serde_json::json!({"updated": 0, "ok": true})));
+    }
+
+    let count = state
+        .world_state
+        .mark_observed(&ids, &request.description.unwrap_or_else(|| "observation".to_string()))
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(serde_json::json!({"updated": count, "ok": true})))
+}
+
 /// Test all formulas endpoint (Tucker style)
 async fn test_all_formulas(
     State(state): State<AppState>,
@@ -508,6 +771,57 @@ async fn integrated_formula_cast(
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+/// Minimal OpenAPI descriptor for Rust endpoints (for compare-apis)
+async fn openapi_handler() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "openapi":"3.0.0",
+        "info": {"title":"Magic Stack Rust","version": env!("CARGO_PKG_VERSION")},
+        "paths": {
+            "/agents/plan": {"post": {"summary":"A* weighted planning"}},
+            "/agents/fork": {"post": {"summary":"Fork identity"}},
+            "/agents/merge": {"post": {"summary":"Merge identity"}},
+            "/agents/control": {"post": {"summary":"Set controller (player/ai)"}},
+            "/agents/cast": {"post": {"summary":"Cast formula via Java"}},
+            "/api/world-state/collapse": {"post": {"summary":"Observation collapse"}},
+            "/api/causality/resolve": {"post": {"summary":"Resolve causality (QUANTUM/TCG)"}},
+            "/api/map/generate": {"post": {"summary":"Generate contiguous biome map"}},
+            "/api/map/init": {"post": {"summary":"Initialize 6D entities from map"}}
+        }
+    }))
+}
+
+// ==== Map generation endpoints ====
+#[derive(Deserialize)]
+struct MapGenerateRequest { width: Option<usize>, height: Option<usize>, seed: Option<u64>, sea_ratio: Option<f64>, mountain_ratio: Option<f64>, forest_ratio: Option<f64> }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct MapGenerateResponse { obstacles: Vec<Vec<u8>>, terrain: Vec<Vec<f64>>, causal_c: Vec<Vec<f64>>, biomes: Vec<Vec<String>> }
+
+async fn map_generate(Json(req): Json<MapGenerateRequest>) -> Json<MapGenerateResponse> {
+    let mut params = MapGenParams::default();
+    if let Some(w) = req.width { params.width = w; }
+    if let Some(h) = req.height { params.height = h; }
+    if let Some(s) = req.seed { params.seed = s; }
+    if let Some(r) = req.sea_ratio { params.sea_ratio = r; }
+    if let Some(r) = req.mountain_ratio { params.mountain_ratio = r; }
+    if let Some(r) = req.forest_ratio { params.forest_ratio = r; }
+    let g = generate_map(&params);
+    let biomes = g.biomes.into_iter().map(|row| row.into_iter().map(|b| match b { magic_stack_core::mapgen::Biome::Sea=>"sea".into(), magic_stack_core::mapgen::Biome::Mountain=>"mountain".into(), magic_stack_core::mapgen::Biome::Forest=>"forest".into(), magic_stack_core::mapgen::Biome::Plain=>"plain".into() }).collect()).collect();
+    Json(MapGenerateResponse { obstacles: g.obstacles, terrain: g.terrain, causal_c: g.causal_c, biomes })
+}
+
+#[derive(Deserialize)]
+struct MapInitRequest { map: MapGenerateResponse, time_windows: Option<Vec<serde_json::Value>> }
+
+#[derive(Serialize)]
+struct MapInitResponse { created: usize }
+
+/// Initialize some treasures/creatures in 6D with simple time windows
+async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest>) -> Json<MapInitResponse> {
+    // MVP: just acknowledge; a full init would create nodes with periodicity in properties
+    Json(MapInitResponse { created: 0 })
 }
 
 /// Request for integrated formula casting

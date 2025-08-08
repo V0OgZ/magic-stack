@@ -19,6 +19,12 @@ pub struct StateNode {
     pub properties: HashMap<String, serde_json::Value>,
     pub connections: HashSet<String>,
     pub last_updated: u64,
+    /// Optional identity grouping across timelines
+    #[serde(default)]
+    pub identity_id: Option<String>,
+    /// Optional timeline identifier
+    #[serde(default)]
+    pub timeline_id: Option<String>,
 }
 
 /// Types of nodes in the world state graph
@@ -51,6 +57,12 @@ pub enum ChangeType {
     PositionChanged,
     ConnectionAdded(String),
     ConnectionRemoved(String),
+    /// An identity was forked into a new node on a (possibly) different timeline
+    IdentityForked { identity_id: String, from_node_id: String, to_node_id: String },
+    /// Two identity instances merged (conceptually collapsing timelines)
+    IdentityMerged { identity_id: String, into_node_id: String, merged_node_id: String },
+    /// An observation collapsed superpositions in an area/description
+    ObservationCollapse { description: String },
 }
 
 /// World state update batch for atomic operations
@@ -349,6 +361,125 @@ impl WorldStateGraph {
             observer.on_batch_update(batch);
         }
     }
+
+    /// Return all nodes sharing the same identity_id
+    pub fn get_identity_doubles(&self, identity_id: &str) -> Vec<StateNode> {
+        let nodes = self.nodes.read().unwrap();
+        nodes.values()
+            .filter(|n| n.identity_id.as_deref() == Some(identity_id))
+            .cloned()
+            .collect()
+    }
+
+    /// Fork an identity: duplicate a node into a new node on a target timeline/position
+    pub fn fork_identity(
+        &self,
+        from_node_id: &str,
+        new_node_id: &str,
+        new_timeline_id: &str,
+        new_position: Position6D,
+    ) -> MagicResult<StateNode> {
+        let timestamp = current_timestamp();
+        let mut created_node_opt = None;
+
+        {
+            let mut nodes = self.nodes.write().unwrap();
+            let from_node = nodes.get(from_node_id)
+                .ok_or_else(|| MagicError::WorldStateUpdateFailed(format!("Node {} not found", from_node_id)))?;
+            let identity_id = from_node.identity_id.clone().unwrap_or_else(|| from_node.id.clone());
+            let mut properties = from_node.properties.clone();
+            properties.insert("forked_from".to_string(), serde_json::json!(from_node_id));
+
+            let new_node = StateNode {
+                id: new_node_id.to_string(),
+                position: new_position,
+                node_type: from_node.node_type.clone(),
+                properties,
+                connections: HashSet::new(),
+                last_updated: timestamp,
+                identity_id: Some(identity_id.clone()),
+                timeline_id: Some(new_timeline_id.to_string()),
+            };
+
+            nodes.insert(new_node_id.to_string(), new_node.clone());
+            created_node_opt = Some(new_node);
+        }
+
+        // Record change
+        self.record_change(StateChange {
+            node_id: new_node_id.to_string(),
+            change_type: ChangeType::IdentityForked {
+                identity_id: self.nodes.read().unwrap().get(new_node_id).and_then(|n| n.identity_id.clone()).unwrap_or_else(|| new_node_id.to_string()),
+                from_node_id: from_node_id.to_string(),
+                to_node_id: new_node_id.to_string(),
+            },
+            old_value: None,
+            new_value: None,
+            timestamp: current_timestamp(),
+            causal_chain: vec![from_node_id.to_string(), new_node_id.to_string()],
+        })?;
+
+        Ok(created_node_opt.unwrap())
+    }
+
+    /// Merge two identity instances. Keeps `into_node_id`, removes `merged_node_id`.
+    pub fn merge_identity(&self, identity_id: &str, into_node_id: &str, merged_node_id: &str) -> MagicResult<()> {
+        let timestamp = current_timestamp();
+        {
+            let mut nodes = self.nodes.write().unwrap();
+            // Optionally transfer connections/properties (simple approach: keep into as-is)
+            nodes.remove(merged_node_id);
+            if let Some(into) = nodes.get_mut(into_node_id) {
+                into.last_updated = timestamp;
+            }
+        }
+
+        self.record_change(StateChange {
+            node_id: into_node_id.to_string(),
+            change_type: ChangeType::IdentityMerged {
+                identity_id: identity_id.to_string(),
+                into_node_id: into_node_id.to_string(),
+                merged_node_id: merged_node_id.to_string(),
+            },
+            old_value: None,
+            new_value: None,
+            timestamp,
+            causal_chain: vec![into_node_id.to_string(), merged_node_id.to_string()],
+        })?;
+        Ok(())
+    }
+
+    /// Mark a set of nodes as "observed" (collapse superposition) and record events
+    pub fn mark_observed(&self, node_ids: &[String], description: &str) -> MagicResult<usize> {
+        let timestamp = current_timestamp();
+        let mut updated_count = 0usize;
+
+        {
+            let mut nodes = self.nodes.write().unwrap();
+            for node_id in node_ids.iter() {
+                if let Some(node) = nodes.get_mut(node_id) {
+                    node.properties.insert("observed".to_string(), serde_json::json!(true));
+                    node.last_updated = timestamp;
+                    updated_count += 1;
+                }
+            }
+        }
+
+        // Record a collapse change per node for traceability
+        for node_id in node_ids.iter() {
+            let change = StateChange {
+                node_id: node_id.clone(),
+                change_type: ChangeType::ObservationCollapse { description: description.to_string() },
+                old_value: None,
+                new_value: None,
+                timestamp,
+                causal_chain: vec![node_id.clone()],
+            };
+            self.record_change(change)?;
+        }
+
+        Ok(updated_count)
+    }
 }
 
 impl SpatialQuadTree {
@@ -445,6 +576,8 @@ mod tests {
             },
             connections: HashSet::new(),
             last_updated: current_timestamp(),
+            identity_id: None,
+            timeline_id: None,
         };
         
         // Add node

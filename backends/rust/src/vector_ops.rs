@@ -461,7 +461,11 @@ mod tests {
         assert_eq!(sum.data, [3.0, 5.0, 7.0, 9.0, 0.8, 1.4]);
         
         let diff = v1 - v2;
-        assert_eq!(diff.data, [-1.0, -1.0, -1.0, -1.0, 0.2, 0.2]);
+        // Allow tiny float rounding differences
+        let expected_diff = [-1.0, -1.0, -1.0, -1.0, 0.2, 0.2];
+        for (i, (a, b)) in diff.data.iter().zip(expected_diff.iter()).enumerate() {
+            assert!((a - b).abs() < 1e-12, "component {} differs: got {}, expected {}", i, a, b);
+        }
         
         let scaled = v1 * 2.0;
         assert_eq!(scaled.data, [2.0, 4.0, 6.0, 8.0, 1.0, 1.6]);

@@ -146,7 +146,8 @@ mod tests {
     #[test]
     fn test_distance_calculation() {
         let pos1 = Position6D::origin();
-        let pos2 = Position6D::new(3.0, 4.0, 0.0, 0.0, 0.0, 0.0).unwrap();
+        // Keep non-spatial dimensions equal to origin so distance is purely spatial (3-4-5)
+        let pos2 = Position6D::new(3.0, 4.0, 0.0, 0.0, 1.0, 0.0).unwrap();
         assert_eq!(pos1.distance_to(&pos2), 5.0); // 3-4-5 triangle
     }
 }

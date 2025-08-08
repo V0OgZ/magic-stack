@@ -27,7 +27,7 @@ pub struct JavaMagicRequest {
 }
 
 /// Magic formula response from Java backend
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct JavaMagicResponse {
     pub success: bool,
     pub message: String,

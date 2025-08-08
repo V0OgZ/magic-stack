@@ -12,6 +12,8 @@ pub mod world_state;
 pub mod temporal_grammar;
 pub mod vector_ops;
 pub mod java_connector;
+pub mod pathfinding;
+pub mod mapgen;
 
 pub use position_6d::Position6D;
 pub use qstar::QStarEngine;
