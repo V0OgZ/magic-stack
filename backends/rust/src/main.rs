@@ -31,6 +31,7 @@ use axum::http::Method;
 use rand::prelude::*;
 use rand::SeedableRng;
 use rand::distributions::Distribution;
+use reqwest::Client as HttpClient;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -39,6 +40,7 @@ struct AppState {
     world_state: Arc<WorldStateGraph>,
     java_connector: Arc<JavaConnector>,
     matches: Arc<RwLock<HashMap<String, MatchState>>>,
+    vector_api_base: String,
 }
 
 /// Health check response
@@ -189,6 +191,7 @@ async fn main() {
     let world_state = Arc::new(WorldStateGraph::new());
     let java_connector = Arc::new(JavaConnector::new(None));
     let matches = Arc::new(RwLock::new(HashMap::<String, MatchState>::new()));
+    let vector_api_base = std::env::var("VECTOR_API_BASE").unwrap_or_else(|_| "http://localhost:5001".to_string());
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -202,6 +205,7 @@ async fn main() {
         world_state,
         java_connector,
         matches,
+        vector_api_base,
     };
     
     // Build router
@@ -238,6 +242,10 @@ async fn main() {
         .route("/docs/openapi", get(openapi_ui_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
+        // Archives (Vector DB local proxy)
+        .route("/api/archives/status", get(archives_status))
+        .route("/api/archives/search", post(archives_search))
+        .route("/api/archives/build", post(archives_build))
         .layer(cors)
         .with_state(app_state);
     
@@ -853,6 +861,36 @@ async fn openapi_ui_handler() -> Html<String> {
   </body>
 </html>"#;
     Html(html.to_string())
+}
+
+// ===== Vector Archives Proxy =====
+#[derive(Deserialize)]
+struct ArchiveSearchReq { query: String, top_k: Option<usize> }
+
+async fn archives_status(State(state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
+    let url = format!("{}/api/status", state.vector_api_base);
+    match HttpClient::new().get(url).send().await {
+        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
+        Err(_) => Err(StatusCode::BAD_GATEWAY),
+    }
+}
+
+async fn archives_build(State(state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
+    let url = format!("{}/api/build", state.vector_api_base);
+    match HttpClient::new().post(url).send().await {
+        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
+        Err(_) => Err(StatusCode::BAD_GATEWAY),
+    }
+}
+
+async fn archives_search(State(state): State<AppState>, Json(req): Json<ArchiveSearchReq>) -> Result<Json<serde_json::Value>, StatusCode> {
+    let url = format!("{}/api/search", state.vector_api_base);
+    let top_k = req.top_k.unwrap_or(10);
+    let body = serde_json::json!({"query": req.query, "top_k": top_k});
+    match HttpClient::new().post(url).json(&body).send().await {
+        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
+        Err(_) => Err(StatusCode::BAD_GATEWAY),
+    }
 }
 // ==== Map generation endpoints ====
 #[derive(Deserialize)]
