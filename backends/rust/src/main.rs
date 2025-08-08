@@ -14,7 +14,7 @@ use magic_stack_core::mapgen::{generate_map, MapGenParams};
 use axum::{
     extract::{Query, State},
     http::StatusCode,
-    response::Json,
+    response::{Json, Html},
     routing::{get, post},
     Router,
 };
@@ -235,6 +235,7 @@ async fn main() {
         .route("/api/integration/formula-cast", post(integrated_formula_cast))
         .route("/openapi", get(openapi_handler))
         .route("/openapi/all", get(openapi_all_handler))
+        .route("/docs/openapi", get(openapi_ui_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
         .layer(cors)
@@ -826,6 +827,32 @@ async fn openapi_all_handler(State(state): State<AppState>) -> Json<serde_json::
     }))
 }
 
+/// Simple HTML page embedding Redoc that loads the aggregated OpenAPI
+async fn openapi_ui_handler() -> Html<String> {
+    let html = r#"<!doctype html>
+<html>
+  <head>
+    <meta charset=\"utf-8\" />
+    <title>Magic Stack API Docs</title>
+    <script src=\"https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js\"></script>
+    <style>body,html{margin:0;padding:0;height:100%}#container{height:100%}</style>
+  </head>
+  <body>
+    <div id=\"container\"></div>
+    <script>
+      // Load aggregated spec from Rust
+      fetch('/openapi/all').then(r=>r.json()).then(all=>{
+        // Prefer Java spec if available, otherwise use Rust
+        const spec = all.java && all.java.openapi ? all.java : all.rust;
+        Redoc.init(spec, {}, document.getElementById('container'));
+      }).catch(err=>{
+        document.getElementById('container').innerText = 'Failed to load OpenAPI: '+err;
+      });
+    </script>
+  </body>
+</html>"#;
+    Html(html.to_string())
+}
 // ==== Map generation endpoints ====
 #[derive(Deserialize)]
 struct MapGenerateRequest { width: Option<usize>, height: Option<usize>, seed: Option<u64>, sea_ratio: Option<f64>, mountain_ratio: Option<f64>, forest_ratio: Option<f64> }
