@@ -42,6 +42,9 @@ struct AppState {
     matches: Arc<RwLock<HashMap<String, MatchState>>>,
     vector_api_base: String,
     inventories: Arc<RwLock<HashMap<String, Vec<InventoryItem>>>>,
+    tick_interval_ms: u64,
+    minigame_sessions: Arc<RwLock<HashMap<String, MinigameSession>>>,
+    heroes: Arc<RwLock<HashMap<String, HeroStatus>>>,
 }
 
 /// Health check response
@@ -193,7 +196,10 @@ async fn main() {
     let java_connector = Arc::new(JavaConnector::new(None));
     let matches = Arc::new(RwLock::new(HashMap::<String, MatchState>::new()));
     let vector_api_base = std::env::var("VECTOR_API_BASE").unwrap_or_else(|_| "http://localhost:5001".to_string());
+    let tick_interval_ms: u64 = std::env::var("RUST_TICK_MS").ok().and_then(|s| s.parse().ok()).unwrap_or(2000);
     let inventories = Arc::new(RwLock::new(HashMap::<String, Vec<InventoryItem>>::new()));
+    let minigame_sessions = Arc::new(RwLock::new(HashMap::<String, MinigameSession>::new()));
+    let heroes = Arc::new(RwLock::new(HashMap::<String, HeroStatus>::new()));
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -209,6 +215,9 @@ async fn main() {
         matches,
         vector_api_base,
         inventories,
+        tick_interval_ms,
+        minigame_sessions,
+        heroes,
     };
     
     // Build router
@@ -259,6 +268,16 @@ async fn main() {
         .route("/api/mage/learn-runes", post(mage_learn_runes))
         // Nearby (WSG)
         .route("/api/panopticon/world-state-graph/nearby", get(get_nodes_in_radius))
+        // Minigames
+        .route("/api/minigames/catalog", get(minigames_catalog))
+        .route("/api/minigames/start", post(minigame_start))
+        .route("/api/minigames/:id", get(minigame_get))
+        .route("/api/minigames/:id/result", post(minigame_result))
+        .route("/api/minigames/auto-trigger", post(minigame_auto_trigger))
+        // Hero XP/Perks (local MVP)
+        .route("/api/hero/status", get(hero_status))
+        .route("/api/hero/add-xp", post(hero_add_xp))
+        .route("/api/hero/apply-perk", post(hero_apply_perk))
         .layer(cors)
         .with_state(app_state);
     
@@ -279,7 +298,7 @@ async fn agents_health() -> Json<serde_json::Value> {
     Json(serde_json::json!({"ok": true, "version": env!("CARGO_PKG_VERSION"), "timestamp": now_ms()}))
 }
 
-async fn agents_tick(Json(_req): Json<TickRequest>) -> Json<TickResponse> {
+async fn agents_tick(State(state): State<AppState>, Json(_req): Json<TickRequest>) -> Json<TickResponse> {
     let cmd = serde_json::json!({
         "type": "say",
         "text": "Agents tick processed",
@@ -302,7 +321,7 @@ async fn agents_tick(Json(_req): Json<TickRequest>) -> Json<TickResponse> {
         }
     });
 
-    Json(TickResponse { commands: vec![cmd], serverTime: now_ms(), nextTickMs: 1000 })
+    Json(TickResponse { commands: vec![cmd], serverTime: now_ms(), nextTickMs: state.tick_interval_ms as u64 })
 }
 
 async fn agents_plan(Json(req): Json<PlanRequest>) -> Json<PlanResponse> {
@@ -1076,4 +1095,159 @@ async fn mage_learn_runes(Json(req): Json<LearnRunesReq>) -> Json<serde_json::Va
     let score = req.miniGameResult.as_ref().and_then(|m| m.get("score")).and_then(|v| v.as_f64()).unwrap_or(0.0);
     let unlocked = if score >= 80.0 { vec!["SIGMA", "TAU", "OMEGA"] } else if score >= 50.0 { vec!["SIGMA"] } else { vec![] };
     Json(serde_json::json!({"unlocked": unlocked}))
+}
+
+// ===== Minigames =====
+#[derive(Clone, Serialize, Deserialize)]
+struct MinigameCatalogItem { id: String, title: String, url: String, rewards: Vec<HashMap<String, serde_json::Value>> }
+
+#[derive(Clone, Serialize, Deserialize)]
+struct MinigameSession {
+    id: String,
+    player_id: String,
+    r#type: String,
+    url: String,
+    objective: String,
+    started_at: u64,
+    expires_at: u64,
+    status: String, // PENDING|RUNNING|DONE
+}
+
+fn minigames_catalog_items() -> Vec<MinigameCatalogItem> { vec![
+    MinigameCatalogItem{ id:"SAVE_JORDI".into(), title:"Sauver Jordi".into(), url:"/REALGAME/arcade/save_jordi.html".into(), rewards: vec![json_obj_to_hashmap(serde_json::json!({"kind":"xp","qty":50}))]},
+    MinigameCatalogItem{ id:"BROKEN_WATCH".into(), title:"Montre brisée".into(), url:"/REALGAME/arcade/broken_watch.html".into(), rewards: vec![json_obj_to_hashmap(serde_json::json!({"kind":"essence","qty":2}))]},
+    MinigameCatalogItem{ id:"CAUSAL_PATCH".into(), title:"Patch causal".into(), url:"/REALGAME/arcade/causal_patch.html".into(), rewards: vec![json_obj_to_hashmap(serde_json::json!({"kind":"token","qty":1}))]},
+]}
+
+async fn minigames_catalog() -> Json<Vec<MinigameCatalogItem>> { Json(minigames_catalog_items()) }
+
+#[derive(Deserialize)]
+struct MinigameStartReq { playerId: Option<String>, r#type: Option<String>, context: Option<HashMap<String, serde_json::Value>> }
+
+async fn minigame_start(State(state): State<AppState>, Json(req): Json<MinigameStartReq>) -> Json<serde_json::Value> {
+    let player = req.playerId.unwrap_or_else(|| "anonymous".into());
+    let typ = req.r#type.unwrap_or_else(|| "SAVE_JORDI".into());
+    let cat = minigames_catalog_items();
+    let chosen = cat.into_iter().find(|c| c.id==typ).unwrap_or(MinigameCatalogItem{ id:"SAVE_JORDI".into(), title:"Sauver Jordi".into(), url:"/REALGAME/arcade/save_jordi.html".into(), rewards: vec![]});
+    let now = now_ms();
+    let sid = uuid::Uuid::new_v4().to_string();
+    let session = MinigameSession { id: sid.clone(), player_id: player.clone(), r#type: chosen.id.clone(), url: chosen.url.clone(), objective: format!("{}: accomplir l'objectif avant la limite", chosen.title), started_at: now, expires_at: now + 120_000, status: "RUNNING".into() };
+    state.minigame_sessions.write().await.insert(sid.clone(), session.clone());
+    Json(serde_json::json!({ "sessionId": sid, "type": session.r#type, "url": session.url, "objective": session.objective, "deadlineMs": session.expires_at, "rewardsPreview": chosen.rewards }))
+}
+
+async fn minigame_get(State(state): State<AppState>, AxPath(id): AxPath<String>) -> Result<Json<MinigameSession>, StatusCode> {
+    match state.minigame_sessions.read().await.get(&id).cloned() { Some(s)=> Ok(Json(s)), None => Err(StatusCode::NOT_FOUND) }
+}
+
+#[derive(Deserialize)]
+struct MinigameResultReq { success: bool, score: Option<f64>, rewards: Option<Vec<HashMap<String, serde_json::Value>>>, playerId: Option<String> }
+
+async fn minigame_result(State(state): State<AppState>, AxPath(id): AxPath<String>, Json(req): Json<MinigameResultReq>) -> Result<Json<serde_json::Value>, StatusCode> {
+    let mut sessions = state.minigame_sessions.write().await;
+    let sess = match sessions.get_mut(&id) { Some(s)=> s, None=> return Err(StatusCode::NOT_FOUND) };
+    sess.status = "DONE".into();
+    // Grant rewards via inventory
+    let player = req.playerId.clone().unwrap_or_else(|| sess.player_id.clone());
+    let mut inv = state.inventories.write().await;
+    let entry = inv.entry(player.clone()).or_default();
+    let mut granted: Vec<InventoryItem> = Vec::new();
+    if req.success {
+        if let Some(rews) = req.rewards {
+            for r in rews {
+                let kind = r.get("kind").and_then(|v| v.as_str()).unwrap_or("token");
+                let qty = r.get("qty").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
+                let it = InventoryItem { id: format!("{}_{}", kind, now_ms()), kind: kind.to_string(), qty, quality: None, purity: None, stability: None, affinity: None };
+                entry.push(it.clone());
+                granted.push(it);
+            }
+        }
+        // Award XP: map score to [5..50]
+        let score = req.score.unwrap_or(0.0).max(0.0).min(1000.0);
+        let xp = (5.0 + (score/1000.0)*45.0).round() as u32;
+        award_hero_xp(&state, &player, xp).await;
+    }
+    Ok(Json(serde_json::json!({"ok": true, "grantedRewards": granted, "inventory": entry})))
+}
+
+#[derive(Deserialize)]
+struct AutoTriggerReq { playerId: Option<String>, metrics: Option<HashMap<String, serde_json::Value>> }
+
+async fn minigame_auto_trigger(State(state): State<AppState>, Json(req): Json<AutoTriggerReq>) -> Json<serde_json::Value> {
+    let metrics = req.metrics.unwrap_or_default();
+    let tv = metrics.get("timeVelocity").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let debt = metrics.get("causalDebt").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let triggered = tv < -0.8 || debt > 0.3;
+    if triggered {
+        // start default minigame
+        let player = req.playerId.clone();
+        let start_req = MinigameStartReq { playerId: player, r#type: None, context: None };
+        let resp = minigame_start(State(state.clone()), Json(start_req)).await;
+        Json(serde_json::json!({"triggered": true, "session": resp.0}))
+    } else {
+        Json(serde_json::json!({"triggered": false}))
+    }
+}
+
+fn json_obj_to_hashmap(v: serde_json::Value) -> HashMap<String, serde_json::Value> {
+    match v {
+        serde_json::Value::Object(map) => map.into_iter().collect(),
+        _ => HashMap::new(),
+    }
+}
+
+// ===== Hero XP/Perks (MVP local) =====
+#[derive(Clone, Serialize, Deserialize)]
+struct HeroStatus { level: u32, xp: u32, xpNext: u32, perks: Vec<String> }
+
+fn default_hero() -> HeroStatus { HeroStatus { level: 1, xp: 0, xpNext: 100, perks: vec![] } }
+
+fn add_xp_to_hero(hero: &mut HeroStatus, amount: u32) -> bool {
+    hero.xp = hero.xp.saturating_add(amount);
+    let mut leveled = false;
+    while hero.xp >= hero.xpNext {
+        hero.xp -= hero.xpNext;
+        hero.level += 1;
+        hero.xpNext = hero.xpNext + 50; // progression simple
+        leveled = true;
+    }
+    leveled
+}
+
+async fn award_hero_xp(state: &AppState, hero_id: &str, amount: u32) {
+    let mut heroes = state.heroes.write().await;
+    let entry = heroes.entry(hero_id.to_string()).or_insert_with(default_hero);
+    let _ = add_xp_to_hero(entry, amount);
+}
+
+async fn hero_status(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>) -> Json<HeroStatus> {
+    let hero_id = q.get("heroId").cloned().unwrap_or_else(|| "hero:anonymous".to_string());
+    let mut heroes = state.heroes.write().await;
+    let st = heroes.entry(hero_id).or_insert_with(default_hero).clone();
+    Json(st)
+}
+
+#[derive(Deserialize)]
+struct HeroAddXpReq { heroId: String, amount: u32, source: Option<String> }
+
+#[derive(Serialize)]
+struct HeroAddXpResp { level: u32, xp: u32, xpNext: u32, levelUp: bool }
+
+async fn hero_add_xp(State(state): State<AppState>, Json(req): Json<HeroAddXpReq>) -> Json<HeroAddXpResp> {
+    let mut heroes = state.heroes.write().await;
+    let entry = heroes.entry(req.heroId).or_insert_with(default_hero);
+    let leveled = add_xp_to_hero(entry, req.amount);
+    Json(HeroAddXpResp { level: entry.level, xp: entry.xp, xpNext: entry.xpNext, levelUp: leveled })
+}
+
+#[derive(Deserialize)]
+struct HeroPerkReq { heroId: String, perkId: String }
+
+async fn hero_apply_perk(State(state): State<AppState>, Json(req): Json<HeroPerkReq>) -> Json<serde_json::Value> {
+    let mut heroes = state.heroes.write().await;
+    let entry = heroes.entry(req.heroId).or_insert_with(default_hero);
+    if !entry.perks.iter().any(|p| p == &req.perkId) {
+        entry.perks.push(req.perkId);
+    }
+    Json(serde_json::json!({"ok": true, "perks": entry.perks}))
 }

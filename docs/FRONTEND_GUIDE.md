@@ -30,7 +30,7 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
   - Entrée: `{ node_id, mode:"player"|"ai" }` (sélectionne quel double est contrôlé par le joueur).
 
 - POST `/agents/cast`
-  - Entrée: `{ formula, formula_type?, caster_node_id, parameters?, caster_identity? }`
+  - Entrée: `{ formula, target?, power?, formula_type?, caster_node_id, parameters?, caster_identity? }`
   - Effet: délègue l’exécution au backend Java.
 
 - POST `/api/map/generate`
@@ -51,6 +51,26 @@ Ce guide résume les endpoints utiles côté front pour la phase actuelle.
 - GET `/openapi`
   - Spéc Rust minimale (pour compare-apis).
   - Note: si le Java n’est pas démarré, `GET /openapi/all` aura `java: { error: ... }`.
+
+### Economy / Craft / Runes / Nearby / Minigames
+
+- GET `/api/economy/inventory` → `{ items:[{id,kind,qty,...}] }`
+- POST `/api/economy/collect` `{spotId,playerId?}` → `{added:[...],inventory:[...]}`
+- POST `/api/economy/arcade-result` `{gameId,success,rewards?,playerId?}` → `{ok,inventory}`
+- POST `/api/craft/potion|crystal|artifact` `{recipeId,ingredients?,playerId?}` → `{item,inventory}`
+- POST `/api/mage/learn-runes` `{miniGameResult:{score},playerId?}` → `{unlocked:[...]}`
+- GET `/api/panopticon/world-state-graph/nearby?x&y&z&t&c&psi&radius` → `[{node}]`
+
+- GET `/api/minigames/catalog` → `[{id,title,url,rewards}]`
+- POST `/api/minigames/start` `{playerId?,type?,context?}` → `{sessionId,type,url,objective,deadlineMs,rewardsPreview}`
+- GET `/api/minigames/:id` → `{session}`
+- POST `/api/minigames/:id/result` `{success,score?,rewards?,playerId?}` → `{ok,grantedRewards,inventory}`
+- POST `/api/minigames/auto-trigger` `{playerId?,metrics:{timeVelocity?,causalDebt?}}` → `{triggered,session?}`
+
+### Héros (XP/Perks – MVP local)
+- GET `/api/hero/status?heroId=...` → `{level,xp,xpNext,perks}`
+- POST `/api/hero/add-xp` `{heroId,amount,source?}` → `{level,xp,xpNext,levelUp}`
+- POST `/api/hero/apply-perk` `{heroId,perkId}` → `{ok,perks}`
 
 ## Java backends
 
