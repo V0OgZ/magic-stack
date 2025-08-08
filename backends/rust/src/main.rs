@@ -20,7 +20,7 @@ use axum::{
 };
 use axum::extract::Path as AxPath;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{info, error};
@@ -32,6 +32,9 @@ use rand::prelude::*;
 use rand::SeedableRng;
 use rand::distributions::Distribution;
 use reqwest::Client as HttpClient;
+use std::fs;
+use std::io::Write as _;
+use std::path::PathBuf;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -45,6 +48,8 @@ struct AppState {
     tick_interval_ms: u64,
     minigame_sessions: Arc<RwLock<HashMap<String, MinigameSession>>>,
     heroes: Arc<RwLock<HashMap<String, HeroStatus>>>,
+    processed_resolve: Arc<RwLock<HashSet<String>>>,
+    processed_collapse: Arc<RwLock<HashSet<String>>>,
 }
 
 /// Health check response
@@ -200,6 +205,8 @@ async fn main() {
     let inventories = Arc::new(RwLock::new(HashMap::<String, Vec<InventoryItem>>::new()));
     let minigame_sessions = Arc::new(RwLock::new(HashMap::<String, MinigameSession>::new()));
     let heroes = Arc::new(RwLock::new(HashMap::<String, HeroStatus>::new()));
+    let processed_resolve = Arc::new(RwLock::new(HashSet::<String>::new()));
+    let processed_collapse = Arc::new(RwLock::new(HashSet::<String>::new()));
     
     // Test Java connection
     match java_connector.test_connection().await {
@@ -218,6 +225,8 @@ async fn main() {
         tick_interval_ms,
         minigame_sessions,
         heroes,
+        processed_resolve,
+        processed_collapse,
     };
     
     // Build router
@@ -723,6 +732,14 @@ async fn causality_resolve(
                 win_node.properties = props;
                 let _ = state.world_state.update_node(win_node);
             }
+            // Idempotent XP award
+            let key = format!("resolve:{}:{}", winner, now_ms()/1000);
+            let mut seen = state.processed_resolve.write().await;
+            if !seen.contains(&key) {
+                seen.insert(key);
+                drop(seen);
+                award_hero_xp(&state, &winner, 40).await;
+            }
             Ok(Json(ResolveOutcome { mode, involved: ids, winner: Some(winner), started_match_id: None }))
         }
         ResolutionMode::TCG => {
@@ -748,6 +765,7 @@ struct CollapseRequest {
     center: Option<Position6DDto>,
     radius: Option<f64>,
     description: Option<String>,
+    playerId: Option<String>,
 }
 
 /// Trigger an observation collapse on selected nodes (by ids or by radius around a 6D center)
@@ -780,7 +798,16 @@ async fn observation_collapse(
         .world_state
         .mark_observed(&ids, &request.description.unwrap_or_else(|| "observation".to_string()))
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
+    // Idempotent XP small award
+    let key = format!("collapse:{}:{}", ids.join("+"), now_ms()/1000);
+    let mut seen = state.processed_collapse.write().await;
+    if !seen.contains(&key) {
+        seen.insert(key);
+        drop(seen);
+        let hero = request.playerId.unwrap_or_else(|| "hero:anonymous".into());
+        let xp = std::cmp::min(count as u32, 5);
+        if xp > 0 { award_hero_xp(&state, &hero, xp).await; }
+    }
     Ok(Json(serde_json::json!({"updated": count, "ok": true})))
 }
 
@@ -977,8 +1004,7 @@ async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest
                 if let Ok(pos) = Position6D::new(x as f64, y as f64, 0.0, t, c, psi) {
                     let mut props = HashMap::new();
                     props.insert("biome".to_string(), serde_json::json!(biome));
-                    props.insert("time_window".to_string(), serde_json::json!({"start": 2, "end": 8, "period": 12}));
-                    props.insert("recurrence".to_string(), serde_json::json!({"every": "lunar_day", "count": 9999}));
+                    props.insert("windows".to_string(), serde_json::json!([{"start": 2, "end": 8, "period": 12}]));
                     let node = world_state::StateNode {
                         id,
                         position: pos,
@@ -990,6 +1016,29 @@ async fn map_init(State(state): State<AppState>, Json(_req): Json<MapInitRequest
                         timeline_id: Some("principale".to_string()),
                     };
                     to_create.push(node);
+                }
+
+                // Also create a gathering spot with stable ID and schema
+                let spot_id = format!("spot_{}_{}", x, y);
+                if let Ok(pos2) = Position6D::new(x as f64, y as f64, 0.0, 0.0, c, 0.0) {
+                    let kind = match biome.as_str() { "forest" => "herb", "mountain" => "mineral", "sea" => "essence", _ => "herb" };
+                    let mut props2 = HashMap::new();
+                    props2.insert("kind".to_string(), serde_json::json!(kind));
+                    props2.insert("pos".to_string(), serde_json::json!({"x":x,"y":y,"z":0,"t":0,"c":c,"psi":0}));
+                    props2.insert("windows".to_string(), serde_json::json!([{"start":1,"end":23,"period":24}]));
+                    props2.insert("yield".to_string(), serde_json::json!({"min":1,"max":3}));
+                    props2.insert("depleted".to_string(), serde_json::json!(false));
+                    let node2 = world_state::StateNode {
+                        id: spot_id,
+                        position: pos2,
+                        node_type: world_state::NodeType::Object,
+                        properties: props2,
+                        connections: std::collections::HashSet::new(),
+                        last_updated: now_ms(),
+                        identity_id: None,
+                        timeline_id: Some("principale".to_string()),
+                    };
+                    to_create.push(node2);
                 }
             }
         }
@@ -1032,8 +1081,14 @@ async fn economy_collect(State(state): State<AppState>, Json(req): Json<CollectR
     let player_id = req.playerId.unwrap_or_else(|| "anonymous".to_string());
     let mut inv = state.inventories.write().await;
     let entry = inv.entry(player_id.clone()).or_default();
-    // MVP: générer une herbe à partir du spot
-    let item = InventoryItem { id: format!("herb_{}_{}", req.spotId, now_ms()), kind: "herb".into(), qty: 1, quality: Some(0.6), purity: Some(0.5), stability: Some(0.7), affinity: Some("nature".into()) };
+    // Infer resource kind from spot node if exists
+    let mut kind = "herb".to_string();
+    if let Some(node) = state.world_state.get_node(&req.spotId) {
+        if let Some(v) = node.properties.get("kind").and_then(|v| v.as_str()) {
+            kind = v.to_string();
+        }
+    }
+    let item = InventoryItem { id: format!("{}_{}", kind, now_ms()), kind: kind.clone(), qty: 1, quality: Some(0.6), purity: Some(0.5), stability: Some(0.7), affinity: Some("nature".into()) };
     entry.push(item.clone());
     Json(serde_json::json!({"added": [item], "inventory": entry}))
 }
