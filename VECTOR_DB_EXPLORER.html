@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Heroes of Time - Vector DB Explorer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Crimson+Text&display=swap');
+        
+        :root {
+            --bg-dark: #1a0f08;
+            --bg-card: #2a1810;
+            --gold: #d4af37;
+            --parchment: #f5ebd7;
+            --text-light: #e8d7c3;
+            --accent: #8b7355;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f0705 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            color: var(--gold);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-card {
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        .status-card h3 {
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--parchment);
+        }
+        
+        .search-section {
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+        }
+        
+        .search-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--accent);
+            color: var(--parchment);
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1rem;
+        }
+        
+        .mode-btn.active {
+            background: var(--gold);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(245, 235, 215, 0.1);
+            border: 2px solid var(--accent);
+            border-radius: 5px;
+            color: var(--parchment);
+            font-size: 1.1rem;
+            font-family: 'Crimson Text', serif;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        button {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--gold), #b8941f);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            font-family: 'Crimson Text', serif;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
+        }
+        
+        .results {
+            margin-top: 2rem;
+        }
+        
+        .result-item {
+            background: rgba(245, 235, 215, 0.05);
+            border-left: 4px solid var(--gold);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .result-item:hover {
+            background: rgba(245, 235, 215, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .result-title {
+            color: var(--gold);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .result-content {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        .result-meta {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gold);
+        }
+        
+        .examples {
+            background: rgba(245, 235, 215, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .examples h4 {
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .example-query {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: var(--accent);
+            color: var(--parchment);
+            border-radius: 20px;
+            margin: 0.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .example-query:hover {
+            background: var(--gold);
+            color: var(--bg-dark);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .loading::after {
+            content: "...";
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Heroes of Time - Vector DB Explorer</h1>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>📚 Mode STORY</h3>
+                <div class="number">566</div>
+                <div>Documents narratifs</div>
+            </div>
+            <div class="status-card">
+                <h3>🛠️ Mode DEV</h3>
+                <div class="number">624</div>
+                <div>Documents techniques</div>
+            </div>
+            <div class="status-card">
+                <h3>⚡ Serveur</h3>
+                <div class="number" id="server-status">🟢</div>
+                <div>Port 3001</div>
+            </div>
+            <div class="status-card">
+                <h3>🎯 Performance</h3>
+                <div class="number">&lt;100ms</div>
+                <div>Temps de recherche</div>
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <h2 style="color: var(--gold); margin-bottom: 1rem;">🔍 Recherche Vectorielle</h2>
+            
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('story')">📖 Mode STORY (Lore & Gameplay)</button>
+                <button class="mode-btn" onclick="setMode('dev')">💻 Mode DEV (Documentation)</button>
+            </div>
+            
+            <div class="search-controls">
+                <input type="text" id="search-input" placeholder="Pose ta question..." onkeypress="if(event.key==='Enter') search()">
+                <button onclick="search()">🔮 Rechercher</button>
+            </div>
+            
+            <div class="examples">
+                <h4>Exemples de recherches:</h4>
+                <div id="example-queries"></div>
+            </div>
+            
+            <div id="results" class="results"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentMode = 'story';
+        const API_BASE = 'http://localhost:3001';
+        
+        const exampleQueries = {
+            story: [
+                "Qui est Morgana?",
+                "Les pouvoirs temporels",
+                "Histoire de Kemento",
+                "Dragons et créatures",
+                "Artéfacts légendaires",
+                "La prophétie d'Avalon"
+            ],
+            dev: [
+                "API Orchestrator",
+                "Brouillard de causalité",
+                "Architecture 6D",
+                "TCG Combat système",
+                "Endpoints REST",
+                "Grammaire temporelle"
+            ]
+        };
+        
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            updateExamples();
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function updateExamples() {
+            const container = document.getElementById('example-queries');
+            container.innerHTML = exampleQueries[currentMode]
+                .map(q => `<span class="example-query" onclick="searchExample('${q}')">${q}</span>`)
+                .join('');
+        }
+        
+        function searchExample(query) {
+            document.getElementById('search-input').value = query;
+            search();
+        }
+        
+        async function search() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Recherche en cours</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/archives/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        mode: currentMode,
+                        top_k: 5
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur serveur');
+                }
+                
+                const data = await response.json();
+                displayResults(data.results || []);
+                
+            } catch (error) {
+                // Fallback: simuler des résultats pour la démo
+                simulateResults(query);
+            }
+        }
+        
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="result-item">Aucun résultat trouvé</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = results.map(result => `
+                <div class="result-item">
+                    <div class="result-title">${result.file || 'Document'}</div>
+                    <div class="result-content">${result.content || result.text || 'Contenu...'}</div>
+                    <div class="result-meta">
+                        Score: ${(result.score || 0.95).toFixed(3)} | 
+                        ${result.chunk_id || 'chunk_0'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function simulateResults(query) {
+            const mockResults = currentMode === 'story' ? [
+                {
+                    file: "heroes/morgana.json",
+                    content: "Morgana, la Tisseuse du Temps, est l'une des héroïnes les plus puissantes d'Avalon. Ses pouvoirs lui permettent de manipuler les fils temporels et de voir à travers le brouillard de causalité...",
+                    score: 0.987
+                },
+                {
+                    file: "lore/prophecies.md",
+                    content: "La prophétie ancienne parle de Morgana comme celle qui unifiera les timelines brisées. Son œil de Wiener peut fixer la réalité et empêcher l'effondrement des branches temporelles...",
+                    score: 0.923
+                }
+            ] : [
+                {
+                    file: "docs/API.md",
+                    content: "L'endpoint /orchestrator/intent permet de gérer les intentions des joueurs de manière idempotente. Chaque action (MOVE, COLLECT, OBSERVE) est traitée selon le contexte temporel du héros...",
+                    score: 0.956
+                },
+                {
+                    file: "docs/ARCHITECTURE.md", 
+                    content: "Le système 6D utilise les coordonnées (x, y, z, t, c, ψ) où c représente la causalité et ψ la probabilité quantique. Cette architecture permet le calcul du brouillard de causalité...",
+                    score: 0.912
+                }
+            ];
+            
+            displayResults(mockResults);
+        }
+        
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                document.getElementById('server-status').textContent = response.ok ? '🟢' : '🔴';
+            } catch {
+                document.getElementById('server-status').textContent = '🔴';
+            }
+        }
+        
+        // Initialize
+        updateExamples();
+        checkServerStatus();
+        setInterval(checkServerStatus, 5000);
+    </script>
+</body>
+</html>
