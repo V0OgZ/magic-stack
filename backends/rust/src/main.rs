@@ -28,13 +28,8 @@ use tracing_subscriber;
 use uuid::Uuid;
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
-use rand::prelude::*;
 use rand::SeedableRng;
 use rand::distributions::Distribution;
-use reqwest::Client as HttpClient;
-use std::fs;
-use std::io::Write as _;
-use std::path::PathBuf;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -271,6 +266,7 @@ async fn main() {
         .route("/openapi", get(openapi_handler))
         .route("/openapi/all", get(openapi_all_handler))
         .route("/docs/openapi", get(openapi_ui_handler))
+        .route("/explorer", get(api_explorer_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
         // Archives (Vector DB local proxy)
@@ -768,7 +764,7 @@ async fn causality_resolve(
             // Start a match with involved entities
             let match_id = uuid::Uuid::new_v4().to_string();
             let mut score = HashMap::new();
-            for (i, id) in ids.iter().enumerate() {
+            for (i, _id) in ids.iter().enumerate() {
                 score.insert(format!("P{}", i+1), 0.0);
             }
             let st = MatchState { tick: 0, entities: ids.iter().map(|id| serde_json::json!({"id": id})).collect(), score };
@@ -948,47 +944,141 @@ async fn openapi_ui_handler() -> Html<String> {
     Html(html.to_string())
 }
 
+/// API Explorer - Interface unifiée pour tester toutes les APIs
+async fn api_explorer_handler() -> Html<String> {
+    let html = include_str!("../explorer.html");
+    Html(html.to_string())
+}
+
 // ===== Vector Archives Proxy =====
 #[derive(Deserialize)]
 struct ArchiveSearchReq { query: String, top_k: Option<usize>, mode: Option<String>, filters: Option<HashMap<String, String>> }
 
-async fn archives_status(State(state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
-    let url = format!("{}/api/status", state.vector_api_base);
-    match HttpClient::new().get(url).send().await {
-        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
-        Err(_) => Err(StatusCode::BAD_GATEWAY),
+async fn archives_status(State(_state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
+    // Utiliser directement le bridge Python local
+    use tokio::process::Command;
+    
+    let output = Command::new("python3")
+        .arg("vector_bridge.py")
+        .arg("status")
+        .current_dir("backends/rust")
+        .output()
+        .await;
+        
+    match output {
+        Ok(out) => {
+            if out.status.success() {
+                let json_str = String::from_utf8_lossy(&out.stdout);
+                match serde_json::from_str(&json_str) {
+                    Ok(json) => Ok(Json(json)),
+                    Err(_) => {
+                        eprintln!("VectorDB status parse error: {}", json_str);
+                        Err(StatusCode::INTERNAL_SERVER_ERROR)
+                    }
+                }
+            } else {
+                eprintln!("VectorDB status error: {}", String::from_utf8_lossy(&out.stderr));
+                Err(StatusCode::SERVICE_UNAVAILABLE)
+            }
+        }
+        Err(e) => {
+            eprintln!("VectorDB bridge error: {}", e);
+            Err(StatusCode::SERVICE_UNAVAILABLE)
+        }
     }
 }
 
 #[derive(Deserialize)]
 struct ArchiveBuildReq { mode: Option<String> }
 
-async fn archives_build(State(state): State<AppState>, maybe: Option<Json<ArchiveBuildReq>>) -> Result<Json<serde_json::Value>, StatusCode> {
-    let url = format!("{}/api/build", state.vector_api_base);
-    let client = HttpClient::new();
-    let resp = if let Some(Json(req)) = maybe {
-        client.post(url).json(&serde_json::json!({"mode": req.mode.unwrap_or_else(|| "story".into())})).send().await
-    } else {
-        client.post(url).send().await
-    };
-    match resp {
-        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
-        Err(_) => Err(StatusCode::BAD_GATEWAY),
+async fn archives_build(State(_state): State<AppState>, maybe: Option<Json<ArchiveBuildReq>>) -> Result<Json<serde_json::Value>, StatusCode> {
+    // Utiliser directement le bridge Python local
+    use tokio::process::Command;
+    
+    let mode = maybe.and_then(|j| j.0.mode).unwrap_or_else(|| "story".to_string());
+    
+    let output = Command::new("python3")
+        .arg("vector_bridge.py")
+        .arg("build")
+        .arg(&mode)
+        .current_dir("backends/rust")
+        .output()
+        .await;
+        
+    match output {
+        Ok(out) => {
+            if out.status.success() {
+                let json_str = String::from_utf8_lossy(&out.stdout);
+                match serde_json::from_str(&json_str) {
+                    Ok(json) => Ok(Json(json)),
+                    Err(_) => {
+                        eprintln!("VectorDB build parse error: {}", json_str);
+                        Err(StatusCode::INTERNAL_SERVER_ERROR)
+                    }
+                }
+            } else {
+                eprintln!("VectorDB build error: {}", String::from_utf8_lossy(&out.stderr));
+                Err(StatusCode::SERVICE_UNAVAILABLE)
+            }
+        }
+        Err(e) => {
+            eprintln!("VectorDB bridge error: {}", e);
+            Err(StatusCode::SERVICE_UNAVAILABLE)
+        }
     }
 }
 
-async fn archives_search(State(state): State<AppState>, Json(req): Json<ArchiveSearchReq>) -> Result<Json<serde_json::Value>, StatusCode> {
-    let url = format!("{}/api/search", state.vector_api_base);
+async fn archives_search(State(_state): State<AppState>, Json(req): Json<ArchiveSearchReq>) -> Result<Json<serde_json::Value>, StatusCode> {
+    // Utiliser directement le bridge Python local
+    use tokio::process::Command;
+    use tokio::io::AsyncWriteExt;
+    
+    let mode = req.mode.unwrap_or_else(|| "story".to_string());
     let top_k = req.top_k.unwrap_or(10);
-    let mut body = serde_json::json!({
-        "query": req.query,
-        "top_k": top_k,
-        "mode": req.mode.unwrap_or_else(|| "story".into())
-    });
-    if let Some(f) = req.filters { if !f.is_empty() { if let Some(map) = body.as_object_mut() { map.insert("filters".into(), serde_json::json!(f)); } } }
-    match HttpClient::new().post(url).json(&body).send().await {
-        Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
-        Err(_) => Err(StatusCode::BAD_GATEWAY),
+    
+    let mut cmd = Command::new("python3")
+        .arg("vector_bridge.py")
+        .arg("search")
+        .arg(&req.query)
+        .arg(&mode)
+        .arg(top_k.to_string())
+        .current_dir("backends/rust")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|e| {
+            eprintln!("Failed to spawn VectorDB bridge: {}", e);
+            StatusCode::SERVICE_UNAVAILABLE
+        })?;
+        
+    // Envoyer les filtres via stdin si présents
+    if let Some(filters) = req.filters {
+        if !filters.is_empty() {
+            if let Some(mut stdin) = cmd.stdin.take() {
+                let filters_json = serde_json::to_string(&filters).unwrap_or_default();
+                let _ = stdin.write_all(filters_json.as_bytes()).await;
+            }
+        }
+    }
+    
+    let output = cmd.wait_with_output().await.map_err(|e| {
+        eprintln!("VectorDB bridge error: {}", e);
+        StatusCode::SERVICE_UNAVAILABLE
+    })?;
+    
+    if output.status.success() {
+        let json_str = String::from_utf8_lossy(&output.stdout);
+        match serde_json::from_str(&json_str) {
+            Ok(json) => Ok(Json(json)),
+            Err(_) => {
+                eprintln!("VectorDB search parse error: {}", json_str);
+                Err(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+        }
+    } else {
+        eprintln!("VectorDB search error: {}", String::from_utf8_lossy(&output.stderr));
+        Err(StatusCode::SERVICE_UNAVAILABLE)
     }
 }
 // ==== Map generation endpoints ====
@@ -1318,7 +1408,7 @@ enum OrcIntentInner {
     MOVE { heroId: String, to: Position6DDto },
     COLLECT { heroId: String, spotId: String },
     OBSERVE { heroId: String, node_ids: Option<Vec<String>>, center: Option<Position6DDto>, radius: Option<f64> },
-    REQUEST_RESOLVE { heroId: Option<String>, mode: Option<String>, center: Option<Position6DDto>, radius: Option<f64> },
+    RequestResolve { heroId: Option<String>, mode: Option<String>, center: Option<Position6DDto>, radius: Option<f64> },
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -1367,7 +1457,7 @@ async fn orc_intent(State(state): State<AppState>, headers: axum::http::HeaderMa
             let payload = CollapseRequest { node_ids, center, radius, description: Some("orchestrator_observe".into()), playerId: Some(heroId) };
             let _ = observation_collapse(State(state.clone()), Json(payload)).await;
         }
-        OrcIntentInner::REQUEST_RESOLVE { heroId: _h, mode, center, radius } => {
+        OrcIntentInner::RequestResolve { heroId: _h, mode, center, radius } => {
             let m = match mode.as_deref() { Some("QUANTUM") => Some(ResolutionMode::QUANTUM), Some("TCG") => Some(ResolutionMode::TCG), _ => None };
             let payload = ResolveRequest { node_ids: None, center, radius, mode: m, seed: None };
             let _ = causality_resolve(State(state.clone()), Json(payload)).await;

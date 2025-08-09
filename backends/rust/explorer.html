@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Explorer - Magic Stack</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a2e; color: #fff; padding: 20px; margin: 0; }
+        h1 { text-align: center; color: #667eea; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card { background: #16213e; padding: 15px; border-radius: 10px; border: 1px solid #394867; }
+        .card h3 { color: #667eea; margin: 0 0 10px 0; }
+        .api { padding: 8px; margin: 5px 0; background: #0f3460; border-radius: 5px; cursor: pointer; }
+        .api:hover { background: #533483; }
+        .get { color: #10b981; }
+        .post { color: #3b82f6; }
+        #test { background: #0f3460; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        #result { background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; margin-top: 10px; }
+        input, select { padding: 10px; margin: 5px; background: #0f3460; border: 1px solid #533483; color: white; border-radius: 5px; }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Magic Stack API Explorer - Port 3001</h1>
+    
+    <div id="test">
+        <input type="text" id="endpoint" placeholder="/api/hero/status" value="/health" style="width: 300px">
+        <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+        </select>
+        <button onclick="test()">Test API</button>
+        <div id="result">Ready...</div>
+    </div>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>Core</h3>
+            <div class="api get" onclick="go('GET','/health')">GET /health</div>
+            <div class="api get" onclick="go('GET','/api/hero/status')">GET /api/hero/status</div>
+            <div class="api get" onclick="go('GET','/api/economy/inventory')">GET /api/economy/inventory</div>
+            <div class="api get" onclick="go('GET','/api/minigames/catalog')">GET /api/minigames/catalog</div>
+            <div class="api get" onclick="go('GET','/combat/state/1')">GET /combat/state/1</div>
+            <div class="api get" onclick="go('GET','/observe/compact')">GET /observe/compact</div>
+        </div>
+        <div class="card">
+            <h3>Actions</h3>
+            <div class="api post" onclick="go('POST','/api/economy/collect')">POST /api/economy/collect</div>
+            <div class="api post" onclick="go('POST','/api/craft/potion')">POST /api/craft/potion</div>
+            <div class="api post" onclick="go('POST','/api/map/generate')">POST /api/map/generate</div>
+            <div class="api post" onclick="go('POST','/agents/tick')">POST /agents/tick</div>
+            <div class="api post" onclick="go('POST','/api/archives/search')">POST /api/archives/search</div>
+        </div>
+    </div>
+    
+    <script>
+        function go(m,e) { document.getElementById('method').value=m; document.getElementById('endpoint').value=e; test(); }
+        async function test() {
+            const e = document.getElementById('endpoint').value;
+            const m = document.getElementById('method').value;
+            const r = document.getElementById('result');
+            r.textContent = 'Loading...';
+            try {
+                const o = {method:m};
+                if(m=='POST') { o.headers={'Content-Type':'application/json'}; o.body='{}'; }
+                const res = await fetch('http://localhost:3001'+e, o);
+                const t = await res.text();
+                try { r.textContent = JSON.stringify(JSON.parse(t),null,2); }
+                catch { r.textContent = t; }
+            } catch(err) { r.textContent = 'Error: '+err; }
+        }
+    </script>
+</body>
+</html>
