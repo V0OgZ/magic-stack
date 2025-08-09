@@ -536,6 +536,32 @@ new_quest = interpolate_quest(similar_past_events, current_situation)
 
 ---
 
+## 🔗 Mapping endpoints (implémentés)
+
+- Vector Archives (proxy modes story/dev)
+  - GET `/api/archives/status`
+  - POST `/api/archives/build` `{ mode: "story"|"dev" }`
+  - POST `/api/archives/search` `{ query, top_k?, mode: "story"|"dev", filters? }`
+
+- Orchestrateur (autoritaire)
+  - POST `/orchestrator/session`
+  - POST `/orchestrator/intent` (Idempotency-Key)
+  - GET `/orchestrator/decision-policy`
+  - GET `/orchestrator/snapshot?sinceTick=...`
+
+- Graphe 6D (visualisation compacte)
+  - GET `/observe/compact` → mini-map multiverse (nodes, edges, collapse_counter)
+
+- TCG AI (auto/coach)
+  - GET `/combat/state/:id`
+  - POST `/tcg/ai/decide`
+  - POST `/tcg/ai/coach`
+  - GET `/tcg/ai/telemetry/:id`
+
+Références détaillées: `docs/API.md`, `docs/VECTORDB_STORY_DEV.md`, `docs/FRONTEND_MINIMAP_MULTIVERSE.md`, `docs/TCG_COMBAT_GUIDE.md`.
+
+---
+
 **🧙‍♂️ Topo réalisé par MERLIN L'ARCHIVISTE VECTORIEL 🧙‍♂️**  
 **🔮 Vector DB Cave 6D = L'avenir du gaming intelligent ! 🔮**  
 **⚡ Quand les vecteurs s'éveillent, l'impossible devient émergent ! ⚡**
