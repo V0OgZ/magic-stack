@@ -194,3 +194,17 @@ Notes: Kind is inferred from the spot node.
 - `COLLECT { heroId, spotId }` → proxies `/api/economy/collect`
 - `OBSERVE { heroId, node_ids? | center+radius? }` → proxies `/api/world-state/collapse`
 - `REQUEST_RESOLVE { heroId?, mode?: "QUANTUM"|"TCG", center?, radius? }` → proxies `/api/causality/resolve`
+
+---
+
+## TCG AI (MVP)
+
+- POST `/tcg/ai/decide`
+  - Body: `{ "state": { ...compact... }, "ai_prefs": { "mode":"play","difficulty":"normal","risk":"medium","time_budget_ms":120 } }`
+  - Resp: `{ "actions":[{"type":"PLAY_CARD","card_id":"C_042","target":"E3"},{"type":"END_TURN"}], "explain":"stub..." }`
+- POST `/tcg/ai/coach`
+  - Body: `{ "state": { ... }, "question": "ligne alternative ?" }`
+  - Resp: `{ "lines": [ { "plan": [...], "why": "tempo safe", "risk": "medium" } ] }`
+- GET `/tcg/ai/telemetry/:id` → `{ ok, events: [] }` (stub)
+- GET `/combat/state/:id?compact=true` → état compact de combat
+- GET `/observe/compact` → mini-map multiverse simplifiée (nodes/edges, collapse_counter)

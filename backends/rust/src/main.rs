@@ -302,6 +302,13 @@ async fn main() {
         .route("/orchestrator/intent", post(orc_intent))
         .route("/orchestrator/decision-policy", get(orc_policy))
         .route("/orchestrator/snapshot", get(orc_snapshot))
+        // TCG AI (MVP)
+        .route("/tcg/ai/decide", post(tcg_ai_decide))
+        .route("/tcg/ai/coach", post(tcg_ai_coach))
+        .route("/tcg/ai/telemetry/:id", get(tcg_ai_telemetry))
+        // Combat/Observation compact views
+        .route("/combat/state/:id", get(get_combat_state_compact))
+        .route("/observe/compact", get(observe_compact))
         .layer(cors)
         .with_state(app_state);
     
@@ -1381,6 +1388,86 @@ async fn award_hero_xp(state: &AppState, hero_id: &str, amount: u32) {
     let _ = add_xp_to_hero(entry, amount);
 }
 
+// ===== TCG AI (MVP stubs) =====
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgStateCompact {
+    game_id: String,
+    turn: u32,
+    active_player: String,
+    mana: u32,
+    hand: Vec<HashMap<String, serde_json::Value>>,
+    board: HashMap<String, serde_json::Value>,
+    flags: Option<HashMap<String, serde_json::Value>>,
+    rng_seed: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAiPrefs { mode: Option<String>, difficulty: Option<String>, risk: Option<String>, time_budget_ms: Option<u64> }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAiDecideReq { state: TcgStateCompact, ai_prefs: Option<TcgAiPrefs> }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAction { r#type: String, card_id: Option<String>, target: Option<String>, name: Option<String> }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAiDecideResp { actions: Vec<TcgAction>, explain: Option<String> }
+
+async fn tcg_ai_decide(Json(req): Json<TcgAiDecideReq>) -> Json<TcgAiDecideResp> {
+    // Stub heuristique: si main non vide, jouer première carte puis END_TURN
+    let mut acts: Vec<TcgAction> = Vec::new();
+    if let Some(first) = req.state.hand.get(0) {
+        let card_id = first.get("id").and_then(|v| v.as_str()).unwrap_or("C_001").to_string();
+        acts.push(TcgAction { r#type: "PLAY_CARD".into(), card_id: Some(card_id), target: None, name: None });
+    }
+    acts.push(TcgAction { r#type: "END_TURN".into(), card_id: None, target: None, name: None });
+    Json(TcgAiDecideResp { actions: acts, explain: Some("stub: play first card then end".into()) })
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAiCoachReq { state: TcgStateCompact, question: Option<String>, ai_prefs: Option<TcgAiPrefs> }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct TcgAiCoachResp { lines: Vec<HashMap<String, serde_json::Value>> }
+
+async fn tcg_ai_coach(Json(req): Json<TcgAiCoachReq>) -> Json<TcgAiCoachResp> {
+    let mut line = HashMap::new();
+    line.insert("plan".into(), serde_json::json!([{"type":"PLAY_CARD"},{"type":"END_TURN"}]));
+    line.insert("why".into(), serde_json::json!(req.question.unwrap_or_else(|| "tempo safe".into())));
+    line.insert("risk".into(), serde_json::json!("medium"));
+    Json(TcgAiCoachResp { lines: vec![line] })
+}
+
+async fn tcg_ai_telemetry(AxPath(_id): AxPath<String>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({"ok": true, "events": []}))
+}
+
+async fn get_combat_state_compact(AxPath(id): AxPath<String>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "game_id": id,
+        "turn": 1,
+        "active_player": "hero:alice",
+        "mana": 3,
+        "hand": [{"id":"C_001","cost":1}],
+        "board": {"ally":[], "enemy":[], "effects":[]},
+        "flags": {"superpositions": 0, "collapse_imminent": false}
+    }))
+}
+
+async fn observe_compact(Query(_q): Query<HashMap<String, String>>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "nodes": [
+            {"id":"n0","p":0.6},
+            {"id":"n1","p":0.3},
+            {"id":"n2","p":0.1}
+        ],
+        "edges": [
+            ["n0","n1"],
+            ["n1","n2"]
+        ],
+        "collapse_counter": 3
+    }))
+}
 async fn hero_status(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>) -> Json<HeroStatus> {
     let hero_id = q.get("heroId").cloned().unwrap_or_else(|| "hero:anonymous".to_string());
     let mut heroes = state.heroes.write().await;
