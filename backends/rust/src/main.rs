@@ -950,7 +950,7 @@ async fn openapi_ui_handler() -> Html<String> {
 
 // ===== Vector Archives Proxy =====
 #[derive(Deserialize)]
-struct ArchiveSearchReq { query: String, top_k: Option<usize> }
+struct ArchiveSearchReq { query: String, top_k: Option<usize>, mode: Option<String>, filters: Option<HashMap<String, String>> }
 
 async fn archives_status(State(state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
     let url = format!("{}/api/status", state.vector_api_base);
@@ -960,9 +960,18 @@ async fn archives_status(State(state): State<AppState>) -> Result<Json<serde_jso
     }
 }
 
-async fn archives_build(State(state): State<AppState>) -> Result<Json<serde_json::Value>, StatusCode> {
+#[derive(Deserialize)]
+struct ArchiveBuildReq { mode: Option<String> }
+
+async fn archives_build(State(state): State<AppState>, maybe: Option<Json<ArchiveBuildReq>>) -> Result<Json<serde_json::Value>, StatusCode> {
     let url = format!("{}/api/build", state.vector_api_base);
-    match HttpClient::new().post(url).send().await {
+    let client = HttpClient::new();
+    let resp = if let Some(Json(req)) = maybe {
+        client.post(url).json(&serde_json::json!({"mode": req.mode.unwrap_or_else(|| "story".into())})).send().await
+    } else {
+        client.post(url).send().await
+    };
+    match resp {
         Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
         Err(_) => Err(StatusCode::BAD_GATEWAY),
     }
@@ -971,7 +980,12 @@ async fn archives_build(State(state): State<AppState>) -> Result<Json<serde_json
 async fn archives_search(State(state): State<AppState>, Json(req): Json<ArchiveSearchReq>) -> Result<Json<serde_json::Value>, StatusCode> {
     let url = format!("{}/api/search", state.vector_api_base);
     let top_k = req.top_k.unwrap_or(10);
-    let body = serde_json::json!({"query": req.query, "top_k": top_k});
+    let mut body = serde_json::json!({
+        "query": req.query,
+        "top_k": top_k,
+        "mode": req.mode.unwrap_or_else(|| "story".into())
+    });
+    if let Some(f) = req.filters { if !f.is_empty() { if let Some(map) = body.as_object_mut() { map.insert("filters".into(), serde_json::json!(f)); } } }
     match HttpClient::new().post(url).json(&body).send().await {
         Ok(resp) => resp.json::<serde_json::Value>().await.map(Json).map_err(|_| StatusCode::BAD_GATEWAY),
         Err(_) => Err(StatusCode::BAD_GATEWAY),

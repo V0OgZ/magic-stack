@@ -208,3 +208,42 @@ Notes: Kind is inferred from the spot node.
 - GET `/tcg/ai/telemetry/:id` → `{ ok, events: [] }` (stub)
 - GET `/combat/state/:id?compact=true` → état compact de combat
 - GET `/observe/compact` → mini-map multiverse simplifiée (nodes/edges, collapse_counter)
+
+---
+
+## Smoke checks (rapides)
+
+```bash
+# Santé et catalogue
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:${RUST_PORT:-3001}/health
+curl -s -o /dev/null -w "%{http_code} %{size_download}\n" http://localhost:${RUST_PORT:-3001}/openapi/all
+
+# Orchestrateur (session)
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/orchestrator/session \
+  -H "Content-Type: application/json" \
+  -d '{"heroId":"hero:alice","clientVersion":"frontend-homm3-6d"}' | jq .
+
+# World-state / Causality
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/world-state/collapse \
+  -H "Content-Type: application/json" \
+  -d '{"node_ids":["ent_forest_12_21"],"description":"probe","playerId":"hero:alice"}' | jq .
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/causality/resolve \
+  -H "Content-Type: application/json" \
+  -d '{"node_ids":["ent_plain_10_20","ent_forest_12_21"],"mode":"QUANTUM","seed":123}' | jq .
+
+# Map
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/map/generate \
+  -H "Content-Type: application/json" -d '{"width":16,"height":12,"seed":42}' | jq .
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/map/init \
+  -H "Content-Type: application/json" \
+  -d '{"map":{"obstacles":[[0]],"terrain":[[0]],"causal_c":[[1.0]],"biomes":[["plain"]]}}' | jq .
+
+# Archives / Économie / Minijeux / Héros
+curl -s http://localhost:${RUST_PORT:-3001}/api/archives/status | jq .
+curl -s http://localhost:${RUST_PORT:-3001}/api/economy/inventory | jq .
+curl -s http://localhost:${RUST_PORT:-3001}/api/minigames/catalog | jq .
+curl -s "http://localhost:${RUST_PORT:-3001}/api/hero/status?heroId=hero:alice" | jq .
+
+# Agents
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/agents/tick -H "Content-Type: application/json" -d '{}' | jq .
+```
