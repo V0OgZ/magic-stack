@@ -31,3 +31,4 @@ Generated from `world-editor-spec.md`
 
 - PRO Dev: voir `docs/PRO_DEVELOPER_GUIDE.md`
 - Créateur de carte: voir `docs/MAP_MAKER_GUIDE.md`
+- Débutant 13-15 ans: `docs/world-editor/BEGINNER_GUIDE.md`
