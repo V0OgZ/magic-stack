@@ -366,10 +366,25 @@ case $choice in
         32) clean_all ;;
         33) dev_mode ;;
         34)
-            # Ouvre en priorité la build Vite si disponible, sinon fallback
-            if [ -f "apps/world-editor/dist/index.html" ]; then
-                open "apps/world-editor/dist/index.html"
-                echo -e "${GREEN}World Editor (build) ouvert${NC}"
+            # Si build dispo, lancer un vrai serveur HTTP (vite preview), sinon fallback HTML
+            if [ -d "apps/world-editor/dist" ]; then
+                # Si preview (4173) tourne déjà, ouvrir
+                lsof -ti:4173 > /dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    open "http://localhost:4173"
+                    echo -e "${GREEN}World Editor (preview) déjà actif sur http://localhost:4173${NC}"
+                else
+                    if command -v npm >/dev/null 2>&1; then
+                        osascript -e 'tell app "Terminal" to do script "cd '$PWD'/apps/world-editor && npm run preview"'
+                        sleep 2
+                        open "http://localhost:4173"
+                        echo -e "${GREEN}World Editor (preview) lancé${NC}"
+                    else
+                        # Pas de npm: ouvrir quand même le fichier (peut causer page blanche)
+                        open "apps/world-editor/dist/index.html"
+                        echo -e "${YELLOW}Ouverture en file:// (préférez ./h 35 ou npm run preview)${NC}"
+                    fi
+                fi
             elif [ -f "WORLD_EDITOR.html" ]; then
                 open "WORLD_EDITOR.html"
                 echo -e "${GREEN}World Editor (HTML) ouvert${NC}"
