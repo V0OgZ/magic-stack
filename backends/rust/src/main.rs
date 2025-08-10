@@ -11,6 +11,9 @@
 use magic_stack_core::*;
 use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts, Topology as PfTopology};
 use magic_stack_core::mapgen::{generate_map, MapGenParams};
+
+// Module Multiplayer V2
+mod multiplayer_v2;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -49,6 +52,8 @@ struct AppState {
     orchestrator_sessions: Arc<RwLock<HashSet<String>>>,
     orchestrator_idempotency: Arc<RwLock<HashMap<String, HashSet<String>>>>,
     orchestrator_tick: Arc<RwLock<u64>>,
+    // Multiplayer V2 Controller (optionnel)
+    v2_controller: Option<Arc<multiplayer_v2::MultiplayerOfficialController>>,
 }
 
 /// Health check response
@@ -217,6 +222,19 @@ async fn main() {
         Err(e) => info!("⚠️ Java backend not available: {}", e),
     }
     
+    // Create Multiplayer V2 Controller (optional)
+    let v2_sessions = Arc::new(RwLock::new(HashMap::<String, serde_json::Value>::new()));
+    let v2_controller = if std::env::var("V2_ENABLED").unwrap_or("true".to_string()) == "true" {
+        info!("🎮 Multiplayer V2 Controller: ENABLED");
+        Some(Arc::new(multiplayer_v2::MultiplayerOfficialController::new(
+            v2_sessions.clone(),
+            None, // Default config
+        )))
+    } else {
+        info!("⏸️ Multiplayer V2 Controller: DISABLED");
+        None
+    };
+    
     let app_state = AppState {
         qstar_engine,
         world_state,
@@ -232,6 +250,7 @@ async fn main() {
         orchestrator_sessions,
         orchestrator_idempotency,
         orchestrator_tick,
+        v2_controller,
     };
     
     // Build router
@@ -305,6 +324,11 @@ async fn main() {
         // Combat/Observation compact views
         .route("/combat/state/:id", get(get_combat_state_compact))
         .route("/observe/compact", get(observe_compact))
+        // === Multiplayer V2 Routes (optional) ===
+        .route("/api/v2/tick", post(v2_tick_handler))
+        .route("/api/v2/entity/:id", get(v2_get_entity_handler))
+        .route("/api/v2/migrate-entity", post(v2_migrate_entity_handler))
+        .route("/api/v2/config", get(v2_config_handler))
         .layer(cors)
         .with_state(app_state);
     
@@ -319,6 +343,130 @@ async fn main() {
     
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+// ===== MULTIPLAYER V2 HANDLERS =====
+
+async fn v2_tick_handler(
+    State(state): State<AppState>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        match controller.tick(state.tick_interval_ms).await {
+            Ok(result) => Json(serde_json::json!({
+                "success": true,
+                "result": result
+            })),
+            Err(e) => Json(serde_json::json!({
+                "success": false,
+                "error": e
+            }))
+        }
+    } else {
+        Json(serde_json::json!({
+            "success": false,
+            "error": "V2 controller not enabled"
+        }))
+    }
+}
+
+async fn v2_get_entity_handler(
+    State(state): State<AppState>,
+    AxPath(id): AxPath<String>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let entities = controller.entities_v2.read().await;
+        if let Some(entity) = entities.get(&id) {
+            Json(serde_json::json!({
+                "success": true,
+                "entity": entity
+            }))
+        } else {
+            Json(serde_json::json!({
+                "success": false,
+                "error": "Entity not found"
+            }))
+        }
+    } else {
+        Json(serde_json::json!({
+            "success": false,
+            "error": "V2 controller not enabled"
+        }))
+    }
+}
+
+async fn v2_migrate_entity_handler(
+    State(state): State<AppState>,
+    Json(req): Json<serde_json::Value>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let id = req["id"].as_str().unwrap_or("unknown");
+        let pos_x = req["x"].as_i64().unwrap_or(0) as i32;
+        let pos_y = req["y"].as_i64().unwrap_or(0) as i32;
+        let energy = req["energy"].as_f64().unwrap_or(100.0);
+        
+        let entity_v2 = multiplayer_v2::EntityV2 {
+            id: id.to_string(),
+            position: (pos_x, pos_y),
+            energy,
+            temporal: Some(multiplayer_v2::TemporalState {
+                t_e: 0.0,
+                day_hidden: 0,
+                drift_rate: 0.02,
+                last_tick: 0,
+            }),
+            energy_complex: Some(multiplayer_v2::EnergyComplexV2 {
+                a: energy,
+                phi: Some(1.0),
+                debt_a: 0.0,
+                a_max: 100.0,
+            }),
+            identity: Some(multiplayer_v2::IdentityV2 {
+                psi_vector: vec![1.0, 0.0],
+                coherence: 1.0,
+                entanglements: vec![],
+                interference_cache: HashMap::new(),
+            }),
+            visibility: None,
+        };
+        
+        let mut entities = controller.entities_v2.write().await;
+        entities.insert(id.to_string(), entity_v2.clone());
+        
+        Json(serde_json::json!({
+            "success": true,
+            "message": "Entity migrated to V2",
+            "entity": entity_v2
+        }))
+    } else {
+        Json(serde_json::json!({
+            "success": false,
+            "error": "V2 controller not enabled"
+        }))
+    }
+}
+
+async fn v2_config_handler(
+    State(state): State<AppState>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        Json(serde_json::json!({
+            "v2_enabled": controller.config.v2_enabled,
+            "features": {
+                "temporal": controller.config.v2_enabled,
+                "phi": controller.config.phi_enabled,
+                "regulators": controller.config.regulators_enabled,
+                "debt": controller.config.debt_enabled,
+            },
+            "tick_ms": controller.config.tick_ms,
+            "drift_base": controller.config.drift_base,
+        }))
+    } else {
+        Json(serde_json::json!({
+            "v2_enabled": false,
+            "features": {},
+            "message": "V2 controller not enabled"
+        }))
+    }
 }
 // ==== Agents Handlers (MVP) ====
 async fn agents_health() -> Json<serde_json::Value> {

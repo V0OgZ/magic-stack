@@ -1,0 +1,109 @@
+# 🎮 CONFIGURATION MULTIPLAYER V2
+# Active/désactive les features progressivement
+
+# ===== FEATURE FLAGS =====
+features:
+  v2_enabled: true          # Master switch V2
+  temporal: true            # Temps différencié t_w/t_e
+  energy_complex: true      # Énergie A + iΦ
+  identity_quantum: true    # Identité |ψ⟩ et interférences
+  visibility_layers: true   # OPC 3 couches + CF
+  regulators: true          # Vince/Anna/Overload
+  trace_hash: true         # Replay déterministe
+  websocket: false         # WebSocket temps réel (TODO)
+  pwa_mobile: false        # PWA Clippy (TODO)
+
+# ===== PARAMÈTRES TEMPORELS =====
+temporal:
+  tick_ms: 50              # Tick serveur (50ms = 20 Hz)
+  drift_base: 0.02         # Drift par heure (jours cachés)
+  drift_biomes:            # Modificateurs par biome
+    swamp: -0.01          # Marais ralentit
+    highway: +0.01        # Autoroute accélère
+    void: 0.0             # Vide = pas de drift
+  debt:
+    enabled: true          # Activer système de dette
+    cost_multiplier: 1.25  # Malus coût si dette
+    drag_factor: 0.5       # Ralentissement t_e
+
+# ===== ÉNERGIE COMPLEXE =====
+energy:
+  a_max_default: 100       # Points d'action max
+  a_regen_rate: 2.0        # Régén par jour
+  phi_range: [-1.0, 1.0]   # Bornes de phase
+  lambda_decoherence: 0.01 # Taux décohérence
+  noise_factors:           # Sources de bruit
+    combat: 0.05
+    city: 0.03
+    portal: 0.02
+
+# ===== IDENTITÉ & INTERFÉRENCES =====
+identity:
+  psi_dimensions: 2        # Dimensions vecteur |ψ⟩
+  conservation_epsilon: 0.01 # Tolérance Σ|ψ|²=1
+  interference_thresholds:
+    i_strong: 0.75         # Clone complet
+    i_mid: 0.50            # Clone affaibli
+    i_weak: 0.25           # Buff temporaire
+  max_clones: 4            # Limite clones simultanés
+
+# ===== VISIBILITÉ =====
+visibility:
+  opc_calculation: "bfs"   # Algorithme (bfs/dijkstra)
+  opc_cache_ttl: 1000      # Cache en ms
+  cf_base_level: 0.8       # Brouillard par défaut
+  cf_decay_rate: 0.1       # Dissipation par révélation
+  perception_radius: 3     # Rayon vision de base
+
+# ===== RÉGULATEURS =====
+regulators:
+  vince:
+    enabled: true
+    softlock_threshold: 0.5 # 50% joueurs immobiles
+    corridor_duration: 300   # 5 minutes
+    cooldown: 300            # 5 minutes entre activations
+  
+  anna:
+    enabled: true
+    decay_rate: 0.05         # 5% par minute
+    trigger_idle_time: 180   # 3 minutes inactif
+    max_accumulation: 0.9    # 90% A_max = trigger
+  
+  overload:
+    enabled: true
+    stack_threshold: 6       # Max entités par node
+    collapse_type: "canonical" # Type de résolution
+    preserve_highest: true   # Garder plus fort
+
+# ===== RÉSOLUTION COMBATS =====
+resolution:
+  collapse_threshold: 7     # Δlvl pour collapse
+  tcg_timeout: 300          # 5 min max TCG
+  afk_timeout: 60           # 60s → IA prend le relais
+  ai_level_cap: 3           # Niveau max IA
+  
+# ===== MULTIJOUEUR =====
+multiplayer:
+  max_players: 100          # Par instance
+  session_timeout: 3600     # 1 heure
+  sync_interval: 100        # Synchro tous les 100ms
+  interpolation: true       # Interpolation positions
+  
+# ===== LOGS & MONITORING =====
+logging:
+  level: "info"             # debug/info/warn/error
+  trace_hash: true          # Logger tous les hashes
+  regulators: true          # Logger activations
+  performance: true         # Métriques perf
+  
+# ===== COMPATIBILITÉ =====
+compatibility:
+  v1_endpoints: true        # Garder endpoints V1
+  v1_response_format: true  # Format réponse V1
+  auto_migrate: false       # Migration auto V1→V2
+  fallback_on_error: true   # Fallback V1 si erreur
+
+# ===== ENVIRONNEMENT =====
+environment: "development"  # development/staging/production
+debug_mode: true           # Infos debug dans réponses
+hot_reload: true           # Recharger config sans restart

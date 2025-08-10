@@ -1,0 +1,27 @@
+# Configuration Vector DB 6D
+vector_db:
+  # Chemins des documents
+  paths:
+    shared_docs: ./docs_shared
+    vector_assets: ./docs_shared/V - VECTOR_DB_ASSETS
+    ecole_porio: ./docs_shared/🏛️ ECOLE-PORIO-NOZ
+    engine_specs: ./docs_shared/___LATEST ENGINE SPECS - 0826
+    
+  # Indexation
+  indexing:
+    story_mode:
+      source: ./docs_shared/V - VECTOR_DB_ASSETS
+      index_name: story_6d
+    dev_mode:
+      source: ./docs_shared
+      index_name: dev_6d
+    
+  # API
+  api:
+    port: 5002
+    host: 0.0.0.0
+    
+  # Embeddings
+  embeddings:
+    model: all-MiniLM-L6-v2
+    dimensions: 384
