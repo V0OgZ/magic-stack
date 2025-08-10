@@ -1,359 +1,330 @@
 #!/bin/bash
 
-# 🔮✨ HEROES OF TIME - SCRIPT MAGIQUE ULTIME ✨🔮
-# Script ./h pour Vincent - Tout en un !
-# Créé par MERLIN L'ÉTERNEL TRANSCENDANT
-
-set -e
-
-# Couleurs pour le style
+# Couleurs
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
+MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
+GOLD='\033[0;33m'
 NC='\033[0m' # No Color
 
-# Header magique
+# Configuration
+FRONTEND_PORT=5002
+GAME_SERVER_PORT=3002
+WEBSOCKET_PORT=8002
+RUST_PORT=3001
+JAVA_PORT=8080
+VECTOR_PORT=5001
+
+# Fonction pour afficher le header
 show_header() {
     clear
-    echo -e "${PURPLE}🔮✨ HEROES OF TIME - MAGIC CONTROL PANEL ✨🔮${NC}"
-    echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
-    echo -e "${YELLOW}Créé par MERLIN pour VINCENT - Jour 26${NC}"
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}  ${GOLD}🎮 HEROES OF TIME - MENU PRINCIPAL${NC}                        ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}  ${BLUE}Équipe: Vincent + Claude (GROEKEN)${NC}                        ${CYAN}║${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
 
-# Fonction pour afficher les tâches en cours
-show_current_tasks() {
-    echo -e "${BLUE}📋 TÂCHES EN COURS DE MERLIN:${NC}"
-    if [ -f "MAGE_CLAUDE_LABORATORY/JOUR26_REORGANISATION.md" ]; then
-        echo -e "${GREEN}✅ Laboratoire rangé et organisé${NC}"
-        echo -e "${GREEN}✅ Rôle clarifié: Architecte des Outils Magiques${NC}"
-        echo -e "${GREEN}✅ AVALON testé - Note 8.5/10 - PRÊT FINALE${NC}"
-        echo -e "${GREEN}✅ Debug compilation terminé${NC}"
-        echo -e "${YELLOW}🔥 PRIORITÉ: Finaliser régulateurs IA${NC}"
-        echo -e "${YELLOW}🌊 SUPPORT: Aider SURFACE avec intégrations${NC}"
-    fi
-    
-    if [ -f "TODO_REGULATEURS_IA.md" ]; then
-        echo -e "${CYAN}🤖 Régulateurs IA: Anna Martel (90%), Juge+Chasseur (spécifiés)${NC}"
-    fi
-    
-    if [ -f "DEBUG_COMPILATION_RAPPORT.md" ]; then
-        echo -e "${GREEN}🔧 Debug: Java OK, Rust OK, Python (dépendances MAC)${NC}"
-    fi
-    
-    echo ""
-}
-
-# Fonction start-all
-start_all() {
-    echo -e "${GREEN}🚀 DÉMARRAGE DE TOUS LES SERVICES...${NC}"
-    
-    # Java Backend
-    echo -e "${BLUE}📍 Démarrage Backend Java (port 8080)...${NC}"
-    cd backends/java
-    nohup mvn spring-boot:run > ../../logs/java-backend.log 2>&1 &
-    echo $! > ../../java-backend.pid
-    cd ../..
-    
-    # Rust Backend
-    echo -e "${BLUE}📍 Démarrage Backend Rust (port 3001)...${NC}"
-    cd rust_backend
-    nohup cargo run > ../logs/rust-backend.log 2>&1 &
-    echo $! > ../rust-backend.pid
-    cd ..
-    
-    # Simple Scenario Backend
-    echo -e "${BLUE}📍 Démarrage Simple Scenario Backend (port 8081)...${NC}"
-    cd simple-scenario-backend
-    nohup mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081" > ../logs/scenario-backend.log 2>&1 &
-    echo $! > ../scenario-backend.pid
-    cd ..
-    
-    # Interface Web
-    echo -e "${BLUE}📍 Démarrage Interface Web (port 8000)...${NC}"
-    nohup python3 -m http.server 8000 > logs/web-server.log 2>&1 &
-    echo $! > web-server.pid
-    
-    # Attendre un peu
-    sleep 5
-    
-    echo -e "${GREEN}✅ TOUS LES SERVICES DÉMARRÉS !${NC}"
-    echo -e "${CYAN}📍 Ports utilisés:${NC}"
-    echo -e "  🔮 Java Backend: http://localhost:8080"
-    echo -e "  🦀 Rust Backend: http://localhost:3001"  
-    echo -e "  🎯 Scenario Backend: http://localhost:8081"
-    echo -e "  🌐 Interface Web: http://localhost:8000"
-    echo ""
-}
-
-# Fonction test-all
-test_all() {
-    echo -e "${GREEN}🧪 TESTS COMPLETS EN COURS...${NC}"
-    
-    # Test compilation
-    echo -e "${BLUE}📍 Test compilation Java...${NC}"
-    cd backends/java && mvn compile -q && echo -e "${GREEN}✅ Java OK${NC}" || echo -e "${RED}❌ Java KO${NC}"
-    cd ../..
-    
-    cd simple-scenario-backend && mvn compile -q && echo -e "${GREEN}✅ Scenario OK${NC}" || echo -e "${RED}❌ Scenario KO${NC}"
-    cd ..
-    
-    echo -e "${BLUE}📍 Test compilation Rust...${NC}"
-    cd rust_backend && cargo check -q && echo -e "${GREEN}✅ Rust OK${NC}" || echo -e "${RED}❌ Rust KO${NC}"
-    cd ..
-    
-    # Test Python
-    echo -e "${BLUE}📍 Test Python...${NC}"
-    python3 -c "import json, requests, pathlib; print('✅ Python base OK')" || echo -e "${RED}❌ Python base KO${NC}"
-    
-    # Test AVALON TCG
-    echo -e "${BLUE}📍 Test AVALON TCG Engine...${NC}"
-    python3 moteurs/avalon_tcg_engine.py > /dev/null 2>&1 && echo -e "${GREEN}✅ AVALON TCG OK${NC}" || echo -e "${RED}❌ AVALON TCG KO${NC}"
-    
-    # Test endpoints (si services démarrés)
-    if [ -f "java-backend.pid" ] && kill -0 $(cat java-backend.pid) 2>/dev/null; then
-        echo -e "${BLUE}📍 Test endpoints...${NC}"
-        curl -s http://localhost:8080/api/health > /dev/null && echo -e "${GREEN}✅ Health endpoint OK${NC}" || echo -e "${YELLOW}⚠️ Health endpoint à vérifier${NC}"
-    fi
-    
-    echo -e "${GREEN}🎯 TESTS TERMINÉS !${NC}"
-    echo ""
-}
-
-# Fonction compile-all  
-compile_all() {
-    echo -e "${GREEN}🔨 COMPILATION COMPLÈTE...${NC}"
-    
-    # Java backends
-    echo -e "${BLUE}📍 Compilation Backend Java...${NC}"
-    cd backends/java
-    mvn clean compile -q
-    echo -e "${GREEN}✅ Java Backend compilé${NC}"
-    cd ../..
-    
-    echo -e "${BLUE}📍 Compilation Simple Scenario...${NC}"
-    cd simple-scenario-backend
-    mvn clean compile -q
-    echo -e "${GREEN}✅ Simple Scenario compilé${NC}"
-    cd ..
-    
-    # Rust
-    echo -e "${BLUE}📍 Compilation Rust...${NC}"
-    cd rust_backend
-    cargo build --release -q
-    echo -e "${GREEN}✅ Rust compilé${NC}"
-    cd ..
-    
-    echo -e "${GREEN}🎯 COMPILATION TERMINÉE !${NC}"
-    echo ""
-}
-
-# Fonction sync (git)
-sync() {
-    echo -e "${GREEN}🔄 SYNCHRONISATION GIT...${NC}"
-    
-    # Status
-    echo -e "${BLUE}📍 Status Git:${NC}"
-    git status --short
-    
-    # Add all
-    echo -e "${BLUE}📍 Ajout des fichiers...${NC}"
-    git add .
-    
-    # Commit avec timestamp
-    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${BLUE}📍 Commit automatique...${NC}"
-    git commit -m "🔮 Auto-sync Heroes of Time - $TIMESTAMP" || echo -e "${YELLOW}⚠️ Rien à commiter${NC}"
-    
-    # Push (si configuré)
-    echo -e "${BLUE}📍 Push vers remote...${NC}"
-    git push 2>/dev/null && echo -e "${GREEN}✅ Push réussi${NC}" || echo -e "${YELLOW}⚠️ Push non configuré ou échoué${NC}"
-    
-    echo ""
-}
-
-# Fonction stop-all
-stop_all() {
-    echo -e "${RED}🛑 ARRÊT DE TOUS LES SERVICES...${NC}"
-    
-    # Arrêter les services via PID
-    for pidfile in java-backend.pid rust-backend.pid scenario-backend.pid web-server.pid; do
-        if [ -f "$pidfile" ]; then
-            PID=$(cat "$pidfile")
-            if kill -0 "$PID" 2>/dev/null; then
-                kill "$PID"
-                echo -e "${GREEN}✅ Service $pidfile arrêté${NC}"
-            fi
-            rm -f "$pidfile"
-        fi
-    done
-    
-    # Forcer l'arrêt des ports connus
-    pkill -f "spring-boot:run" 2>/dev/null || true
-    pkill -f "cargo run" 2>/dev/null || true
-    pkill -f "http.server" 2>/dev/null || true
-    
-    echo -e "${GREEN}🎯 TOUS LES SERVICES ARRÊTÉS !${NC}"
-    echo ""
-}
-
-# Fonction status
-status() {
-    echo -e "${BLUE}📊 STATUS DES SERVICES:${NC}"
-    
-    # Vérifier les PIDs
-    services=("java-backend.pid:Java Backend:8080" "rust-backend.pid:Rust Backend:3001" "scenario-backend.pid:Scenario Backend:8081" "web-server.pid:Web Server:8000")
-    
-    for service in "${services[@]}"; do
-        IFS=':' read -r pidfile name port <<< "$service"
-        if [ -f "$pidfile" ] && kill -0 $(cat "$pidfile") 2>/dev/null; then
-            echo -e "${GREEN}✅ $name (port $port) - ONLINE${NC}"
-        else
-            echo -e "${RED}❌ $name (port $port) - OFFLINE${NC}"
-        fi
-    done
-    
-    echo ""
-    echo -e "${BLUE}📍 Test connexions:${NC}"
-    curl -s http://localhost:8080/api/health > /dev/null && echo -e "${GREEN}✅ Java Backend accessible${NC}" || echo -e "${RED}❌ Java Backend inaccessible${NC}"
-    curl -s http://localhost:3001/ > /dev/null && echo -e "${GREEN}✅ Rust Backend accessible${NC}" || echo -e "${RED}❌ Rust Backend inaccessible${NC}"
-    curl -s http://localhost:8000/ > /dev/null && echo -e "${GREEN}✅ Web Server accessible${NC}" || echo -e "${RED}❌ Web Server inaccessible${NC}"
-    
-    echo ""
-}
-
-# Fonction logs
-logs() {
-    echo -e "${BLUE}📜 LOGS DES SERVICES:${NC}"
-    echo ""
-    
-    if [ -n "$2" ]; then
-        # Log spécifique
-        case "$2" in
-            java) tail -f logs/java-backend.log ;;
-            rust) tail -f logs/rust-backend.log ;;
-            scenario) tail -f logs/scenario-backend.log ;;
-            web) tail -f logs/web-server.log ;;
-            *) echo -e "${RED}❌ Service inconnu. Utilisez: java, rust, scenario, web${NC}" ;;
-        esac
+# Fonction pour vérifier le statut d'un port
+check_port() {
+    lsof -i:$1 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅${NC}"
     else
-        # Tous les logs
-        echo -e "${YELLOW}📍 Dernières lignes de tous les logs:${NC}"
-        for log in logs/*.log; do
-            if [ -f "$log" ]; then
-                echo -e "${CYAN}=== $(basename $log) ===${NC}"
-                tail -3 "$log" 2>/dev/null || echo "Fichier vide"
-                echo ""
-            fi
-        done
+        echo -e "${RED}❌${NC}"
     fi
 }
-
-# Fonction help
-show_help() {
-    echo -e "${CYAN}🔮 HEROES OF TIME - AIDE${NC}"
-    echo ""
-    echo -e "${YELLOW}COMMANDES DISPONIBLES:${NC}"
-    echo -e "  ${GREEN}./h start${NC}     - Démarre tous les services"
-    echo -e "  ${GREEN}./h stop${NC}      - Arrête tous les services" 
-    echo -e "  ${GREEN}./h restart${NC}   - Redémarre tous les services"
-    echo -e "  ${GREEN}./h status${NC}    - Affiche le status des services"
-    echo -e "  ${GREEN}./h test${NC}      - Lance tous les tests"
-    echo -e "  ${GREEN}./h compile${NC}   - Compile tous les projets"
-    echo -e "  ${GREEN}./h sync${NC}      - Synchronise avec Git"
-    echo -e "  ${GREEN}./h logs${NC}      - Affiche tous les logs"
-    echo -e "  ${GREEN}./h logs <service>${NC} - Affiche les logs d'un service (java/rust/scenario/web)"
-    echo -e "  ${GREEN}./h tasks${NC}     - Affiche les tâches en cours de Merlin"
-    echo -e "  ${GREEN}./h avalon${NC}    - Lance le test AVALON TCG"
-    echo -e "  ${GREEN}./h clean${NC}     - Nettoie les fichiers temporaires"
-    echo ""
-    echo -e "${BLUE}EXEMPLES:${NC}"
-    echo -e "  ${CYAN}./h start && ./h test${NC}    - Démarre tout et teste"
-    echo -e "  ${CYAN}./h logs java${NC}            - Suit les logs Java en temps réel"
-    echo -e "  ${CYAN}./h sync${NC}                 - Commit et push automatique"
-    echo ""
-}
-
-# Fonction avalon
-test_avalon() {
-    echo -e "${PURPLE}🎮 TEST AVALON TCG ENGINE...${NC}"
-    echo ""
-    python3 moteurs/avalon_tcg_engine.py
-    echo ""
-    echo -e "${GREEN}✅ Test AVALON terminé !${NC}"
-    echo ""
-}
-
-# Fonction clean
-clean() {
-    echo -e "${YELLOW}🧹 NETTOYAGE...${NC}"
-    
-    # Nettoyer les fichiers de build
-    rm -rf backends/java/target/
-    rm -rf simple-scenario-backend/target/
-    rm -rf rust_backend/target/debug/
-    
-    # Nettoyer les logs anciens
-    find logs/ -name "*.log" -mtime +7 -delete 2>/dev/null || true
-    
-    # Nettoyer les PIDs
-    rm -f *.pid
-    
-    echo -e "${GREEN}✅ Nettoyage terminé !${NC}"
-    echo ""
-}
-
-# Créer le dossier logs s'il n'existe pas
-mkdir -p logs
 
 # Menu principal
-show_header
+show_main_menu() {
+    show_header
+    
+    echo -e "${YELLOW}━━━ SERVICES BACKEND ━━━${NC}"
+    echo -e "  ${CYAN}[1]${NC} 🚀 Lancer TOUS les services       $(check_port $RUST_PORT)$(check_port $JAVA_PORT)$(check_port $VECTOR_PORT)"
+    echo -e "  ${CYAN}[2]${NC} 🦀 Rust Backend (3001)            $(check_port $RUST_PORT)"
+    echo -e "  ${CYAN}[3]${NC} ☕ Java Backend (8080)            $(check_port $JAVA_PORT)"
+    echo -e "  ${CYAN}[4]${NC} 🐍 Vector DB (5001)               $(check_port $VECTOR_PORT)"
+    echo -e "  ${CYAN}[5]${NC} ⏹️  Arrêter tous les services"
+    echo ""
+    
+    echo -e "${YELLOW}━━━ INTERFACES DE JEU ━━━${NC}"
+    echo -e "  ${CYAN}[10]${NC} 🎮 Démo Multiplayer HOMM3"
+    echo -e "  ${CYAN}[11]${NC} 📱 PWA iPad avec Clippy"
+    echo -e "  ${CYAN}[12]${NC} 🤖 IA vs IA Autoplay ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "  ${CYAN}[13]${NC} 👁️  Mode Spectateur God Mode"
+    echo -e "  ${CYAN}[14]${NC} 🧪 Test Runner (Scénarios)"
+    echo ""
+    
+    echo -e "${YELLOW}━━━ DOCUMENTATION & OUTILS ━━━${NC}"
+    echo -e "  ${CYAN}[20]${NC} 📖 Manuel du Joueur (Expert)"
+    echo -e "  ${CYAN}[21]${NC} 🎈 Manuel Facile (12 ans+) ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "  ${CYAN}[22]${NC} 🔍 Vector DB Explorer ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "  ${CYAN}[23]${NC} 🌐 Portal GitHub Pages"
+    echo ""
+    
+    echo -e "${YELLOW}━━━ DÉVELOPPEMENT ━━━${NC}"
+    echo -e "  ${CYAN}[30]${NC} 📊 Status complet des services"
+    echo -e "  ${CYAN}[31]${NC} 📝 Voir les logs"
+    echo -e "  ${CYAN}[32]${NC} 🧹 Nettoyer logs et PIDs"
+    echo -e "  ${CYAN}[33]${NC} 🔧 Mode développement"
+    echo ""
+    
+    echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
+    echo -e "  ${CYAN}[40]${NC} ⚡ Démarrage rapide (tout lancer)"
+    echo -e "  ${CYAN}[41]${NC} 🎯 Ouvrir TOUTES les démos"
+    echo -e "  ${CYAN}[42]${NC} 📚 Ouvrir TOUTE la documentation"
+    echo -e "  ${CYAN}[43]${NC} 🎬 Lancer scénario Autoplay"
+    echo ""
+    
+    echo -e "  ${CYAN}[0]${NC} ❌ Quitter"
+    echo ""
+    echo -e "${MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -n -e "${GOLD}Votre choix: ${NC}"
+}
 
-case "${1:-help}" in
-    "start")
-        show_current_tasks
-        start_all
-        ;;
-    "stop")
-        stop_all
-        ;;
-    "restart")
-        stop_all
-        sleep 2
-        start_all
-        ;;
-    "status")
-        show_current_tasks
-        status
-        ;;
-    "test")
-        test_all
-        ;;
-    "compile")
-        compile_all
-        ;;
-    "sync")
-        sync
-        ;;
-    "logs")
-        logs "$@"
-        ;;
-    "tasks")
-        show_current_tasks
-        ;;
-    "avalon")
-        test_avalon
-        ;;
-    "clean")
-        clean
-        ;;
-    "help"|*)
-        show_current_tasks
-        show_help
-        ;;
-esac
+# Lancer tous les services
+start_all_services() {
+    echo -e "${GREEN}🚀 Lancement de tous les services...${NC}"
+    
+    # Rust
+    echo "Lancement Rust Backend..."
+    cd backends/rust
+    cargo build --release 2>/dev/null
+    ./target/release/magic-stack-server > ../../logs/rust.log 2>&1 &
+    cd ../..
+    
+    # Java
+    echo "Lancement Java Backend..."
+    cd simple-scenario-backend
+    mvn spring-boot:run > ../logs/java.log 2>&1 &
+    cd ..
+    
+    # Vector DB
+    echo "Lancement Vector DB..."
+    python3 simple_vector_server.py > logs/vector.log 2>&1 &
+    
+    sleep 3
+    echo -e "${GREEN}✅ Tous les services sont lancés !${NC}"
+    sleep 2
+}
 
-echo -e "${PURPLE}🔮 MERLIN L'ÉTERNEL TRANSCENDANT - Jour 26 ✨${NC}"
+# Arrêter tous les services
+stop_all_services() {
+    echo -e "${RED}Arrêt de tous les services...${NC}"
+    lsof -ti:$RUST_PORT | xargs kill -9 2>/dev/null
+    lsof -ti:$JAVA_PORT | xargs kill -9 2>/dev/null
+    lsof -ti:$VECTOR_PORT | xargs kill -9 2>/dev/null
+    echo -e "${GREEN}✅ Services arrêtés${NC}"
+    sleep 2
+}
+
+# Status des services
+show_status() {
+    show_header
+    echo -e "${YELLOW}📊 STATUS DES SERVICES${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    # Rust
+    curl -s http://localhost:$RUST_PORT/health > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "🦀 Rust Backend (3001):    ${GREEN}✅ ACTIF${NC}"
+    else
+        echo -e "🦀 Rust Backend (3001):    ${RED}❌ ARRÊTÉ${NC}"
+    fi
+    
+    # Java
+    curl -s http://localhost:$JAVA_PORT/api/health > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "☕ Java Backend (8080):    ${GREEN}✅ ACTIF${NC}"
+    else
+        echo -e "☕ Java Backend (8080):    ${RED}❌ ARRÊTÉ${NC}"
+    fi
+    
+    # Vector DB
+    curl -s http://localhost:$VECTOR_PORT/health > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "🐍 Vector DB (5001):       ${GREEN}✅ ACTIF${NC}"
+    else
+        echo -e "🐍 Vector DB (5001):       ${RED}❌ ARRÊTÉ${NC}"
+    fi
+    
+    echo ""
+    echo "Appuyez sur une touche pour continuer..."
+    read -n 1
+}
+
+# Ouvrir une page
+open_page() {
+    local file=$1
+    local name=$2
+    
+    if [ -f "$file" ]; then
+        echo -e "${GREEN}Ouverture: $name${NC}"
+        open "$file"
+        sleep 0.5
+    else
+        echo -e "${RED}Fichier non trouvé: $file${NC}"
+    fi
+}
+
+# Ouvrir toutes les démos
+open_all_demos() {
+    echo -e "${CYAN}🎮 Ouverture de toutes les démos...${NC}"
+    open_page "MULTIPLAYER_DEMO_HOMM3.html" "Démo Multiplayer HOMM3"
+    open_page "HOMM3_PWA_IPAD_CLIPPY.html" "PWA iPad"
+    open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
+    open_page "SPECTATOR_GOD_MODE.html" "Mode Spectateur"
+    open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner"
+    echo -e "${GREEN}✅ Toutes les démos sont ouvertes !${NC}"
+    sleep 2
+}
+
+# Ouvrir toute la documentation
+open_all_docs() {
+    echo -e "${CYAN}📚 Ouverture de toute la documentation...${NC}"
+    open_page "MANUEL_DU_JOUEUR_HOT.html" "Manuel Expert"
+    open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile"
+    open_page "VECTOR_DB_EXPLORER_UI.html" "Vector DB Explorer"
+    open_page "docs/index.html" "Portal GitHub Pages"
+    echo -e "${GREEN}✅ Toute la documentation est ouverte !${NC}"
+    sleep 2
+}
+
+# Lancer autoplay
+launch_autoplay() {
+    echo -e "${CYAN}🎬 Lancement du mode Autoplay IA vs IA...${NC}"
+    
+    # Vérifier que les services sont lancés
+    curl -s http://localhost:$RUST_PORT/health > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}Services non détectés, lancement...${NC}"
+        start_all_services
+    fi
+    
+    open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
+    echo -e "${GREEN}✅ Cliquez sur DÉMARRER pour lancer la bataille !${NC}"
+    sleep 2
+}
+
+# Mode développement
+dev_mode() {
+    echo -e "${CYAN}🔧 MODE DÉVELOPPEMENT${NC}"
+    echo "Lancement avec logs en temps réel..."
+    
+    # Terminal 1: Rust
+    osascript -e 'tell app "Terminal" to do script "cd '$PWD'/backends/rust && cargo watch -x run"'
+    
+    # Terminal 2: Java
+    osascript -e 'tell app "Terminal" to do script "cd '$PWD'/simple-scenario-backend && mvn spring-boot:run"'
+    
+    # Terminal 3: Vector DB
+    osascript -e 'tell app "Terminal" to do script "cd '$PWD' && python3 simple_vector_server.py"'
+    
+    echo -e "${GREEN}✅ 3 terminaux ouverts pour le développement${NC}"
+    sleep 2
+}
+
+# Nettoyer logs et PIDs
+clean_all() {
+    echo -e "${YELLOW}🧹 Nettoyage...${NC}"
+    rm -f logs/*.log
+    rm -f ../.pids/surface/*
+    echo -e "${GREEN}✅ Nettoyé${NC}"
+    sleep 1
+}
+
+# Démarrage rapide
+quick_start() {
+    echo -e "${GOLD}⚡ DÉMARRAGE RAPIDE${NC}"
+    echo ""
+    
+    # Lancer les services
+    start_all_services
+    
+    # Ouvrir les pages principales
+    echo -e "${CYAN}Ouverture des interfaces principales...${NC}"
+    open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
+    open_page "VECTOR_DB_EXPLORER_UI.html" "Vector DB Explorer"
+    open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile"
+    
+    echo ""
+    echo -e "${GREEN}✅ TOUT EST PRÊT !${NC}"
+    echo -e "${YELLOW}Conseils:${NC}"
+    echo "  • Cliquez sur DÉMARRER dans l'Autoplay"
+    echo "  • Recherchez 'temporal' dans le Vector DB"
+    echo "  • Changez la langue avec 🇫🇷/🇬🇧"
+    echo ""
+    echo "Appuyez sur une touche pour continuer..."
+    read -n 1
+}
+
+# Boucle principale
+while true; do
+    show_main_menu
+    read choice
+    
+    case $choice in
+        1) start_all_services ;;
+        2) 
+            cd backends/rust
+            cargo build --release && ./target/release/magic-stack-server &
+            cd ../..
+            echo -e "${GREEN}Rust lancé${NC}"
+            sleep 2
+            ;;
+        3)
+            cd simple-scenario-backend
+            mvn spring-boot:run &
+            cd ..
+            echo -e "${GREEN}Java lancé${NC}"
+            sleep 2
+            ;;
+        4)
+            python3 simple_vector_server.py &
+            echo -e "${GREEN}Vector DB lancé${NC}"
+            sleep 2
+            ;;
+        5) stop_all_services ;;
+        
+        10) open_page "MULTIPLAYER_DEMO_HOMM3.html" "Démo HOMM3" ;;
+        11) open_page "HOMM3_PWA_IPAD_CLIPPY.html" "PWA iPad" ;;
+        12) open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay" ;;
+        13) open_page "SPECTATOR_GOD_MODE.html" "Mode Spectateur" ;;
+        14) open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner" ;;
+        
+        20) open_page "MANUEL_DU_JOUEUR_HOT.html" "Manuel Expert" ;;
+        21) open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile" ;;
+        22) open_page "VECTOR_DB_EXPLORER_UI.html" "Vector DB Explorer" ;;
+        23) open_page "docs/index.html" "Portal GitHub Pages" ;;
+        
+        30) show_status ;;
+        31) 
+            echo -e "${CYAN}📝 Logs disponibles:${NC}"
+            echo "  tail -f logs/rust.log"
+            echo "  tail -f logs/java.log"
+            echo "  tail -f logs/vector.log"
+            echo ""
+            echo "Appuyez sur une touche..."
+            read -n 1
+            ;;
+        32) clean_all ;;
+        33) dev_mode ;;
+        
+        40) quick_start ;;
+        41) open_all_demos ;;
+        42) open_all_docs ;;
+        43) launch_autoplay ;;
+        
+        0) 
+            echo -e "${GOLD}Au revoir ! 🎮${NC}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Option invalide${NC}"
+            sleep 1
+            ;;
+    esac
+done
