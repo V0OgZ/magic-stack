@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_020",
+  "slug": "resident-evil-broken",
+  "name": "Raccoon City Virale - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 18.5,
+  "description": "Virus-T temporel",
+  "chronology": {
+    "timescale": 9.301194755886863,
+    "drift": {
+      "base": 8.569651886613864,
+      "variance": 4.262800500959752,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "resident-evil"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "resident-evil_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(resident-evil_lore)",
+    "APPLY_THEME(resident-evil)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 29
+  }
+}

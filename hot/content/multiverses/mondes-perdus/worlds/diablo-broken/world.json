@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_032",
+  "slug": "diablo-broken",
+  "name": "Sanctuaire Infernal - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 21.0,
+  "description": "Lutte \u00e9ternelle anges vs d\u00e9mons",
+  "chronology": {
+    "timescale": 1.9740898094450297,
+    "drift": {
+      "base": 6.655830793302888,
+      "variance": 2.7389428263040796,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "diablo"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "diablo_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(diablo_lore)",
+    "APPLY_THEME(diablo)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 32
+  }
+}

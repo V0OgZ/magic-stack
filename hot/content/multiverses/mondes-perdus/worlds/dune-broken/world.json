@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_008",
+  "slug": "dune-broken",
+  "name": "Arrakis Prescient - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 21.0,
+  "description": "\u00c9pice permet de voir toutes les timelines",
+  "chronology": {
+    "timescale": 5.386241239587836,
+    "drift": {
+      "base": 8.275780602895853,
+      "variance": 2.0004666617625944,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "dune"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "dune_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(dune_lore)",
+    "APPLY_THEME(dune)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 49
+  }
+}

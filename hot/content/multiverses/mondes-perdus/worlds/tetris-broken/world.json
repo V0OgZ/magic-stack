@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_027",
+  "slug": "tetris-broken",
+  "name": "Monde T\u00e9tromino - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 25.5,
+  "description": "R\u00e9alit\u00e9 qui se r\u00e9organise en blocs",
+  "chronology": {
+    "timescale": 1.8408721136051427,
+    "drift": {
+      "base": 4.460628209413498,
+      "variance": 3.5894422071960275,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "tetris"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "tetris_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(tetris_lore)",
+    "APPLY_THEME(tetris)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 30
+  }
+}

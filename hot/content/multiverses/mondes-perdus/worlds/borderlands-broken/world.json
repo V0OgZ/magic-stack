@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_034",
+  "slug": "borderlands-broken",
+  "name": "Pandora Psycho - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 16.5,
+  "description": "Plan\u00e8te folle avec Vaults temporels",
+  "chronology": {
+    "timescale": 7.456470240920275,
+    "drift": {
+      "base": 9.52900167364636,
+      "variance": 3.4065283282590135,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "borderlands"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "borderlands_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(borderlands_lore)",
+    "APPLY_THEME(borderlands)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 31
+  }
+}

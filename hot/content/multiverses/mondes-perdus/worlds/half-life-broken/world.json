@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_015",
+  "slug": "half-life-broken",
+  "name": "Black Mesa R\u00e9sonance - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 22.5,
+  "description": "Cascade de r\u00e9sonance temporelle",
+  "chronology": {
+    "timescale": 8.78538655080004,
+    "drift": {
+      "base": 7.395783253699722,
+      "variance": 2.2319302226061257,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "half-life"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "half-life_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(half-life_lore)",
+    "APPLY_THEME(half-life)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 25
+  }
+}

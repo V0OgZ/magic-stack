@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_039",
+  "slug": "simcity-broken",
+  "name": "M\u00e9tropole Planifi\u00e9e - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 14.5,
+  "description": "Ville o\u00f9 le maire contr\u00f4le le temps",
+  "chronology": {
+    "timescale": 1.1477799476477248,
+    "drift": {
+      "base": 9.419046939732878,
+      "variance": 3.0257577000074,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "simcity"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "simcity_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(simcity_lore)",
+    "APPLY_THEME(simcity)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 29
+  }
+}

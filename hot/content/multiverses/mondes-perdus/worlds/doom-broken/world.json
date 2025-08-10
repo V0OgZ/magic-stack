@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_014",
+  "slug": "doom-broken",
+  "name": "Mars Infernale - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 20.5,
+  "description": "D\u00e9mons interdimensionnels",
+  "chronology": {
+    "timescale": 2.044594195124184,
+    "drift": {
+      "base": 6.258988871746833,
+      "variance": 2.3182869864071654,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "doom"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "doom_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(doom_lore)",
+    "APPLY_THEME(doom)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 23
+  }
+}

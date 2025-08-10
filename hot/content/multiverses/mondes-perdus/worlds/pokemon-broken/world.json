@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_005",
+  "slug": "pokemon-broken",
+  "name": "R\u00e9gion Chrono - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 15.0,
+  "description": "Cr\u00e9atures temporelles \u00e0 capturer",
+  "chronology": {
+    "timescale": 5.536006619168331,
+    "drift": {
+      "base": 7.460813088298946,
+      "variance": 3.608439516915363,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "pokemon"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "pokemon_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(pokemon_lore)",
+    "APPLY_THEME(pokemon)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 41
+  }
+}

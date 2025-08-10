@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_021",
+  "slug": "silent-hill-broken",
+  "name": "Brume Psychologique - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 24.0,
+  "description": "Horreur psychologique manifest\u00e9e",
+  "chronology": {
+    "timescale": 4.079187112690618,
+    "drift": {
+      "base": 4.344843558529805,
+      "variance": 3.4981655864577914,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "silent-hill"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "silent-hill_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(silent-hill_lore)",
+    "APPLY_THEME(silent-hill)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 22
+  }
+}

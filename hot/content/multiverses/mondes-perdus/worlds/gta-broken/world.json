@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_037",
+  "slug": "gta-broken",
+  "name": "Los Santos Criminel - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 15.0,
+  "description": "Ville moderne avec chaos temporel",
+  "chronology": {
+    "timescale": 8.784859542921962,
+    "drift": {
+      "base": 4.227561250881518,
+      "variance": 2.6348476739016196,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "gta"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "gta_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(gta_lore)",
+    "APPLY_THEME(gta)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 20
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_010",
+  "slug": "mass-effect-broken",
+  "name": "Citadelle Temporelle - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 19.5,
+  "description": "Relais de masse temporels",
+  "chronology": {
+    "timescale": 3.753097203968327,
+    "drift": {
+      "base": 4.696789024040549,
+      "variance": 2.634530432949945,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "mass-effect"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "mass-effect_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(mass-effect_lore)",
+    "APPLY_THEME(mass-effect)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 38
+  }
+}

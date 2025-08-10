@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_025",
+  "slug": "sonic-broken",
+  "name": "Green Hill Acc\u00e9l\u00e9r\u00e9 - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 14.5,
+  "description": "Vitesse supersonique temporelle",
+  "chronology": {
+    "timescale": 1.8503106016174802,
+    "drift": {
+      "base": 5.763414559342613,
+      "variance": 3.773172151172993,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "sonic"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "sonic_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(sonic_lore)",
+    "APPLY_THEME(sonic)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 44
+  }
+}

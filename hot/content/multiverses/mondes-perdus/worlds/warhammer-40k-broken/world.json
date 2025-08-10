@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_007",
+  "slug": "warhammer-40k-broken",
+  "name": "Imperium Temporel - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 25.0,
+  "description": "Grimdark avec Chaos et Warp",
+  "chronology": {
+    "timescale": 8.348514081175377,
+    "drift": {
+      "base": 6.619657038298252,
+      "variance": 4.432212140489029,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "warhammer-40k"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "warhammer-40k_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(warhammer-40k_lore)",
+    "APPLY_THEME(warhammer-40k)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 22
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_016",
+  "slug": "portal-broken",
+  "name": "Aperture Science Lab - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 16.0,
+  "description": "Portails spatio-temporels",
+  "chronology": {
+    "timescale": 6.117379441499553,
+    "drift": {
+      "base": 8.284247865309926,
+      "variance": 2.906686714403423,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "portal"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "portal_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(portal_lore)",
+    "APPLY_THEME(portal)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 41
+  }
+}

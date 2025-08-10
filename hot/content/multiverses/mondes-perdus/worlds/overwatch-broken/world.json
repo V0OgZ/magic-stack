@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_030",
+  "slug": "overwatch-broken",
+  "name": "Monde Post-Crise - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 17.0,
+  "description": "H\u00e9ros du futur proche",
+  "chronology": {
+    "timescale": 4.8756469442834565,
+    "drift": {
+      "base": 5.893096425652886,
+      "variance": 2.616072668524182,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "overwatch"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "overwatch_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(overwatch_lore)",
+    "APPLY_THEME(overwatch)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 46
+  }
+}

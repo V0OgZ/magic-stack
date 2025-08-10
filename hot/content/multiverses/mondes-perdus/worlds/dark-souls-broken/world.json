@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_012",
+  "slug": "dark-souls-broken",
+  "name": "Lordran Cyclique - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 23.0,
+  "description": "Mort et renaissance infinie",
+  "chronology": {
+    "timescale": 3.0552556864340135,
+    "drift": {
+      "base": 6.980063208001308,
+      "variance": 2.0331416738711052,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "dark-souls"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "dark-souls_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(dark-souls_lore)",
+    "APPLY_THEME(dark-souls)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 34
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_022",
+  "slug": "castlevania-broken",
+  "name": "Ch\u00e2teau de Dracula Mobile - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 17.5,
+  "description": "Ch\u00e2teau qui voyage dans le temps",
+  "chronology": {
+    "timescale": 0.6520217623159558,
+    "drift": {
+      "base": 7.850301898988661,
+      "variance": 3.8582329778422078,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "castlevania"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "castlevania_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(castlevania_lore)",
+    "APPLY_THEME(castlevania)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 25
+  }
+}

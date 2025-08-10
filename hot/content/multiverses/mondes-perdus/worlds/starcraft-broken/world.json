@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_033",
+  "slug": "starcraft-broken",
+  "name": "Koprulu Psionique - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 19.0,
+  "description": "Trois races en guerre temporelle",
+  "chronology": {
+    "timescale": 8.292647903292982,
+    "drift": {
+      "base": 9.923882213819745,
+      "variance": 3.4113497532040387,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "starcraft"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "starcraft_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(starcraft_lore)",
+    "APPLY_THEME(starcraft)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 49
+  }
+}

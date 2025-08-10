@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_026",
+  "slug": "mario-broken",
+  "name": "Royaume Champignon Warp - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 14.0,
+  "description": "Tuyaux warp interdimensionnels",
+  "chronology": {
+    "timescale": 6.111631565224745,
+    "drift": {
+      "base": 4.733625152684169,
+      "variance": 3.025883101020987,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "mario"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "mario_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(mario_lore)",
+    "APPLY_THEME(mario)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 43
+  }
+}

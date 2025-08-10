@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_004",
+  "slug": "zelda-broken",
+  "name": "Hyrule Fractur\u00e9 - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 15.5,
+  "description": "Royaume avec Master Sword temporelle",
+  "chronology": {
+    "timescale": 3.3498973071833,
+    "drift": {
+      "base": 3.5321089557062093,
+      "variance": 4.395033386655718,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "zelda"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "zelda_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(zelda_lore)",
+    "APPLY_THEME(zelda)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 44
+  }
+}

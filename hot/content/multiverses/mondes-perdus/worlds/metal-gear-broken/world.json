@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_019",
+  "slug": "metal-gear-broken",
+  "name": "Shadow Moses Temporel - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 19.0,
+  "description": "Espionnage tactique quantique",
+  "chronology": {
+    "timescale": 7.962992135092151,
+    "drift": {
+      "base": 9.348151905483228,
+      "variance": 4.534755634747141,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "metal-gear"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "metal-gear_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(metal-gear_lore)",
+    "APPLY_THEME(metal-gear)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 29
+  }
+}

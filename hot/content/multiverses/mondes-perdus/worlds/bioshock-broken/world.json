@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01WLD_BROKEN_011",
+  "slug": "bioshock-broken",
+  "name": "Rapture Quantique - Monde Bris\u00e9",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 18.5,
+  "description": "Cit\u00e9 sous-marine avec plasmides temporels",
+  "chronology": {
+    "timescale": 7.550680070073233,
+    "drift": {
+      "base": 3.1718220080886086,
+      "variance": 4.048910367558508,
+      "direction": "chaotic"
+    },
+    "decay_profile": "broken"
+  },
+  "physics_override": {
+    "reality_rules": "altered",
+    "magic_technology_fusion": true,
+    "genre": "bioshock"
+  },
+  "pool": {
+    "heroes_allowed": [
+      "transmuted"
+    ],
+    "schools_allowed": [
+      "hybrid"
+    ],
+    "special_rules": "bioshock_specific"
+  },
+  "entry_effects": [
+    "GRANT_KNOWLEDGE(bioshock_lore)",
+    "APPLY_THEME(bioshock)",
+    "WARNING(reality_altered)"
+  ],
+  "exit_conditions": {
+    "solve_paradox": true,
+    "find_anchor": true,
+    "survive_duration": 26
+  }
+}
