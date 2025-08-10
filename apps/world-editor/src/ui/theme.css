@@ -1,0 +1,71 @@
+:root {
+  --bg1: #0a0e27;
+  --bg2: #1e3c72;
+  --gold: #ffd700;
+}
+
+html, body, #root { height: 100%; }
+body { 
+  margin: 0; 
+  background: linear-gradient(135deg, var(--bg1), var(--bg2)); 
+  color: #e8ecff; 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+/* Hex cell base */
+.hex-cell {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.hex-cell:hover { 
+  transform: scale(1.03);
+  border-color: rgba(255,255,255,0.25);
+}
+
+.hex-selected {
+  border: 2px solid var(--gold) !important;
+  box-shadow: 0 0 22px rgba(255,215,0,0.35);
+}
+
+/* Terrain styles (borrowed from HOMM3 PWA demo) */
+.terrain-grass { background: linear-gradient(135deg, #2d5016, #4a8025); }
+.terrain-forest { background: linear-gradient(135deg, #1a3a1a, #2a5a2a); }
+.terrain-mountain { background: linear-gradient(135deg, #5a5a5a, #8a8a8a); }
+.terrain-water { background: linear-gradient(135deg, #1e3a5f, #2e5a8f); }
+.terrain-mystique { background: linear-gradient(135deg, #4a1a5a, #6a3a7a); filter: brightness(1); }
+.terrain-quantum { background: linear-gradient(135deg, #1a3a4a, #3a5a6a); }
+.terrain-nexus { background: radial-gradient(circle, #ff00ff, #00ffff); }
+
+/* Panels */
+.panel {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.toolbar {
+  position: absolute; 
+  left: 12px; 
+  bottom: 12px; 
+  display: flex; 
+  gap: 8px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.btn:active { transform: scale(0.98); }
+
+

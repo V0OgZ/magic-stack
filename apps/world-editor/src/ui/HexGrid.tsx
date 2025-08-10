@@ -122,17 +122,12 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
               top: h.top,
               width: hexWidth,
               height: hexHeight,
-              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-              background: overlayFor(h.x, h.y) || 'rgba(255,255,255,0.06)',
-              border: selected?.x === h.x && selected?.y === h.y ? '2px solid gold' : '1px solid rgba(255,255,255,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              background: overlayFor(h.x, h.y) || undefined,
               color: '#e8ecff',
               fontSize: 12,
-              userSelect: 'none',
               cursor: 'pointer',
             }}
+            className={`hex-cell ${selected?.x === h.x && selected?.y === h.y ? 'hex-selected' : ''} terrain-${useEditorStore.getState().getTerrainAt(h.x, h.y) || 'grass'}`}
           >
             {h.x},{h.y}
           </div>
