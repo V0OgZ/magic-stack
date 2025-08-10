@@ -391,6 +391,9 @@
         </div>
     </div>
 
+    <!-- V2 Adapter Integration -->
+    <script src="shared/v2-adapter.js"></script>
+    
     <script>
         // ===== THE REAL GAME ENGINE =====
         const Game = {
@@ -433,9 +436,36 @@
                 }
             },
             
+            // V2 Adapter instance
+            v2: null,
+            
             // Initialisation
             async init() {
                 console.log('🎮 Initializing Heroes of Time - THE REAL GAME');
+                
+                // Initialize V2 Adapter
+                if (typeof V2Adapter !== 'undefined') {
+                    this.v2 = new V2Adapter({
+                        rust: this.backends.rust,
+                        java: this.backends.java, 
+                        python: this.backends.python
+                    });
+                    
+                    // Listen to V2 events
+                    this.v2.on('tick', (data) => {
+                        this.state.tw = data.tw;
+                        this.state.te = data.te;
+                        this.state.drift = data.drift || Math.abs(data.tw - data.te);
+                        this.updateDisplay();
+                    });
+                    
+                    this.v2.on('paradox', (paradox) => {
+                        console.warn('⚠️ Paradox detected:', paradox);
+                        this.handleParadox(paradox);
+                    });
+                    
+                    console.log('✅ V2 Adapter initialized');
+                }
                 
                 // Check backends
                 await this.checkBackends();

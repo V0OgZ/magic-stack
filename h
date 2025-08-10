@@ -489,7 +489,7 @@ case $choice in
             fi
             ;;
         
-        38)
+gi        38)
             # Magic Stack Unified (dev)
             echo -e "${GOLD}🎮 Lancement Magic Stack Unified (dev)${NC}"
             echo -e "${CYAN}Application React unifiée - Port: 5175${NC}"
