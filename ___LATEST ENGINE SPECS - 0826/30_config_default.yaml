@@ -1,0 +1,49 @@
+# 30_config_default.yaml
+tempo:
+  tick_ms: 50
+  # Light drift: hidden-days per hour IRL (baseline)
+  drift:
+    base_per_hour: 0.02        # default light drift (anti-turtle, non-EV+)
+    biome:
+      default: 0.0
+      highway: 0.01
+      swamp: -0.01
+    statuses:
+      stabilization:
+        base_multiplier: 0.0   # freezes drift
+        decoherence_lambda_bonus: 0.02
+        regulator_pressure: high
+  regen_A_per_hour: 5.0         # energy A regen per hour (clamped by A_max)
+  debt:
+    cost_multiplier: 1.25
+    regen_absorption: true
+
+interference:
+  thresholds:
+    full: 0.75
+    weak: 0.50
+    buff: 0.25
+
+resolution:
+  tcg_afk_seconds: 60
+  ai_level_cap: 3
+  level_mismatch_collapse: 7
+
+regulators:
+  vince:
+    enable: true
+  anna:
+    enable: true
+  overload:
+    enable: true
+
+world:
+  cost_per_tile: 1.0           # A cost per tile (for OPC_brut radius estimation)
+  windows:
+    - name: "Portal_North"
+      expires_in_min: 30
+    - name: "Relic_A"
+      expires_in_min: 45
+map:
+  width: 64
+  height: 64
