@@ -9,10 +9,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HeroProfileView } from '../../shared/components/HeroProfileView';
 import { CombatInterface } from '../../shared/components/CombatInterface';
 import { SpatioTemporalMapEditor } from '../../shared/components/SpatioTemporalMapEditor';
+import { SpeechBubble, SpeechBubbleContainer } from '../../shared/components/SpeechBubble';
 import { HEROES, getHeroById } from '../../data/heroes';
 import { CREATURES } from '../../data/creatures';
 import { ARTIFACTS } from '../../data/artifacts';
 import { SPELLS } from '../../data/spells';
+import { aiService, useAICharacter, GameContext } from '../../services/AIService';
 
 // Types pour l'expérience de jeu
 interface GameWorld {
@@ -152,66 +154,72 @@ export function UnifiedGameExperience(): React.ReactElement {
   const [combatState, setCombatState] = useState<any>(null);
   const [showDialogue, setShowDialogue] = useState(false);
   const [aiResponse, setAiResponse] = useState<string>('');
+  const [currentBubbles, setCurrentBubbles] = useState<any[]>([]);
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0, zoom: 1 });
   
   // Référence pour le rendu 3D/2.5D
   const gameCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Système de dialogue IA
-  const getAIDialogue = async (npc: NPC, context: string) => {
-    try {
-      const response = await fetch('http://localhost:8889/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          character: npc.name,
-          personality: npc.personality,
-          context: context,
-          game_state: {
-            player_level: world.player.hero.level,
-            location: world.currentMap.name,
-            time: world.time,
-            relationship: npc.relationship,
-          }
-        }),
-      });
+  // Hooks IA pour les personnages
+  const merlinAI = useAICharacter('merlin');
+  const arthurAI = useAICharacter('arthur_pendragon');
+  const dragonAI = useAICharacter('dragon_rouge_temporel');
+  
+  // Construire le contexte de jeu enrichi pour l'IA
+  const buildGameContext = (npc?: NPC): GameContext => {
+    const playerHp = world.player.hero.stats.health;
+    const maxHp = world.player.hero.stats.health;
+    const isWinning = playerHp > 70;
+    const isDesperate = playerHp < 30;
+    
+    return {
+      hp: playerHp,
+      maxHp: maxHp,
+      mana: world.player.hero.stats.mana,
+      maxMana: world.player.hero.stats.mana,
       
-      const data = await response.json();
-      return data.response;
-    } catch (error) {
-      // Fallback si l'IA n'est pas disponible
-      return getFallbackDialogue(npc);
-    }
+      turn: world.time.day,
+      winning: isWinning,
+      desperate: isDesperate,
+      confident: isWinning && world.player.resources.gold > 2000,
+      
+      position: world.player.position,
+      terrain: world.currentMap.tiles[world.player.position.y]?.[world.player.position.x]?.terrain,
+      
+      timePhase: world.time.timeline,
+      timeline: world.time.timeline,
+      day: world.time.day,
+      temporalDrift: world.player.resources.temporalEnergy,
+      
+      playerName: world.player.hero.name,
+      relationship: npc?.relationship || 50,
+      faction: npc?.faction,
+      
+      weapon: world.player.hero.equippedItems?.weapon?.name,
+      artifact: world.player.hero.equippedItems?.armor?.name,
+    };
   };
   
-  const getFallbackDialogue = (npc: NPC) => {
-    const dialogues = {
-      'Merlin': [
-        "Le temps n'est pas ce qu'il semble être, jeune héros...",
-        "J'ai vu votre futur... ou était-ce votre passé ?",
-        "Les paradoxes temporels sont dangereux, faites attention."
-      ],
-      'Arthur': [
-        "Pour Camelot et l'honneur !",
-        "Un vrai roi protège son peuple à travers toutes les timelines.",
-        "Excalibur vibre... le danger approche."
-      ],
-      'Jean-Grofignon': [
-        "Mais qu'est-ce que le temps, au fond ?",
-        "Si hier est demain, alors quand sommes-nous ?",
-        "L'existence précède l'essence... sauf le mardi."
-      ],
-      'The Dude': [
-        "Yeah, well, that's just like, your temporal opinion, man.",
-        "This aggression across timelines will not stand.",
-        "Sometimes you eat the timeline, sometimes the timeline eats you."
-      ],
-    };
+  // Système de dialogue IA amélioré
+  const getAIDialogue = async (npc: NPC, message?: string) => {
+    const context = buildGameContext(npc);
     
-    const npcDialogues = dialogues[npc.name] || ["...", "Bonjour, voyageur.", "Que puis-je pour vous ?"];
-    return npcDialogues[Math.floor(Math.random() * npcDialogues.length)];
+    try {
+      const response = await aiService.getCharacterSpeech(
+        npc.name.toLowerCase().replace(' ', '_'),
+        context,
+        message
+      );
+      
+      return response;
+    } catch (error) {
+      console.error('Erreur IA:', error);
+      return {
+        character: npc.name,
+        response: npc.dialogue.greeting,
+        emotion: 'neutral' as const
+      };
+    }
   };
   
   // Interaction avec un NPC
