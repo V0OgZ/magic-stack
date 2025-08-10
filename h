@@ -70,6 +70,7 @@ show_main_menu() {
     echo -e "  ${CYAN}[33]${NC} 🔧 Mode développement"
     echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
     echo -e "  ${CYAN}[35]${NC} 🚀 Lancer World Editor (dev server)"
+    echo -e "  ${CYAN}[36]${NC} 📦 Build + Servir World Editor (static HTTP)"
     echo ""
     
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
@@ -277,6 +278,45 @@ launch_world_editor_dev() {
     fi
 }
 
+# Builder et servir la build statique (sans dev server)
+build_and_serve_world_editor() {
+    APP_DIR="$PWD/apps/world-editor"
+    DIST_DIR="$APP_DIR/dist"
+    PORT=4173
+    mkdir -p logs
+
+    if [ -d "$DIST_DIR" ]; then
+        echo -e "${GREEN}Build déjà présente${NC}"
+    else
+        if command -v npm >/dev/null 2>&1; then
+            echo -e "${CYAN}Compilation de l'éditeur (npm run build)...${NC}"
+            (cd "$APP_DIR" && npm run build)
+        else
+            echo -e "${RED}npm introuvable: impossible de compiler la build${NC}"
+            return
+        fi
+    fi
+
+    # Si un serveur écoute déjà, ouvrir simplement
+    lsof -ti:$PORT > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        open "http://localhost:$PORT"
+        echo -e "${GREEN}Serveur déjà actif sur http://localhost:$PORT${NC}"
+        return
+    fi
+
+    # Servir via Python HTTP (file:// évité)
+    if command -v python3 >/dev/null 2>&1; then
+        echo -e "${CYAN}Démarrage serveur HTTP statique sur :$PORT...${NC}"
+        python3 -m http.server $PORT -d "$DIST_DIR" > logs/world_editor_http.log 2>&1 &
+        sleep 1
+        open "http://localhost:$PORT"
+        echo -e "${GREEN}World Editor (static) servi sur http://localhost:$PORT${NC}"
+    else
+        echo -e "${RED}python3 introuvable: impossible de servir la build${NC}"
+    fi
+}
+
 # Nettoyer logs et PIDs
 clean_all() {
     echo -e "${YELLOW}🧹 Nettoyage...${NC}"
@@ -394,6 +434,9 @@ case $choice in
             ;;
         35)
             launch_world_editor_dev
+            ;;
+        36)
+            build_and_serve_world_editor
             ;;
         
         40) quick_start ;;
