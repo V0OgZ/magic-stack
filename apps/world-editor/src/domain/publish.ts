@@ -1,11 +1,10 @@
 import type { Scenario } from './schema';
-
-const RUST_BASE = 'http://localhost:3001';
+import { RUST_API } from '../config/endpoints';
 
 export async function publishScenarioToRust(s: Scenario): Promise<void> {
   // 1) Optional: generate map server-side (fallback client already has dimensions)
   try {
-    await fetch(`${RUST_BASE}/api/map/generate`, {
+    await fetch(RUST_API.mapGenerate, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ width: s.map.size.x, height: s.map.size.y, seed: s.metadata.name || s.id }),
@@ -21,7 +20,7 @@ export async function publishScenarioToRust(s: Scenario): Promise<void> {
     metadata: s.metadata,
   };
 
-  await fetch(`${RUST_BASE}/api/map/init`, {
+  await fetch(RUST_API.mapInit, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(initPayload),
@@ -29,7 +28,7 @@ export async function publishScenarioToRust(s: Scenario): Promise<void> {
 
   // 3) (Optional) send events to a future /api/scenarios endpoint if present
   try {
-    await fetch(`${RUST_BASE}/api/scenarios/import`, {
+    await fetch(RUST_API.scenariosImport, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: s.id, events: s.events, victory: s.victory_conditions }),

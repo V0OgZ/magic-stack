@@ -4,7 +4,10 @@ import { ScenarioSchema, type Scenario } from '../domain/schema';
 type EditorState = {
   scenario: Scenario;
   selected: { x: number; y: number } | null;
+  selectedHex: { x: number; y: number } | null; // Alias for Clippy compatibility
+  currentTool: 'select' | 'paint' | 'poi' | 'event' | 'regulator';
   setSelected: (x: number, y: number) => void;
+  setCurrentTool: (tool: 'select' | 'paint' | 'poi' | 'event' | 'regulator') => void;
   addObjectAt: (x: number, y: number, kind: string, data?: Record<string, unknown>) => void;
   addJour30Event: () => void;
   setScenario: (s: Scenario) => void;
@@ -40,6 +43,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     events: [],
   }),
   selected: null,
+  selectedHex: null, // Alias for Clippy compatibility
+  currentTool: 'paint' as const,
   terrainGrid: Array.from({ length: 60 }, () => Array.from({ length: 60 }, () => 'grass')),
   brushTerrain: 'grass',
   brushSize: 1,
@@ -108,7 +113,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     set({ terrainGrid: g, redoStack: s.redoStack.slice(0, -1), undoStack: [...s.undoStack, last] });
   },
-  setSelected: (x, y) => set({ selected: { x, y } }),
+  setSelected: (x, y) => set({ selected: { x, y }, selectedHex: { x, y } }),
+  setCurrentTool: (tool) => set({ currentTool: tool }),
   addObjectAt: (x, y, kind, data) => {
     const s = get().scenario;
     const obj = { kind, x, y, data: data ?? {} } as any;

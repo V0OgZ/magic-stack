@@ -6,9 +6,11 @@ type HexGridProps = {
   rows?: number;
   size?: number; // hex size in px
   onSelect?: (x: number, y: number) => void;
+  onHover?: (x: number, y: number) => void;
+  onHoverEnd?: () => void;
 };
 
-export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridProps): React.ReactElement {
+export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect, onHover, onHoverEnd }: HexGridProps): React.ReactElement {
   const gridRef = React.useRef<HTMLDivElement>(null);
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
   const [scale, setScale] = React.useState(1);
@@ -116,6 +118,8 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
               setSelected({ x: h.x, y: h.y });
               onSelect?.(h.x, h.y);
             }}
+            onMouseEnter={() => onHover?.(h.x, h.y)}
+            onMouseLeave={() => onHoverEnd?.()}
             style={{
               position: 'absolute',
               left: h.left,
@@ -128,9 +132,8 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
               cursor: 'pointer',
             }}
             className={`hex-cell ${selected?.x === h.x && selected?.y === h.y ? 'hex-selected' : ''} terrain-${useEditorStore.getState().getTerrainAt(h.x, h.y) || 'grass'}`}
-          >
-            {h.x},{h.y}
-          </div>
+            title={`${h.x},${h.y}`}
+          />
         ))}
       </div>
     </div>
