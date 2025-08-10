@@ -2,6 +2,7 @@ import React from 'react';
 import { ScenarioSchema, type Scenario } from '../domain/schema';
 import { exportScenarioToJson, importScenarioFromJson } from '../domain/importExport';
 import { importLegacyHsc } from '../domain/importLegacy';
+import { publishScenarioToRust } from '../domain/publish';
 
 export function ParamsView(): React.ReactElement {
   const [scenario, setScenario] = React.useState<Scenario>(() => ScenarioSchema.parse({
@@ -22,6 +23,11 @@ export function ParamsView(): React.ReactElement {
     a.href = URL.createObjectURL(blob);
     a.download = `${scenario.id}.json`;
     a.click();
+  };
+
+  const onPublish = async () => {
+    await publishScenarioToRust(scenario).catch(() => {});
+    alert('Publié vers backend Rust (si dispo)');
   };
 
   const onImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +53,7 @@ export function ParamsView(): React.ReactElement {
           <span style={{ border: '1px solid #335', padding: '6px 10px', borderRadius: 8, cursor: 'pointer' }}>Importer JSON</span>
           <input type="file" accept="application/json" style={{ display: 'none' }} onChange={onImport} />
         </label>
+        <button onClick={onPublish}>Publier → Backend</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
