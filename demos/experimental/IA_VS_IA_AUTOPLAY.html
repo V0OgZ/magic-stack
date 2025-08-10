@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - IA vs IA Autoplay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0033 0%, #330066 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Header avec contrôles */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            text-align: center;
+            border-bottom: 2px solid #ffd700;
+            position: relative;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 2em;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: 2px solid #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .btn.stop {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            border-color: #f44336;
+        }
+        
+        .btn.pause {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            border-color: #ff9800;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        .speed-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .speed-btn:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Container principal split screen */
+        .battle-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: calc(100vh - 120px);
+            gap: 2px;
+            background: #000;
+        }
+        
+        /* Vue IA */
+        .ia-view {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            border: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ia-view.ia1 {
+            border-color: #4CAF50;
+            box-shadow: inset 0 0 50px rgba(76, 175, 80, 0.1);
+        }
+        
+        .ia-view.ia2 {
+            border-color: #f44336;
+            box-shadow: inset 0 0 50px rgba(244, 67, 54, 0.1);
+        }
+        
+        /* Header IA */
+        .ia-header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ia-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .ia1 .ia-name {
+            color: #4CAF50;
+        }
+        
+        .ia2 .ia-name {
+            color: #f44336;
+        }
+        
+        .ia-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .hp-bar {
+            width: 100px;
+            height: 10px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6600);
+            transition: width 0.5s ease;
+        }
+        
+        .energy-bar {
+            width: 100px;
+            height: 10px;
+            background: rgba(0, 100, 255, 0.3);
+            border: 1px solid #0066ff;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066ff, #00ccff);
+            transition: width 0.5s ease;
+        }
+        
+        /* Zone de bataille */
+        .battle-zone {
+            flex: 1;
+            position: relative;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Grille de jeu */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 2px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            aspect-ratio: 1;
+        }
+        
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: all 0.3s;
+        }
+        
+        .cell.unit {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+        
+        .cell.enemy {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: #f44336;
+        }
+        
+        .cell.spell {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* Zone d'actions */
+        .action-log {
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+        
+        .action-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #ffd700;
+            padding-left: 10px;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .action-item.attack {
+            border-left-color: #f44336;
+        }
+        
+        .action-item.defend {
+            border-left-color: #4CAF50;
+        }
+        
+        .action-item.spell {
+            border-left-color: #ffd700;
+        }
+        
+        /* Compteur central */
+        .center-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 20px 40px;
+            z-index: 1000;
+            text-align: center;
+            display: none;
+        }
+        
+        .center-display.active {
+            display: block;
+            animation: zoomIn 0.5s ease;
+        }
+        
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .round-number {
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .round-info {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #fff;
+        }
+        
+        /* Statistiques finales */
+        .final-stats {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(30, 30, 30, 0.95));
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 40px;
+            z-index: 2000;
+            display: none;
+            min-width: 500px;
+        }
+        
+        .final-stats.active {
+            display: block;
+        }
+        
+        .winner-announcement {
+            font-size: 2.5em;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .stat-column h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .stat-line {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-label {
+            color: #999;
+        }
+        
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        /* Sélecteur de scénario */
+        .scenario-selector {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            margin-left: 20px;
+        }
+        
+        .scenario-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #666;
+            color: #fff;
+            padding: 5px 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .scenario-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+        
+        .scenario-btn.active {
+            background: #ffd700;
+            color: #000;
+            border-color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ IA vs IA - BATAILLE AUTOMATIQUE ⚔️</h1>
+        <div class="controls">
+            <button class="btn" onclick="startBattle()">▶️ DÉMARRER</button>
+            <button class="btn pause" onclick="pauseBattle()">⏸️ PAUSE</button>
+            <button class="btn stop" onclick="stopBattle()">⏹️ STOP</button>
+            
+            <div class="speed-control">
+                <span>Vitesse:</span>
+                <button class="speed-btn" onclick="changeSpeed(0.5)">0.5x</button>
+                <button class="speed-btn" onclick="changeSpeed(1)">1x</button>
+                <button class="speed-btn" onclick="changeSpeed(2)">2x</button>
+                <button class="speed-btn" onclick="changeSpeed(5)">5x</button>
+            </div>
+            
+            <div class="scenario-selector">
+                <span>Scénario:</span>
+                <button class="scenario-btn active" onclick="selectScenario('classic')">Classique</button>
+                <button class="scenario-btn" onclick="selectScenario('temporal')">Temporel</button>
+                <button class="scenario-btn" onclick="selectScenario('quantum')">Quantique</button>
+                <button class="scenario-btn" onclick="selectScenario('6d')">Navigation 6D</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="battle-container">
+        <!-- Vue IA 1 (Verte) -->
+        <div class="ia-view ia1">
+            <div class="ia-header">
+                <div class="ia-name">🤖 IA ALPHA (Temporelle)</div>
+                <div class="ia-stats">
+                    <div class="stat">
+                        ❤️ <div class="hp-bar"><div class="hp-fill" id="hp1" style="width: 100%"></div></div>
+                        <span id="hp1-text">100/100</span>
+                    </div>
+                    <div class="stat">
+                        ⚡ <div class="energy-bar"><div class="energy-fill" id="energy1" style="width: 100%"></div></div>
+                        <span id="energy1-text">100/100</span>
+                    </div>
+                    <div class="stat">
+                        🏆 Victoires: <span id="wins1">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-zone">
+                <div class="game-grid" id="grid1">
+                    <!-- Grille générée dynamiquement -->
+                </div>
+            </div>
+            
+            <div class="action-log" id="log1">
+                <div class="action-item">🎮 IA ALPHA prête au combat</div>
+            </div>
+        </div>
+        
+        <!-- Vue IA 2 (Rouge) -->
+        <div class="ia-view ia2">
+            <div class="ia-header">
+                <div class="ia-name">🤖 IA BETA (Quantique)</div>
+                <div class="ia-stats">
+                    <div class="stat">
+                        ❤️ <div class="hp-bar"><div class="hp-fill" id="hp2" style="width: 100%"></div></div>
+                        <span id="hp2-text">100/100</span>
+                    </div>
+                    <div class="stat">
+                        ⚡ <div class="energy-bar"><div class="energy-fill" id="energy2" style="width: 100%"></div></div>
+                        <span id="energy2-text">100/100</span>
+                    </div>
+                    <div class="stat">
+                        🏆 Victoires: <span id="wins2">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-zone">
+                <div class="game-grid" id="grid2">
+                    <!-- Grille générée dynamiquement -->
+                </div>
+            </div>
+            
+            <div class="action-log" id="log2">
+                <div class="action-item">🎮 IA BETA prête au combat</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Affichage central -->
+    <div class="center-display" id="centerDisplay">
+        <div class="round-number">ROUND <span id="roundNum">1</span></div>
+        <div class="round-info" id="roundInfo">Combat en cours...</div>
+    </div>
+    
+    <!-- Statistiques finales -->
+    <div class="final-stats" id="finalStats">
+        <div class="winner-announcement" id="winnerText">🏆 VICTOIRE !</div>
+        <div class="stats-grid">
+            <div class="stat-column">
+                <h3 style="color: #4CAF50;">IA ALPHA</h3>
+                <div class="stat-line">
+                    <span class="stat-label">Dégâts infligés:</span>
+                    <span class="stat-value" id="damage1">0</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label">Sorts lancés:</span>
+                    <span class="stat-value" id="spells1">0</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label">Efficacité:</span>
+                    <span class="stat-value" id="efficiency1">0%</span>
+                </div>
+            </div>
+            <div class="stat-column">
+                <h3 style="color: #f44336;">IA BETA</h3>
+                <div class="stat-line">
+                    <span class="stat-label">Dégâts infligés:</span>
+                    <span class="stat-value" id="damage2">0</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label">Sorts lancés:</span>
+                    <span class="stat-value" id="spells2">0</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label">Efficacité:</span>
+                    <span class="stat-value" id="efficiency2">0%</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn" onclick="restartBattle()" style="margin-top: 30px; width: 100%;">🔄 NOUVELLE BATAILLE</button>
+    </div>
+    
+    <script>
+        // État du jeu
+        let gameState = {
+            running: false,
+            paused: false,
+            round: 1,
+            speed: 1,
+            scenario: 'classic',
+            ia1: {
+                hp: 100,
+                maxHp: 100,
+                energy: 100,
+                maxEnergy: 100,
+                wins: 0,
+                position: { x: 2, y: 5 },
+                stats: {
+                    damage: 0,
+                    spells: 0,
+                    hits: 0,
+                    misses: 0
+                }
+            },
+            ia2: {
+                hp: 100,
+                maxHp: 100,
+                energy: 100,
+                maxEnergy: 100,
+                wins: 0,
+                position: { x: 7, y: 5 },
+                stats: {
+                    damage: 0,
+                    spells: 0,
+                    hits: 0,
+                    misses: 0
+                }
+            }
+        };
+        
+        // Stratégies IA selon scénario
+        const strategies = {
+            classic: {
+                actions: ['attack', 'defend', 'move', 'heal'],
+                weights: [0.4, 0.2, 0.2, 0.2]
+            },
+            temporal: {
+                actions: ['time_shift', 'temporal_attack', 'rewind', 'future_sight'],
+                weights: [0.3, 0.3, 0.2, 0.2]
+            },
+            quantum: {
+                actions: ['quantum_split', 'superposition', 'collapse', 'entangle'],
+                weights: [0.25, 0.25, 0.25, 0.25]
+            },
+            '6d': {
+                actions: ['navigate_6d', 'causal_attack', 'dimension_shift', 'portal'],
+                weights: [0.3, 0.3, 0.2, 0.2]
+            }
+        };
+        
+        // Sorts et formules
+        const spells = {
+            time_shift: { name: "TEMPORAL_SHIFT", formula: "Ψ(t) = Ψ₀ × e^(iωt)", damage: 15, cost: 20 },
+            quantum_split: { name: "QUANTUM_SPLIT", formula: "|Ψ⟩ → |Ψ₁⟩ + |Ψ₂⟩", damage: 10, cost: 15 },
+            dimension_shift: { name: "DIM_SHIFT", formula: "D⁶ = X³ × T × C × Ψ", damage: 20, cost: 25 },
+            causal_attack: { name: "CAUSAL_FORK", formula: "C(t₁→t₂)", damage: 18, cost: 22 },
+            temporal_attack: { name: "CHRONO_BLAST", formula: "Δt × E", damage: 12, cost: 18 },
+            superposition: { name: "SUPERPOSITION", formula: "⊙(entity)", damage: 8, cost: 12 }
+        };
+        
+        let battleInterval = null;
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeGrids();
+        });
+        
+        function initializeGrids() {
+            // Créer les grilles
+            for (let gridId of ['grid1', 'grid2']) {
+                const grid = document.getElementById(gridId);
+                grid.innerHTML = '';
+                for (let i = 0; i < 100; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `${gridId}-cell-${i}`;
+                    grid.appendChild(cell);
+                }
+            }
+            updatePositions();
+        }
+        
+        function startBattle() {
+            if (gameState.running) return;
+            
+            gameState.running = true;
+            gameState.paused = false;
+            gameState.round = 1;
+            
+            // Réinitialiser les HP et energy
+            gameState.ia1.hp = gameState.ia1.maxHp;
+            gameState.ia2.hp = gameState.ia2.maxHp;
+            gameState.ia1.energy = gameState.ia1.maxEnergy;
+            gameState.ia2.energy = gameState.ia2.maxEnergy;
+            
+            updateUI();
+            
+            // Afficher le round
+            showRound();
+            
+            // Démarrer la boucle de jeu
+            battleInterval = setInterval(() => {
+                if (!gameState.paused) {
+                    gameTick();
+                }
+            }, 1000 / gameState.speed);
+            
+            addLog(1, "🚀 Bataille démarrée - Scénario: " + gameState.scenario);
+            addLog(2, "🚀 Bataille démarrée - Scénario: " + gameState.scenario);
+        }
+        
+        function gameTick() {
+            if (!gameState.running) return;
+            
+            // Tour de l'IA 1
+            executeIATurn(1);
+            
+            // Tour de l'IA 2
+            setTimeout(() => {
+                executeIATurn(2);
+            }, 500 / gameState.speed);
+            
+            // Vérifier la victoire
+            setTimeout(() => {
+                checkVictory();
+            }, 1000 / gameState.speed);
+            
+            // Régénération d'énergie
+            gameState.ia1.energy = Math.min(gameState.ia1.maxEnergy, gameState.ia1.energy + 5);
+            gameState.ia2.energy = Math.min(gameState.ia2.maxEnergy, gameState.ia2.energy + 5);
+            
+            updateUI();
+            gameState.round++;
+        }
+        
+        function executeIATurn(iaNumber) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            const enemy = iaNumber === 1 ? gameState.ia2 : gameState.ia1;
+            const strategy = strategies[gameState.scenario];
+            
+            // Choisir une action basée sur les poids
+            const action = chooseAction(strategy);
+            
+            switch (action) {
+                case 'attack':
+                case 'temporal_attack':
+                case 'causal_attack':
+                    performAttack(iaNumber, action);
+                    break;
+                    
+                case 'defend':
+                case 'future_sight':
+                    performDefend(iaNumber);
+                    break;
+                    
+                case 'move':
+                case 'navigate_6d':
+                case 'dimension_shift':
+                    performMove(iaNumber);
+                    break;
+                    
+                case 'heal':
+                case 'rewind':
+                    performHeal(iaNumber);
+                    break;
+                    
+                case 'time_shift':
+                case 'quantum_split':
+                case 'superposition':
+                case 'collapse':
+                case 'entangle':
+                case 'portal':
+                    performSpecialSpell(iaNumber, action);
+                    break;
+            }
+        }
+        
+        function chooseAction(strategy) {
+            const random = Math.random();
+            let sum = 0;
+            
+            for (let i = 0; i < strategy.actions.length; i++) {
+                sum += strategy.weights[i];
+                if (random < sum) {
+                    return strategy.actions[i];
+                }
+            }
+            
+            return strategy.actions[0];
+        }
+        
+        function performAttack(iaNumber, type) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            const enemy = iaNumber === 1 ? gameState.ia2 : gameState.ia1;
+            
+            let damage = Math.floor(Math.random() * 15) + 10;
+            let spellName = "Attaque basique";
+            
+            // Attaques spéciales selon le type
+            if (spells[type]) {
+                const spell = spells[type];
+                if (ia.energy >= spell.cost) {
+                    damage = spell.damage + Math.floor(Math.random() * 10);
+                    spellName = spell.name;
+                    ia.energy -= spell.cost;
+                    ia.stats.spells++;
+                    
+                    // Afficher la formule
+                    showSpellEffect(iaNumber, spell.formula);
+                }
+            }
+            
+            enemy.hp = Math.max(0, enemy.hp - damage);
+            ia.stats.damage += damage;
+            ia.stats.hits++;
+            
+            addLog(iaNumber, `⚔️ ${spellName}: ${damage} dégâts`, 'attack');
+            
+            // Animation sur la grille
+            animateAttack(iaNumber);
+        }
+        
+        function performDefend(iaNumber) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            ia.defense = true;
+            addLog(iaNumber, "🛡️ Position défensive (+50% défense)", 'defend');
+        }
+        
+        function performMove(iaNumber) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            
+            // Déplacement aléatoire
+            ia.position.x = Math.floor(Math.random() * 10);
+            ia.position.y = Math.floor(Math.random() * 10);
+            
+            updatePositions();
+            addLog(iaNumber, `📍 Déplacement vers (${ia.position.x}, ${ia.position.y})`);
+        }
+        
+        function performHeal(iaNumber) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            
+            if (ia.energy >= 15) {
+                const heal = Math.floor(Math.random() * 15) + 10;
+                ia.hp = Math.min(ia.maxHp, ia.hp + heal);
+                ia.energy -= 15;
+                addLog(iaNumber, `💚 Soin: +${heal} HP`);
+            }
+        }
+        
+        function performSpecialSpell(iaNumber, spellType) {
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            const spell = spells[spellType] || { 
+                name: spellType.toUpperCase(), 
+                formula: "Special", 
+                damage: 15, 
+                cost: 20 
+            };
+            
+            if (ia.energy >= spell.cost) {
+                ia.energy -= spell.cost;
+                ia.stats.spells++;
+                
+                // Effet visuel spécial
+                showSpellEffect(iaNumber, spell.formula);
+                
+                // Effet selon le sort
+                switch (spellType) {
+                    case 'quantum_split':
+                        addLog(iaNumber, `🌀 ${spell.name}: Création de superposition`, 'spell');
+                        // Esquive la prochaine attaque
+                        ia.superposition = true;
+                        break;
+                        
+                    case 'time_shift':
+                        addLog(iaNumber, `⏰ ${spell.name}: Manipulation temporelle`, 'spell');
+                        // Double action au prochain tour
+                        ia.timeShifted = true;
+                        break;
+                        
+                    case 'portal':
+                        addLog(iaNumber, `🌌 ${spell.name}: Ouverture de portail`, 'spell');
+                        // Téléportation
+                        performMove(iaNumber);
+                        break;
+                        
+                    default:
+                        addLog(iaNumber, `✨ ${spell.name}: ${spell.formula}`, 'spell');
+                }
+            }
+        }
+        
+        function showSpellEffect(iaNumber, formula) {
+            const gridId = iaNumber === 1 ? 'grid1' : 'grid2';
+            const ia = iaNumber === 1 ? gameState.ia1 : gameState.ia2;
+            const cellIndex = ia.position.y * 10 + ia.position.x;
+            const cell = document.getElementById(`${gridId}-cell-${cellIndex}`);
+            
+            if (cell) {
+                cell.classList.add('spell');
+                cell.textContent = '✨';
+                setTimeout(() => {
+                    cell.classList.remove('spell');
+                    cell.textContent = '';
+                    updatePositions();
+                }, 1000);
+            }
+        }
+        
+        function animateAttack(iaNumber) {
+            const gridId = iaNumber === 1 ? 'grid2' : 'grid1'; // Attaque sur la grille ennemie
+            const randomCell = Math.floor(Math.random() * 100);
+            const cell = document.getElementById(`${gridId}-cell-${randomCell}`);
+            
+            if (cell) {
+                cell.style.background = 'rgba(255, 0, 0, 0.5)';
+                cell.textContent = '💥';
+                setTimeout(() => {
+                    cell.style.background = '';
+                    cell.textContent = '';
+                    updatePositions();
+                }, 500);
+            }
+        }
+        
+        function updatePositions() {
+            // Nettoyer toutes les cellules
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('unit', 'enemy');
+                cell.textContent = '';
+            });
+            
+            // Placer IA1
+            const cell1Index = gameState.ia1.position.y * 10 + gameState.ia1.position.x;
+            const cell1_grid1 = document.getElementById(`grid1-cell-${cell1Index}`);
+            if (cell1_grid1) {
+                cell1_grid1.classList.add('unit');
+                cell1_grid1.textContent = '🤖';
+            }
+            
+            // Placer IA2
+            const cell2Index = gameState.ia2.position.y * 10 + gameState.ia2.position.x;
+            const cell2_grid2 = document.getElementById(`grid2-cell-${cell2Index}`);
+            if (cell2_grid2) {
+                cell2_grid2.classList.add('enemy');
+                cell2_grid2.textContent = '🤖';
+            }
+        }
+        
+        function addLog(iaNumber, message, type = '') {
+            const log = document.getElementById(`log${iaNumber}`);
+            const item = document.createElement('div');
+            item.className = `action-item ${type}`;
+            const time = new Date().toLocaleTimeString();
+            item.innerHTML = `<span style="color: #666">[${time}]</span> ${message}`;
+            
+            log.insertBefore(item, log.firstChild);
+            
+            // Limiter à 10 logs
+            while (log.children.length > 10) {
+                log.removeChild(log.lastChild);
+            }
+        }
+        
+        function updateUI() {
+            // IA1
+            document.getElementById('hp1').style.width = `${(gameState.ia1.hp / gameState.ia1.maxHp) * 100}%`;
+            document.getElementById('hp1-text').textContent = `${gameState.ia1.hp}/${gameState.ia1.maxHp}`;
+            document.getElementById('energy1').style.width = `${(gameState.ia1.energy / gameState.ia1.maxEnergy) * 100}%`;
+            document.getElementById('energy1-text').textContent = `${gameState.ia1.energy}/${gameState.ia1.maxEnergy}`;
+            document.getElementById('wins1').textContent = gameState.ia1.wins;
+            
+            // IA2
+            document.getElementById('hp2').style.width = `${(gameState.ia2.hp / gameState.ia2.maxHp) * 100}%`;
+            document.getElementById('hp2-text').textContent = `${gameState.ia2.hp}/${gameState.ia2.maxHp}`;
+            document.getElementById('energy2').style.width = `${(gameState.ia2.energy / gameState.ia2.maxEnergy) * 100}%`;
+            document.getElementById('energy2-text').textContent = `${gameState.ia2.energy}/${gameState.ia2.maxEnergy}`;
+            document.getElementById('wins2').textContent = gameState.ia2.wins;
+        }
+        
+        function checkVictory() {
+            if (gameState.ia1.hp <= 0 || gameState.ia2.hp <= 0) {
+                stopBattle();
+                
+                const winner = gameState.ia1.hp > 0 ? 1 : 2;
+                const winnerIA = winner === 1 ? gameState.ia1 : gameState.ia2;
+                winnerIA.wins++;
+                
+                showFinalStats(winner);
+            }
+        }
+        
+        function showRound() {
+            const display = document.getElementById('centerDisplay');
+            const roundNum = document.getElementById('roundNum');
+            const roundInfo = document.getElementById('roundInfo');
+            
+            roundNum.textContent = gameState.round;
+            roundInfo.textContent = `Scénario: ${gameState.scenario.toUpperCase()}`;
+            
+            display.classList.add('active');
+            setTimeout(() => {
+                display.classList.remove('active');
+            }, 2000);
+        }
+        
+        function showFinalStats(winner) {
+            const stats = document.getElementById('finalStats');
+            const winnerText = document.getElementById('winnerText');
+            
+            winnerText.innerHTML = winner === 1 
+                ? '🏆 VICTOIRE IA ALPHA !' 
+                : '🏆 VICTOIRE IA BETA !';
+            winnerText.style.color = winner === 1 ? '#4CAF50' : '#f44336';
+            
+            // Calculer l'efficacité
+            const eff1 = gameState.ia1.stats.hits > 0 
+                ? Math.round((gameState.ia1.stats.damage / (gameState.ia1.stats.hits * 20)) * 100)
+                : 0;
+            const eff2 = gameState.ia2.stats.hits > 0
+                ? Math.round((gameState.ia2.stats.damage / (gameState.ia2.stats.hits * 20)) * 100)
+                : 0;
+            
+            document.getElementById('damage1').textContent = gameState.ia1.stats.damage;
+            document.getElementById('spells1').textContent = gameState.ia1.stats.spells;
+            document.getElementById('efficiency1').textContent = eff1 + '%';
+            
+            document.getElementById('damage2').textContent = gameState.ia2.stats.damage;
+            document.getElementById('spells2').textContent = gameState.ia2.stats.spells;
+            document.getElementById('efficiency2').textContent = eff2 + '%';
+            
+            stats.classList.add('active');
+        }
+        
+        function pauseBattle() {
+            gameState.paused = !gameState.paused;
+            const btn = event.target;
+            btn.textContent = gameState.paused ? '▶️ REPRENDRE' : '⏸️ PAUSE';
+        }
+        
+        function stopBattle() {
+            gameState.running = false;
+            gameState.paused = false;
+            
+            if (battleInterval) {
+                clearInterval(battleInterval);
+                battleInterval = null;
+            }
+        }
+        
+        function restartBattle() {
+            document.getElementById('finalStats').classList.remove('active');
+            
+            // Réinitialiser les stats
+            gameState.ia1.stats = { damage: 0, spells: 0, hits: 0, misses: 0 };
+            gameState.ia2.stats = { damage: 0, spells: 0, hits: 0, misses: 0 };
+            
+            // Nettoyer les logs
+            document.getElementById('log1').innerHTML = '<div class="action-item">🎮 IA ALPHA prête au combat</div>';
+            document.getElementById('log2').innerHTML = '<div class="action-item">🎮 IA BETA prête au combat</div>';
+            
+            initializeGrids();
+            startBattle();
+        }
+        
+        function changeSpeed(speed) {
+            gameState.speed = speed;
+            
+            // Redémarrer l'intervalle avec la nouvelle vitesse
+            if (gameState.running && battleInterval) {
+                clearInterval(battleInterval);
+                battleInterval = setInterval(() => {
+                    if (!gameState.paused) {
+                        gameTick();
+                    }
+                }, 1000 / gameState.speed);
+            }
+        }
+        
+        function selectScenario(scenario) {
+            gameState.scenario = scenario;
+            
+            // Mettre à jour les boutons
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Si une bataille est en cours, la redémarrer
+            if (gameState.running) {
+                stopBattle();
+                setTimeout(startBattle, 100);
+            }
+        }
+        
+        // Auto-start pour la démo
+        setTimeout(() => {
+            console.log('🎮 Démarrage automatique dans 3 secondes...');
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Heroes of Time - Multiplayer Demo HOMM3 Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            overflow: hidden;
+        }
+
+        /* Main Layout */
+        .game-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Panel - Map */
+        .map-panel {
+            flex: 1;
+            position: relative;
+            background: #0a0e27;
+            overflow: hidden;
+        }
+
+        /* Map Canvas */
+        #gameMap {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid gold;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Hex/Tile Style */
+        .map-tile {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .map-tile:hover {
+            border-color: gold;
+            box-shadow: 0 0 10px gold;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* Terrain Types */
+        .terrain-grass { background: linear-gradient(135deg, #2d5016, #4a8025); }
+        .terrain-mountain { background: linear-gradient(135deg, #5a5a5a, #8a8a8a); }
+        .terrain-water { background: linear-gradient(135deg, #1e3a5f, #2e5a8f); }
+        .terrain-forest { background: linear-gradient(135deg, #1a3a1a, #2a5a2a); }
+        .terrain-mystique { background: linear-gradient(135deg, #4a1a5a, #6a3a7a); }
+        .terrain-quantum { background: linear-gradient(135deg, #1a3a4a, #3a5a6a); }
+        .terrain-nexus { 
+            background: radial-gradient(circle, #ff00ff, #00ffff);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Fog of War */
+        .fog-total {
+            background: #000 !important;
+            opacity: 0.9;
+        }
+
+        .fog-partial {
+            opacity: 0.5;
+            filter: blur(2px);
+        }
+
+        /* Entities */
+        .hero {
+            animation: float 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px gold);
+        }
+
+        .enemy {
+            animation: float 2s ease-in-out infinite reverse;
+            filter: drop-shadow(0 0 10px red);
+        }
+
+        .treasure {
+            animation: sparkle 1s infinite;
+        }
+
+        .portal {
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; filter: brightness(1.5); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Right Panel - Info & Controls */
+        .info-panel {
+            width: 400px;
+            background: linear-gradient(180deg, #1a1a2e, #0f0f1e);
+            border-left: 3px solid gold;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Player Info */
+        .player-info {
+            padding: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .player-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: gold;
+            margin-bottom: 10px;
+        }
+
+        .resources {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .resource {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .resource-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .resource-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Hero Stats */
+        .hero-stats {
+            padding: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .stat-bar {
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-progress {
+            background: rgba(255,255,255,0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00);
+            transition: width 0.3s;
+        }
+
+        /* Actions */
+        .actions {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Combat Overlay */
+        .combat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .combat-container {
+            background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+            border: 3px solid gold;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .combat-title {
+            font-size: 32px;
+            text-align: center;
+            color: gold;
+            margin-bottom: 20px;
+        }
+
+        .combat-field {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+
+        .combat-entity {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .combat-entity-icon {
+            font-size: 64px;
+            margin-bottom: 10px;
+        }
+
+        .combat-hp {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .combat-cards {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            border: 2px solid silver;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: gold;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.5);
+        }
+
+        .card-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-cost {
+            color: cyan;
+            font-size: 14px;
+        }
+
+        .card-effect {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Turn Indicator */
+        .turn-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 2px solid gold;
+            font-size: 20px;
+            z-index: 100;
+        }
+
+        /* Victory Screen */
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .victory-content {
+            text-align: center;
+        }
+
+        .victory-title {
+            font-size: 64px;
+            color: gold;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px gold; }
+            50% { text-shadow: 0 0 40px gold, 0 0 60px orange; }
+        }
+
+        /* Multiplayer Status */
+        .multiplayer-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+
+        .status-online { background: #00ff00; }
+        .status-offline { background: #ff0000; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Map Panel -->
+        <div class="map-panel">
+            <div class="turn-indicator" id="turnIndicator">
+                ⏱️ Tour: <span id="turnNumber">1</span> | Joueur: <span id="currentPlayer">Alice</span>
+            </div>
+            
+            <div class="multiplayer-status">
+                <span class="status-dot status-online"></span>
+                <span id="connectionStatus">Local Network</span>
+            </div>
+
+            <div id="gameMap"></div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <!-- Player Info -->
+            <div class="player-info">
+                <div class="player-name" id="playerName">👑 Joueur 1 - Alice</div>
+                
+                <div class="resources">
+                    <div class="resource">
+                        <div class="resource-icon">⚡</div>
+                        <div class="resource-value" id="energyValue">100</div>
+                        <div>Énergie (A)</div>
+                    </div>
+                    <div class="resource">
+                        <div class="resource-icon">🌀</div>
+                        <div class="resource-value" id="phaseValue">50</div>
+                        <div>Phase (Φ)</div>
+                    </div>
+                    <div class="resource">
+                        <div class="resource-icon">⏰</div>
+                        <div class="resource-value" id="timeValue">0</div>
+                        <div>Drift (Δt)</div>
+                    </div>
+                </div>
+                
+                <div class="resources">
+                    <div class="resource">
+                        <div class="resource-icon">💎</div>
+                        <div class="resource-value" id="crystalValue">5</div>
+                        <div>Cristaux</div>
+                    </div>
+                    <div class="resource">
+                        <div class="resource-icon">📜</div>
+                        <div class="resource-value" id="spellValue">3</div>
+                        <div>Sorts</div>
+                    </div>
+                    <div class="resource">
+                        <div class="resource-icon">🗝️</div>
+                        <div class="resource-value" id="artifactValue">1</div>
+                        <div>Artefacts</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Stats -->
+            <div class="hero-stats">
+                <h3>⚔️ Héros Actif: <span id="heroName">Alice Prime</span></h3>
+                
+                <div class="stat-bar">
+                    <div class="stat-label">❤️ Points de Vie</div>
+                    <div class="stat-progress">
+                        <div class="stat-fill" id="hpBar" style="width: 100%"></div>
+                    </div>
+                    <small id="hpText">100/100</small>
+                </div>
+                
+                <div class="stat-bar">
+                    <div class="stat-label">🔵 Mana</div>
+                    <div class="stat-progress">
+                        <div class="stat-fill" id="manaBar" style="width: 80%; background: linear-gradient(90deg, #0099ff, #00ffff)"></div>
+                    </div>
+                    <small id="manaText">8/10</small>
+                </div>
+                
+                <div class="stat-bar">
+                    <div class="stat-label">🕐 Cohérence Temporelle</div>
+                    <div class="stat-progress">
+                        <div class="stat-fill" id="coherenceBar" style="width: 90%; background: linear-gradient(90deg, #ff00ff, #ff00aa)"></div>
+                    </div>
+                    <small id="coherenceText">0.9</small>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <h3>🎮 Actions Disponibles</h3>
+                
+                <button class="action-btn" onclick="game.moveHero()">
+                    🚶 Déplacer Héros (3 A)
+                </button>
+                
+                <button class="action-btn" onclick="game.exploreArea()">
+                    🔍 Explorer Zone (2 A + 1 Φ)
+                </button>
+                
+                <button class="action-btn" onclick="game.castSpell()">
+                    ✨ Lancer Sort (Variable)
+                </button>
+                
+                <button class="action-btn" onclick="game.temporalShift()">
+                    ⏭️ SHIFT Temporel (5 A + 3 Φ)
+                </button>
+                
+                <button class="action-btn" onclick="game.forkReality()">
+                    🔀 FORK Réalité (10 A + 5 Φ)
+                </button>
+                
+                <button class="action-btn" onclick="game.openPortal()">
+                    🌀 Ouvrir Portail (8 A + 4 Φ)
+                </button>
+                
+                <button class="action-btn" onclick="game.endTurn()">
+                    ⏩ Fin de Tour
+                </button>
+                
+                <button class="action-btn" onclick="game.showObjective()" style="background: linear-gradient(135deg, #f093fb, #f5576c)">
+                    🎯 Objectif de Victoire
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combat Overlay -->
+    <div class="combat-overlay" id="combatOverlay">
+        <div class="combat-container">
+            <h2 class="combat-title">⚔️ COMBAT TCG ⚔️</h2>
+            
+            <div class="combat-field">
+                <div class="combat-entity">
+                    <div class="combat-entity-icon">🦸</div>
+                    <div>Alice Prime</div>
+                    <div class="combat-hp" id="heroHp">❤️ 100</div>
+                </div>
+                
+                <div style="font-size: 48px; padding: 20px;">VS</div>
+                
+                <div class="combat-entity">
+                    <div class="combat-entity-icon" id="enemyIcon">👾</div>
+                    <div id="enemyName">Gardien Quantique</div>
+                    <div class="combat-hp" id="enemyHp">❤️ 80</div>
+                </div>
+            </div>
+            
+            <div class="combat-cards" id="combatCards">
+                <!-- Cards will be generated here -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="action-btn" onclick="game.endCombatTurn()" style="width: 200px;">
+                    Fin de Tour Combat
+                </button>
+                <button class="action-btn" onclick="game.fleeCombat()" style="width: 200px; background: linear-gradient(135deg, #ff6b6b, #ff3333);">
+                    Fuir (Perd 20 HP)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div class="victory-screen" id="victoryScreen">
+        <div class="victory-content">
+            <h1 class="victory-title">🏆 VICTOIRE ! 🏆</h1>
+            <h2 id="victoryMessage">Vous avez conquis le Nexus Temporel!</h2>
+            <button class="action-btn" onclick="game.newGame()" style="margin-top: 30px; width: 300px;">
+                🔄 Nouvelle Partie
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game Engine - Heroes of Time Multiplayer Demo
+        class HeroesOfTimeGame {
+            constructor() {
+                this.mapSize = 12;
+                this.map = [];
+                this.heroes = {};
+                this.currentPlayer = 'player1';
+                this.turn = 1;
+                this.fogOfWar = {};
+                this.resources = {
+                    player1: { energy: 100, phase: 50, drift: 0, crystals: 5, spells: 3, artifacts: 1, hp: 100, mana: 8 },
+                    player2: { energy: 100, phase: 50, drift: 0, crystals: 5, spells: 3, artifacts: 1, hp: 100, mana: 8 }
+                };
+                
+                // Real heroes from JSON
+                this.heroesData = {
+                    'alice': { name: 'Alice Prime', icon: '🦸', atk: 25, def: 20, special: 'Temporal Echo' },
+                    'vincent': { name: 'Vincent Vega', icon: '🔫', atk: 30, def: 15, special: 'Gun Perdu' },
+                    'morgana': { name: 'Morgana', icon: '🧙‍♀️', atk: 20, def: 25, special: 'Illusion' },
+                    'christian': { name: 'Christian McKinsey', icon: '💼', atk: 22, def: 22, special: 'Excel Quantique' },
+                    'basilisk': { name: 'Marie/Basilisk', icon: '🐍', atk: 35, def: 10, special: 'Pétrification' }
+                };
+                
+                // TCG Cards
+                this.cards = [
+                    { name: 'Boule de Feu', cost: 3, damage: 30, icon: '🔥' },
+                    { name: 'Bouclier Temporel', cost: 2, defense: 20, icon: '🛡️' },
+                    { name: 'Soin Quantique', cost: 2, heal: 25, icon: '💚' },
+                    { name: 'Fork Reality', cost: 5, special: 'clone', icon: '🔀' },
+                    { name: 'Collapse', cost: 4, damage: 'all', icon: '💥' },
+                    { name: 'Shift', cost: 3, special: 'time', icon: '⏭️' }
+                ];
+                
+                // Terrain types
+                this.terrainTypes = ['grass', 'mountain', 'water', 'forest', 'mystique', 'quantum', 'nexus'];
+                
+                // Objectives
+                this.objectives = {
+                    'nexus': { x: 6, y: 6, claimed: false },
+                    'crystals': { required: 20, current: 0 },
+                    'artifacts': { required: 5, current: 0 }
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.generateMap();
+                this.placeHeroes();
+                this.placeTreasures();
+                this.placePortals();
+                this.renderMap();
+                this.updateUI();
+                this.connectMultiplayer();
+            }
+            
+            generateMap() {
+                const mapContainer = document.getElementById('gameMap');
+                mapContainer.style.width = (this.mapSize * 62) + 'px';
+                mapContainer.style.height = (this.mapSize * 62) + 'px';
+                
+                for (let y = 0; y < this.mapSize; y++) {
+                    this.map[y] = [];
+                    for (let x = 0; x < this.mapSize; x++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'map-tile';
+                        tile.id = `tile-${x}-${y}`;
+                        tile.style.left = (x * 61) + 'px';
+                        tile.style.top = (y * 61) + 'px';
+                        
+                        // Terrain generation
+                        let terrain = this.terrainTypes[Math.floor(Math.random() * this.terrainTypes.length)];
+                        
+                        // Center is always Nexus
+                        if (x === 6 && y === 6) {
+                            terrain = 'nexus';
+                            tile.innerHTML = '🌟';
+                        }
+                        
+                        tile.classList.add(`terrain-${terrain}`);
+                        
+                        // Initial fog
+                        const distance = Math.abs(x - 0) + Math.abs(y - 0);
+                        if (distance > 3) {
+                            tile.classList.add('fog-total');
+                        } else if (distance > 2) {
+                            tile.classList.add('fog-partial');
+                        }
+                        
+                        tile.onclick = () => this.onTileClick(x, y);
+                        
+                        mapContainer.appendChild(tile);
+                        
+                        this.map[y][x] = {
+                            terrain: terrain,
+                            entity: null,
+                            treasure: null,
+                            portal: null,
+                            fog: distance > 3 ? 'total' : (distance > 2 ? 'partial' : 'none')
+                        };
+                    }
+                }
+            }
+            
+            placeHeroes() {
+                // Player 1 - Alice
+                this.heroes.player1 = {
+                    x: 0, y: 0,
+                    data: this.heroesData.alice,
+                    hp: 100,
+                    mana: 10
+                };
+                this.updateTile(0, 0, this.heroesData.alice.icon);
+                
+                // Player 2 - Vincent (pour le multiplayer local)
+                this.heroes.player2 = {
+                    x: 11, y: 11,
+                    data: this.heroesData.vincent,
+                    hp: 100,
+                    mana: 10
+                };
+                // Initialement caché par le brouillard
+            }
+            
+            placeTreasures() {
+                const treasures = ['💎', '📜', '🗝️', '🏺', '⚗️', '🎁'];
+                for (let i = 0; i < 8; i++) {
+                    const x = Math.floor(Math.random() * this.mapSize);
+                    const y = Math.floor(Math.random() * this.mapSize);
+                    if (this.map[y][x].entity === null && !(x === 0 && y === 0)) {
+                        this.map[y][x].treasure = treasures[Math.floor(Math.random() * treasures.length)];
+                        if (this.map[y][x].fog === 'none') {
+                            this.updateTile(x, y, this.map[y][x].treasure);
+                        }
+                    }
+                }
+            }
+            
+            placePortals() {
+                const portals = [
+                    { x: 3, y: 3, icon: '🌀', destination: 'mystique' },
+                    { x: 8, y: 8, icon: '🌌', destination: 'quantum' }
+                ];
+                
+                portals.forEach(portal => {
+                    if (this.map[portal.y][portal.x].entity === null) {
+                        this.map[portal.y][portal.x].portal = portal;
+                    }
+                });
+            }
+            
+            updateTile(x, y, content) {
+                const tile = document.getElementById(`tile-${x}-${y}`);
+                if (tile) {
+                    tile.innerHTML = content;
+                    if (content === this.heroesData.alice.icon || content === this.heroesData.vincent.icon) {
+                        tile.classList.add('hero');
+                    }
+                }
+            }
+            
+            onTileClick(x, y) {
+                console.log(`Clicked tile: ${x}, ${y}`);
+                const tile = this.map[y][x];
+                
+                // Reveal fog
+                if (tile.fog === 'total') {
+                    return; // Can't interact with fully fogged tiles
+                }
+                
+                // Move hero if possible
+                const hero = this.heroes[this.currentPlayer];
+                const distance = Math.abs(hero.x - x) + Math.abs(hero.y - y);
+                
+                if (distance <= 3 && this.resources[this.currentPlayer].energy >= 3) {
+                    this.moveHeroTo(x, y);
+                }
+            }
+            
+            moveHeroTo(x, y) {
+                const player = this.currentPlayer;
+                const hero = this.heroes[player];
+                
+                // Clear old position
+                this.updateTile(hero.x, hero.y, '');
+                this.map[hero.y][hero.x].entity = null;
+                
+                // Update position
+                hero.x = x;
+                hero.y = y;
+                this.map[y][x].entity = hero;
+                this.updateTile(x, y, hero.data.icon);
+                
+                // Reveal fog around new position
+                this.revealFog(x, y, 3);
+                
+                // Check for treasures
+                if (this.map[y][x].treasure) {
+                    this.collectTreasure(x, y);
+                }
+                
+                // Check for portal
+                if (this.map[y][x].portal) {
+                    this.enterPortal(x, y);
+                }
+                
+                // Check for combat
+                if (Math.random() < 0.3) {
+                    this.startCombat();
+                }
+                
+                // Spend energy
+                this.resources[player].energy -= 3;
+                this.updateUI();
+                
+                // Check victory
+                if (x === 6 && y === 6) {
+                    this.checkVictory();
+                }
+            }
+            
+            revealFog(centerX, centerY, radius) {
+                for (let y = 0; y < this.mapSize; y++) {
+                    for (let x = 0; x < this.mapSize; x++) {
+                        const distance = Math.abs(x - centerX) + Math.abs(y - centerY);
+                        const tile = document.getElementById(`tile-${x}-${y}`);
+                        
+                        if (distance <= radius) {
+                            this.map[y][x].fog = 'none';
+                            tile.classList.remove('fog-total', 'fog-partial');
+                            
+                            // Show content
+                            if (this.map[y][x].treasure) {
+                                this.updateTile(x, y, this.map[y][x].treasure);
+                            }
+                            if (this.map[y][x].portal) {
+                                this.updateTile(x, y, this.map[y][x].portal.icon);
+                            }
+                        } else if (distance <= radius + 1) {
+                            if (this.map[y][x].fog === 'total') {
+                                this.map[y][x].fog = 'partial';
+                                tile.classList.remove('fog-total');
+                                tile.classList.add('fog-partial');
+                            }
+                        }
+                    }
+                }
+            }
+            
+            collectTreasure(x, y) {
+                const treasure = this.map[y][x].treasure;
+                const player = this.currentPlayer;
+                
+                switch(treasure) {
+                    case '💎':
+                        this.resources[player].crystals += 3;
+                        this.showMessage('💎 +3 Cristaux trouvés!');
+                        break;
+                    case '📜':
+                        this.resources[player].spells += 1;
+                        this.showMessage('📜 Nouveau sort appris!');
+                        break;
+                    case '🗝️':
+                        this.resources[player].artifacts += 1;
+                        this.showMessage('🗝️ Artefact découvert!');
+                        break;
+                    case '🏺':
+                        this.resources[player].energy += 20;
+                        this.showMessage('🏺 +20 Énergie restaurée!');
+                        break;
+                    case '⚗️':
+                        this.resources[player].phase += 10;
+                        this.showMessage('⚗️ +10 Phase gagnée!');
+                        break;
+                    case '🎁':
+                        this.resources[player].hp = Math.min(100, this.resources[player].hp + 30);
+                        this.showMessage('🎁 +30 HP soignés!');
+                        break;
+                }
+                
+                this.map[y][x].treasure = null;
+                this.objectives.artifacts.current++;
+                this.updateUI();
+            }
+            
+            enterPortal(x, y) {
+                const portal = this.map[y][x].portal;
+                this.showMessage(`🌀 Portail vers ${portal.destination} activé!`);
+                
+                // Teleport to random location
+                const newX = Math.floor(Math.random() * this.mapSize);
+                const newY = Math.floor(Math.random() * this.mapSize);
+                
+                if (this.map[newY][newX].entity === null) {
+                    this.moveHeroTo(newX, newY);
+                    this.resources[this.currentPlayer].phase -= 5;
+                }
+            }
+            
+            startCombat() {
+                const enemies = [
+                    { name: 'Gobelin Temporel', icon: '👺', hp: 60 },
+                    { name: 'Gardien Quantique', icon: '👾', hp: 80 },
+                    { name: 'Dragon du Nexus', icon: '🐉', hp: 120 },
+                    { name: 'Spectre Causal', icon: '👻', hp: 70 },
+                    { name: 'Basilisk', icon: '🐍', hp: 100 }
+                ];
+                
+                const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+                
+                document.getElementById('enemyIcon').textContent = enemy.icon;
+                document.getElementById('enemyName').textContent = enemy.name;
+                document.getElementById('enemyHp').textContent = `❤️ ${enemy.hp}`;
+                document.getElementById('heroHp').textContent = `❤️ ${this.resources[this.currentPlayer].hp}`;
+                
+                // Generate cards
+                const cardsContainer = document.getElementById('combatCards');
+                cardsContainer.innerHTML = '';
+                
+                for (let i = 0; i < 4; i++) {
+                    const card = this.cards[Math.floor(Math.random() * this.cards.length)];
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card';
+                    cardDiv.innerHTML = `
+                        <div class="card-name">${card.icon} ${card.name}</div>
+                        <div class="card-cost">Coût: ${card.cost} Mana</div>
+                        <div class="card-effect">${card.damage ? `Dégâts: ${card.damage}` : card.defense ? `Défense: ${card.defense}` : `Soin: ${card.heal || 'Spécial'}`}</div>
+                    `;
+                    cardDiv.onclick = () => this.playCard(card, enemy);
+                    cardsContainer.appendChild(cardDiv);
+                }
+                
+                document.getElementById('combatOverlay').style.display = 'flex';
+            }
+            
+            playCard(card, enemy) {
+                const player = this.currentPlayer;
+                
+                if (this.resources[player].mana < card.cost) {
+                    this.showMessage('❌ Pas assez de mana!');
+                    return;
+                }
+                
+                this.resources[player].mana -= card.cost;
+                
+                if (card.damage) {
+                    const damage = typeof card.damage === 'number' ? card.damage : 50;
+                    enemy.hp -= damage;
+                    this.showMessage(`🔥 ${damage} dégâts infligés!`);
+                    
+                    if (enemy.hp <= 0) {
+                        this.winCombat();
+                        return;
+                    }
+                }
+                
+                if (card.heal) {
+                    this.resources[player].hp = Math.min(100, this.resources[player].hp + card.heal);
+                    this.showMessage(`💚 +${card.heal} HP soignés!`);
+                }
+                
+                // Enemy turn
+                const enemyDamage = Math.floor(Math.random() * 20) + 10;
+                this.resources[player].hp -= enemyDamage;
+                this.showMessage(`💥 Ennemi inflige ${enemyDamage} dégâts!`);
+                
+                if (this.resources[player].hp <= 0) {
+                    this.loseCombat();
+                }
+                
+                // Update display
+                document.getElementById('enemyHp').textContent = `❤️ ${enemy.hp}`;
+                document.getElementById('heroHp').textContent = `❤️ ${this.resources[player].hp}`;
+                this.updateUI();
+            }
+            
+            winCombat() {
+                this.showMessage('🏆 Combat gagné! +50 XP, +10 Cristaux!');
+                this.resources[this.currentPlayer].crystals += 10;
+                document.getElementById('combatOverlay').style.display = 'none';
+                this.updateUI();
+            }
+            
+            loseCombat() {
+                this.showMessage('💀 Combat perdu! -20 HP permanents');
+                this.resources[this.currentPlayer].hp = 20;
+                document.getElementById('combatOverlay').style.display = 'none';
+                this.updateUI();
+            }
+            
+            fleeCombat() {
+                this.resources[this.currentPlayer].hp -= 20;
+                this.showMessage('🏃 Fuite! -20 HP');
+                document.getElementById('combatOverlay').style.display = 'none';
+                this.updateUI();
+            }
+            
+            endCombatTurn() {
+                this.showMessage('⏩ Tour de combat terminé');
+            }
+            
+            // Temporal Actions
+            temporalShift() {
+                const player = this.currentPlayer;
+                if (this.resources[player].energy >= 5 && this.resources[player].phase >= 3) {
+                    this.resources[player].energy -= 5;
+                    this.resources[player].phase -= 3;
+                    this.resources[player].drift += 2;
+                    
+                    // Skip enemy turn
+                    this.showMessage('⏭️ SHIFT! Temps décalé de +2');
+                    this.turn += 2;
+                    this.updateUI();
+                }
+            }
+            
+            forkReality() {
+                const player = this.currentPlayer;
+                if (this.resources[player].energy >= 10 && this.resources[player].phase >= 5) {
+                    this.resources[player].energy -= 10;
+                    this.resources[player].phase -= 5;
+                    
+                    // Create clone
+                    const hero = this.heroes[player];
+                    const cloneX = Math.min(this.mapSize - 1, hero.x + 1);
+                    const cloneY = hero.y;
+                    
+                    if (this.map[cloneY][cloneX].entity === null) {
+                        this.updateTile(cloneX, cloneY, '👥');
+                        this.showMessage('🔀 FORK! Clone créé!');
+                    }
+                    
+                    this.updateUI();
+                }
+            }
+            
+            // Other Actions
+            moveHero() {
+                this.showMessage('🚶 Cliquez sur une case pour déplacer (portée: 3)');
+            }
+            
+            exploreArea() {
+                const player = this.currentPlayer;
+                if (this.resources[player].energy >= 2 && this.resources[player].phase >= 1) {
+                    this.resources[player].energy -= 2;
+                    this.resources[player].phase -= 1;
+                    
+                    const hero = this.heroes[player];
+                    this.revealFog(hero.x, hero.y, 5);
+                    this.showMessage('🔍 Zone explorée! Brouillard dissipé');
+                    this.updateUI();
+                }
+            }
+            
+            castSpell() {
+                const player = this.currentPlayer;
+                if (this.resources[player].spells > 0) {
+                    this.resources[player].spells--;
+                    this.resources[player].energy += 30;
+                    this.showMessage('✨ Sort lancé! +30 Énergie');
+                    this.updateUI();
+                }
+            }
+            
+            openPortal() {
+                const player = this.currentPlayer;
+                if (this.resources[player].energy >= 8 && this.resources[player].phase >= 4) {
+                    this.resources[player].energy -= 8;
+                    this.resources[player].phase -= 4;
+                    
+                    const hero = this.heroes[player];
+                    this.map[hero.y][hero.x].portal = { icon: '🌀', destination: 'custom' };
+                    this.updateTile(hero.x, hero.y, '🌀');
+                    this.showMessage('🌀 Portail ouvert!');
+                    this.updateUI();
+                }
+            }
+            
+            endTurn() {
+                // Switch players (for local multiplayer)
+                this.currentPlayer = this.currentPlayer === 'player1' ? 'player2' : 'player1';
+                this.turn++;
+                
+                // Regenerate resources
+                this.resources[this.currentPlayer].energy = Math.min(100, this.resources[this.currentPlayer].energy + 10);
+                this.resources[this.currentPlayer].mana = Math.min(10, this.resources[this.currentPlayer].mana + 2);
+                
+                // Apply drift
+                if (this.resources[this.currentPlayer].drift > 0) {
+                    this.resources[this.currentPlayer].energy -= this.resources[this.currentPlayer].drift;
+                    this.resources[this.currentPlayer].drift = Math.max(0, this.resources[this.currentPlayer].drift - 1);
+                }
+                
+                document.getElementById('currentPlayer').textContent = this.currentPlayer === 'player1' ? 'Alice' : 'Vincent';
+                document.getElementById('turnNumber').textContent = this.turn;
+                
+                this.updateUI();
+                this.showMessage(`⏩ Tour ${this.turn} - Joueur: ${this.currentPlayer === 'player1' ? 'Alice' : 'Vincent'}`);
+                
+                // AI turn for player2
+                if (this.currentPlayer === 'player2') {
+                    setTimeout(() => this.playAI(), 1000);
+                }
+            }
+            
+            playAI() {
+                // Simple AI
+                const hero = this.heroes.player2;
+                const targetX = 6;
+                const targetY = 6;
+                
+                // Move towards center
+                const dx = targetX - hero.x;
+                const dy = targetY - hero.y;
+                
+                const moveX = hero.x + Math.sign(dx) * Math.min(3, Math.abs(dx));
+                const moveY = hero.y + Math.sign(dy) * Math.min(3, Math.abs(dy));
+                
+                if (this.resources.player2.energy >= 3) {
+                    this.moveHeroTo(moveX, moveY);
+                }
+                
+                setTimeout(() => this.endTurn(), 1000);
+            }
+            
+            showObjective() {
+                const msg = `
+🎯 OBJECTIF DE VICTOIRE:
+━━━━━━━━━━━━━━━━━━━
+1️⃣ Conquérir le Nexus Central (6,6)
+2️⃣ Collecter 20 Cristaux (Actuel: ${this.resources[this.currentPlayer].crystals})
+3️⃣ Obtenir 5 Artefacts (Actuel: ${this.objectives.artifacts.current})
+
+Statut: ${this.objectives.nexus.claimed ? '✅ Nexus conquis!' : '❌ Nexus libre'}
+                `;
+                alert(msg);
+            }
+            
+            checkVictory() {
+                if (this.heroes[this.currentPlayer].x === 6 && this.heroes[this.currentPlayer].y === 6) {
+                    if (this.resources[this.currentPlayer].crystals >= 20 || this.objectives.artifacts.current >= 5) {
+                        this.victory();
+                    } else {
+                        this.showMessage('⚠️ Nexus atteint! Il faut 20 cristaux ou 5 artefacts pour gagner!');
+                    }
+                }
+            }
+            
+            victory() {
+                document.getElementById('victoryMessage').textContent = 
+                    `${this.currentPlayer === 'player1' ? 'Alice' : 'Vincent'} a conquis le Multivers!`;
+                document.getElementById('victoryScreen').style.display = 'flex';
+            }
+            
+            newGame() {
+                location.reload();
+            }
+            
+            // UI Updates
+            updateUI() {
+                const player = this.currentPlayer;
+                const resources = this.resources[player];
+                
+                document.getElementById('playerName').textContent = 
+                    `👑 ${player === 'player1' ? 'Joueur 1 - Alice' : 'Joueur 2 - Vincent'}`;
+                
+                document.getElementById('energyValue').textContent = Math.floor(resources.energy);
+                document.getElementById('phaseValue').textContent = resources.phase;
+                document.getElementById('timeValue').textContent = resources.drift;
+                document.getElementById('crystalValue').textContent = resources.crystals;
+                document.getElementById('spellValue').textContent = resources.spells;
+                document.getElementById('artifactValue').textContent = resources.artifacts;
+                
+                document.getElementById('hpBar').style.width = resources.hp + '%';
+                document.getElementById('hpText').textContent = `${resources.hp}/100`;
+                
+                document.getElementById('manaBar').style.width = (resources.mana * 10) + '%';
+                document.getElementById('manaText').textContent = `${resources.mana}/10`;
+                
+                const coherence = Math.max(0, 1 - (resources.drift * 0.1));
+                document.getElementById('coherenceBar').style.width = (coherence * 100) + '%';
+                document.getElementById('coherenceText').textContent = coherence.toFixed(2);
+                
+                // Update hero name
+                const hero = this.heroes[player];
+                if (hero) {
+                    document.getElementById('heroName').textContent = hero.data.name;
+                }
+            }
+            
+            renderMap() {
+                // Initial render handled by generateMap
+                this.updateUI();
+            }
+            
+            showMessage(msg) {
+                // Create floating message
+                const msgDiv = document.createElement('div');
+                msgDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.9);
+                    color: gold;
+                    padding: 20px 40px;
+                    border-radius: 10px;
+                    border: 2px solid gold;
+                    font-size: 24px;
+                    z-index: 9999;
+                    animation: fadeInOut 2s;
+                `;
+                msgDiv.textContent = msg;
+                document.body.appendChild(msgDiv);
+                
+                setTimeout(() => msgDiv.remove(), 2000);
+            }
+            
+            // Multiplayer
+            connectMultiplayer() {
+                // Simulate connection to local network
+                setTimeout(() => {
+                    document.getElementById('connectionStatus').textContent = 'Local Network - 2 Joueurs';
+                }, 1000);
+                
+                // Listen for backend updates (mock)
+                this.syncWithBackend();
+            }
+            
+            syncWithBackend() {
+                // Would connect to ws://localhost:8080/ws or similar
+                // For demo, we just update every second
+                setInterval(() => {
+                    // Check backend status
+                    fetch('http://localhost:3001/health')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'OK') {
+                                document.querySelector('.status-dot').classList.add('status-online');
+                            }
+                        })
+                        .catch(() => {
+                            document.querySelector('.status-dot').classList.remove('status-online');
+                            document.querySelector('.status-dot').classList.add('status-offline');
+                        });
+                }, 5000);
+            }
+        }
+        
+        // Add fadeInOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Start game
+        const game = new HeroesOfTimeGame();
+        
+        console.log(`
+🎮 HEROES OF TIME - MULTIPLAYER DEMO
+====================================
+Version: 1.0.0
+Style: Heroes of Might and Magic 3
+Features:
+- Brouillard de causalité
+- Combat TCG
+- Temps différencié
+- Énergie complexe (A + iΦ)
+- Portails & Trésors
+- Multiplayer local
+        `);
+    </script>
+</body>
+</html>
