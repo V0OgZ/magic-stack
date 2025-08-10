@@ -1,0 +1,249 @@
+# Magic Stack Rust API
+
+Base URL: http://localhost:${RUST_PORT} (default 3001)
+
+## Changes in this release
+- Causality resolve now awards XP idempotently (server-side dedupe).
+- Collapse accepts `playerId` and gives a small idempotent XP bonus.
+- Map init creates stable `gathering_spot` nodes with schema: `kind`, `pos`, `windows`, `yield`, `depleted`.
+- Collect infers item kind from the target spot node.
+
+## Health
+- GET `/health`
+- POST `/health`
+
+## Agents
+- POST `/agents/tick`
+- POST `/agents/plan`
+- POST `/agents/fork`
+- POST `/agents/merge`
+- POST `/agents/control`
+- POST `/agents/cast`
+
+## Matches
+- POST `/matches`
+- GET `/matches/:id/state`
+
+## Q* / World State
+- POST `/api/qstar/search`
+- POST `/api/world-state/nodes`
+- GET `/api/world-state/nodes/:id`
+- POST `/api/world-state/nodes/:id/position`
+- GET `/api/world-state/identities/:id/doubles`
+- GET `/api/world-state/nodes/radius`
+- POST `/api/world-state/collapse`
+
+## Causality / Formulas
+- POST `/api/causality/resolve`
+- POST `/api/test/all-formulas`
+- POST `/api/integration/formula-cast`
+
+## Map
+- POST `/api/map/generate`
+- POST `/api/map/init`
+
+## Archives
+- GET `/api/archives/status`
+- POST `/api/archives/search`
+- POST `/api/archives/build`
+
+## Economy / Craft
+- GET `/api/economy/inventory`
+- POST `/api/economy/collect`
+- POST `/api/economy/arcade-result`
+- POST `/api/craft/potion`
+- POST `/api/craft/crystal`
+- POST `/api/craft/artifact`
+
+## Minigames
+- GET `/api/minigames/catalog`
+- POST `/api/minigames/start`
+- GET `/api/minigames/:id`
+- POST `/api/minigames/:id/result`
+- POST `/api/minigames/auto-trigger`
+
+## Hero
+- GET `/api/hero/status`
+- POST `/api/hero/add-xp`
+- POST `/api/hero/apply-perk`
+
+---
+
+## Key payloads and examples
+
+### 1) Resolve causality
+POST `/api/causality/resolve`
+
+Request (pick nodes by radius):
+```json
+{
+  "center": {"x": 10, "y": 20, "z": 0, "t": 0, "c": 1, "psi": 0.4},
+  "radius": 5.0,
+  "mode": "QUANTUM",
+  "seed": 123
+}
+```
+
+Response:
+```json
+{
+  "mode": "QUANTUM",
+  "involved": ["ent_plain_10_20", "ent_forest_12_21"],
+  "winner": "ent_plain_10_20",
+  "started_match_id": null
+}
+```
+Notes: Winner hero gets XP once (idempotent).
+
+### 2) Collapse observation (area -> mark observed)
+POST `/api/world-state/collapse`
+
+Request:
+```json
+{
+  "node_ids": ["ent_forest_12_21", "ent_plain_10_20"],
+  "description": "player_scan",
+  "playerId": "hero:alice"
+}
+```
+
+Response:
+```json
+{ "updated": 2, "ok": true }
+```
+Notes: Small idempotent XP to `playerId`.
+
+### 3) Generate and init map
+- POST `/api/map/generate`
+
+Request:
+```json
+{ "width": 64, "height": 48, "seed": 42 }
+```
+
+Response:
+```json
+{ "obstacles": [[0,1,...]], "terrain": [[0.0,...]], "causal_c": [[1.0,...]], "biomes": [["plain",...]] }
+```
+
+- POST `/api/map/init`
+
+Request:
+```json
+{ "map": { "obstacles": [...], "terrain": [...], "causal_c": [...], "biomes": [...] } }
+```
+
+Effect: Creates entities and `gathering_spot` nodes. Spot schema:
+```json
+{
+  "id": "spot_10_20",
+  "properties": {
+    "kind": "herb|mineral|essence",
+    "pos": {"x":10,"y":20,"z":0,"t":0,"c":1,"psi":0},
+    "windows": [{"start":1,"end":23,"period":24}],
+    "yield": {"min":1,"max":3},
+    "depleted": false
+  }
+}
+```
+
+### 4) Collect from spot
+POST `/api/economy/collect`
+
+Request:
+```json
+{ "spotId": "spot_10_20", "playerId": "alice" }
+```
+
+Response:
+```json
+{ "added": [{"id":"herb_...","kind":"herb","qty":1}], "inventory": [...] }
+```
+Notes: Kind is inferred from the spot node.
+
+### 5) Hero status
+- GET `/api/hero/status?heroId=hero:alice`
+- POST `/api/hero/add-xp` `{ "heroId": "hero:alice", "amount": 10 }`
+
+---
+
+## OpenAPI
+- GET `/openapi` and `/openapi/all` (if enabled) and UI at `/docs/openapi`.
+
+## Port and CORS
+- Port via env `RUST_PORT` (default 3001). CORS allows GET/POST/OPTIONS with any origin/headers.
+
+---
+
+## Orchestrator (MVP)
+
+- POST `/orchestrator/session`
+  - Body: `{ "heroId": "hero:alice", "clientVersion": "1.2" }`
+  - Resp: `{ "sessionId": "sess_...", "tick": 0, "idempotencySalt": "..." }`
+- POST `/orchestrator/intent`
+  - Headers: `Idempotency-Key: <nonce>`
+  - Body: `{ "sessionId":"sess_...", "intent": { "type":"OBSERVE", "heroId":"hero:alice", "center": {"x":10,"y":20,"z":0,"t":0,"c":1}, "radius":5 } }`
+  - Resp: `{ "accepted": true, "willApplyAtTick": 1, "seq": 1 }`
+- GET `/orchestrator/decision-policy`
+  - Resp: `{ "tauPsi": 0.65, "tauLow": 0.35, "tauHigh": 0.8, "tauObs": 3, "pvpEnabled": true, "escapeHorizonTicks": 40 }`
+- GET `/orchestrator/snapshot?sinceTick=0`
+  - Resp: `{ "tick": 42, "fullOrDelta": "full|delta" }`
+
+### Intent types supported (MVP)
+- `MOVE { heroId, to: Pos }` (placeholder)
+- `COLLECT { heroId, spotId }` → proxies `/api/economy/collect`
+- `OBSERVE { heroId, node_ids? | center+radius? }` → proxies `/api/world-state/collapse`
+- `REQUEST_RESOLVE { heroId?, mode?: "QUANTUM"|"TCG", center?, radius? }` → proxies `/api/causality/resolve`
+
+---
+
+## TCG AI (MVP)
+
+- POST `/tcg/ai/decide`
+  - Body: `{ "state": { ...compact... }, "ai_prefs": { "mode":"play","difficulty":"normal","risk":"medium","time_budget_ms":120 } }`
+  - Resp: `{ "actions":[{"type":"PLAY_CARD","card_id":"C_042","target":"E3"},{"type":"END_TURN"}], "explain":"stub..." }`
+- POST `/tcg/ai/coach`
+  - Body: `{ "state": { ... }, "question": "ligne alternative ?" }`
+  - Resp: `{ "lines": [ { "plan": [...], "why": "tempo safe", "risk": "medium" } ] }`
+- GET `/tcg/ai/telemetry/:id` → `{ ok, events: [] }` (stub)
+- GET `/combat/state/:id?compact=true` → état compact de combat
+- GET `/observe/compact` → mini-map multiverse simplifiée (nodes/edges, collapse_counter)
+
+---
+
+## Smoke checks (rapides)
+
+```bash
+# Santé et catalogue
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:${RUST_PORT:-3001}/health
+curl -s -o /dev/null -w "%{http_code} %{size_download}\n" http://localhost:${RUST_PORT:-3001}/openapi/all
+
+# Orchestrateur (session)
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/orchestrator/session \
+  -H "Content-Type: application/json" \
+  -d '{"heroId":"hero:alice","clientVersion":"frontend-homm3-6d"}' | jq .
+
+# World-state / Causality
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/world-state/collapse \
+  -H "Content-Type: application/json" \
+  -d '{"node_ids":["ent_forest_12_21"],"description":"probe","playerId":"hero:alice"}' | jq .
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/causality/resolve \
+  -H "Content-Type: application/json" \
+  -d '{"node_ids":["ent_plain_10_20","ent_forest_12_21"],"mode":"QUANTUM","seed":123}' | jq .
+
+# Map
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/map/generate \
+  -H "Content-Type: application/json" -d '{"width":16,"height":12,"seed":42}' | jq .
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/api/map/init \
+  -H "Content-Type: application/json" \
+  -d '{"map":{"obstacles":[[0]],"terrain":[[0]],"causal_c":[[1.0]],"biomes":[["plain"]]}}' | jq .
+
+# Archives / Économie / Minijeux / Héros
+curl -s http://localhost:${RUST_PORT:-3001}/api/archives/status | jq .
+curl -s http://localhost:${RUST_PORT:-3001}/api/economy/inventory | jq .
+curl -s http://localhost:${RUST_PORT:-3001}/api/minigames/catalog | jq .
+curl -s "http://localhost:${RUST_PORT:-3001}/api/hero/status?heroId=hero:alice" | jq .
+
+# Agents
+curl -s -X POST http://localhost:${RUST_PORT:-3001}/agents/tick -H "Content-Type: application/json" -d '{}' | jq .
+```
