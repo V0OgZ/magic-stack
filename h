@@ -68,7 +68,8 @@ show_main_menu() {
     echo -e "  ${CYAN}[31]${NC} 📝 Voir les logs"
     echo -e "  ${CYAN}[32]${NC} 🧹 Nettoyer logs et PIDs"
     echo -e "  ${CYAN}[33]${NC} 🔧 Mode développement"
-     echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
+    echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
+    echo -e "  ${CYAN}[35]${NC} 🚀 Lancer World Editor (dev server)"
     echo ""
     
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
@@ -249,6 +250,33 @@ dev_mode() {
     echo -e "${GREEN}✅ 3 terminaux ouverts pour le développement${NC}"
 }
 
+# Lancer l'éditeur React (dev) automatiquement
+launch_world_editor_dev() {
+    # Si Vite (5173) tourne déjà, ouvre le navigateur
+    lsof -ti:5173 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        open "http://localhost:5173"
+        echo -e "${GREEN}World Editor (dev) déjà actif sur http://localhost:5173${NC}"
+        return
+    fi
+
+    # Sinon, démarrer npm run dev dans un nouveau Terminal
+    if command -v npm >/dev/null 2>&1; then
+        APP_PATH="$PWD/apps/world-editor"
+        if [ -d "$APP_PATH" ]; then
+            osascript -e 'tell app "Terminal" to do script "cd '$PWD'/apps/world-editor && npm run dev"'
+            sleep 2
+            open "http://localhost:5173"
+            echo -e "${GREEN}World Editor (dev) lancé${NC}"
+        else
+            echo -e "${RED}apps/world-editor introuvable${NC}"
+        fi
+    else
+        echo -e "${YELLOW}npm non trouvé - ouverture de la version HTML à la place${NC}"
+        open "WORLD_EDITOR.html"
+    fi
+}
+
 # Nettoyer logs et PIDs
 clean_all() {
     echo -e "${YELLOW}🧹 Nettoyage...${NC}"
@@ -338,13 +366,19 @@ case $choice in
         32) clean_all ;;
         33) dev_mode ;;
         34)
-            if [ -f "apps/world-editor/index.html" ]; then
-                open "apps/world-editor/index.html"
-                echo -e "${GREEN}World Editor ouvert${NC}"
-            else
-                echo -e "${YELLOW}Installez l'app React (npm i && npm run dev) dans apps/world-editor${NC}"
+            # Ouvre en priorité la build Vite si disponible, sinon fallback
+            if [ -f "apps/world-editor/dist/index.html" ]; then
+                open "apps/world-editor/dist/index.html"
+                echo -e "${GREEN}World Editor (build) ouvert${NC}"
+            elif [ -f "WORLD_EDITOR.html" ]; then
                 open "WORLD_EDITOR.html"
+                echo -e "${GREEN}World Editor (HTML) ouvert${NC}"
+            else
+                echo -e "${RED}Aucun fichier d'éditeur trouvé${NC}"
             fi
+            ;;
+        35)
+            launch_world_editor_dev
             ;;
         
         40) quick_start ;;
