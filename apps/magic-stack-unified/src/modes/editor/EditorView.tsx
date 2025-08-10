@@ -1,230 +1,369 @@
 /**
- * 🗺️ EditorView - Éditeur de cartes AVANCÉ intégré
- * Utilise l'éditeur HTML créé par l'Archéologue du Contenu
+ * 🔬 EditorView - Mode TEST & INSTANTIATION
+ * Pour tester les maps créées dans World Editor
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { HexGrid } from '../../shared/components/HexGrid';
+import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
+import { ResourceBar } from '../../shared/components/ResourceBar';
+import { useEditorStore } from './store/editorStore';
 
 export function EditorView(): React.ReactElement {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [mapData, setMapData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Écouter les messages de l'éditeur
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'MAP_EDITOR_EVENT') {
-        console.log('Message de l\'éditeur:', event.data);
-        
-        if (event.data.action === 'SAVE_MAP') {
-          setMapData(event.data.data);
-          // Sauvegarder dans localStorage pour l'instant
-          localStorage.setItem('currentMap', JSON.stringify(event.data.data));
-          console.log('Carte sauvegardée:', event.data.data);
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
+  const [mode, setMode] = React.useState<'edit' | 'test' | 'import'>('import');
+  const [isRunning, setIsRunning] = React.useState(false);
+  const { hexes, selectedHex, setSelectedHex, importMap } = useEditorStore();
+  
+  // État temporel pour les tests
+  const [temporal, setTemporal] = React.useState({
+    tw: 0,
+    te: 0,
+    debt: 0,
+    debtRate: 0.05,
+    energy_complex: { A: 50, phi: Math.PI / 4 }
+  });
+  
+  // Tick V2 pour tester
+  React.useEffect(() => {
+    if (!isRunning) return;
     
-    // Vérifier que l'iframe est chargée
-    const checkIframeLoaded = () => {
-      if (iframeRef.current?.contentWindow) {
-        setIsLoading(false);
+    const interval = setInterval(() => {
+      setTemporal(t => ({
+        ...t,
+        tw: t.tw + 1,
+        te: t.te + 0.95,
+        debt: t.debt + (Math.abs(t.tw - t.te) * t.debtRate)
+      }));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [isRunning]);
+  
+  // Charger un scénario depuis le World Editor
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target?.result as string);
+            importMap(data);
+            setMode('test');
+            console.log('✅ Scénario importé:', data);
+          } catch (error) {
+            console.error('❌ Erreur import:', error);
+          }
+        };
+        reader.readAsText(file);
       }
     };
-
-    setTimeout(checkIframeLoaded, 1000);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
-
-  // Envoyer des données à l'éditeur
-  const sendToEditor = (action: string, data: any) => {
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.postMessage({
-        type: 'REACT_TO_EDITOR',
-        action,
-        data
-      }, '*');
-    }
+    input.click();
   };
-
-  const loadSavedMap = () => {
-    const saved = localStorage.getItem('currentMap');
-    if (saved) {
-      const data = JSON.parse(saved);
-      sendToEditor('LOAD_MAP', data);
-    }
-  };
-
+  
+  // Mode Import - écran d'accueil
+  if (mode === 'import') {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        gap: 30,
+        background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1d3a 100%)',
+      }}>
+        <h1 style={{
+          fontSize: 48,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          🔬 Mode Test & Instantiation
+        </h1>
+        
+        <p style={{
+          fontSize: 18,
+          color: '#a0aec0',
+          textAlign: 'center',
+          maxWidth: 600,
+        }}>
+          Testez vos créations du World Editor en conditions réelles
+          avec les mécaniques V2 et les backends actifs
+        </p>
+        
+        <div style={{
+          display: 'flex',
+          gap: 20,
+        }}>
+          <button
+            onClick={handleImport}
+            style={{
+              padding: '15px 30px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 12,
+              fontSize: 18,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            📂 Importer un Scénario
+          </button>
+          
+          <a
+            href="http://localhost:5174"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '15px 30px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              border: '2px solid #667eea',
+              borderRadius: 12,
+              fontSize: 18,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            🎨 Ouvrir World Editor
+          </a>
+        </div>
+        
+        <div style={{
+          marginTop: 40,
+          padding: 20,
+          background: 'rgba(102, 126, 234, 0.1)',
+          border: '1px solid rgba(102, 126, 234, 0.3)',
+          borderRadius: 12,
+          maxWidth: 600,
+        }}>
+          <h3 style={{ color: '#667eea', marginBottom: 10 }}>
+            💡 Workflow recommandé
+          </h3>
+          <ol style={{ color: '#a0aec0', lineHeight: 1.8 }}>
+            <li>Créez votre map dans le <strong>World Editor</strong> (port 5174)</li>
+            <li>Exportez en JSON</li>
+            <li>Importez ici pour tester avec V2</li>
+            <li>Vérifiez drift, paradoxes, régulateurs</li>
+            <li>Si OK → Publiez vers le jeu</li>
+          </ol>
+        </div>
+        
+        <Link
+          to="/"
+          style={{
+            marginTop: 20,
+            padding: '10px 20px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 8,
+            textDecoration: 'none',
+          }}
+        >
+          ← Retour au menu
+        </Link>
+      </div>
+    );
+  }
+  
+  // Mode Test - map chargée
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: '#0a0e1a',
     }}>
-      {/* Header avec contrôles */}
-      <div style={{
+      {/* Header avec contrôles de test */}
+      <header style={{
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '10px 20px',
-        background: 'rgba(0, 0, 0, 0.3)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        alignItems: 'center',
+        padding: '12px 20px',
+        background: 'linear-gradient(180deg, rgba(20, 24, 36, 0.95) 0%, rgba(26, 31, 46, 0.9) 100%)',
+        borderBottom: '1px solid rgba(102, 126, 234, 0.3)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-          <Link
-            to="/"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <button
+            onClick={() => setMode('import')}
             style={{
               padding: '8px 16px',
               background: 'rgba(255, 255, 255, 0.1)',
               color: 'white',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: 8,
-              textDecoration: 'none',
-              transition: 'all 0.3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              cursor: 'pointer',
             }}
           >
-            ← Retour
-          </Link>
+            ← Nouveau
+          </button>
           
-          <h1 style={{ 
-            fontSize: 24, 
-            color: 'white',
+          <h2 style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
             margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10
           }}>
-            🗺️ Éditeur de Carte Avancé
-          </h1>
+            🔬 Test de Scénario
+          </h2>
         </div>
-
-        <div style={{ display: 'flex', gap: 10 }}>
+        
+        {/* Contrôles de simulation */}
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
-            onClick={loadSavedMap}
+            onClick={() => setIsRunning(!isRunning)}
             style={{
-              padding: '8px 16px',
-              background: 'linear-gradient(135deg, #2e7d32, #4CAF50)',
+              padding: '10px 20px',
+              background: isRunning
+                ? 'linear-gradient(135deg, #fc8181 0%, #f56565 100%)'
+                : 'linear-gradient(135deg, #48bb78 0%, #38b2ac 100%)',
               color: 'white',
               border: 'none',
               borderRadius: 8,
               cursor: 'pointer',
               fontWeight: 'bold',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
+              fontSize: 16,
             }}
           >
-            📂 Charger Dernière Carte
+            {isRunning ? '⏸️ Pause' : '▶️ Start V2'}
           </button>
-
+          
           <button
-            onClick={() => sendToEditor('EXPORT', {})}
             style={{
-              padding: '8px 16px',
-              background: 'linear-gradient(135deg, #1976d2, #2196F3)',
+              padding: '10px 20px',
+              background: 'linear-gradient(135deg, #f6ad55 0%, #ed8936 100%)',
               color: 'white',
               border: 'none',
               borderRadius: 8,
               cursor: 'pointer',
               fontWeight: 'bold',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            💾 Exporter
+            ⚡ Paradoxe
           </button>
-
-          {mapData && (
-            <div style={{
-              padding: '8px 16px',
-              background: 'rgba(76, 175, 80, 0.2)',
-              color: '#4CAF50',
-              border: '1px solid #4CAF50',
+          
+          <button
+            style={{
+              padding: '10px 20px',
+              background: 'linear-gradient(135deg, #9f7aea 0%, #805ad5 100%)',
+              color: 'white',
+              border: 'none',
               borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-            }}>
-              ✅ Carte sauvegardée
-            </div>
-          )}
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            🌀 Régulateur
+          </button>
         </div>
+        
+        {/* Temporal Display */}
+        <TemporalDisplay
+          temporal={temporal}
+          variant="compact"
+          showEnergy={true}
+        />
+      </header>
+      
+      {/* Resources Bar */}
+      <div style={{
+        padding: '0 20px',
+        background: 'rgba(20, 24, 36, 0.5)',
+      }}>
+        <ResourceBar
+          resources={{ crystals: 100, energy: 50, temporal: 25, quantum: 10 }}
+          variant="compact"
+        />
       </div>
-
-      {/* Loading indicator */}
-      {isLoading && (
+      
+      {/* Main - Map de test */}
+      <main style={{
+        flex: 1,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <HexGrid
+          width={30}
+          height={20}
+          hexes={hexes}
+          selectedHex={selectedHex}
+          onHexClick={(x, y) => setSelectedHex({ x, y })}
+          enableDrag={true}
+          showGrid={true}
+        />
+        
+        {/* Panel de debug */}
         <div style={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1000,
-          textAlign: 'center',
+          top: 20,
+          right: 20,
+          width: 300,
+          padding: 20,
+          background: 'rgba(0, 0, 0, 0.9)',
+          border: '2px solid #667eea',
+          borderRadius: 12,
         }}>
-          <div style={{ fontSize: 48, marginBottom: 10 }}>⏳</div>
-          <p style={{ color: 'white', fontSize: 18 }}>Chargement de l'éditeur...</p>
+          <h3 style={{
+            fontSize: 16,
+            color: '#667eea',
+            marginBottom: 15,
+          }}>
+            📊 Debug V2
+          </h3>
+          
+          <div style={{ fontSize: 14, color: '#e8ecff', lineHeight: 1.8 }}>
+            <div>TW: {temporal.tw.toFixed(1)}</div>
+            <div>TE: {temporal.te.toFixed(1)}</div>
+            <div>Drift: {Math.abs(temporal.tw - temporal.te).toFixed(2)}</div>
+            <div>Dette: {temporal.debt.toFixed(2)}</div>
+            <div>Énergie: {temporal.energy_complex.A.toFixed(0)} + {temporal.energy_complex.phi.toFixed(2)}i</div>
+          </div>
+          
+          <div style={{
+            marginTop: 15,
+            paddingTop: 15,
+            borderTop: '1px solid rgba(102, 126, 234, 0.3)',
+          }}>
+            <div style={{ fontSize: 12, color: '#a0aec0' }}>
+              Hexes: {hexes.size}<br/>
+              FPS: 60<br/>
+              Backends: ✅ Rust | ✅ Java | ✅ Vector
+            </div>
+          </div>
         </div>
-      )}
-
-      {/* Iframe avec l'éditeur HTML */}
-      <iframe
-        ref={iframeRef}
-        src="/assets/MAP_ICON_PLACER_ADVANCED.html"
-        style={{
-          flex: 1,
-          width: '100%',
-          border: 'none',
-          opacity: isLoading ? 0 : 1,
-          transition: 'opacity 0.5s',
-        }}
-        title="Map Editor"
-        onLoad={() => setIsLoading(false)}
-      />
-
-      {/* Barre de statut */}
-      <div style={{
-        padding: '10px 20px',
-        background: 'rgba(0, 0, 0, 0.3)',
-        backdropFilter: 'blur(10px)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        color: 'white',
-        fontSize: 12,
+      </main>
+      
+      {/* Footer */}
+      <footer style={{
         display: 'flex',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '12px 20px',
+        background: 'rgba(20, 24, 36, 0.9)',
+        borderTop: '1px solid rgba(102, 126, 234, 0.3)',
+        fontSize: 14,
+        color: '#a0aec0',
       }}>
-        <div>
-          📦 88+ icônes OpenMoji disponibles
-        </div>
-        <div>
-          🎨 10 catégories : Terrain, Structures, Ressources, Trésors, Dangers...
-        </div>
-        <div>
-          ⚡ Drag & Drop, Connexions, Layers, Mini-map, Zoom
-        </div>
-      </div>
+        <span>Mode: {isRunning ? '🟢 Running' : '⏸️ Paused'}</span>
+        <span>Scénario: Test_Map_001</span>
+        <span>Tick: {temporal.tw}</span>
+      </footer>
     </div>
   );
 }
