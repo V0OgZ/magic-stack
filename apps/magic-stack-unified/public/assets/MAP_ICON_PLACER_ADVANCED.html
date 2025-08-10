@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Éditeur de Carte Avancé - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Panneau gauche - Palette d'icônes AMÉLIORÉE */
+        .icon-palette {
+            width: 320px;
+            background: linear-gradient(180deg, #1a1a2e, #16213e);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 3px solid #764ba2;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .palette-header {
+            margin-bottom: 20px;
+            text-align: center;
+            position: sticky;
+            top: -20px;
+            background: linear-gradient(180deg, #1a1a2e, #16213e);
+            padding: 10px 0;
+            z-index: 100;
+        }
+        
+        .palette-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #764ba2;
+            background: rgba(15, 52, 96, 0.8);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        
+        .category-section {
+            margin-bottom: 25px;
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(118, 75, 162, 0.3);
+        }
+        
+        .category-title {
+            background: linear-gradient(90deg, #0f3460, #1e5f8e);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .category-title:hover {
+            background: linear-gradient(90deg, #1e5f8e, #2e7d32);
+            transform: translateX(5px);
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 5px;
+        }
+        
+        .icon-item {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .icon-item:hover {
+            background: linear-gradient(135deg, #1e5f8e, #2e7d32);
+            transform: scale(1.15) rotate(5deg);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .icon-item.selected {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #2e7d32, #4CAF50);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .icon-tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            border: 1px solid #667eea;
+        }
+        
+        .icon-item:hover .icon-tooltip {
+            opacity: 1;
+        }
+        
+        /* Zone centrale - Carte AMÉLIORÉE */
+        .map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0f3460, #0a1929);
+        }
+        
+        .map-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: crosshair;
+            background-image: 
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent 86.6px,
+                    rgba(102, 126, 234, 0.1) 86.6px,
+                    rgba(102, 126, 234, 0.1) 87.6px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(118, 75, 162, 0.1) 50px,
+                    rgba(118, 75, 162, 0.1) 51px
+                ),
+                repeating-linear-gradient(
+                    150deg,
+                    transparent,
+                    transparent 86.6px,
+                    rgba(102, 126, 234, 0.1) 86.6px,
+                    rgba(102, 126, 234, 0.1) 87.6px
+                );
+        }
+        
+        /* Mode hexagonal */
+        .map-canvas.hex-mode {
+            background-image: 
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent 86.6px,
+                    rgba(76, 175, 80, 0.2) 86.6px,
+                    rgba(76, 175, 80, 0.2) 87.6px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(76, 175, 80, 0.2) 50px,
+                    rgba(76, 175, 80, 0.2) 51px
+                ),
+                repeating-linear-gradient(
+                    150deg,
+                    transparent,
+                    transparent 86.6px,
+                    rgba(76, 175, 80, 0.2) 86.6px,
+                    rgba(76, 175, 80, 0.2) 87.6px
+                );
+        }
+        
+        .placed-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.3s;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.7));
+            animation: dropIn 0.5s ease-out;
+        }
+        
+        @keyframes dropIn {
+            from {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .placed-icon:hover {
+            transform: scale(1.3) rotate(-5deg);
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.9));
+            z-index: 100;
+        }
+        
+        .placed-icon.selected {
+            outline: 3px solid #4CAF50;
+            outline-offset: 5px;
+            animation: selected-pulse 1s infinite;
+        }
+        
+        @keyframes selected-pulse {
+            0% { outline-color: #4CAF50; }
+            50% { outline-color: #667eea; }
+            100% { outline-color: #4CAF50; }
+        }
+        
+        /* Connexions entre icônes */
+        .connection-line {
+            position: absolute;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 2px;
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        /* Panneau droit - Propriétés AMÉLIORÉES */
+        .properties-panel {
+            width: 320px;
+            background: linear-gradient(180deg, #1a1a2e, #16213e);
+            padding: 20px;
+            border-left: 3px solid #764ba2;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        
+        .property-group {
+            margin-bottom: 25px;
+            background: rgba(15, 52, 96, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(118, 75, 162, 0.3);
+        }
+        
+        .property-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #667eea;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(15, 52, 96, 0.8);
+            border: 2px solid #1e5f8e;
+            color: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .property-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.2);
+            border-color: white;
+        }
+        
+        .color-option.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px currentColor;
+        }
+        
+        /* Toolbar AMÉLIORÉE */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(22, 33, 62, 0.95), rgba(15, 52, 96, 0.95));
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            border: 2px solid #764ba2;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        
+        .tool-btn {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #0f3460, #1e5f8e);
+            border: 2px solid transparent;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .tool-btn:hover {
+            background: linear-gradient(135deg, #1e5f8e, #2e7d32);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        
+        .tool-btn.active {
+            background: linear-gradient(135deg, #2e7d32, #4CAF50);
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+        
+        /* Layers panel */
+        .layers-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 340px;
+            background: linear-gradient(135deg, rgba(22, 33, 62, 0.95), rgba(15, 52, 96, 0.95));
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #764ba2;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .layer-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .layer-item:hover {
+            background: rgba(30, 95, 142, 0.7);
+        }
+        
+        /* Mini-map */
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            left: 340px;
+            width: 200px;
+            height: 150px;
+            background: rgba(22, 33, 62, 0.95);
+            border: 2px solid #764ba2;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .minimap-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #0a1929;
+        }
+        
+        .minimap-icon {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #4CAF50;
+            border-radius: 50%;
+        }
+        
+        /* Modal amélioré */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid #764ba2;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 30px;
+            cursor: pointer;
+            color: #f44336;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+        
+        pre {
+            background: rgba(10, 25, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid #667eea;
+        }
+        
+        /* Zoom controls */
+        .zoom-controls {
+            position: absolute;
+            top: 100px;
+            right: 340px;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #764ba2;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: #0f3460;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        
+        .zoom-btn:hover {
+            background: #1e5f8e;
+        }
+        
+        /* Coordonnées */
+        .coordinates {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 33, 62, 0.95);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #764ba2;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        /* Animation de connexion */
+        @keyframes connectionPulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        .connection-line.animated {
+            animation: connectionPulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Palette d'icônes -->
+    <div class="icon-palette">
+        <div class="palette-header">
+            <h2>🎨 Palette d'Icônes HD</h2>
+            <input type="text" class="search-box" placeholder="🔍 Rechercher..." id="searchBox">
+            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                <button class="tool-btn" onclick="collapseAll()" style="flex: 1; padding: 5px;">➖ Tout</button>
+                <button class="tool-btn" onclick="expandAll()" style="flex: 1; padding: 5px;">➕ Tout</button>
+            </div>
+        </div>
+        
+        <div id="iconCategories">
+            <!-- Les catégories seront générées ici -->
+        </div>
+    </div>
+    
+    <!-- Zone de carte -->
+    <div class="map-container">
+        <div class="toolbar">
+            <button class="tool-btn active" onclick="setTool('place')">📍 Placer</button>
+            <button class="tool-btn" onclick="setTool('select')">👆 Sélectionner</button>
+            <button class="tool-btn" onclick="setTool('connect')">🔗 Connecter</button>
+            <button class="tool-btn" onclick="setTool('delete')">🗑️ Supprimer</button>
+            <button class="tool-btn" onclick="toggleGrid()">⬡ Grille</button>
+            <button class="tool-btn" onclick="clearMap()">🧹 Effacer</button>
+            <button class="tool-btn" onclick="exportMap()">💾 Export</button>
+            <button class="tool-btn" onclick="importMap()">📂 Import</button>
+            <button class="tool-btn" onclick="generateRandom()">🎲 Aléatoire</button>
+        </div>
+        
+        <div class="map-canvas" id="mapCanvas">
+            <!-- Les icônes placées apparaîtront ici -->
+        </div>
+        
+        <!-- Coordonnées -->
+        <div class="coordinates" id="coordinates">X: 0, Y: 0</div>
+        
+        <!-- Zoom controls -->
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomIn()">➕</button>
+            <button class="zoom-btn" onclick="zoomReset()">🔄</button>
+            <button class="zoom-btn" onclick="zoomOut()">➖</button>
+        </div>
+        
+        <!-- Mini-map -->
+        <div class="minimap">
+            <div class="minimap-content" id="minimapContent"></div>
+        </div>
+        
+        <!-- Layers -->
+        <div class="layers-panel">
+            <h4 style="margin-bottom: 10px;">📑 Calques</h4>
+            <div id="layersList"></div>
+        </div>
+    </div>
+    
+    <!-- Panneau de propriétés -->
+    <div class="properties-panel">
+        <h3 style="text-align: center; margin-bottom: 20px;">⚙️ Propriétés Avancées</h3>
+        
+        <div class="property-group">
+            <label class="property-label">🏷️ Nom de l'élément</label>
+            <input type="text" class="property-input" id="propName" placeholder="Ex: Château du Nord">
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">📝 Description</label>
+            <textarea class="property-input" id="propDesc" rows="3" placeholder="Description détaillée..."></textarea>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">🎨 Type</label>
+            <input type="text" class="property-input" id="propType" readonly>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">📍 Position</label>
+            <input type="text" class="property-input" id="propPosition" readonly>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">🎨 Couleur de fond</label>
+            <div class="color-picker">
+                <div class="color-option" style="background: transparent; border: 2px dashed #666;" onclick="setColor('transparent')"></div>
+                <div class="color-option" style="background: #4CAF50" onclick="setColor('#4CAF50')"></div>
+                <div class="color-option" style="background: #2196F3" onclick="setColor('#2196F3')"></div>
+                <div class="color-option" style="background: #FF9800" onclick="setColor('#FF9800')"></div>
+                <div class="color-option" style="background: #f44336" onclick="setColor('#f44336')"></div>
+                <div class="color-option" style="background: #9C27B0" onclick="setColor('#9C27B0')"></div>
+                <div class="color-option" style="background: #795548" onclick="setColor('#795548')"></div>
+                <div class="color-option" style="background: #607D8B" onclick="setColor('#607D8B')"></div>
+                <div class="color-option" style="background: #FFEB3B" onclick="setColor('#FFEB3B')"></div>
+                <div class="color-option" style="background: #00BCD4" onclick="setColor('#00BCD4')"></div>
+                <div class="color-option" style="background: #E91E63" onclick="setColor('#E91E63')"></div>
+                <div class="color-option" style="background: #000000" onclick="setColor('#000000')"></div>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">📏 Taille</label>
+            <input type="range" class="property-input" id="propSize" min="20" max="120" value="60">
+            <div style="text-align: center; margin-top: 5px;">
+                <span id="sizeValue">60px</span>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">🔄 Rotation</label>
+            <input type="range" class="property-input" id="propRotation" min="0" max="360" value="0">
+            <div style="text-align: center; margin-top: 5px;">
+                <span id="rotationValue">0°</span>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">👁️ Opacité</label>
+            <input type="range" class="property-input" id="propOpacity" min="0" max="100" value="100">
+            <div style="text-align: center; margin-top: 5px;">
+                <span id="opacityValue">100%</span>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">🏷️ Tags</label>
+            <input type="text" class="property-input" id="propTags" placeholder="danger, trésor, boss...">
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">📝 Notes</label>
+            <textarea class="property-input" id="propNotes" rows="4" placeholder="Notes détaillées..."></textarea>
+        </div>
+    </div>
+    
+    <!-- Modal export -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3>💾 Export de la Carte</h3>
+            <pre id="exportData"></pre>
+            <button class="tool-btn" onclick="copyExport()">📋 Copier</button>
+            <button class="tool-btn" onclick="downloadExport()">⬇️ Télécharger</button>
+        </div>
+    </div>
+    
+    <!-- Input file caché pour import -->
+    <input type="file" id="importFile" style="display: none;" accept=".json">
+    
+    <script>
+        // Catalogue d'icônes complet étendu
+        const iconCatalog = {
+            "🏔️ Terrain & Relief": {
+                mountain: "⛰️",
+                volcano: "🌋",
+                forest: "🌲",
+                desert: "🏜️",
+                ocean: "🌊",
+                island: "🏝️",
+                cave: "🕳️",
+                bridge: "🌉",
+                canyon: "🏔️",
+                glacier: "🏔️",
+                swamp: "🌫️",
+                prairie: "🌾"
+            },
+            "🏰 Structures": {
+                castle: "🏰",
+                tower: "🗼",
+                ruins: "🏛️",
+                temple: "⛩️",
+                church: "⛪",
+                house: "🏠",
+                tent: "⛺",
+                factory: "🏭",
+                fortress: "🏯",
+                lighthouse: "🗼",
+                windmill: "🌬️",
+                pyramid: "🔺"
+            },
+            "💎 Ressources": {
+                gold: "🪙",
+                gem: "💎",
+                crystal: "🔮",
+                wood: "🪵",
+                stone: "🪨",
+                ore: "⛏️",
+                wheat: "🌾",
+                water: "💧",
+                oil: "🛢️",
+                energy: "⚡",
+                mana: "✨",
+                food: "🍖"
+            },
+            "🗝️ Trésors": {
+                chest: "🗝️",
+                crown: "👑",
+                ring: "💍",
+                trophy: "🏆",
+                scroll: "📜",
+                book: "📖",
+                map: "🗺️",
+                key: "🔑",
+                artifact: "🏺",
+                relic: "⚱️",
+                orb: "🔮",
+                scepter: "🔱"
+            },
+            "💀 Dangers": {
+                skull: "💀",
+                coffin: "⚰️",
+                tombstone: "🪦",
+                ghost: "👻",
+                spider: "🕷️",
+                web: "🕸️",
+                trap: "🪤",
+                warning: "⚠️",
+                demon: "👹",
+                zombie: "🧟",
+                vampire: "🧛",
+                skeleton: "💀"
+            },
+            "🌸 Nature": {
+                flower: "🌸",
+                rose: "🌹",
+                tree: "🌳",
+                mushroom: "🍄",
+                leaf: "🍃",
+                fire: "🔥",
+                ice: "🧊",
+                wind: "💨",
+                sun: "☀️",
+                moon: "🌙",
+                star: "⭐",
+                rainbow: "🌈"
+            },
+            "⏳ Temporel": {
+                hourglass: "⏳",
+                clock: "🕰️",
+                infinity: "♾️",
+                vortex: "🌀",
+                atom: "⚛️",
+                entropy: "🌡️",
+                dna: "🧬",
+                blackhole: "🕳️",
+                portal: "🌀",
+                dimension: "🔲",
+                paradox: "🔄",
+                timeline: "📈"
+            },
+            "⭐ Spéciaux": {
+                excalibur: "🗡️",
+                mother_stone: "🔮",
+                grail: "🏆",
+                star: "⭐",
+                rainbow: "🌈",
+                unicorn: "🦄",
+                dragon: "🐉",
+                phoenix: "🦅",
+                pegasus: "🦄",
+                kraken: "🐙",
+                griffin: "🦅",
+                basilisk: "🐍"
+            },
+            "📍 Marqueurs": {
+                flag: "🚩",
+                pin: "📍",
+                compass: "🧭",
+                telescope: "🔭",
+                torch: "🔦",
+                campfire: "🔥",
+                signpost: "🪧",
+                question: "❓",
+                exclamation: "❗",
+                checkpoint: "✅",
+                waypoint: "🎯",
+                spawn: "🏁"
+            },
+            "👥 PNJ & Héros": {
+                warrior: "⚔️",
+                mage: "🧙",
+                archer: "🏹",
+                healer: "💉",
+                merchant: "💰",
+                guard: "💂",
+                king: "👑",
+                queen: "👸",
+                knight: "🛡️",
+                thief: "🗡️",
+                bard: "🎵",
+                monk: "🙏"
+            }
+        };
+        
+        // État de l'application
+        let currentTool = 'place';
+        let selectedIcon = null;
+        let selectedPlaced = null;
+        let placedIcons = [];
+        let connections = [];
+        let nextId = 1;
+        let zoomLevel = 1;
+        let gridEnabled = false;
+        let connectStart = null;
+        
+        // Initialisation
+        function init() {
+            renderIconPalette();
+            setupMapEvents();
+            setupPropertyListeners();
+            updateMinimap();
+        }
+        
+        // Rendu de la palette d'icônes
+        function renderIconPalette() {
+            const container = document.getElementById('iconCategories');
+            container.innerHTML = '';
+            
+            for (const [category, icons] of Object.entries(iconCatalog)) {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerHTML = `<span>${category}</span><span class="arrow">▼</span>`;
+                title.onclick = () => toggleCategory(section);
+                
+                const grid = document.createElement('div');
+                grid.className = 'icon-grid';
+                
+                for (const [name, emoji] of Object.entries(icons)) {
+                    const item = document.createElement('div');
+                    item.className = 'icon-item';
+                    item.innerHTML = `
+                        ${emoji}
+                        <span class="icon-tooltip">${name}</span>
+                    `;
+                    item.onclick = () => selectIcon(emoji, name, category);
+                    item.draggable = true;
+                    item.ondragstart = (e) => handleDragStart(e, emoji, name, category);
+                    grid.appendChild(item);
+                }
+                
+                section.appendChild(title);
+                section.appendChild(grid);
+                container.appendChild(section);
+            }
+        }
+        
+        // Configuration de la carte
+        function setupMapEvents() {
+            const canvas = document.getElementById('mapCanvas');
+            
+            canvas.onclick = (e) => {
+                if (currentTool === 'place' && selectedIcon) {
+                    placeIcon(e.offsetX, e.offsetY);
+                } else if (currentTool === 'connect') {
+                    handleConnect(e.offsetX, e.offsetY);
+                }
+            };
+            
+            canvas.onmousemove = (e) => {
+                document.getElementById('coordinates').textContent = `X: ${Math.round(e.offsetX)}, Y: ${Math.round(e.offsetY)}`;
+            };
+            
+            canvas.ondrop = (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData('text'));
+                placeIcon(e.offsetX, e.offsetY, data);
+            };
+            
+            canvas.ondragover = (e) => {
+                e.preventDefault();
+            };
+        }
+        
+        // Configuration des listeners de propriétés
+        function setupPropertyListeners() {
+            document.getElementById('propSize').oninput = (e) => {
+                const size = e.target.value;
+                document.getElementById('sizeValue').textContent = size + 'px';
+                if (selectedPlaced) {
+                    selectedPlaced.element.style.width = size + 'px';
+                    selectedPlaced.element.style.height = size + 'px';
+                    selectedPlaced.info.size = size;
+                }
+            };
+            
+            document.getElementById('propRotation').oninput = (e) => {
+                const rotation = e.target.value;
+                document.getElementById('rotationValue').textContent = rotation + '°';
+                if (selectedPlaced) {
+                    selectedPlaced.element.style.transform = `rotate(${rotation}deg)`;
+                    selectedPlaced.info.rotation = rotation;
+                }
+            };
+            
+            document.getElementById('propOpacity').oninput = (e) => {
+                const opacity = e.target.value / 100;
+                document.getElementById('opacityValue').textContent = e.target.value + '%';
+                if (selectedPlaced) {
+                    selectedPlaced.element.style.opacity = opacity;
+                    selectedPlaced.info.opacity = opacity;
+                }
+            };
+            
+            document.getElementById('propName').oninput = (e) => {
+                if (selectedPlaced) {
+                    selectedPlaced.info.name = e.target.value;
+                    updateLayers();
+                }
+            };
+            
+            document.getElementById('propDesc').oninput = (e) => {
+                if (selectedPlaced) {
+                    selectedPlaced.info.description = e.target.value;
+                }
+            };
+            
+            document.getElementById('propTags').oninput = (e) => {
+                if (selectedPlaced) {
+                    selectedPlaced.info.tags = e.target.value;
+                }
+            };
+            
+            document.getElementById('propNotes').oninput = (e) => {
+                if (selectedPlaced) {
+                    selectedPlaced.info.notes = e.target.value;
+                }
+            };
+        }
+        
+        // Sélection d'icône
+        function selectIcon(emoji, name, category) {
+            document.querySelectorAll('.icon-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.icon-item').classList.add('selected');
+            selectedIcon = { emoji, name, category };
+            setTool('place');
+        }
+        
+        // Placement d'icône
+        function placeIcon(x, y, iconData = null) {
+            const data = iconData || selectedIcon;
+            if (!data) return;
+            
+            const icon = document.createElement('div');
+            icon.className = 'placed-icon';
+            icon.innerHTML = data.emoji;
+            icon.style.left = (x - 30) + 'px';
+            icon.style.top = (y - 30) + 'px';
+            icon.id = 'icon-' + nextId++;
+            
+            const iconInfo = {
+                id: icon.id,
+                emoji: data.emoji,
+                name: data.name || `Element ${nextId}`,
+                category: data.category,
+                x: x,
+                y: y,
+                size: 60,
+                color: 'transparent',
+                rotation: 0,
+                opacity: 1,
+                description: '',
+                tags: '',
+                notes: ''
+            };
+            
+            icon.onclick = () => selectPlacedIcon(icon, iconInfo);
+            
+            document.getElementById('mapCanvas').appendChild(icon);
+            placedIcons.push(iconInfo);
+            updateMinimap();
+            updateLayers();
+        }
+        
+        // Sélection d'icône placée
+        function selectPlacedIcon(element, info) {
+            if (currentTool === 'delete') {
+                element.remove();
+                placedIcons = placedIcons.filter(i => i.id !== info.id);
+                updateMinimap();
+                updateLayers();
+                return;
+            }
+            
+            if (currentTool === 'select') {
+                document.querySelectorAll('.placed-icon').forEach(i => {
+                    i.classList.remove('selected');
+                });
+                element.classList.add('selected');
+                selectedPlaced = { element, info };
+                updateProperties(info);
+            }
+            
+            if (currentTool === 'connect') {
+                if (!connectStart) {
+                    connectStart = { element, info };
+                    element.classList.add('selected');
+                } else if (connectStart.id !== info.id) {
+                    createConnection(connectStart, { element, info });
+                    connectStart.element.classList.remove('selected');
+                    connectStart = null;
+                }
+            }
+        }
+        
+        // Créer une connexion
+        function createConnection(start, end) {
+            const line = document.createElement('div');
+            line.className = 'connection-line animated';
+            
+            const x1 = parseFloat(start.element.style.left) + 30;
+            const y1 = parseFloat(start.element.style.top) + 30;
+            const x2 = parseFloat(end.element.style.left) + 30;
+            const y2 = parseFloat(end.element.style.top) + 30;
+            
+            const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+            const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+            
+            line.style.width = distance + 'px';
+            line.style.left = x1 + 'px';
+            line.style.top = y1 + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            document.getElementById('mapCanvas').appendChild(line);
+            connections.push({ start: start.info.id, end: end.info.id, element: line });
+        }
+        
+        // Mise à jour des propriétés
+        function updateProperties(info) {
+            document.getElementById('propName').value = info.name || '';
+            document.getElementById('propDesc').value = info.description || '';
+            document.getElementById('propType').value = info.category || '';
+            document.getElementById('propPosition').value = `X: ${info.x}, Y: ${info.y}`;
+            document.getElementById('propSize').value = info.size || 60;
+            document.getElementById('sizeValue').textContent = (info.size || 60) + 'px';
+            document.getElementById('propRotation').value = info.rotation || 0;
+            document.getElementById('rotationValue').textContent = (info.rotation || 0) + '°';
+            document.getElementById('propOpacity').value = (info.opacity || 1) * 100;
+            document.getElementById('opacityValue').textContent = ((info.opacity || 1) * 100) + '%';
+            document.getElementById('propTags').value = info.tags || '';
+            document.getElementById('propNotes').value = info.notes || '';
+        }
+        
+        // Mise à jour de la minimap
+        function updateMinimap() {
+            const minimap = document.getElementById('minimapContent');
+            minimap.innerHTML = '';
+            
+            const mapWidth = window.innerWidth - 640;
+            const mapHeight = window.innerHeight;
+            const scale = Math.min(200 / mapWidth, 150 / mapHeight);
+            
+            placedIcons.forEach(icon => {
+                const dot = document.createElement('div');
+                dot.className = 'minimap-icon';
+                dot.style.left = (icon.x * scale) + 'px';
+                dot.style.top = (icon.y * scale) + 'px';
+                minimap.appendChild(dot);
+            });
+        }
+        
+        // Mise à jour des layers
+        function updateLayers() {
+            const layersList = document.getElementById('layersList');
+            layersList.innerHTML = '';
+            
+            placedIcons.slice().reverse().forEach(icon => {
+                const layer = document.createElement('div');
+                layer.className = 'layer-item';
+                layer.innerHTML = `
+                    <span>${icon.emoji} ${icon.name}</span>
+                    <span style="opacity: 0.5">#${icon.id.split('-')[1]}</span>
+                `;
+                layer.onclick = () => {
+                    const element = document.getElementById(icon.id);
+                    selectPlacedIcon(element, icon);
+                };
+                layersList.appendChild(layer);
+            });
+        }
+        
+        // Changement d'outil
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.toolbar .tool-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (tool !== 'connect') {
+                connectStart = null;
+                document.querySelectorAll('.placed-icon').forEach(i => {
+                    i.classList.remove('selected');
+                });
+            }
+        }
+        
+        // Toggle grid
+        function toggleGrid() {
+            gridEnabled = !gridEnabled;
+            const canvas = document.getElementById('mapCanvas');
+            canvas.classList.toggle('hex-mode', gridEnabled);
+        }
+        
+        // Zoom functions
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel * 1.2, 3);
+            applyZoom();
+        }
+        
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel / 1.2, 0.5);
+            applyZoom();
+        }
+        
+        function zoomReset() {
+            zoomLevel = 1;
+            applyZoom();
+        }
+        
+        function applyZoom() {
+            const canvas = document.getElementById('mapCanvas');
+            canvas.style.transform = `scale(${zoomLevel})`;
+            canvas.style.transformOrigin = 'center center';
+        }
+        
+        // Fonctions utilitaires
+        function clearMap() {
+            if (confirm('Effacer toute la carte ?')) {
+                document.querySelectorAll('.placed-icon').forEach(i => i.remove());
+                document.querySelectorAll('.connection-line').forEach(l => l.remove());
+                placedIcons = [];
+                connections = [];
+                updateMinimap();
+                updateLayers();
+            }
+        }
+        
+        function exportMap() {
+            const data = {
+                version: "2.0",
+                created: new Date().toISOString(),
+                icons: placedIcons,
+                connections: connections.map(c => ({ start: c.start, end: c.end })),
+                metadata: {
+                    totalIcons: placedIcons.length,
+                    totalConnections: connections.length
+                }
+            };
+            document.getElementById('exportData').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('exportModal').style.display = 'flex';
+        }
+        
+        function importMap() {
+            document.getElementById('importFile').click();
+        }
+        
+        document.getElementById('importFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        loadMapData(data);
+                    } catch (err) {
+                        alert('Erreur lors de l\'import: ' + err);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        
+        function loadMapData(data) {
+            clearMap();
+            
+            data.icons.forEach(iconData => {
+                const icon = document.createElement('div');
+                icon.className = 'placed-icon';
+                icon.innerHTML = iconData.emoji;
+                icon.style.left = (iconData.x - 30) + 'px';
+                icon.style.top = (iconData.y - 30) + 'px';
+                icon.style.width = iconData.size + 'px';
+                icon.style.height = iconData.size + 'px';
+                icon.style.transform = `rotate(${iconData.rotation || 0}deg)`;
+                icon.style.opacity = iconData.opacity || 1;
+                icon.style.background = iconData.color || 'transparent';
+                icon.id = iconData.id;
+                
+                icon.onclick = () => selectPlacedIcon(icon, iconData);
+                
+                document.getElementById('mapCanvas').appendChild(icon);
+                placedIcons.push(iconData);
+            });
+            
+            if (data.connections) {
+                data.connections.forEach(conn => {
+                    const startEl = document.getElementById(conn.start);
+                    const endEl = document.getElementById(conn.end);
+                    if (startEl && endEl) {
+                        const startInfo = placedIcons.find(i => i.id === conn.start);
+                        const endInfo = placedIcons.find(i => i.id === conn.end);
+                        createConnection(
+                            { element: startEl, info: startInfo },
+                            { element: endEl, info: endInfo }
+                        );
+                    }
+                });
+            }
+            
+            updateMinimap();
+            updateLayers();
+        }
+        
+        function generateRandom() {
+            clearMap();
+            const allIcons = [];
+            for (const icons of Object.values(iconCatalog)) {
+                for (const [name, emoji] of Object.entries(icons)) {
+                    allIcons.push({ name, emoji });
+                }
+            }
+            
+            const numIcons = 20 + Math.floor(Math.random() * 20);
+            for (let i = 0; i < numIcons; i++) {
+                const icon = allIcons[Math.floor(Math.random() * allIcons.length)];
+                const x = Math.random() * (window.innerWidth - 640) + 320;
+                const y = Math.random() * (window.innerHeight - 100) + 50;
+                placeIcon(x, y, { ...icon, category: 'random' });
+            }
+            
+            // Créer quelques connexions aléatoires
+            for (let i = 0; i < 10; i++) {
+                if (placedIcons.length > 1) {
+                    const idx1 = Math.floor(Math.random() * placedIcons.length);
+                    const idx2 = Math.floor(Math.random() * placedIcons.length);
+                    if (idx1 !== idx2) {
+                        const el1 = document.getElementById(placedIcons[idx1].id);
+                        const el2 = document.getElementById(placedIcons[idx2].id);
+                        createConnection(
+                            { element: el1, info: placedIcons[idx1] },
+                            { element: el2, info: placedIcons[idx2] }
+                        );
+                    }
+                }
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+        
+        function copyExport() {
+            const text = document.getElementById('exportData').textContent;
+            navigator.clipboard.writeText(text);
+            alert('Copié dans le presse-papier !');
+        }
+        
+        function downloadExport() {
+            const text = document.getElementById('exportData').textContent;
+            const blob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `map_${Date.now()}.json`;
+            a.click();
+        }
+        
+        function handleDragStart(e, emoji, name, category) {
+            e.dataTransfer.setData('text', JSON.stringify({ emoji, name, category }));
+        }
+        
+        function toggleCategory(section) {
+            const grid = section.querySelector('.icon-grid');
+            const arrow = section.querySelector('.arrow');
+            if (grid.style.display === 'none') {
+                grid.style.display = 'grid';
+                arrow.textContent = '▼';
+            } else {
+                grid.style.display = 'none';
+                arrow.textContent = '▶';
+            }
+        }
+        
+        function collapseAll() {
+            document.querySelectorAll('.icon-grid').forEach(grid => {
+                grid.style.display = 'none';
+            });
+            document.querySelectorAll('.arrow').forEach(arrow => {
+                arrow.textContent = '▶';
+            });
+        }
+        
+        function expandAll() {
+            document.querySelectorAll('.icon-grid').forEach(grid => {
+                grid.style.display = 'grid';
+            });
+            document.querySelectorAll('.arrow').forEach(arrow => {
+                arrow.textContent = '▼';
+            });
+        }
+        
+        function setColor(color) {
+            if (selectedPlaced) {
+                selectedPlaced.element.style.background = color;
+                selectedPlaced.info.color = color;
+            }
+        }
+        
+        function handleConnect(x, y) {
+            // Géré dans selectPlacedIcon
+        }
+        
+        // Recherche
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            
+            document.getElementById('searchBox').oninput = (e) => {
+                const search = e.target.value.toLowerCase();
+                document.querySelectorAll('.icon-item').forEach(item => {
+                    const tooltip = item.querySelector('.icon-tooltip');
+                    if (tooltip) {
+                        const text = tooltip.textContent.toLowerCase();
+                        item.style.display = text.includes(search) ? 'flex' : 'none';
+                    }
+                });
+            };
+        });
+    </script>
+</body>
+</html>

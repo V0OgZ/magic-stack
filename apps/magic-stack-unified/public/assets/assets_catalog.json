@@ -1,0 +1,458 @@
+{
+  "version": "1.0.0",
+  "created": "2025-08-10",
+  "role": "Archéologue du Contenu",
+  "categories": {
+    "icons": {
+      "lore": {
+        "description": "Icônes HD illustratives pour cartes, artefacts, lieux",
+        "format": "SVG prioritaire, PNG 256x256 fallback",
+        "examples": ["excalibur", "mother_stone", "temporal_portal"],
+        "items": {
+          "excalibur_flat": {
+            "id": "lore:excalibur_flat",
+            "name": "Excalibur (Flat)",
+            "source": "https://www.svgrepo.com/svg/321546/sword-in-stone",
+            "kind": "lore",
+            "status": "ready",
+            "files": {
+              "svg": "icons/lore/excalibur_flat.svg",
+              "png256": "icons/lore/excalibur_flat_256.png"
+            },
+            "tags": ["legendary", "artifact", "sword"]
+          },
+          "excalibur_outline": {
+            "id": "lore:excalibur_outline",
+            "name": "Excalibur (Outline)",
+            "source": "https://www.svgrepo.com/svg/506317/sword-in-stone",
+            "kind": "lore",
+            "status": "ready",
+            "files": {
+              "svg": "icons/lore/excalibur_outline.svg",
+              "png256": "icons/lore/excalibur_outline_256.png"
+            },
+            "tags": ["legendary", "artifact", "sword"]
+          },
+          "mother_stone": {
+            "id": "lore:mother_stone",
+            "name": "Mother Stone",
+            "kind": "lore",
+            "status": "pending",
+            "files": {
+              "svg": "icons/lore/mother_stone.svg",
+              "png256": "icons/lore/mother_stone_256.png"
+            },
+            "tags": ["artifact", "cosmic", "central"]
+          },
+          "temporal_portal": {
+            "id": "lore:temporal_portal",
+            "name": "Portail Temporel",
+            "kind": "lore",
+            "status": "pending",
+            "files": {
+              "svg": "icons/lore/temporal_portal.svg",
+              "png256": "icons/lore/temporal_portal_256.png"
+            },
+            "tags": ["structure", "temporal", "transport"]
+          },
+          "treasure_chest": {
+            "id": "lore:treasure_chest",
+            "name": "Coffre au Trésor",
+            "source": "https://www.svgrepo.com/svg/70235/treasure-chest",
+            "kind": "lore",
+            "status": "ready",
+            "files": {
+              "svg": "icons/lore/treasure_chest.svg",
+              "png256": "icons/lore/treasure_chest_256.png"
+            },
+            "tags": ["loot", "reward", "container"]
+          },
+          "crystal_ball": {
+            "id": "lore:crystal_ball",
+            "name": "Boule de Cristal",
+            "source": "https://www.svgrepo.com/svg/10219/crystal-ball",
+            "kind": "lore",
+            "status": "ready",
+            "files": {
+              "svg": "icons/lore/crystal_ball.svg",
+              "png256": "icons/lore/crystal_ball_256.png"
+            },
+            "tags": ["magic", "divination", "artifact"]
+          }
+        }
+      },
+      "combat": {
+        "description": "Icônes fonctionnelles pour combat et effets",
+        "format": "SVG, lisible à 32-64px",
+        "examples": ["shield", "sword", "explosion"],
+        "items": {
+          "shield": {
+            "id": "combat:shield",
+            "name": "Bouclier",
+            "source": "https://www.svgrepo.com/svg/70271/shield",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/shield.svg",
+              "png64": "icons/combat/shield_64.png"
+            },
+            "tags": ["defense", "protection"]
+          },
+          "swords_crossed": {
+            "id": "combat:swords_crossed",
+            "name": "Épées Croisées",
+            "source": "https://www.svgrepo.com/svg/174979/swords",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/swords_crossed.svg",
+              "png64": "icons/combat/swords_crossed_64.png"
+            },
+            "tags": ["attack", "melee"]
+          },
+          "explosion": {
+            "id": "combat:explosion",
+            "name": "Explosion",
+            "source": "https://openmoji.org/library/#emoji=1F4A5",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/explosion.svg",
+              "png64": "icons/combat/explosion_64.png"
+            },
+            "tags": ["damage", "aoe", "fire"]
+          },
+          "spiral": {
+            "id": "combat:spiral",
+            "name": "Spirale/Vortex",
+            "source": "https://www.svgrepo.com/svg/316105/spiral",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/spiral.svg",
+              "png64": "icons/combat/spiral_64.png"
+            },
+            "tags": ["temporal", "vortex", "control"]
+          },
+          "sparkles": {
+            "id": "combat:sparkles",
+            "name": "Étoiles Scintillantes",
+            "source": "https://openmoji.org/library/#emoji=2728",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/sparkles.svg",
+              "png64": "icons/combat/sparkles_64.png"
+            },
+            "tags": ["magic", "buff", "enhancement"]
+          },
+          "wand": {
+            "id": "combat:wand",
+            "name": "Baguette Magique",
+            "source": "https://www.svgrepo.com/svg/10218/magic-wand",
+            "kind": "combat",
+            "status": "ready",
+            "files": {
+              "svg": "icons/combat/wand.svg",
+              "png64": "icons/combat/wand_64.png"
+            },
+            "tags": ["magic", "cast", "spell"]
+          }
+        }
+      }
+    },
+    "sounds": {
+      "format": "mono, ≤400ms, -12 LUFS, .ogg/.m4a",
+      "categories": {
+        "cast": {
+          "description": "Sons de lancement de sorts",
+          "items": {
+            "cast_generic": {
+              "id": "cast_generic",
+              "name": "Lancement Générique",
+              "files": {
+                "ogg": "sounds/cast/generic.ogg",
+                "m4a": "sounds/cast/generic.m4a"
+              },
+              "duration": 350,
+              "status": "ready"
+            },
+            "cast_fireball": {
+              "id": "cast_fireball",
+              "name": "Boule de Feu",
+              "files": {
+                "ogg": "sounds/cast/fireball.ogg",
+                "m4a": "sounds/cast/fireball.m4a"
+              },
+              "duration": 380,
+              "status": "pending"
+            },
+            "cast_shield": {
+              "id": "cast_shield",
+              "name": "Bouclier",
+              "files": {
+                "ogg": "sounds/cast/shield.ogg",
+                "m4a": "sounds/cast/shield.m4a"
+              },
+              "duration": 250,
+              "status": "pending"
+            }
+          }
+        },
+        "hit": {
+          "description": "Sons d'impact",
+          "items": {
+            "hit_metal": {
+              "id": "hit_metal",
+              "name": "Impact Métal",
+              "source": "https://freesound.org/people/nenadsimic/sounds/150850/",
+              "files": {
+                "ogg": "sounds/hit/metal.ogg",
+                "m4a": "sounds/hit/metal.m4a"
+              },
+              "duration": 300,
+              "status": "ready"
+            },
+            "hit_blade": {
+              "id": "hit_blade",
+              "name": "Choc de Lames",
+              "source": "https://freesound.org/people/ceberation/sounds/328141/",
+              "files": {
+                "ogg": "sounds/hit/blade.ogg",
+                "m4a": "sounds/hit/blade.m4a"
+              },
+              "duration": 280,
+              "status": "ready"
+            },
+            "hit_explosion": {
+              "id": "hit_explosion",
+              "name": "Explosion",
+              "source": "https://freesound.org/people/qubodup/sounds/182113/",
+              "files": {
+                "ogg": "sounds/hit/explosion.ogg",
+                "m4a": "sounds/hit/explosion.m4a"
+              },
+              "duration": 400,
+              "status": "ready"
+            }
+          }
+        },
+        "aura": {
+          "description": "Sons d'effets de zone",
+          "items": {
+            "aura_whoosh": {
+              "id": "aura_whoosh",
+              "name": "Whoosh Réverbéré",
+              "source": "https://freesound.org/people/oymaldonado/sounds/492517/",
+              "files": {
+                "ogg": "sounds/aura/whoosh.ogg",
+                "m4a": "sounds/aura/whoosh.m4a"
+              },
+              "duration": 390,
+              "status": "ready"
+            },
+            "aura_magic": {
+              "id": "aura_magic",
+              "name": "Tintement Magique",
+              "source": "https://freesound.org/people/Leszek_Szary/sounds/146434/",
+              "files": {
+                "ogg": "sounds/aura/magic.ogg",
+                "m4a": "sounds/aura/magic.m4a"
+              },
+              "duration": 350,
+              "status": "ready"
+            }
+          }
+        },
+        "ambient": {
+          "description": "Sons d'ambiance",
+          "items": {
+            "ambient_temporal": {
+              "id": "ambient_temporal",
+              "name": "Distorsion Temporelle",
+              "files": {
+                "ogg": "sounds/ambient/temporal.ogg",
+                "m4a": "sounds/ambient/temporal.m4a"
+              },
+              "duration": 400,
+              "status": "pending"
+            }
+          }
+        }
+      }
+    },
+    "fx_presets": {
+      "description": "Presets de micro-animations",
+      "items": {
+        "pulse": {
+          "id": "pulse",
+          "name": "Pulse",
+          "description": "Apparition avec pulsation",
+          "duration": 300,
+          "params": {
+            "scale": [1.0, 1.2, 1.0],
+            "opacity": [0, 1, 1]
+          },
+          "usage": ["appear", "buff", "heal"]
+        },
+        "shake": {
+          "id": "shake",
+          "name": "Shake",
+          "description": "Tremblement d'impact",
+          "duration": 200,
+          "params": {
+            "amplitude": 5,
+            "frequency": 20
+          },
+          "usage": ["hit", "damage", "critical"]
+        },
+        "spark_trail": {
+          "id": "spark_trail",
+          "name": "Spark Trail",
+          "description": "Traînée d'étincelles",
+          "duration": 400,
+          "params": {
+            "particles": 12,
+            "spread": 30
+          },
+          "usage": ["projectile", "magic", "fire"]
+        },
+        "ripple": {
+          "id": "ripple",
+          "name": "Ripple",
+          "description": "Onde concentrique",
+          "duration": 500,
+          "params": {
+            "rings": 3,
+            "expansion": 50
+          },
+          "usage": ["temporal", "aoe", "water"]
+        },
+        "glyph_rain": {
+          "id": "glyph_rain",
+          "name": "Glyph Rain",
+          "description": "Pluie de glyphes",
+          "duration": 600,
+          "params": {
+            "glyphs": 8,
+            "fall_speed": 100
+          },
+          "usage": ["quantum", "runic", "science"]
+        },
+        "spin_in": {
+          "id": "spin_in",
+          "name": "Spin In",
+          "description": "Rotation d'invocation",
+          "duration": 400,
+          "params": {
+            "rotations": 2,
+            "scale": [0, 1]
+          },
+          "usage": ["summon", "magic", "portal"]
+        },
+        "fade_pop": {
+          "id": "fade_pop",
+          "name": "Fade Pop",
+          "description": "Apparition/disparition douce",
+          "duration": 250,
+          "params": {
+            "opacity": [0, 1, 0],
+            "scale": [0.8, 1.1, 1.0]
+          },
+          "usage": ["buff", "debuff", "status"]
+        }
+      }
+    },
+    "themes": {
+      "description": "Thèmes visuels par classe",
+      "classes": {
+        "warrior": {
+          "name": "Guerrier",
+          "icons": ["🗡️", "🛡️"],
+          "default_fx": "shake",
+          "default_sound": "hit_metal",
+          "theme_color": "#8B4513",
+          "tags": ["melee", "physical", "armor"]
+        },
+        "mage": {
+          "name": "Mage",
+          "icons": ["✨", "🔮"],
+          "default_fx": "spark_trail",
+          "default_sound": "cast_generic",
+          "theme_color": "#4B0082",
+          "tags": ["magic", "elemental", "ranged"]
+        },
+        "druid": {
+          "name": "Druide",
+          "icons": ["🌿", "🪵"],
+          "default_fx": "pulse",
+          "default_sound": "aura_magic",
+          "theme_color": "#228B22",
+          "tags": ["nature", "healing", "transformation"]
+        },
+        "scientist": {
+          "name": "Scientifique",
+          "icons": ["⚛️", "♾️", "📐"],
+          "default_fx": "glyph_rain",
+          "default_sound": "cast_generic",
+          "theme_color": "#00CED1",
+          "tags": ["quantum", "logic", "technology"]
+        },
+        "temporal_agent": {
+          "name": "Agent Temporel",
+          "icons": ["⏳", "🌀", "🕰️"],
+          "default_fx": "ripple",
+          "default_sound": "aura_whoosh",
+          "theme_color": "#FF69B4",
+          "tags": ["time", "paradox", "causality"]
+        },
+        "archivist": {
+          "name": "Archiviste",
+          "icons": ["🗂️", "📜", "✒️"],
+          "default_fx": "fade_pop",
+          "default_sound": "cast_generic",
+          "theme_color": "#D2691E",
+          "tags": ["knowledge", "memory", "documentation"]
+        }
+      }
+    }
+  },
+  "rules": {
+    "mandatory_fields": [
+      "icon_id",
+      "fx_preset",
+      "sound_event",
+      "theme_color",
+      "output_modes"
+    ],
+    "output_modes": {
+      "literary": "Phrase localisée complète",
+      "runic": "Glyphes ou symboles par classe/école",
+      "iconic": "Icône + FX + Son (OBLIGATOIRE)"
+    },
+    "validation": {
+      "icon_required": true,
+      "sound_fallback": "cast_generic",
+      "fx_fallback": "pulse",
+      "reject_if_missing": true
+    }
+  },
+  "statistics": {
+    "total_icons": {
+      "lore": 6,
+      "combat": 6,
+      "pending": 2,
+      "ready": 10
+    },
+    "total_sounds": {
+      "cast": 3,
+      "hit": 3,
+      "aura": 2,
+      "ambient": 1,
+      "pending": 3,
+      "ready": 6
+    },
+    "total_fx_presets": 7,
+    "total_themes": 6
+  }
+}

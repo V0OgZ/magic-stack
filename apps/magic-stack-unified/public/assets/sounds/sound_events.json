@@ -1,0 +1,157 @@
+{
+  "format_version": "1.0.0",
+  "description": "Définition des événements sonores du jeu - Sons courts (<400ms) pour feedback immédiat",
+  
+  "rules": {
+    "max_duration_ms": 400,
+    "format": ["ogg", "m4a"],
+    "channels": "mono",
+    "sample_rate": 44100,
+    "compression": "vorbis_q5"
+  },
+  
+  "sound_events": {
+    "ui": {
+      "click": {
+        "file": "ui_click_01.ogg",
+        "volume": 0.3,
+        "duration_ms": 50
+      },
+      "hover": {
+        "file": "ui_hover_01.ogg",
+        "volume": 0.2,
+        "duration_ms": 30
+      },
+      "confirm": {
+        "file": "ui_confirm_01.ogg",
+        "volume": 0.4,
+        "duration_ms": 120
+      },
+      "cancel": {
+        "file": "ui_cancel_01.ogg",
+        "volume": 0.3,
+        "duration_ms": 100
+      },
+      "error": {
+        "file": "ui_error_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 200
+      }
+    },
+    
+    "combat": {
+      "sword_hit": {
+        "file": "combat_sword_01.ogg",
+        "volume": 0.6,
+        "duration_ms": 150
+      },
+      "magic_cast": {
+        "file": "combat_magic_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 300
+      },
+      "shield_block": {
+        "file": "combat_shield_01.ogg",
+        "volume": 0.4,
+        "duration_ms": 120
+      },
+      "critical_hit": {
+        "file": "combat_crit_01.ogg",
+        "volume": 0.7,
+        "duration_ms": 250
+      },
+      "miss": {
+        "file": "combat_miss_01.ogg",
+        "volume": 0.3,
+        "duration_ms": 100
+      }
+    },
+    
+    "resources": {
+      "collect_gold": {
+        "file": "resource_gold_01.ogg",
+        "volume": 0.4,
+        "duration_ms": 180
+      },
+      "collect_crystal": {
+        "file": "resource_crystal_01.ogg",
+        "volume": 0.4,
+        "duration_ms": 220
+      },
+      "collect_wood": {
+        "file": "resource_wood_01.ogg",
+        "volume": 0.3,
+        "duration_ms": 100
+      },
+      "collect_stone": {
+        "file": "resource_stone_01.ogg",
+        "volume": 0.3,
+        "duration_ms": 120
+      },
+      "collect_entropy": {
+        "file": "resource_entropy_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 350
+      }
+    },
+    
+    "temporal": {
+      "time_shift": {
+        "file": "temporal_shift_01.ogg",
+        "volume": 0.6,
+        "duration_ms": 400
+      },
+      "paradox_warning": {
+        "file": "temporal_paradox_01.ogg",
+        "volume": 0.7,
+        "duration_ms": 300
+      },
+      "drift_alert": {
+        "file": "temporal_drift_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 250
+      },
+      "quantum_collapse": {
+        "file": "quantum_collapse_01.ogg",
+        "volume": 0.8,
+        "duration_ms": 380
+      }
+    },
+    
+    "artifacts": {
+      "excalibur_draw": {
+        "file": "artifact_excalibur_01.ogg",
+        "volume": 0.7,
+        "duration_ms": 350
+      },
+      "artifact_pickup": {
+        "file": "artifact_pickup_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 200
+      },
+      "artifact_activate": {
+        "file": "artifact_activate_01.ogg",
+        "volume": 0.6,
+        "duration_ms": 280
+      }
+    },
+    
+    "regulators": {
+      "vince_action": {
+        "file": "regulator_vince_01.ogg",
+        "volume": 0.5,
+        "duration_ms": 250
+      },
+      "anna_decay": {
+        "file": "regulator_anna_01.ogg",
+        "volume": 0.4,
+        "duration_ms": 320
+      },
+      "overload_collapse": {
+        "file": "regulator_overload_01.ogg",
+        "volume": 0.7,
+        "duration_ms": 400
+      }
+    }
+  }
+}

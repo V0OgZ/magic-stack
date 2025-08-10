@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Placeur d'Icônes sur Carte - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Panneau gauche - Palette d'icônes */
+        .icon-palette {
+            width: 300px;
+            background: #16213e;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #0f3460;
+        }
+        
+        .palette-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .palette-header h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #0f3460;
+            background: #0f3460;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .category-section {
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            background: #0f3460;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-title:hover {
+            background: #1e5f8e;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+        
+        .icon-item {
+            width: 60px;
+            height: 60px;
+            background: #0f3460;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: grab;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .icon-item:hover {
+            background: #1e5f8e;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        
+        .icon-item.selected {
+            border-color: #4CAF50;
+            background: #2e7d32;
+        }
+        
+        .icon-tooltip {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .icon-item:hover .icon-tooltip {
+            opacity: 1;
+        }
+        
+        /* Zone centrale - Carte */
+        .map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #0f3460;
+        }
+        
+        .map-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 255, 0.05) 50px,
+                    rgba(255, 255, 255, 0.05) 51px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 255, 0.05) 50px,
+                    rgba(255, 255, 255, 0.05) 51px
+                );
+        }
+        
+        .hex-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .placed-icon {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        .placed-icon:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+            z-index: 100;
+        }
+        
+        .placed-icon.selected {
+            outline: 3px solid #4CAF50;
+            outline-offset: 3px;
+        }
+        
+        /* Panneau droit - Propriétés */
+        .properties-panel {
+            width: 300px;
+            background: #16213e;
+            padding: 20px;
+            border-left: 2px solid #0f3460;
+        }
+        
+        .property-group {
+            margin-bottom: 20px;
+        }
+        
+        .property-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 8px;
+            background: #0f3460;
+            border: 1px solid #1e5f8e;
+            color: white;
+            border-radius: 5px;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .color-option:hover {
+            border-color: white;
+        }
+        
+        .color-option.selected {
+            border-color: #4CAF50;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 33, 62, 0.95);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .tool-btn {
+            padding: 8px 15px;
+            background: #0f3460;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            background: #1e5f8e;
+        }
+        
+        .tool-btn.active {
+            background: #2e7d32;
+        }
+        
+        /* Export modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        pre {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Palette d'icônes -->
+    <div class="icon-palette">
+        <div class="palette-header">
+            <h2>🎨 Palette d'Icônes</h2>
+            <input type="text" class="search-box" placeholder="Rechercher..." id="searchBox">
+        </div>
+        
+        <div id="iconCategories">
+            <!-- Les catégories seront générées ici -->
+        </div>
+    </div>
+    
+    <!-- Zone de carte -->
+    <div class="map-container">
+        <div class="toolbar">
+            <button class="tool-btn active" onclick="setTool('place')">📍 Placer</button>
+            <button class="tool-btn" onclick="setTool('select')">👆 Sélectionner</button>
+            <button class="tool-btn" onclick="setTool('delete')">🗑️ Supprimer</button>
+            <button class="tool-btn" onclick="clearMap()">🧹 Effacer</button>
+            <button class="tool-btn" onclick="exportMap()">💾 Exporter</button>
+            <button class="tool-btn" onclick="generateRandom()">🎲 Aléatoire</button>
+        </div>
+        
+        <div class="map-canvas" id="mapCanvas">
+            <div class="hex-grid" id="hexGrid"></div>
+        </div>
+    </div>
+    
+    <!-- Panneau de propriétés -->
+    <div class="properties-panel">
+        <h3>⚙️ Propriétés</h3>
+        
+        <div class="property-group">
+            <label class="property-label">Nom de l'élément</label>
+            <input type="text" class="property-input" id="propName" placeholder="Château du Nord">
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">Type</label>
+            <input type="text" class="property-input" id="propType" readonly>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">Position</label>
+            <input type="text" class="property-input" id="propPosition" readonly>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">Couleur de fond</label>
+            <div class="color-picker">
+                <div class="color-option" style="background: transparent" onclick="setColor('transparent')"></div>
+                <div class="color-option" style="background: #4CAF50" onclick="setColor('#4CAF50')"></div>
+                <div class="color-option" style="background: #2196F3" onclick="setColor('#2196F3')"></div>
+                <div class="color-option" style="background: #FF9800" onclick="setColor('#FF9800')"></div>
+                <div class="color-option" style="background: #f44336" onclick="setColor('#f44336')"></div>
+                <div class="color-option" style="background: #9C27B0" onclick="setColor('#9C27B0')"></div>
+                <div class="color-option" style="background: #795548" onclick="setColor('#795548')"></div>
+                <div class="color-option" style="background: #607D8B" onclick="setColor('#607D8B')"></div>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">Taille</label>
+            <input type="range" class="property-input" id="propSize" min="20" max="100" value="50">
+        </div>
+        
+        <div class="property-group">
+            <label class="property-label">Notes</label>
+            <textarea class="property-input" id="propNotes" rows="4" placeholder="Notes sur cet élément..."></textarea>
+        </div>
+    </div>
+    
+    <!-- Modal export -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3>📋 Export de la Carte</h3>
+            <pre id="exportData"></pre>
+            <button class="tool-btn" onclick="copyExport()">📋 Copier</button>
+        </div>
+    </div>
+    
+    <script>
+        // Catalogue d'icônes complet
+        const iconCatalog = {
+            "🏔️ Terrain": {
+                mountain: "⛰️",
+                volcano: "🌋",
+                forest: "🌲",
+                desert: "🏜️",
+                ocean: "🌊",
+                island: "🏝️",
+                cave: "🕳️",
+                bridge: "🌉"
+            },
+            "🏰 Structures": {
+                castle: "🏰",
+                tower: "🗼",
+                ruins: "🏛️",
+                temple: "⛩️",
+                church: "⛪",
+                house: "🏠",
+                tent: "⛺",
+                factory: "🏭"
+            },
+            "💎 Ressources": {
+                gold: "🪙",
+                gem: "💎",
+                crystal: "🔮",
+                wood: "🪵",
+                stone: "🪨",
+                ore: "⛏️",
+                wheat: "🌾",
+                water: "💧"
+            },
+            "🗝️ Trésors": {
+                chest: "🗝️",
+                crown: "👑",
+                ring: "💍",
+                trophy: "🏆",
+                scroll: "📜",
+                book: "📖",
+                map: "🗺️",
+                key: "🔑"
+            },
+            "💀 Dangers": {
+                skull: "💀",
+                coffin: "⚰️",
+                tombstone: "🪦",
+                ghost: "👻",
+                spider: "🕷️",
+                web: "🕸️",
+                trap: "🪤",
+                warning: "⚠️"
+            },
+            "🌸 Nature": {
+                flower: "🌸",
+                rose: "🌹",
+                tree: "🌳",
+                mushroom: "🍄",
+                leaf: "🍃",
+                fire: "🔥",
+                ice: "🧊",
+                wind: "💨"
+            },
+            "⏳ Temporel": {
+                hourglass: "⏳",
+                clock: "🕰️",
+                infinity: "♾️",
+                vortex: "🌀",
+                atom: "⚛️",
+                entropy: "🌡️",
+                dna: "🧬",
+                blackhole: "🕳️"
+            },
+            "⭐ Spéciaux": {
+                excalibur: "🗡️",
+                mother_stone: "🔮",
+                grail: "🏆",
+                star: "⭐",
+                rainbow: "🌈",
+                unicorn: "🦄",
+                dragon: "🐉",
+                phoenix: "🦅"
+            },
+            "📍 Marqueurs": {
+                flag: "🚩",
+                pin: "📍",
+                compass: "🧭",
+                telescope: "🔭",
+                torch: "🔦",
+                campfire: "🔥",
+                signpost: "🪧",
+                question: "❓"
+            }
+        };
+        
+        // État de l'application
+        let currentTool = 'place';
+        let selectedIcon = null;
+        let selectedPlaced = null;
+        let placedIcons = [];
+        let nextId = 1;
+        
+        // Initialisation
+        function init() {
+            renderIconPalette();
+            setupMapEvents();
+        }
+        
+        // Rendu de la palette d'icônes
+        function renderIconPalette() {
+            const container = document.getElementById('iconCategories');
+            container.innerHTML = '';
+            
+            for (const [category, icons] of Object.entries(iconCatalog)) {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerHTML = `<span>${category}</span><span>▼</span>`;
+                title.onclick = () => toggleCategory(section);
+                
+                const grid = document.createElement('div');
+                grid.className = 'icon-grid';
+                
+                for (const [name, emoji] of Object.entries(icons)) {
+                    const item = document.createElement('div');
+                    item.className = 'icon-item';
+                    item.innerHTML = `
+                        ${emoji}
+                        <span class="icon-tooltip">${name}</span>
+                    `;
+                    item.onclick = () => selectIcon(emoji, name, category);
+                    item.draggable = true;
+                    item.ondragstart = (e) => handleDragStart(e, emoji, name, category);
+                    grid.appendChild(item);
+                }
+                
+                section.appendChild(title);
+                section.appendChild(grid);
+                container.appendChild(section);
+            }
+        }
+        
+        // Sélection d'icône
+        function selectIcon(emoji, name, category) {
+            document.querySelectorAll('.icon-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.icon-item').classList.add('selected');
+            selectedIcon = { emoji, name, category };
+            setTool('place');
+        }
+        
+        // Configuration de la carte
+        function setupMapEvents() {
+            const canvas = document.getElementById('mapCanvas');
+            
+            canvas.onclick = (e) => {
+                if (currentTool === 'place' && selectedIcon) {
+                    placeIcon(e.offsetX, e.offsetY);
+                }
+            };
+            
+            canvas.ondrop = (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData('text'));
+                placeIcon(e.offsetX, e.offsetY, data);
+            };
+            
+            canvas.ondragover = (e) => {
+                e.preventDefault();
+            };
+        }
+        
+        // Placement d'icône
+        function placeIcon(x, y, iconData = null) {
+            const data = iconData || selectedIcon;
+            if (!data) return;
+            
+            const icon = document.createElement('div');
+            icon.className = 'placed-icon';
+            icon.innerHTML = data.emoji;
+            icon.style.left = (x - 25) + 'px';
+            icon.style.top = (y - 25) + 'px';
+            icon.id = 'icon-' + nextId++;
+            
+            const iconInfo = {
+                id: icon.id,
+                emoji: data.emoji,
+                name: data.name,
+                category: data.category,
+                x: x,
+                y: y,
+                size: 50,
+                color: 'transparent'
+            };
+            
+            icon.onclick = () => selectPlacedIcon(icon, iconInfo);
+            
+            document.getElementById('mapCanvas').appendChild(icon);
+            placedIcons.push(iconInfo);
+        }
+        
+        // Sélection d'icône placée
+        function selectPlacedIcon(element, info) {
+            if (currentTool === 'delete') {
+                element.remove();
+                placedIcons = placedIcons.filter(i => i.id !== info.id);
+                return;
+            }
+            
+            if (currentTool === 'select') {
+                document.querySelectorAll('.placed-icon').forEach(i => {
+                    i.classList.remove('selected');
+                });
+                element.classList.add('selected');
+                selectedPlaced = { element, info };
+                updateProperties(info);
+            }
+        }
+        
+        // Mise à jour des propriétés
+        function updateProperties(info) {
+            document.getElementById('propName').value = info.name || '';
+            document.getElementById('propType').value = info.category || '';
+            document.getElementById('propPosition').value = `X: ${info.x}, Y: ${info.y}`;
+            document.getElementById('propSize').value = info.size || 50;
+        }
+        
+        // Changement d'outil
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Fonctions utilitaires
+        function clearMap() {
+            if (confirm('Effacer toute la carte ?')) {
+                document.querySelectorAll('.placed-icon').forEach(i => i.remove());
+                placedIcons = [];
+            }
+        }
+        
+        function exportMap() {
+            const data = {
+                version: "1.0",
+                created: new Date().toISOString(),
+                icons: placedIcons
+            };
+            document.getElementById('exportData').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('exportModal').style.display = 'flex';
+        }
+        
+        function generateRandom() {
+            clearMap();
+            const allIcons = [];
+            for (const icons of Object.values(iconCatalog)) {
+                for (const [name, emoji] of Object.entries(icons)) {
+                    allIcons.push({ name, emoji });
+                }
+            }
+            
+            for (let i = 0; i < 20; i++) {
+                const icon = allIcons[Math.floor(Math.random() * allIcons.length)];
+                const x = Math.random() * (window.innerWidth - 600) + 300;
+                const y = Math.random() * (window.innerHeight - 100) + 50;
+                placeIcon(x, y, { ...icon, category: 'random' });
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+        
+        function copyExport() {
+            const text = document.getElementById('exportData').textContent;
+            navigator.clipboard.writeText(text);
+            alert('Copié dans le presse-papier !');
+        }
+        
+        function handleDragStart(e, emoji, name, category) {
+            e.dataTransfer.setData('text', JSON.stringify({ emoji, name, category }));
+        }
+        
+        function toggleCategory(section) {
+            const grid = section.querySelector('.icon-grid');
+            grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+        }
+        
+        function setColor(color) {
+            if (selectedPlaced) {
+                selectedPlaced.element.style.background = color;
+                selectedPlaced.info.color = color;
+            }
+        }
+        
+        // Recherche
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            
+            document.getElementById('searchBox').oninput = (e) => {
+                const search = e.target.value.toLowerCase();
+                document.querySelectorAll('.icon-item').forEach(item => {
+                    const tooltip = item.querySelector('.icon-tooltip').textContent.toLowerCase();
+                    item.style.display = tooltip.includes(search) ? 'flex' : 'none';
+                });
+            };
+            
+            document.getElementById('propSize').oninput = (e) => {
+                if (selectedPlaced) {
+                    const size = e.target.value;
+                    selectedPlaced.element.style.width = size + 'px';
+                    selectedPlaced.element.style.height = size + 'px';
+                    selectedPlaced.info.size = size;
+                }
+            };
+        });
+    </script>
+</body>
+</html>
