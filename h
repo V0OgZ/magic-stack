@@ -71,6 +71,7 @@ show_main_menu() {
     echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
     echo -e "  ${CYAN}[35]${NC} 🚀 Lancer World Editor (dev server)"
     echo -e "  ${CYAN}[36]${NC} 📦 Build + Servir World Editor (static HTTP)"
+    echo -e "  ${CYAN}[37]${NC} 🧪 Tests Playwright World Editor"
     echo ""
     
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
@@ -437,6 +438,50 @@ case $choice in
             ;;
         36)
             build_and_serve_world_editor
+            ;;
+        37)
+            # Tests Playwright pour World Editor
+            echo -e "${YELLOW}🧪 Tests Playwright World Editor${NC}"
+            echo ""
+            if command -v npm >/dev/null 2>&1; then
+                cd apps/world-editor
+                echo "Installation des dépendances Playwright..."
+                npm install
+                echo ""
+                echo -e "${CYAN}Choisissez le mode de test :${NC}"
+                echo "  1) Tests normaux (headless)"
+                echo "  2) Tests avec interface UI"
+                echo "  3) Tests avec navigateur visible"
+                echo "  4) Mode debug interactif"
+                echo "  5) Voir le dernier rapport"
+                echo ""
+                read -p "Choix (1-5): " test_choice
+                
+                case $test_choice in
+                    1)
+                        npm run test
+                        ;;
+                    2)
+                        npm run test:ui
+                        ;;
+                    3)
+                        npm run test:headed
+                        ;;
+                    4)
+                        npm run test:debug
+                        ;;
+                    5)
+                        npm run test:report
+                        ;;
+                    *)
+                        echo -e "${RED}Choix invalide${NC}"
+                        ;;
+                esac
+                cd ../..
+            else
+                echo -e "${RED}npm n'est pas installé !${NC}"
+                echo "Installation requise: brew install node"
+            fi
             ;;
         
         40) quick_start ;;

@@ -3,6 +3,7 @@ import { MapView } from './MapView';
 import { TimelineView } from './TimelineView';
 import { ParamsView } from './ParamsView';
 import { VectorSearchPanel } from './VectorSearchPanel';
+import { LivePreviewPanel } from './LivePreviewPanel';
 import { Clippy } from '../lib/clippy';
 import './theme.css';
 
@@ -63,6 +64,7 @@ export function App(): React.ReactElement {
       </footer>
       
       <VectorSearchPanel />
+      <LivePreviewPanel />
       <Clippy />
     </div>
   );
