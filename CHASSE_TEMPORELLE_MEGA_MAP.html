@@ -981,11 +981,88 @@
             showNotification(`Chasse Temporelle commencée en mode ${difficulty.toUpperCase()}!`);
         }
 
-        function endTurn() {
+        async function endTurn() {
             GAME.day++;
-            GAME.timeState.tw++;
-            GAME.timeState.te += 1 + Math.random() * 0.5 - 0.25;  // Drift
-            GAME.timeState.dt = Math.abs(GAME.timeState.tw - GAME.timeState.te);
+            
+            // ⚡ APPEL BACKEND V2 - TICK
+            try {
+                const tickResponse = await fetch('http://localhost:3001/api/v2/tick', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_tw: GAME.timeState.tw,
+                        entities: [{ 
+                            id: 'hero', 
+                            position: GAME.heroPosition,
+                            resources: GAME.resources
+                        }]
+                    })
+                });
+                
+                if (tickResponse.ok) {
+                    const tickData = await tickResponse.json();
+                    GAME.timeState.tw = tickData.new_tw || GAME.timeState.tw + 1;
+                    GAME.timeState.te = tickData.entity_time || GAME.timeState.te + 1.1;
+                    GAME.timeState.dt = Math.abs(GAME.timeState.tw - GAME.timeState.te);
+                    console.log('✅ V2 Tick:', tickData);
+                }
+            } catch (e) {
+                console.log('⚠️ V2 backend pas disponible, mode local');
+                GAME.timeState.tw++;
+                GAME.timeState.te += 1 + Math.random() * 0.5 - 0.25;
+                GAME.timeState.dt = Math.abs(GAME.timeState.tw - GAME.timeState.te);
+            }
+            
+            // ☕ APPEL JAVA - Enemy AI Turn
+            try {
+                const enemyTurnResponse = await fetch('http://localhost:8080/api/combat/enemy-turn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        combatId: 'chasse-' + GAME.day,
+                        enemies: GAME.enemies.slice(0, 5), // Send first 5 enemies
+                        heroPosition: GAME.heroPosition,
+                        difficulty: GAME.difficulty
+                    })
+                });
+                
+                if (enemyTurnResponse.ok) {
+                    const aiDecision = await enemyTurnResponse.json();
+                    console.log('☕ Java AI decision:', aiDecision);
+                    // Apply AI moves if provided
+                    if (aiDecision.enemyMoves) {
+                        applyAIDecisions(aiDecision.enemyMoves);
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Java backend pas disponible, AI locale');
+            }
+            
+            // 🐍 APPEL PYTHON - Vector DB pour analyse
+            try {
+                const searchResponse = await fetch('http://localhost:5001/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: `regulateur ${GAME.day > 15 ? 'endgame' : 'midgame'} strategy`,
+                        k: 3
+                    })
+                });
+                
+                if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    console.log('🐍 Vector DB hints:', searchData);
+                    // Use hints for regulator behavior
+                    if (searchData.results && searchData.results.length > 0) {
+                        adjustRegulatorStrategy(searchData.results[0]);
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Vector DB pas disponible');
+            }
+            
+            // Apply regulators (with backend data if available)
+            regulatorsAction();
             
             // Apply Anna's decay
             if (GAME.regulators.anna.decay > 0) {
@@ -993,19 +1070,9 @@
                 GAME.resources.energy = Math.max(0, GAME.resources.energy - Math.floor(GAME.regulators.anna.decay / 2));
             }
             
-            // Check Overload
-            if (Math.random() < 0.3) {
-                GAME.regulators.overload.stack++;
-                if (GAME.regulators.overload.stack >= GAME.regulators.overload.maxStack) {
-                    showNotification('⚠️ OVERLOAD COLLAPSE!');
-                    GAME.regulators.overload.stack = 0;
-                    // Collapse effect
-                    GAME.resources.temporal = Math.floor(GAME.resources.temporal / 2);
-                }
-            }
-            
-            // Move enemies
+            // Move enemies and AI opponent
             moveEnemies();
+            aiOpponentTurn();
             
             // Update UI
             updateUI();
@@ -1013,27 +1080,197 @@
             // Check victory/defeat
             if (GAME.day >= 25) {
                 showNotification('🎉 VICTOIRE! Vous avez survécu 25 jours!');
+                recordVictory();
             }
             
             if (GAME.resources.crystals <= 0 && GAME.resources.energy <= 0) {
                 showNotification('💀 DÉFAITE! Ressources épuisées...');
             }
         }
+        
+        // Apply AI decisions from Java backend
+        function applyAIDecisions(moves) {
+            moves.forEach(move => {
+                const enemy = GAME.enemies.find(e => e.x === move.from.x && e.y === move.from.y);
+                if (enemy) {
+                    enemy.x = move.to.x;
+                    enemy.y = move.to.y;
+                }
+            });
+        }
+        
+        // Adjust regulator strategy based on Vector DB hints
+        function adjustRegulatorStrategy(hint) {
+            if (hint.text && hint.text.includes('aggressive')) {
+                GAME.regulators.anna.decay = Math.min(10, GAME.regulators.anna.decay + 1);
+                GAME.regulators.overload.maxStack = Math.max(5, GAME.regulators.overload.maxStack - 1);
+            }
+        }
+        
+        // Record victory in backend
+        async function recordVictory() {
+            try {
+                await fetch('http://localhost:3001/api/game/victory', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'chasse_temporelle',
+                        day: GAME.day,
+                        difficulty: GAME.difficulty,
+                        score: GAME.resources.crystals + GAME.resources.quantum * 10
+                    })
+                });
+            } catch (e) {
+                console.log('Victory recorded locally');
+            }
+        }
 
         function moveEnemies() {
             GAME.enemies.forEach(enemy => {
-                // Simple AI: move towards hero
-                const dx = Math.sign(GAME.heroPosition.x - enemy.x);
-                const dy = Math.sign(GAME.heroPosition.y - enemy.y);
+                // Clear old position
+                const oldHex = document.querySelector(`.hex[data-x="${enemy.x}"][data-y="${enemy.y}"]`);
+                if (oldHex && oldHex.classList.contains('object-enemy')) {
+                    oldHex.classList.remove('object-enemy');
+                    const terrain = getTerrainType(enemy.x, enemy.y);
+                    oldHex.querySelector('.hex-content').textContent = terrain.emoji;
+                }
                 
-                if (Math.random() < 0.5) {
-                    enemy.x += dx;
-                    enemy.y += dy;
+                // AI Strategy based on difficulty
+                let moveChance = 0.3;
+                let smartMove = 0.5;
+                
+                switch(GAME.difficulty) {
+                    case 'easy': 
+                        moveChance = 0.2;
+                        smartMove = 0.3;
+                        break;
+                    case 'hard':
+                        moveChance = 0.5;
+                        smartMove = 0.7;
+                        break;
+                    case 'nightmare':
+                        moveChance = 0.7;
+                        smartMove = 0.9;
+                        break;
+                }
+                
+                if (Math.random() < moveChance) {
+                    const dist = Math.sqrt(Math.pow(enemy.x - GAME.heroPosition.x, 2) + 
+                                         Math.pow(enemy.y - GAME.heroPosition.y, 2));
+                    
+                    // Smart move towards hero or random
+                    if (Math.random() < smartMove && dist < 20) {
+                        // Move towards hero
+                        const dx = Math.sign(GAME.heroPosition.x - enemy.x);
+                        const dy = Math.sign(GAME.heroPosition.y - enemy.y);
+                        enemy.x += dx;
+                        enemy.y += dy;
+                    } else {
+                        // Random move
+                        enemy.x += Math.floor(Math.random() * 3) - 1;
+                        enemy.y += Math.floor(Math.random() * 3) - 1;
+                    }
+                    
+                    // Keep in bounds
+                    enemy.x = Math.max(0, Math.min(GAME.mapWidth - 1, enemy.x));
+                    enemy.y = Math.max(0, Math.min(GAME.mapHeight - 1, enemy.y));
+                }
+                
+                // Place at new position
+                placeObject(enemy.x, enemy.y, 'enemy', enemy.type);
+                
+                // Check for combat
+                if (enemy.x === GAME.heroPosition.x && enemy.y === GAME.heroPosition.y) {
+                    engageCombat(enemy);
                 }
             });
+        }
+        
+        // AI Opponent Turn
+        function aiOpponentTurn() {
+            // AI collects resources
+            if (Math.random() < 0.3) {
+                const nearestArtifact = findNearestArtifact();
+                if (nearestArtifact && Math.random() < 0.5) {
+                    GAME.aiResources = (GAME.aiResources || 0) + 10;
+                    showNotification(`IA collecte des ressources! (Total: ${GAME.aiResources})`);
+                }
+            }
             
-            // Redraw enemies
-            // (In a real implementation, we'd update their positions on the map)
+            // AI uses abilities based on difficulty
+            if (GAME.difficulty === 'nightmare' && Math.random() < 0.3) {
+                showNotification('⚠️ IA utilise TEMPORAL SHIFT!');
+                GAME.timeState.tw += 2;
+            }
+        }
+        
+        // Regulators Action
+        function regulatorsAction() {
+            // VINCE - Pierce fog
+            if (GAME.regulators.vince.active) {
+                // Reveal more map
+                GAME.causalFogActive = false;
+                setTimeout(() => GAME.causalFogActive = true, 3000);
+            }
+            
+            // ANNA - Economic decay  
+            if (GAME.regulators.anna.decay > 0) {
+                const decay = GAME.difficulty === 'nightmare' ? 10 : GAME.regulators.anna.decay;
+                GAME.resources.crystals = Math.max(0, GAME.resources.crystals - decay);
+                GAME.resources.energy = Math.max(0, GAME.resources.energy - Math.floor(decay/2));
+            }
+            
+            // OVERLOAD - Stack management
+            GAME.regulators.overload.stack += Math.random() < 0.4 ? 1 : 0;
+            if (GAME.regulators.overload.stack >= GAME.regulators.overload.maxStack) {
+                showNotification('💥 OVERLOAD COLLAPSE! Perte massive de ressources!');
+                GAME.resources.temporal = Math.floor(GAME.resources.temporal / 2);
+                GAME.resources.quantum = Math.floor(GAME.resources.quantum / 2);
+                GAME.regulators.overload.stack = 0;
+                
+                // Spawn more enemies on collapse
+                for (let i = 0; i < 5; i++) {
+                    const x = Math.floor(Math.random() * GAME.mapWidth);
+                    const y = Math.floor(Math.random() * GAME.mapHeight);
+                    GAME.enemies.push({ x, y, type: '💀' });
+                    placeObject(x, y, 'enemy', '💀');
+                }
+            }
+        }
+        
+        // Combat System
+        function engageCombat(enemy) {
+            showNotification(`⚔️ COMBAT avec ${enemy.type}!`);
+            
+            // Simple combat resolution
+            const heroStrength = GAME.resources.energy + GAME.resources.quantum;
+            const enemyStrength = 20 + (GAME.day * 2);
+            
+            if (heroStrength > enemyStrength) {
+                // Victory
+                const index = GAME.enemies.indexOf(enemy);
+                if (index > -1) GAME.enemies.splice(index, 1);
+                GAME.resources.crystals += 10;
+                showNotification('✅ Victoire! +10 Cristaux');
+            } else {
+                // Defeat - lose resources
+                GAME.resources.energy = Math.max(0, GAME.resources.energy - 10);
+                GAME.resources.crystals = Math.max(0, GAME.resources.crystals - 20);
+                showNotification('💀 Défaite! -10 Energy, -20 Cristaux');
+                
+                // Teleport hero away
+                const newX = Math.floor(Math.random() * GAME.mapWidth);
+                const newY = Math.floor(Math.random() * GAME.mapHeight);
+                moveHero(newX, newY);
+            }
+            
+            updateResources();
+        }
+        
+        // Find nearest artifact for AI
+        function findNearestArtifact() {
+            if (GAME.artifacts.length === 0) return null;
+            return GAME.artifacts[0]; // Simple: just return first
         }
 
         function toggleCausalFog() {

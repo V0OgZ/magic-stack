@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test - Heroes of Time</title>
+    <style>
+        body {
+            background: #1a0033;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .status { 
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connected { background: #00ff88; color: #000; }
+        .disconnected { background: #ff4444; }
+        .log {
+            background: #000;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #00ff88;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4a5fff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 WebSocket Test</h1>
+    
+    <div id="rust-status" class="status disconnected">Rust WS: DISCONNECTED</div>
+    <div id="java-status" class="status disconnected">Java WS: DISCONNECTED</div>
+    
+    <div>
+        <button onclick="connectRust()">Connect Rust</button>
+        <button onclick="connectJava()">Connect Java</button>
+        <button onclick="sendTest()">Send Test Message</button>
+        <button onclick="disconnect()">Disconnect All</button>
+    </div>
+    
+    <h3>Log:</h3>
+    <div id="log" class="log"></div>
+    
+    <script>
+        let rustWS = null;
+        let javaWS = null;
+        
+        function log(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function connectRust() {
+            if (rustWS) rustWS.close();
+            
+            rustWS = new WebSocket('ws://localhost:3001/ws');
+            
+            rustWS.onopen = () => {
+                document.getElementById('rust-status').className = 'status connected';
+                document.getElementById('rust-status').textContent = 'Rust WS: CONNECTED';
+                log('✅ Rust WebSocket connected!');
+            };
+            
+            rustWS.onmessage = (event) => {
+                log(`📨 Rust: ${event.data}`);
+            };
+            
+            rustWS.onerror = (error) => {
+                log(`❌ Rust error: ${error}`);
+            };
+            
+            rustWS.onclose = () => {
+                document.getElementById('rust-status').className = 'status disconnected';
+                document.getElementById('rust-status').textContent = 'Rust WS: DISCONNECTED';
+                log('🔌 Rust WebSocket disconnected');
+            };
+        }
+        
+        function connectJava() {
+            if (javaWS) javaWS.close();
+            
+            javaWS = new WebSocket('ws://localhost:8080/ws/game');
+            
+            javaWS.onopen = () => {
+                document.getElementById('java-status').className = 'status connected';
+                document.getElementById('java-status').textContent = 'Java WS: CONNECTED';
+                log('✅ Java WebSocket connected!');
+            };
+            
+            javaWS.onmessage = (event) => {
+                log(`📨 Java: ${event.data}`);
+            };
+            
+            javaWS.onerror = (error) => {
+                log(`❌ Java error: ${error}`);
+            };
+            
+            javaWS.onclose = () => {
+                document.getElementById('java-status').className = 'status disconnected';
+                document.getElementById('java-status').textContent = 'Java WS: DISCONNECTED';
+                log('🔌 Java WebSocket disconnected');
+            };
+        }
+        
+        function sendTest() {
+            const testMsg = JSON.stringify({
+                type: 'test',
+                timestamp: Date.now(),
+                data: 'Hello from WebSocket test!'
+            });
+            
+            if (rustWS && rustWS.readyState === WebSocket.OPEN) {
+                rustWS.send(testMsg);
+                log(`➡️ Sent to Rust: ${testMsg}`);
+            }
+            
+            if (javaWS && javaWS.readyState === WebSocket.OPEN) {
+                javaWS.send(testMsg);
+                log(`➡️ Sent to Java: ${testMsg}`);
+            }
+        }
+        
+        function disconnect() {
+            if (rustWS) rustWS.close();
+            if (javaWS) javaWS.close();
+            log('🔌 All connections closed');
+        }
+        
+        // Auto-connect on load
+        setTimeout(() => {
+            log('🚀 Auto-connecting...');
+            connectRust();
+            connectJava();
+        }, 1000);
+    </script>
+</body>
+</html>

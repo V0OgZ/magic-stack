@@ -50,13 +50,9 @@ show_main_menu() {
     echo -e "  ${CYAN}[5]${NC} ⏹️  Arrêter tous les services"
     echo ""
     
-    echo -e "${YELLOW}━━━ INTERFACES DE JEU ━━━${NC}"
-    echo -e "  ${CYAN}[10]${NC} 🎮 Démo Multiplayer HOMM3"
-    echo -e "  ${CYAN}[11]${NC} 📱 PWA iPad avec Clippy"
-    echo -e "  ${CYAN}[12]${NC} 🤖 IA vs IA Autoplay"
-    echo -e "  ${CYAN}[13]${NC} 👁️  Mode Spectateur God Mode"
-    echo -e "  ${CYAN}[14]${NC} 🧪 Test Runner (Scénarios)"
-    echo -e "  ${CYAN}[15]${NC} ⚔️ CHASSE TEMPORELLE ${GOLD}(6x6 écrans!)${NC} ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "${YELLOW}━━━ LE VRAI JEU ━━━${NC}"
+    echo -e "  ${CYAN}[10]${NC} 🎮 ${GOLD}HEROES OF TIME - UNIFIED${NC} ${GREEN}(LE VRAI!)${NC}"
+    echo -e "  ${CYAN}[11]${NC} 📱 Version PWA (iPad/Mobile)"
     echo ""
     
     echo -e "${YELLOW}━━━ DOCUMENTATION & OUTILS ━━━${NC}"
@@ -312,12 +308,15 @@ case $choice in
             ;;
         5) stop_all_services ;;
         
-        10) open_page "MULTIPLAYER_DEMO_HOMM3.html" "Démo HOMM3" ;;
-        11) open_page "HOMM3_PWA_IPAD_CLIPPY.html" "PWA iPad" ;;
-        12) open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay" ;;
-        13) open_page "SPECTATOR_GOD_MODE.html" "Mode Spectateur" ;;
-        14) open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner" ;;
-        15) open_page "CHASSE_TEMPORELLE_MEGA_MAP.html" "CHASSE TEMPORELLE" ;;
+        10) 
+            echo -e "${GOLD}🎮 Lancement de HEROES OF TIME - UNIFIED${NC}"
+            echo -e "${GREEN}Connexion aux backends...${NC}"
+            open_page "HOT_GAME_UNIFIED.html" "Heroes of Time - The Real Game"
+            ;;
+        11) 
+            echo -e "${CYAN}📱 PWA Version${NC}"
+            open_page "HOT_GAME_UNIFIED.html" "Heroes of Time PWA"
+            ;;
         
         20) open_page "MANUEL_DU_JOUEUR_HOT.html" "Manuel Expert" ;;
         21) open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile" ;;

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Heroes of Time - The Real Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0015, #1a0033);
+            color: #e0e0ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            height: 60px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 2px solid #4a5fff;
+        }
+
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* MAIN GAME AREA */
+        .game-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-view {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            display: none;
+        }
+
+        .game-view.active {
+            display: flex;
+        }
+
+        /* MAP VIEW */
+        .map-view {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hex-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            transform-origin: center;
+        }
+
+        .hex {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hex:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* TCG VIEW */
+        .tcg-view {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hand {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #4a5fff, #2a3fdf);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            height: 80px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 2px solid #4a5fff;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #e0e0ff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(74,95,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .nav-btn .icon {
+            font-size: 24px;
+        }
+
+        /* FLOATING UI */
+        .floating-controls {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #4a5fff;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.2);
+            background: #4a5fff;
+        }
+
+        /* NOTIFICATIONS */
+        .notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            animation: notifPulse 2s ease;
+            pointer-events: none;
+        }
+
+        @keyframes notifPulse {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+
+        /* STATUS PANEL */
+        .status-panel {
+            position: absolute;
+            left: 20px;
+            top: 80px;
+            width: 250px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #4a5fff;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .status-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+
+        /* TOUCH SUPPORT */
+        @media (pointer: coarse) {
+            .hex { width: 80px; height: 80px; }
+            .card { width: 100px; height: 150px; }
+            .bottom-nav { height: 100px; }
+            .nav-btn { font-size: 16px; }
+            .nav-btn .icon { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="resources">
+                <div class="resource">
+                    <span>💎</span>
+                    <span id="crystals">100</span>
+                </div>
+                <div class="resource">
+                    <span>⚡</span>
+                    <span id="energy">50</span>
+                </div>
+                <div class="resource">
+                    <span>🌀</span>
+                    <span id="temporal">25</span>
+                </div>
+            </div>
+            
+            <div id="game-status">
+                Jour <span id="day">1</span> | t_w: <span id="tw">0</span> | t_e: <span id="te">0</span>
+            </div>
+            
+            <div>
+                <button class="control-btn" onclick="Game.toggleSound()">🔊</button>
+            </div>
+        </div>
+
+        <!-- MAIN GAME CONTAINER -->
+        <div class="game-container">
+            <!-- MAP VIEW -->
+            <div id="mapView" class="game-view active">
+                <div class="map-view">
+                    <div class="hex-grid" id="hexGrid"></div>
+                </div>
+            </div>
+
+            <!-- TCG VIEW -->
+            <div id="tcgView" class="game-view">
+                <div class="tcg-view">
+                    <div id="enemyArea" style="opacity: 0.7">
+                        <h3>Adversaire</h3>
+                        <div class="hand" id="enemyHand"></div>
+                    </div>
+                    
+                    <div id="battlefield" style="min-height: 200px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 20px;">
+                        <div id="battleLog"></div>
+                    </div>
+                    
+                    <div id="playerArea">
+                        <h3>Vos cartes</h3>
+                        <div class="hand" id="playerHand"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS PANEL -->
+            <div class="status-panel">
+                <div class="status-title">État V2</div>
+                <div class="status-item">
+                    <span>Drift:</span>
+                    <span id="drift">0.0</span>
+                </div>
+                <div class="status-item">
+                    <span>Cohérence:</span>
+                    <span id="coherence">1.0</span>
+                </div>
+                <div class="status-item">
+                    <span>Phase Φ:</span>
+                    <span id="phase">0.0</span>
+                </div>
+                <div class="status-item">
+                    <span>Régulateurs:</span>
+                    <span id="regulators">3/3</span>
+                </div>
+            </div>
+
+            <!-- FLOATING CONTROLS -->
+            <div class="floating-controls">
+                <button class="control-btn" onclick="Game.endTurn()">⏭️</button>
+                <button class="control-btn" onclick="Game.forkTimeline()">🔀</button>
+                <button class="control-btn" onclick="Game.useV2Power()">⚡</button>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="Game.switchView('map')">
+                <span class="icon">🗺️</span>
+                <span>Carte</span>
+            </button>
+            <button class="nav-btn" onclick="Game.switchView('tcg')">
+                <span class="icon">🃏</span>
+                <span>Combat</span>
+            </button>
+            <button class="nav-btn" onclick="Game.switchView('timeline')">
+                <span class="icon">🌀</span>
+                <span>Timeline</span>
+            </button>
+            <button class="nav-btn" onclick="Game.switchView('inventory')">
+                <span class="icon">🎒</span>
+                <span>Inventaire</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== THE REAL GAME ENGINE =====
+        const Game = {
+            // Configuration backends
+            backends: {
+                rust: 'http://localhost:3001',
+                java: 'http://localhost:8080',
+                python: 'http://localhost:5001'
+            },
+            
+            // État du jeu (connecté aux VRAIS backends)
+            state: {
+                // V2 State
+                tw: 0,
+                te: 0,
+                drift: 0,
+                coherence: 1.0,
+                phase: 0,
+                
+                // Resources
+                resources: {
+                    crystals: 100,
+                    energy: 50,
+                    temporal: 25,
+                    quantum: 10
+                },
+                
+                // Game state
+                day: 1,
+                position: { x: 5, y: 5 },
+                entities: [],
+                cards: [],
+                map: null,
+                
+                // Connection status
+                connected: {
+                    rust: false,
+                    java: false,
+                    python: false
+                }
+            },
+            
+            // Initialisation
+            async init() {
+                console.log('🎮 Initializing Heroes of Time - THE REAL GAME');
+                
+                // Check backends
+                await this.checkBackends();
+                
+                // Initialize V2 if available
+                if (this.state.connected.rust) {
+                    await this.initV2();
+                }
+                
+                // Load game data
+                await this.loadGameData();
+                
+                // Generate map
+                this.generateMap();
+                
+                // Initialize touch/mouse
+                this.initControls();
+                
+                // Start game loop
+                this.startGameLoop();
+                
+                // Initialize audio
+                this.initAudio();
+            },
+            
+            // Check backend connections
+            async checkBackends() {
+                // Check Rust V2
+                try {
+                    const res = await fetch(`${this.backends.rust}/health`);
+                    this.state.connected.rust = res.ok;
+                    console.log('✅ Rust V2 connected');
+                } catch {
+                    console.log('⚠️ Rust V2 not available');
+                }
+                
+                // Check Java
+                try {
+                    const res = await fetch(`${this.backends.java}/api/health`);
+                    this.state.connected.java = res.ok;
+                    console.log('✅ Java backend connected');
+                } catch {
+                    console.log('⚠️ Java backend not available');
+                }
+                
+                // Check Python Vector DB
+                try {
+                    const res = await fetch(`${this.backends.python}/health`);
+                    this.state.connected.python = res.ok;
+                    console.log('✅ Python Vector DB connected');
+                } catch {
+                    console.log('⚠️ Python Vector DB not available');
+                }
+            },
+            
+            // Initialize V2 controller
+            async initV2() {
+                try {
+                    const res = await fetch(`${this.backends.rust}/api/v2/config`);
+                    const config = await res.json();
+                    console.log('V2 Config loaded:', config);
+                    
+                    // Get initial entity state
+                    const entityRes = await fetch(`${this.backends.rust}/api/v2/entity/player`);
+                    if (entityRes.ok) {
+                        const entity = await entityRes.json();
+                        this.state.te = entity.temporal_state?.t_e || 0;
+                        this.state.coherence = entity.identity?.coherence || 1.0;
+                        this.state.phase = entity.energy?.phi || 0;
+                    }
+                } catch (e) {
+                    console.error('V2 init error:', e);
+                }
+            },
+            
+            // Load game data from backends
+            async loadGameData() {
+                // Load scenarios from Java
+                if (this.state.connected.java) {
+                    try {
+                        const res = await fetch(`${this.backends.java}/api/scenarios`);
+                        const scenarios = await res.json();
+                        console.log('Scenarios loaded:', scenarios.length);
+                    } catch (e) {
+                        console.error('Failed to load scenarios:', e);
+                    }
+                }
+                
+                // Load heroes/cards from Vector DB
+                if (this.state.connected.python) {
+                    try {
+                        const res = await fetch(`${this.backends.python}/search`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                query: 'hero cards spells',
+                                k: 10
+                            })
+                        });
+                        const data = await res.json();
+                        console.log('Game content loaded from Vector DB');
+                    } catch (e) {
+                        console.error('Failed to load from Vector DB:', e);
+                    }
+                }
+                
+                // Fallback: generate default cards
+                this.state.cards = this.generateDefaultCards();
+            },
+            
+            // Generate map
+            generateMap() {
+                const grid = document.getElementById('hexGrid');
+                grid.innerHTML = '';
+                
+                const mapSize = 10;
+                for (let y = 0; y < mapSize; y++) {
+                    for (let x = 0; x < mapSize; x++) {
+                        const hex = document.createElement('div');
+                        hex.className = 'hex';
+                        hex.dataset.x = x;
+                        hex.dataset.y = y;
+                        
+                        // Position
+                        const offsetX = y % 2 ? 30 : 0;
+                        hex.style.left = (x * 60 + offsetX) + 'px';
+                        hex.style.top = (y * 52) + 'px';
+                        
+                        // Content
+                        if (x === this.state.position.x && y === this.state.position.y) {
+                            hex.textContent = '🦸';
+                            hex.style.background = 'rgba(0,255,136,0.3)';
+                        } else {
+                            const terrain = ['🌿', '⛰️', '💧', '🏜️'][Math.floor(Math.random() * 4)];
+                            hex.textContent = terrain;
+                        }
+                        
+                        // Click handler
+                        hex.onclick = () => this.onHexClick(x, y);
+                        
+                        grid.appendChild(hex);
+                    }
+                }
+            },
+            
+            // Hex click handler
+            async onHexClick(x, y) {
+                const dist = Math.abs(x - this.state.position.x) + Math.abs(y - this.state.position.y);
+                if (dist <= 3) {
+                    // Move hero
+                    this.state.position = { x, y };
+                    this.generateMap();
+                    
+                    // Check for encounters
+                    if (Math.random() < 0.3) {
+                        this.startCombat();
+                    }
+                }
+            },
+            
+            // Start TCG combat
+            async startCombat() {
+                this.switchView('tcg');
+                
+                // If Java backend available, use it
+                if (this.state.connected.java) {
+                    try {
+                        const res = await fetch(`${this.backends.java}/api/combat/start`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                playerId: 'player',
+                                enemyId: 'enemy_' + Math.random()
+                            })
+                        });
+                        const combat = await res.json();
+                        console.log('Combat started:', combat);
+                    } catch (e) {
+                        console.error('Combat start failed:', e);
+                    }
+                }
+                
+                // Draw cards
+                this.drawCards();
+            },
+            
+            // Draw cards for player
+            drawCards() {
+                const hand = document.getElementById('playerHand');
+                hand.innerHTML = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    const card = this.state.cards[Math.floor(Math.random() * this.state.cards.length)];
+                    const cardEl = this.createCardElement(card);
+                    hand.appendChild(cardEl);
+                }
+            },
+            
+            // Create card element
+            createCardElement(card) {
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-title">${card.name}</div>
+                    <div style="font-size: 40px">${card.icon}</div>
+                    <div class="card-stats">
+                        <span>⚔️ ${card.attack}</span>
+                        <span>🛡️ ${card.defense}</span>
+                    </div>
+                `;
+                el.onclick = () => this.playCard(card);
+                return el;
+            },
+            
+            // Play a card
+            async playCard(card) {
+                if (this.state.resources.energy < card.cost) {
+                    this.showNotification('Pas assez d\'énergie!');
+                    return;
+                }
+                
+                this.state.resources.energy -= card.cost;
+                this.updateUI();
+                
+                // Call backend if available
+                if (this.state.connected.java) {
+                    try {
+                        const res = await fetch(`${this.backends.java}/api/combat/play-card`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                cardId: card.id,
+                                target: 'enemy'
+                            })
+                        });
+                        const result = await res.json();
+                        console.log('Card played:', result);
+                    } catch (e) {
+                        console.error('Play card failed:', e);
+                    }
+                }
+                
+                this.showNotification(`${card.name} joué!`);
+            },
+            
+            // End turn
+            async endTurn() {
+                this.state.day++;
+                
+                // Call V2 tick if available
+                if (this.state.connected.rust) {
+                    try {
+                        const res = await fetch(`${this.backends.rust}/api/v2/tick`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                current_tw: this.state.tw,
+                                entities: [{
+                                    id: 'player',
+                                    position: this.state.position,
+                                    energy: this.state.resources.energy
+                                }]
+                            })
+                        });
+                        const tick = await res.json();
+                        this.state.tw = tick.new_tw || this.state.tw + 1;
+                        this.state.te = tick.entity_time || this.state.te + 1;
+                        this.state.drift = Math.abs(this.state.tw - this.state.te);
+                    } catch (e) {
+                        console.error('V2 tick failed:', e);
+                    }
+                }
+                
+                // Update resources
+                this.state.resources.energy = Math.min(100, this.state.resources.energy + 10);
+                this.state.resources.temporal += 5;
+                
+                this.updateUI();
+                this.showNotification(`Jour ${this.state.day}`);
+            },
+            
+            // Fork timeline (V2 feature)
+            async forkTimeline() {
+                if (!this.state.connected.rust) {
+                    this.showNotification('V2 backend requis!');
+                    return;
+                }
+                
+                try {
+                    const res = await fetch(`${this.backends.rust}/api/v2/fork-timeline`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            entity_id: 'player',
+                            branch_point: this.state.tw
+                        })
+                    });
+                    const result = await res.json();
+                    this.showNotification('Timeline fork créé!');
+                    console.log('Fork result:', result);
+                } catch (e) {
+                    console.error('Fork failed:', e);
+                }
+            },
+            
+            // Use V2 power
+            async useV2Power() {
+                if (this.state.resources.quantum < 5) {
+                    this.showNotification('Pas assez de quantum!');
+                    return;
+                }
+                
+                this.state.resources.quantum -= 5;
+                this.state.coherence = Math.max(0, this.state.coherence - 0.1);
+                this.state.phase += Math.PI / 4;
+                
+                this.updateUI();
+                this.showNotification('Pouvoir V2 activé!');
+            },
+            
+            // Switch view
+            switchView(view) {
+                document.querySelectorAll('.game-view').forEach(v => v.classList.remove('active'));
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                
+                if (view === 'map') {
+                    document.getElementById('mapView').classList.add('active');
+                    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                } else if (view === 'tcg') {
+                    document.getElementById('tcgView').classList.add('active');
+                    document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                }
+            },
+            
+            // Update UI
+            updateUI() {
+                document.getElementById('crystals').textContent = this.state.resources.crystals;
+                document.getElementById('energy').textContent = this.state.resources.energy;
+                document.getElementById('temporal').textContent = this.state.resources.temporal;
+                document.getElementById('day').textContent = this.state.day;
+                document.getElementById('tw').textContent = this.state.tw.toFixed(1);
+                document.getElementById('te').textContent = this.state.te.toFixed(1);
+                document.getElementById('drift').textContent = this.state.drift.toFixed(2);
+                document.getElementById('coherence').textContent = this.state.coherence.toFixed(2);
+                document.getElementById('phase').textContent = (this.state.phase % (2 * Math.PI)).toFixed(2);
+            },
+            
+            // Show notification
+            showNotification(text) {
+                const notif = document.createElement('div');
+                notif.className = 'notification';
+                notif.textContent = text;
+                document.body.appendChild(notif);
+                setTimeout(() => notif.remove(), 2000);
+            },
+            
+            // Initialize controls (touch + mouse)
+            initControls() {
+                // Touch support for map dragging
+                let isDragging = false;
+                let startX, startY;
+                const hexGrid = document.getElementById('hexGrid');
+                
+                const startDrag = (x, y) => {
+                    isDragging = true;
+                    startX = x - hexGrid.offsetLeft;
+                    startY = y - hexGrid.offsetTop;
+                };
+                
+                const drag = (x, y) => {
+                    if (!isDragging) return;
+                    hexGrid.style.left = (x - startX) + 'px';
+                    hexGrid.style.top = (y - startY) + 'px';
+                };
+                
+                const endDrag = () => {
+                    isDragging = false;
+                };
+                
+                // Mouse events
+                hexGrid.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+                window.addEventListener('mousemove', e => drag(e.clientX, e.clientY));
+                window.addEventListener('mouseup', endDrag);
+                
+                // Touch events
+                hexGrid.addEventListener('touchstart', e => {
+                    const touch = e.touches[0];
+                    startDrag(touch.clientX, touch.clientY);
+                });
+                window.addEventListener('touchmove', e => {
+                    const touch = e.touches[0];
+                    drag(touch.clientX, touch.clientY);
+                });
+                window.addEventListener('touchend', endDrag);
+            },
+            
+            // Game loop
+            startGameLoop() {
+                setInterval(() => {
+                    // Auto-save to backends
+                    if (this.state.connected.rust && Math.random() < 0.1) {
+                        this.saveGameState();
+                    }
+                }, 5000);
+            },
+            
+            // Save game state
+            async saveGameState() {
+                // Save to Rust backend
+                try {
+                    await fetch(`${this.backends.rust}/api/game/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.state)
+                    });
+                } catch (e) {
+                    console.error('Save failed:', e);
+                }
+            },
+            
+            // Initialize audio
+            initAudio() {
+                this.audio = {
+                    context: null,
+                    enabled: true
+                };
+                
+                document.addEventListener('click', () => {
+                    if (!this.audio.context) {
+                        this.audio.context = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                }, { once: true });
+            },
+            
+            // Toggle sound
+            toggleSound() {
+                this.audio.enabled = !this.audio.enabled;
+            },
+            
+            // Generate default cards
+            generateDefaultCards() {
+                return [
+                    { id: 'c1', name: 'Temporal Shift', cost: 3, attack: 0, defense: 0, icon: '⏰' },
+                    { id: 'c2', name: 'Quantum Strike', cost: 4, attack: 5, defense: 2, icon: '⚡' },
+                    { id: 'c3', name: 'Causal Shield', cost: 2, attack: 0, defense: 6, icon: '🛡️' },
+                    { id: 'c4', name: 'Fork Reality', cost: 5, attack: 3, defense: 3, icon: '🔀' },
+                    { id: 'c5', name: 'Energy Burst', cost: 1, attack: 2, defense: 1, icon: '💥' },
+                    { id: 'c6', name: 'Time Freeze', cost: 6, attack: 0, defense: 0, icon: '❄️' },
+                    { id: 'c7', name: 'Paradox', cost: 7, attack: 8, defense: 8, icon: '♾️' },
+                    { id: 'c8', name: 'Drift Walker', cost: 3, attack: 4, defense: 3, icon: '👻' }
+                ];
+            }
+        };
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            Game.init();
+        });
+    </script>
+</body>
+</html>
