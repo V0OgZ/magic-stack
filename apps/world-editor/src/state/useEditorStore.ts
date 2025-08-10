@@ -8,6 +8,9 @@ type EditorState = {
   addObjectAt: (x: number, y: number, kind: string, data?: Record<string, unknown>) => void;
   addJour30Event: () => void;
   setScenario: (s: Scenario) => void;
+  addEvent: (e: { day: number; type: string; payload?: Record<string, unknown> }) => void;
+  updateEvent: (id: string, patch: Partial<{ day: number; type: string; payload: Record<string, unknown> }>) => void;
+  removeEvent: (id: string) => void;
 };
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -43,6 +46,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ scenario: { ...s, events: [...s.events, evt] } });
   },
   setScenario: (sc) => set({ scenario: ScenarioSchema.parse(sc) }),
+  addEvent: (e) => {
+    const s = get().scenario;
+    const id = `event-${s.events.length + 1}`;
+    set({ scenario: { ...s, events: [...s.events, { id, day: e.day, type: e.type, payload: e.payload ?? {} }] } });
+  },
+  updateEvent: (id, patch) => {
+    const s = get().scenario;
+    const events = s.events.map((ev) => (ev.id === id ? { ...ev, ...patch } : ev));
+    set({ scenario: { ...s, events } });
+  },
+  removeEvent: (id) => {
+    const s = get().scenario;
+    const events = s.events.filter((ev) => ev.id !== id);
+    set({ scenario: { ...s, events } });
+  },
 }));
 
 

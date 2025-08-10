@@ -79,6 +79,11 @@ export function ParamsView(): React.ReactElement {
               </select>
             </label>
           </div>
+          <div>
+            <label>Durée<br />
+              <input value={scenario.metadata.duration} onChange={e => setScenario({ ...scenario, metadata: { ...scenario.metadata, duration: e.target.value } })} />
+            </label>
+          </div>
         </div>
 
         <div>
