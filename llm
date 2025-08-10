@@ -1,0 +1,186 @@
+#!/bin/bash
+# Script de démarrage des LLM expérimentaux pour Clippy Mode Dev
+
+set -e
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}🤖 LLM EXPERIMENTAL LAUNCHER - Clippy Mode Dev${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+# Configuration des ports
+OLLAMA_PORT=11434      # Ollama API
+LLAMA_CPP_PORT=8888    # llama.cpp (si installé)
+CLIPPY_DEV_PORT=8889   # Notre wrapper Clippy Dev
+
+# Fonction pour vérifier si un port est libre
+check_port() {
+    if lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null 2>&1; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+# Fonction pour tuer un processus sur un port
+kill_port() {
+    local port=$1
+    local pids=$(lsof -ti:$port 2>/dev/null)
+    if [ ! -z "$pids" ]; then
+        echo -e "${YELLOW}Arrêt du processus sur port $port...${NC}"
+        kill -9 $pids 2>/dev/null || true
+        sleep 1
+    fi
+}
+
+# Options du menu
+case "${1:-menu}" in
+    start)
+        echo -e "${GREEN}📦 Démarrage des services LLM...${NC}"
+        echo ""
+        
+        # 1. OLLAMA
+        echo -e "${BLUE}1. Ollama (port $OLLAMA_PORT)${NC}"
+        if check_port $OLLAMA_PORT; then
+            echo "   Lancement d'Ollama..."
+            OLLAMA_HOST=0.0.0.0:$OLLAMA_PORT ollama serve > logs/ollama.log 2>&1 &
+            sleep 2
+            
+            # Télécharger les modèles si nécessaire
+            echo "   Vérification des modèles..."
+            if ! ollama list 2>/dev/null | grep -q "qwen2.5:0.5b"; then
+                echo "   Téléchargement de Qwen2.5:0.5b (397MB)..."
+                ollama pull qwen2.5:0.5b
+            fi
+            
+            if ! ollama list 2>/dev/null | grep -q "tinyllama"; then
+                echo "   Téléchargement de TinyLlama (637MB)..."
+                ollama pull tinyllama
+            fi
+            
+            echo -e "   ${GREEN}✓ Ollama démarré${NC}"
+        else
+            echo -e "   ${YELLOW}! Ollama déjà actif${NC}"
+        fi
+        
+        # 2. Wrapper Clippy Dev
+        echo ""
+        echo -e "${BLUE}2. Clippy Dev Server (port $CLIPPY_DEV_PORT)${NC}"
+        if check_port $CLIPPY_DEV_PORT; then
+            echo "   Lancement du serveur Clippy Dev..."
+            python3 clippy_dev_server.py > logs/clippy_dev.log 2>&1 &
+            echo -e "   ${GREEN}✓ Clippy Dev démarré${NC}"
+        else
+            echo -e "   ${YELLOW}! Clippy Dev déjà actif${NC}"
+        fi
+        
+        echo ""
+        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${GREEN}✅ Services LLM démarrés !${NC}"
+        echo ""
+        echo "📍 Endpoints disponibles :"
+        echo "   • Ollama API    : http://localhost:$OLLAMA_PORT"
+        echo "   • Clippy Dev    : http://localhost:$CLIPPY_DEV_PORT"
+        echo ""
+        echo "🧪 Test rapide :"
+        echo "   curl http://localhost:$CLIPPY_DEV_PORT/ask -d '{\"q\":\"What is Heroes of Time?\"}'"
+        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        ;;
+        
+    stop)
+        echo -e "${RED}🛑 Arrêt des services LLM...${NC}"
+        kill_port $OLLAMA_PORT
+        kill_port $CLIPPY_DEV_PORT
+        kill_port $LLAMA_CPP_PORT
+        echo -e "${GREEN}✓ Services arrêtés${NC}"
+        ;;
+        
+    status)
+        echo -e "${BLUE}📊 Status des services LLM${NC}"
+        echo ""
+        
+        # Ollama
+        if check_port $OLLAMA_PORT; then
+            echo -e "Ollama ($OLLAMA_PORT)    : ${RED}⚫ Arrêté${NC}"
+        else
+            echo -e "Ollama ($OLLAMA_PORT)    : ${GREEN}🟢 Actif${NC}"
+            echo "   Modèles disponibles :"
+            ollama list 2>/dev/null | grep -E "qwen|llama|phi" | sed 's/^/      /' || echo "      (aucun)"
+        fi
+        
+        # Clippy Dev
+        if check_port $CLIPPY_DEV_PORT; then
+            echo -e "Clippy Dev ($CLIPPY_DEV_PORT) : ${RED}⚫ Arrêté${NC}"
+        else
+            echo -e "Clippy Dev ($CLIPPY_DEV_PORT) : ${GREEN}🟢 Actif${NC}"
+        fi
+        
+        echo ""
+        ;;
+        
+    test)
+        echo -e "${BLUE}🧪 Test des LLM${NC}"
+        echo ""
+        
+        # Test Ollama direct
+        echo "1. Test Ollama direct..."
+        curl -s http://localhost:$OLLAMA_PORT/api/generate \
+            -d '{"model":"qwen2.5:0.5b","prompt":"Say hello in 5 words","stream":false}' \
+            | jq -r '.response' 2>/dev/null || echo "   ❌ Ollama non disponible"
+        
+        echo ""
+        echo "2. Test Clippy Dev..."
+        curl -s http://localhost:$CLIPPY_DEV_PORT/ask \
+            -H "Content-Type: application/json" \
+            -d '{"q":"What is temporal drift?"}' \
+            | jq -r '.answer' 2>/dev/null || echo "   ❌ Clippy Dev non disponible"
+        
+        echo ""
+        ;;
+        
+    models)
+        echo -e "${BLUE}📦 Gestion des modèles${NC}"
+        echo ""
+        echo "Modèles installés :"
+        ollama list 2>/dev/null || echo "  (Ollama non actif)"
+        echo ""
+        echo "Pour installer un modèle :"
+        echo "  ollama pull qwen2.5:0.5b    # Ultra-léger (397MB)"
+        echo "  ollama pull tinyllama        # Léger (637MB)"
+        echo "  ollama pull phi3.5           # Plus puissant (2.2GB)"
+        ;;
+        
+    logs)
+        echo -e "${BLUE}📜 Logs des services${NC}"
+        echo ""
+        echo "Ollama :"
+        tail -n 20 logs/ollama.log 2>/dev/null || echo "  (pas de logs)"
+        echo ""
+        echo "Clippy Dev :"
+        tail -n 20 logs/clippy_dev.log 2>/dev/null || echo "  (pas de logs)"
+        ;;
+        
+    *)
+        echo "Usage: ./llm [commande]"
+        echo ""
+        echo "Commandes disponibles :"
+        echo "  start   - Démarre tous les services LLM"
+        echo "  stop    - Arrête tous les services"
+        echo "  status  - Affiche le status"
+        echo "  test    - Test les endpoints"
+        echo "  models  - Gère les modèles"
+        echo "  logs    - Affiche les logs"
+        echo ""
+        echo "Ports utilisés :"
+        echo "  • $OLLAMA_PORT  : Ollama API"
+        echo "  • $CLIPPY_DEV_PORT : Clippy Dev Server"
+        echo "  • $LLAMA_CPP_PORT : llama.cpp (futur)"
+        ;;
+esac
