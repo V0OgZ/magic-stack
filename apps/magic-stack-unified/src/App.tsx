@@ -13,6 +13,7 @@ import { HomePage } from './pages/HomePage';
 import { MultiplayerMode } from './modes/multiplayer/MultiplayerMode';
 import { AIBattleAutoplay } from './modes/ai-battle/AIBattleAutoplay';
 import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
+import { HeroBackstoryEditor } from './modes/editor/HeroBackstoryEditor';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ export function App(): React.ReactElement {
             <Route path="/multiplayer" element={<MultiplayerMode />} />
             <Route path="/ai-battle" element={<AIBattleAutoplay />} />
             <Route path="/spectator" element={<SpectatorGodMode />} />
+            <Route path="/backstory-editor" element={<HeroBackstoryEditor />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />

@@ -90,6 +90,14 @@ export function HomePage(): React.ReactElement {
           description="Observez tout le multivers en temps réel"
           color="#38b2ac"
         />
+        
+        <ModeCard
+          to="/backstory-editor"
+          icon="📝"
+          title="Éditeur de Backstory"
+          description="Personnalisez les histoires et personnalités des héros IA"
+          color="#f6e05e"
+        />
       </div>
       
       <div style={{
