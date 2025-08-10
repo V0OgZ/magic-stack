@@ -9,6 +9,7 @@ public class CardPlay {
     private String combatId;
     private String card;
     private String target;
+    private String player;  // Ajout pour identifier qui joue (hero/enemy)
     
     public CardPlay() {
     }
@@ -36,5 +37,13 @@ public class CardPlay {
     
     public void setTarget(String target) {
         this.target = target;
+    }
+    
+    public String getPlayer() {
+        return player;
+    }
+    
+    public void setPlayer(String player) {
+        this.player = player;
     }
 }

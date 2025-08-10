@@ -52,6 +52,37 @@ public class CombatController {
         }
     }
 
+    @PostMapping("/enemy-turn")
+    public Map<String, Object> playEnemyTurn(@RequestBody Map<String, Object> request) {
+        System.out.println("IA joue son tour");
+        String combatId = (String) request.get("combat_id");
+        
+        try {
+            CombatResult result = combatService.playEnemyTurn(combatId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("damage_dealt", result.getDamageDealt());
+            response.put("hero_hp", result.getHeroHp());
+            response.put("enemy_hp", result.getEnemyHp());
+            response.put("narrative", result.getNarrative());
+            response.put("combat_finished", result.isCombatFinished());
+            
+            if (result.isCombatFinished()) {
+                response.put("winner", result.getWinner());
+            }
+            
+            System.out.println("IA a joué, résultat: " + response);
+            return response;
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return error;
+        }
+    }
+    
     @PostMapping("/play-card")
     public Map<String, Object> playCard(@RequestBody Map<String, Object> cardData) {
         System.out.println("🃏 Jeu de carte TCG");

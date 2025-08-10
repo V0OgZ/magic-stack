@@ -16,7 +16,10 @@ public class CombatResult {
     private boolean combatFinished;
     private String winner;
     private String narrativeText;
+    private String narrative;  // Ajout pour compatibilité
     private List<String> nextAvailableCards;
+    private boolean success;   // Ajout pour status
+    private String aiExplanation;  // Ajout pour explication IA
     
     public CombatResult() {
     }
@@ -92,5 +95,30 @@ public class CombatResult {
     
     public void setNextAvailableCards(List<String> nextAvailableCards) {
         this.nextAvailableCards = nextAvailableCards;
+    }
+    
+    public String getNarrative() {
+        return narrative != null ? narrative : narrativeText;
+    }
+    
+    public void setNarrative(String narrative) {
+        this.narrative = narrative;
+        this.narrativeText = narrative;
+    }
+    
+    public boolean isSuccess() {
+        return success;
+    }
+    
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+    
+    public String getAiExplanation() {
+        return aiExplanation;
+    }
+    
+    public void setAiExplanation(String aiExplanation) {
+        this.aiExplanation = aiExplanation;
     }
 }

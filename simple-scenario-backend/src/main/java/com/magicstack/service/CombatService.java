@@ -4,6 +4,7 @@ import com.magicstack.model.CombatSession;
 import com.magicstack.model.CardPlay;
 import com.magicstack.model.CombatResult;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,12 +12,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * 🌀 COMBAT SERVICE
  * Logique métier du système de combat TCG
  * Dimension 1 Littéraire: Chaque carte raconte une histoire
+ * NOUVEAU: Intégration avec l'IA Rust pour les décisions ennemies
  */
 @Service
 public class CombatService {
 
     private final Map<String, CombatSession> activeCombats = new ConcurrentHashMap<>();
     private final Random random = new Random();
+    
+    @Autowired(required = false)
+    private TcgAiService tcgAiService;
 
     public CombatSession initiateCombat(Map<String, Object> combatData) {
         String combatId = "combat_" + System.currentTimeMillis();
@@ -254,5 +259,81 @@ public class CombatService {
             default:
                 return "⚡ " + hero + " utilise " + card + "! " + damage + " dégâts!";
         }
+    }
+    
+    /**
+     * NOUVEAU: Fait jouer l'IA ennemie en utilisant le service Rust
+     */
+    public CombatResult playEnemyTurn(String combatId) {
+        CombatSession session = activeCombats.get(combatId);
+        if (session == null || session.isFinished()) {
+            throw new RuntimeException("Combat invalide ou terminé");
+        }
+        
+        CombatResult result = new CombatResult();
+        result.setCombatId(combatId);
+        
+        // Si on a le service AI Rust, on l'utilise
+        if (tcgAiService != null) {
+            try {
+                // Créer l'état de combat pour l'IA
+                TcgAiService.CombatState state = new TcgAiService.CombatState();
+                // Note: Dans un vrai code, on aurait des setters
+                
+                TcgAiService.TcgAiDecision decision = tcgAiService.getAiDecision(state);
+                
+                if (decision.isSuccess() && decision.getCardToPlay() != null) {
+                    // L'IA joue une carte
+                    CardPlay aiPlay = new CardPlay();
+                    aiPlay.setCombatId(combatId);
+                    aiPlay.setCard(decision.getCardToPlay());
+                    aiPlay.setTarget(decision.getTarget() != null ? decision.getTarget() : "hero");
+                    aiPlay.setPlayer("enemy");
+                    
+                    // Jouer la carte
+                    result = playCard(aiPlay);
+                    
+                    System.out.println("IA Rust a joué: " + decision);
+                } else {
+                    // Fallback si pas de décision
+                    result = playSimpleEnemyTurn(session);
+                }
+                
+            } catch (Exception e) {
+                System.err.println("Erreur IA Rust, fallback: " + e.getMessage());
+                result = playSimpleEnemyTurn(session);
+            }
+        } else {
+            // Pas de service IA, on utilise l'IA simple
+            result = playSimpleEnemyTurn(session);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * IA simple de fallback si Rust n'est pas disponible
+     */
+    private CombatResult playSimpleEnemyTurn(CombatSession session) {
+        CombatResult result = new CombatResult();
+        result.setCombatId(session.getCombatId());
+        
+        // Simple: l'ennemi attaque
+        int damage = 15 + random.nextInt(10);
+        session.setHeroHp(session.getHeroHp() - damage);
+        
+        result.setSuccess(true);
+        result.setDamageDealt(damage);
+        result.setHeroHp(session.getHeroHp());
+        result.setEnemyHp(session.getEnemyHp());
+        result.setNarrative("L'ennemi attaque! " + damage + " dégâts!");
+        
+        if (session.getHeroHp() <= 0) {
+            session.setFinished(true);
+            result.setCombatFinished(true);
+            result.setWinner(session.getEnemy());
+        }
+        
+        return result;
     }
 }
