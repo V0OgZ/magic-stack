@@ -4,11 +4,15 @@ import { TimelineView } from './TimelineView';
 import { ParamsView } from './ParamsView';
 import { VectorSearchPanel } from './VectorSearchPanel';
 import { LivePreviewPanel } from './LivePreviewPanel';
+import { RegionTools } from './RegionTools';
+import { CollectiveConsciousnessPanel } from '../lib/quantum-identity';
 import { Clippy } from '../lib/clippy';
 import './theme.css';
 
 export function App(): React.ReactElement {
   const [tab, setTab] = React.useState<'map' | 'timeline' | 'params'>('map');
+  const [showRegionTools, setShowRegionTools] = React.useState(false);
+  const [showQuantumPanel, setShowQuantumPanel] = React.useState(false);
 
   return (
     <div style={{ height: '100vh', display: 'grid', gridTemplateRows: '60px 1fr 60px', background: 'var(--bg-primary)', overflow: 'hidden' }}>
@@ -65,7 +69,67 @@ export function App(): React.ReactElement {
       
       <VectorSearchPanel />
       <LivePreviewPanel />
+      {showRegionTools && <RegionTools />}
+      {showQuantumPanel && <CollectiveConsciousnessPanel />}
       <Clippy />
+      
+      {/* Floating Action Buttons */}
+      <div style={{
+        position: 'fixed',
+        left: 20,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        zIndex: 1000,
+      }}>
+        <button
+          onClick={() => setShowRegionTools(!showRegionTools)}
+          title="Outils Région"
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            background: showRegionTools 
+              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              : 'rgba(102, 126, 234, 0.2)',
+            border: '1px solid rgba(102, 126, 234, 0.5)',
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          🎨
+        </button>
+        
+        <button
+          onClick={() => setShowQuantumPanel(!showQuantumPanel)}
+          title="Conscience Quantique"
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            background: showQuantumPanel
+              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              : 'rgba(102, 126, 234, 0.2)',
+            border: '1px solid rgba(102, 126, 234, 0.5)',
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          🌌
+        </button>
+      </div>
     </div>
   );
 }
