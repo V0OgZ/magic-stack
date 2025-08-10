@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEditorStore } from '../state/useEditorStore';
 
 type HexGridProps = {
   cols?: number;
@@ -12,6 +13,7 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
   const [scale, setScale] = React.useState(1);
   const [selected, setSelected] = React.useState<{ x: number; y: number } | null>(null);
+  const scenario = useEditorStore((s) => s.scenario);
 
   const hexWidth = size * 2;
   const hexHeight = Math.sqrt(3) * size;
@@ -59,6 +61,31 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset.x, offset.y]);
 
+  function overlayFor(x: number, y: number): string | null {
+    let bestAlpha = 0;
+    let bestColor: string | null = null;
+    for (const obj of scenario.map.objects) {
+      const cx = Number((obj as any).x) || 0;
+      const cy = Number((obj as any).y) || 0;
+      const radius = Number((obj as any).data?.radius) || 0;
+      if (!radius) continue;
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= radius) {
+        const t = Math.max(0, 1 - dist / radius);
+        const type = String((obj as any).data?.type || (obj as any).kind || '').toLowerCase();
+        const color = type.includes('conver') ? '255,215,0' : '138,43,226';
+        const alpha = 0.6 * t;
+        if (alpha > bestAlpha) {
+          bestAlpha = alpha;
+          bestColor = `rgba(${color}, ${alpha})`;
+        }
+      }
+    }
+    return bestColor;
+  }
+
   const hexes: Array<{ x: number; y: number; left: number; top: number }> = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -96,7 +123,7 @@ export function HexGrid({ cols = 20, rows = 20, size = 32, onSelect }: HexGridPr
               width: hexWidth,
               height: hexHeight,
               clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-              background: 'rgba(255,255,255,0.06)',
+              background: overlayFor(h.x, h.y) || 'rgba(255,255,255,0.06)',
               border: selected?.x === h.x && selected?.y === h.y ? '2px solid gold' : '1px solid rgba(255,255,255,0.1)',
               display: 'flex',
               alignItems: 'center',
