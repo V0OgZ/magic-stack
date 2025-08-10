@@ -68,6 +68,7 @@ show_main_menu() {
     echo -e "  ${CYAN}[31]${NC} 📝 Voir les logs"
     echo -e "  ${CYAN}[32]${NC} 🧹 Nettoyer logs et PIDs"
     echo -e "  ${CYAN}[33]${NC} 🔧 Mode développement"
+     echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
     echo ""
     
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
@@ -336,6 +337,15 @@ case $choice in
             ;;
         32) clean_all ;;
         33) dev_mode ;;
+        34)
+            if [ -f "apps/world-editor/index.html" ]; then
+                open "apps/world-editor/index.html"
+                echo -e "${GREEN}World Editor ouvert${NC}"
+            else
+                echo -e "${YELLOW}Installez l'app React (npm i && npm run dev) dans apps/world-editor${NC}"
+                open "WORLD_EDITOR.html"
+            fi
+            ;;
         
         40) quick_start ;;
         41) open_all_demos ;;

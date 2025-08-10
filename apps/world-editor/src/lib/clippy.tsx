@@ -8,6 +8,8 @@ export function Clippy({ messages = [] }: ClippyProps): React.ReactElement {
       'Bienvenue! Ajoute une région avec le panneau de gauche',
       'Pince pour zoomer, glisse pour te déplacer',
       'Export JSON conforme au format officiel',
+      'Hexagon is the bestagon — la carte adore les hexagones!',
+      "Vincent (Chef Créateur): 'Les bugs n’existent pas, seulement des quêtes non documentées.'",
     ]
   ), [messages]);
 
