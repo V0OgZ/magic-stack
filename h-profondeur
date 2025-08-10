@@ -1,0 +1,201 @@
+#!/bin/bash
+
+# 🔮 h-profondeur - Script de l'équipe PROFONDEUR (Claude & co)
+# Ports réservés : 3001, 5001, 8001
+
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║           🔮 ÉQUIPE PROFONDEUR - MAGIC STACK              ║"
+echo "║                  Ports: 3001, 5001, 8001                  ║"
+echo "╚══════════════════════════════════════════════════════════╝"
+echo ""
+
+# Couleurs
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
+# Création du dossier PIDs si nécessaire
+mkdir -p .pids/profondeur
+
+# Fonction status
+status() {
+    echo -e "${BLUE}📊 Status Équipe PROFONDEUR :${NC}"
+    echo ""
+    
+    # Rust Backend
+    if lsof -i :3001 > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Rust Backend actif sur 3001${NC}"
+        lsof -i :3001 | grep LISTEN | head -1
+    else
+        echo -e "${RED}❌ Rust Backend inactif (3001)${NC}"
+    fi
+    
+    # Vector DB
+    if lsof -i :5001 > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Vector DB actif sur 5001${NC}"
+        lsof -i :5001 | grep LISTEN | head -1
+    else
+        echo -e "${RED}❌ Vector DB inactif (5001)${NC}"
+    fi
+    
+    # WebSocket/Interface
+    if lsof -i :8001 > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Interface Web active sur 8001${NC}"
+        lsof -i :8001 | grep LISTEN | head -1
+    else
+        echo -e "${RED}❌ Interface Web inactive (8001)${NC}"
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⚠️ Autres équipes :${NC}"
+    
+    # Surface
+    if lsof -i :3002 > /dev/null 2>&1; then
+        echo -e "  ${BLUE}• SURFACE active sur 3002${NC}"
+    fi
+    
+    # Java Backend
+    if lsof -i :8080 > /dev/null 2>&1; then
+        echo -e "  ${BLUE}• BACKEND Java actif sur 8080${NC}"
+    fi
+}
+
+# Fonction start
+start() {
+    echo -e "${GREEN}🚀 Démarrage services PROFONDEUR...${NC}"
+    echo ""
+    
+    # Vérifier les ports
+    if lsof -i :3001 > /dev/null 2>&1; then
+        echo -e "${RED}❌ Port 3001 déjà utilisé !${NC}"
+        echo "Utilisez './h-profondeur stop' d'abord"
+        exit 1
+    fi
+    
+    # Rust Backend + V2 Controller
+    echo -e "${BLUE}Lancement Rust Backend...${NC}"
+    cd backends/rust
+    export V2_ENABLED=true
+    export RUST_LOG=info
+    cargo build --release 2>/dev/null
+    nohup ./target/release/magic-stack-server > ../../logs/profondeur-rust.log 2>&1 &
+    echo $! > ../../.pids/profondeur/rust.pid
+    cd ../..
+    echo -e "${GREEN}✅ Rust lancé (PID: $(cat .pids/profondeur/rust.pid))${NC}"
+    
+    sleep 2
+    
+    # Test V2
+    if curl -s http://localhost:3001/api/v2/config > /dev/null; then
+        echo -e "${GREEN}✅ V2 Controller opérationnel${NC}"
+    fi
+    
+    echo ""
+    echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+    echo -e "${PURPLE}   🔮 PROFONDEUR STACK ACTIVE              ${NC}"
+    echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+    echo ""
+    echo "• Rust + V2: http://localhost:3001"
+    echo "• Logs: tail -f logs/profondeur-*.log"
+}
+
+# Fonction stop
+stop() {
+    echo -e "${YELLOW}🛑 Arrêt services PROFONDEUR...${NC}"
+    
+    # Arrêt propre via PIDs
+    if [ -f .pids/profondeur/rust.pid ]; then
+        PID=$(cat .pids/profondeur/rust.pid)
+        if kill $PID 2>/dev/null; then
+            echo -e "${GREEN}✅ Rust Backend arrêté${NC}"
+        fi
+        rm .pids/profondeur/rust.pid
+    fi
+    
+    if [ -f .pids/profondeur/vector.pid ]; then
+        PID=$(cat .pids/profondeur/vector.pid)
+        if kill $PID 2>/dev/null; then
+            echo -e "${GREEN}✅ Vector DB arrêté${NC}"
+        fi
+        rm .pids/profondeur/vector.pid
+    fi
+    
+    if [ -f .pids/profondeur/web.pid ]; then
+        PID=$(cat .pids/profondeur/web.pid)
+        if kill $PID 2>/dev/null; then
+            echo -e "${GREEN}✅ Interface Web arrêtée${NC}"
+        fi
+        rm .pids/profondeur/web.pid
+    fi
+    
+    echo -e "${GREEN}✅ Services PROFONDEUR arrêtés${NC}"
+}
+
+# Fonction vector
+vector() {
+    echo -e "${YELLOW}🔍 Lancement Vector DB (5001)...${NC}"
+    
+    if lsof -i :5001 > /dev/null 2>&1; then
+        echo -e "${RED}❌ Port 5001 déjà utilisé !${NC}"
+        exit 1
+    fi
+    
+    export VECTOR_PORT=5001
+    nohup python3 run_vector_db_updated.py > logs/profondeur-vector.log 2>&1 &
+    echo $! > .pids/profondeur/vector.pid
+    echo -e "${GREEN}✅ Vector DB lancé (PID: $(cat .pids/profondeur/vector.pid))${NC}"
+}
+
+# Fonction web
+web() {
+    echo -e "${BLUE}🌐 Lancement Interface Web (8001)...${NC}"
+    
+    if lsof -i :8001 > /dev/null 2>&1; then
+        echo -e "${RED}❌ Port 8001 déjà utilisé !${NC}"
+        exit 1
+    fi
+    
+    nohup python3 -m http.server 8001 --directory interfaces > logs/profondeur-web.log 2>&1 &
+    echo $! > .pids/profondeur/web.pid
+    echo -e "${GREEN}✅ Interface lancée: http://localhost:8001${NC}"
+}
+
+# Menu principal
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    vector)
+        vector
+        ;;
+    web)
+        web
+        ;;
+    restart)
+        stop
+        sleep 2
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart|vector|web}"
+        echo ""
+        echo "  start   - Lance Rust Backend + V2 Controller"
+        echo "  stop    - Arrête tous les services PROFONDEUR"
+        echo "  status  - Affiche l'état des services"
+        echo "  restart - Redémarre les services"
+        echo "  vector  - Lance Vector DB sur 5001"
+        echo "  web     - Lance interface sur 8001"
+        echo ""
+        echo "Ports réservés PROFONDEUR: 3001, 5001, 8001"
+        exit 1
+        ;;
+esac
