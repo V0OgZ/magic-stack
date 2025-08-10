@@ -1,6 +1,11 @@
 # World Editor Documentation
 
-Generated from world-editor-spec.md
+Generated from `world-editor-spec.md`
+
+## Lancer l’éditeur
+
+- Ouvrir `WORLD_EDITOR.html` (touch/mouse, iPad friendly)
+- Clippy intégré: tips contextuels et célébrations
 
 ## Sections
 
