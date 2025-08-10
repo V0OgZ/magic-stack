@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ CHASSE TEMPORELLE - Map 6x6 Écrans</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Main game container */
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top UI */
+        .top-ui {
+            height: 80px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.5));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 2px solid #gold;
+            z-index: 1000;
+        }
+
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .resource-icon {
+            font-size: 1.5em;
+        }
+
+        .turn-info {
+            text-align: center;
+        }
+
+        .day {
+            font-size: 1.5em;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .time-display {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .time-value {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        /* Viewport */
+        .viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .viewport.dragging {
+            cursor: grabbing;
+        }
+
+        /* Map canvas */
+        .map-container {
+            position: absolute;
+            transform-origin: top left;
+            transition: none;
+        }
+
+        /* Hexagonal grid */
+        .hex-grid {
+            position: relative;
+        }
+
+        .hex {
+            position: absolute;
+            width: 40px;
+            height: 46px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+
+        .hex:hover {
+            transform: scale(1.1);
+            opacity: 1;
+            z-index: 100;
+        }
+
+        .hex-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            position: relative;
+        }
+
+        /* Terrain types */
+        .terrain-grass { background: #2d5016; }
+        .terrain-water { background: #0066cc; }
+        .terrain-mountain { background: #666; }
+        .terrain-desert { background: #c4a000; }
+        .terrain-snow { background: #e0e0ff; }
+        .terrain-lava { background: #ff4500; }
+        .terrain-void { background: #1a0033; }
+        .terrain-temporal { 
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            animation: temporal-pulse 2s infinite;
+        }
+
+        @keyframes temporal-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Objects on map */
+        .object-hero { 
+            background: radial-gradient(circle, #ffd700, #ff8800);
+            box-shadow: 0 0 20px #ffd700;
+        }
+
+        .object-enemy {
+            background: radial-gradient(circle, #ff0000, #800000);
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        .object-regulator {
+            background: linear-gradient(135deg, #ff00ff, #00ff00);
+            box-shadow: 0 0 30px #ff00ff;
+            animation: regulator-glow 1s infinite;
+        }
+
+        @keyframes regulator-glow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .object-resource {
+            background: radial-gradient(circle, #00ff00, #008800);
+        }
+
+        .object-artifact {
+            background: radial-gradient(circle, #ffff00, #ff00ff);
+            animation: artifact-spin 3s linear infinite;
+        }
+
+        @keyframes artifact-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .object-portal {
+            background: radial-gradient(circle, #00ffff, #0000ff);
+            animation: portal-swirl 2s linear infinite;
+        }
+
+        .object-vendor {
+            background: #8b4513;
+            border: 2px solid #ffd700;
+        }
+
+        .object-craft {
+            background: #4682b4;
+            border: 2px solid #fff;
+        }
+
+        /* Fog of war */
+        .fog {
+            position: absolute;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 70%);
+            pointer-events: none;
+        }
+
+        .causal-fog {
+            position: absolute;
+            background: radial-gradient(circle, transparent 20%, rgba(255,0,255,0.3) 60%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            animation: causal-shift 5s infinite;
+        }
+
+        @keyframes causal-shift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Minimap */
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 240px;
+            height: 240px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .minimap-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid #00ff00;
+            background: rgba(0,255,0,0.2);
+            pointer-events: none;
+        }
+
+        .minimap-dot {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+        }
+
+        /* Side panel */
+        .side-panel {
+            position: absolute;
+            left: 20px;
+            top: 100px;
+            width: 250px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #4a5fff;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .regulator-status {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+
+        .regulator-name {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .regulator-effect {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Objectives */
+        .objectives {
+            position: absolute;
+            right: 20px;
+            top: 100px;
+            width: 250px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .objective {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid #ffd700;
+        }
+
+        .objective.completed {
+            border-left-color: #00ff00;
+            opacity: 0.6;
+        }
+
+        /* Bottom controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #4a5fff;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4a5fff, #2a3fdf);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #4a5fff;
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+        }
+
+        /* Difficulty selector */
+        .difficulty {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            z-index: 2000;
+        }
+
+        .difficulty h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-option {
+            margin: 10px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #4a5fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-option:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #00ff88;
+            transform: scale(1.05);
+        }
+
+        .difficulty-title {
+            font-size: 1.3em;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .difficulty-desc {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        /* Info popup */
+        .info-popup {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+            display: none;
+            z-index: 1500;
+        }
+
+        .info-popup.active {
+            display: block;
+        }
+
+        /* Timeline indicator */
+        .timeline-indicator {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timeline-branch {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-branch.active {
+            background: rgba(0,255,255,0.5);
+            transform: scale(1.2);
+        }
+
+        .timeline-branch:hover {
+            box-shadow: 0 0 20px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Top UI -->
+        <div class="top-ui">
+            <div class="resources">
+                <div class="resource">
+                    <span class="resource-icon">💎</span>
+                    <span id="crystals">100</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">⚡</span>
+                    <span id="energy">50</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🌀</span>
+                    <span id="temporal">25</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🔮</span>
+                    <span id="quantum">10</span>
+                </div>
+            </div>
+            
+            <div class="turn-info">
+                <div class="day">Jour <span id="day">1</span> / 25</div>
+                <div class="time-display">
+                    <span class="time-value">t_w: <span id="tw">0</span></span>
+                    <span class="time-value">t_e: <span id="te">0</span></span>
+                    <span class="time-value">Δt: <span id="dt">0</span></span>
+                </div>
+            </div>
+            
+            <div class="resources">
+                <div class="resource">
+                    <span class="resource-icon">⚔️</span>
+                    <span id="armies">5/7</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🏰</span>
+                    <span id="cities">2</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">📜</span>
+                    <span id="artifacts">3</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Indicator -->
+        <div class="timeline-indicator">
+            <div class="timeline-branch" data-timeline="1">T1</div>
+            <div class="timeline-branch active" data-timeline="2">T2</div>
+            <div class="timeline-branch" data-timeline="3">T3</div>
+            <div class="timeline-branch" data-timeline="4">T4</div>
+        </div>
+
+        <!-- Main viewport -->
+        <div class="viewport" id="viewport">
+            <div class="map-container" id="mapContainer">
+                <div class="hex-grid" id="hexGrid"></div>
+            </div>
+        </div>
+
+        <!-- Minimap -->
+        <div class="minimap">
+            <div class="minimap-content" id="minimapContent">
+                <div class="minimap-viewport" id="minimapViewport"></div>
+            </div>
+        </div>
+
+        <!-- Side panel - Regulators -->
+        <div class="side-panel">
+            <div class="panel-title">🎮 RÉGULATEURS</div>
+            
+            <div class="regulator-status">
+                <div class="regulator-name">👁️ VINCE</div>
+                <div class="regulator-effect">Perce le brouillard: ACTIF</div>
+                <div class="regulator-effect">Zone: Nord-Est</div>
+            </div>
+            
+            <div class="regulator-status">
+                <div class="regulator-name">💰 ANNA</div>
+                <div class="regulator-effect">Décroissance: -5%/tour</div>
+                <div class="regulator-effect">Zone: Centre</div>
+            </div>
+            
+            <div class="regulator-status">
+                <div class="regulator-name">⚡ OVERLOAD</div>
+                <div class="regulator-effect">Collapse: IMMINENT</div>
+                <div class="regulator-effect">Stack: 8/10</div>
+            </div>
+        </div>
+
+        <!-- Objectives -->
+        <div class="objectives">
+            <div class="panel-title">🎯 OBJECTIFS</div>
+            
+            <div class="objective">
+                <strong>Principal:</strong><br>
+                Survivre 25 jours contre les Régulateurs
+            </div>
+            
+            <div class="objective">
+                <strong>Secondaire:</strong><br>
+                Collecter 3 Artefacts Temporels
+            </div>
+            
+            <div class="objective">
+                <strong>Bonus:</strong><br>
+                Découvrir le Noyau Temporel
+            </div>
+        </div>
+
+        <!-- Bottom controls -->
+        <div class="controls">
+            <button class="control-btn" onclick="endTurn()">Fin du Tour</button>
+            <button class="control-btn" onclick="toggleCausalFog()">Brouillard Causal</button>
+            <button class="control-btn" onclick="forkTimeline()">Fork Timeline</button>
+            <button class="control-btn" onclick="mergeTimelines()">Merge Timelines</button>
+            <button class="control-btn" onclick="temporalShift()">Shift Temporel</button>
+        </div>
+
+        <!-- Difficulty selector (shown at start) -->
+        <div class="difficulty" id="difficultySelector">
+            <h2>🎮 CHASSE TEMPORELLE</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Choisissez votre niveau de difficulté</p>
+            
+            <div class="difficulty-option" onclick="startGame('easy')">
+                <div class="difficulty-title">🟢 FACILE</div>
+                <div class="difficulty-desc">Régulateurs passifs, ressources abondantes</div>
+            </div>
+            
+            <div class="difficulty-option" onclick="startGame('normal')">
+                <div class="difficulty-title">🟡 NORMAL</div>
+                <div class="difficulty-desc">Régulateurs actifs, économie équilibrée</div>
+            </div>
+            
+            <div class="difficulty-option" onclick="startGame('hard')">
+                <div class="difficulty-title">🔴 DIFFICILE</div>
+                <div class="difficulty-desc">Régulateurs agressifs, ressources rares</div>
+            </div>
+            
+            <div class="difficulty-option" onclick="startGame('nightmare')">
+                <div class="difficulty-title">💀 CAUCHEMAR</div>
+                <div class="difficulty-desc">Régulateurs omniscients, paradoxes constants</div>
+            </div>
+        </div>
+
+        <!-- Info popup -->
+        <div class="info-popup" id="infoPopup"></div>
+    </div>
+
+    <script>
+        // Game state
+        const GAME = {
+            mapWidth: 120,  // 6 screens × 20 hexes
+            mapHeight: 120,
+            hexSize: 40,
+            viewportWidth: 0,
+            viewportHeight: 0,
+            cameraX: 0,
+            cameraY: 0,
+            zoom: 1,
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            day: 1,
+            difficulty: 'normal',
+            resources: {
+                crystals: 100,
+                energy: 50,
+                temporal: 25,
+                quantum: 10
+            },
+            timeState: {
+                tw: 0,  // World time
+                te: 0,  // Entity time
+                dt: 0   // Delta
+            },
+            regulators: {
+                vince: { active: true, zone: 'NE' },
+                anna: { decay: 5, zone: 'C' },
+                overload: { stack: 8, maxStack: 10 }
+            },
+            causalFogActive: true,
+            selectedHex: null,
+            heroPosition: { x: 60, y: 60 },  // Start in center
+            enemies: [],
+            artifacts: [],
+            portals: [],
+            vendors: [],
+            craftStations: []
+        };
+
+        // Terrain generation
+        const TERRAIN_TYPES = [
+            { type: 'grass', emoji: '🌿', weight: 30 },
+            { type: 'water', emoji: '💧', weight: 15 },
+            { type: 'mountain', emoji: '⛰️', weight: 10 },
+            { type: 'desert', emoji: '🏜️', weight: 10 },
+            { type: 'snow', emoji: '❄️', weight: 5 },
+            { type: 'lava', emoji: '🔥', weight: 3 },
+            { type: 'void', emoji: '🌑', weight: 2 },
+            { type: 'temporal', emoji: '🌀', weight: 5 }
+        ];
+
+        // Initialize map
+        function initializeMap() {
+            const hexGrid = document.getElementById('hexGrid');
+            hexGrid.innerHTML = '';
+            
+            // Generate terrain with Perlin-noise-like patterns
+            for (let y = 0; y < GAME.mapHeight; y++) {
+                for (let x = 0; x < GAME.mapWidth; x++) {
+                    const hex = createHex(x, y);
+                    hexGrid.appendChild(hex);
+                }
+            }
+            
+            // Place special objects
+            placeRegulators();
+            placeArtifacts();
+            placePortals();
+            placeVendors();
+            placeCraftStations();
+            placeEnemies();
+            placeHero();
+            
+            // Update minimap
+            updateMinimap();
+        }
+
+        // Create hexagon
+        function createHex(x, y) {
+            const hex = document.createElement('div');
+            hex.className = 'hex';
+            hex.dataset.x = x;
+            hex.dataset.y = y;
+            
+            // Calculate position (hexagonal offset)
+            const offsetX = y % 2 === 0 ? 0 : GAME.hexSize / 2;
+            hex.style.left = (x * GAME.hexSize + offsetX) + 'px';
+            hex.style.top = (y * GAME.hexSize * 0.75) + 'px';
+            
+            // Determine terrain type
+            const terrain = getTerrainType(x, y);
+            hex.classList.add(`terrain-${terrain.type}`);
+            
+            const content = document.createElement('div');
+            content.className = 'hex-content';
+            content.textContent = terrain.emoji;
+            hex.appendChild(content);
+            
+            // Click handler
+            hex.addEventListener('click', () => selectHex(x, y));
+            hex.addEventListener('mouseenter', (e) => showHexInfo(e, x, y));
+            hex.addEventListener('mouseleave', hideHexInfo);
+            
+            return hex;
+        }
+
+        // Get terrain type based on position
+        function getTerrainType(x, y) {
+            // Create regions
+            const centerDist = Math.sqrt(Math.pow(x - 60, 2) + Math.pow(y - 60, 2));
+            
+            // Center is more temporal
+            if (centerDist < 10) {
+                if (Math.random() < 0.3) return TERRAIN_TYPES[7]; // temporal
+            }
+            
+            // Edges are more void
+            if (x < 10 || x > 110 || y < 10 || y > 110) {
+                if (Math.random() < 0.4) return TERRAIN_TYPES[6]; // void
+            }
+            
+            // Random weighted selection
+            const rand = Math.random() * 100;
+            let sum = 0;
+            for (const terrain of TERRAIN_TYPES) {
+                sum += terrain.weight;
+                if (rand < sum) return terrain;
+            }
+            
+            return TERRAIN_TYPES[0]; // default grass
+        }
+
+        // Place regulators
+        function placeRegulators() {
+            // Vince - North East
+            placeObject(100, 20, 'regulator', '👁️');
+            
+            // Anna - Center
+            placeObject(60, 60, 'regulator', '💰');
+            
+            // Overload - Random powerful position
+            placeObject(30, 90, 'regulator', '⚡');
+        }
+
+        // Place artifacts
+        function placeArtifacts() {
+            const artifactPositions = [
+                { x: 20, y: 20 },
+                { x: 100, y: 100 },
+                { x: 20, y: 100 },
+                { x: 100, y: 20 },
+                { x: 60, y: 30 },
+                { x: 60, y: 90 }
+            ];
+            
+            artifactPositions.forEach(pos => {
+                placeObject(pos.x, pos.y, 'artifact', '💎');
+                GAME.artifacts.push(pos);
+            });
+        }
+
+        // Place portals
+        function placePortals() {
+            for (let i = 0; i < 8; i++) {
+                const x = Math.floor(Math.random() * GAME.mapWidth);
+                const y = Math.floor(Math.random() * GAME.mapHeight);
+                placeObject(x, y, 'portal', '🌀');
+                GAME.portals.push({ x, y });
+            }
+        }
+
+        // Place vendors
+        function placeVendors() {
+            const vendors = ['🏪', '🏛️', '⚗️', '📚'];
+            for (let i = 0; i < 12; i++) {
+                const x = 20 + Math.floor(Math.random() * 80);
+                const y = 20 + Math.floor(Math.random() * 80);
+                placeObject(x, y, 'vendor', vendors[i % vendors.length]);
+                GAME.vendors.push({ x, y });
+            }
+        }
+
+        // Place craft stations
+        function placeCraftStations() {
+            for (let i = 0; i < 6; i++) {
+                const x = Math.floor(Math.random() * GAME.mapWidth);
+                const y = Math.floor(Math.random() * GAME.mapHeight);
+                placeObject(x, y, 'craft', '🔨');
+                GAME.craftStations.push({ x, y });
+            }
+        }
+
+        // Place enemies
+        function placeEnemies() {
+            const enemyTypes = ['👹', '🐉', '👻', '🦇', '🕷️'];
+            for (let i = 0; i < 20; i++) {
+                const x = Math.floor(Math.random() * GAME.mapWidth);
+                const y = Math.floor(Math.random() * GAME.mapHeight);
+                placeObject(x, y, 'enemy', enemyTypes[i % enemyTypes.length]);
+                GAME.enemies.push({ x, y, type: enemyTypes[i % enemyTypes.length] });
+            }
+        }
+
+        // Place hero
+        function placeHero() {
+            placeObject(GAME.heroPosition.x, GAME.heroPosition.y, 'hero', '🦸');
+            centerCamera(GAME.heroPosition.x, GAME.heroPosition.y);
+        }
+
+        // Place object on hex
+        function placeObject(x, y, type, emoji) {
+            const hex = document.querySelector(`.hex[data-x="${x}"][data-y="${y}"]`);
+            if (hex) {
+                hex.classList.add(`object-${type}`);
+                hex.querySelector('.hex-content').textContent = emoji;
+            }
+        }
+
+        // Camera controls
+        function centerCamera(hexX, hexY) {
+            const offsetY = hexY % 2 === 0 ? 0 : GAME.hexSize / 2;
+            const pixelX = hexX * GAME.hexSize + offsetY;
+            const pixelY = hexY * GAME.hexSize * 0.75;
+            
+            GAME.cameraX = pixelX - GAME.viewportWidth / 2;
+            GAME.cameraY = pixelY - GAME.viewportHeight / 2;
+            
+            updateCamera();
+        }
+
+        function updateCamera() {
+            const mapContainer = document.getElementById('mapContainer');
+            mapContainer.style.transform = `translate(${-GAME.cameraX}px, ${-GAME.cameraY}px) scale(${GAME.zoom})`;
+            updateMinimapViewport();
+        }
+
+        // Minimap
+        function updateMinimap() {
+            const minimapContent = document.getElementById('minimapContent');
+            minimapContent.innerHTML = '';
+            
+            // Add dots for special objects
+            GAME.artifacts.forEach(pos => {
+                const dot = createMinimapDot(pos.x, pos.y, '#ffff00');
+                minimapContent.appendChild(dot);
+            });
+            
+            GAME.enemies.forEach(pos => {
+                const dot = createMinimapDot(pos.x, pos.y, '#ff0000');
+                minimapContent.appendChild(dot);
+            });
+            
+            // Hero
+            const heroDot = createMinimapDot(GAME.heroPosition.x, GAME.heroPosition.y, '#00ff00');
+            heroDot.style.width = '4px';
+            heroDot.style.height = '4px';
+            minimapContent.appendChild(heroDot);
+            
+            // Viewport
+            const viewport = document.createElement('div');
+            viewport.id = 'minimapViewport';
+            viewport.className = 'minimap-viewport';
+            minimapContent.appendChild(viewport);
+            
+            updateMinimapViewport();
+        }
+
+        function createMinimapDot(x, y, color) {
+            const dot = document.createElement('div');
+            dot.className = 'minimap-dot';
+            dot.style.left = (x / GAME.mapWidth * 240) + 'px';
+            dot.style.top = (y / GAME.mapHeight * 240) + 'px';
+            dot.style.background = color;
+            return dot;
+        }
+
+        function updateMinimapViewport() {
+            const viewport = document.getElementById('minimapViewport');
+            if (!viewport) return;
+            
+            const scale = 240 / (GAME.mapWidth * GAME.hexSize);
+            viewport.style.left = (GAME.cameraX * scale) + 'px';
+            viewport.style.top = (GAME.cameraY * scale) + 'px';
+            viewport.style.width = (GAME.viewportWidth * scale) + 'px';
+            viewport.style.height = (GAME.viewportHeight * scale) + 'px';
+        }
+
+        // Hex selection
+        function selectHex(x, y) {
+            console.log(`Selected hex: ${x}, ${y}`);
+            GAME.selectedHex = { x, y };
+            
+            // Move hero if possible
+            const distance = Math.sqrt(Math.pow(x - GAME.heroPosition.x, 2) + Math.pow(y - GAME.heroPosition.y, 2));
+            if (distance <= 3) {  // Movement range
+                moveHero(x, y);
+            }
+        }
+
+        function moveHero(x, y) {
+            // Clear old position
+            const oldHex = document.querySelector(`.hex[data-x="${GAME.heroPosition.x}"][data-y="${GAME.heroPosition.y}"]`);
+            if (oldHex) {
+                oldHex.classList.remove('object-hero');
+                const terrain = getTerrainType(GAME.heroPosition.x, GAME.heroPosition.y);
+                oldHex.querySelector('.hex-content').textContent = terrain.emoji;
+            }
+            
+            // Set new position
+            GAME.heroPosition = { x, y };
+            placeObject(x, y, 'hero', '🦸');
+            
+            // Check for interactions
+            checkInteractions(x, y);
+            
+            // Update minimap
+            updateMinimap();
+        }
+
+        function checkInteractions(x, y) {
+            // Check artifacts
+            const artifactIndex = GAME.artifacts.findIndex(a => a.x === x && a.y === y);
+            if (artifactIndex !== -1) {
+                GAME.artifacts.splice(artifactIndex, 1);
+                GAME.resources.quantum += 5;
+                updateResources();
+                showNotification('Artefact collecté! +5 Quantum');
+            }
+            
+            // Check portals
+            const portal = GAME.portals.find(p => p.x === x && p.y === y);
+            if (portal) {
+                showNotification('Portail temporel découvert!');
+                // Teleport to random location
+                const newX = Math.floor(Math.random() * GAME.mapWidth);
+                const newY = Math.floor(Math.random() * GAME.mapHeight);
+                moveHero(newX, newY);
+                centerCamera(newX, newY);
+            }
+        }
+
+        // Info popup
+        function showHexInfo(e, x, y) {
+            const popup = document.getElementById('infoPopup');
+            popup.innerHTML = `
+                <strong>Position:</strong> ${x}, ${y}<br>
+                <strong>Distance:</strong> ${Math.round(Math.sqrt(Math.pow(x - GAME.heroPosition.x, 2) + Math.pow(y - GAME.heroPosition.y, 2)))}<br>
+                <strong>Causalité:</strong> ${(Math.random() * 0.5 + 0.5).toFixed(2)}
+            `;
+            popup.style.left = e.pageX + 10 + 'px';
+            popup.style.top = e.pageY + 10 + 'px';
+            popup.classList.add('active');
+        }
+
+        function hideHexInfo() {
+            document.getElementById('infoPopup').classList.remove('active');
+        }
+
+        // Game controls
+        function startGame(difficulty) {
+            GAME.difficulty = difficulty;
+            document.getElementById('difficultySelector').style.display = 'none';
+            
+            // Adjust resources based on difficulty
+            switch(difficulty) {
+                case 'easy':
+                    GAME.resources.crystals = 200;
+                    GAME.resources.energy = 100;
+                    break;
+                case 'hard':
+                    GAME.resources.crystals = 50;
+                    GAME.resources.energy = 25;
+                    break;
+                case 'nightmare':
+                    GAME.resources.crystals = 25;
+                    GAME.resources.energy = 10;
+                    GAME.regulators.overload.stack = 9;
+                    break;
+            }
+            
+            updateResources();
+            initializeMap();
+            
+            showNotification(`Chasse Temporelle commencée en mode ${difficulty.toUpperCase()}!`);
+        }
+
+        function endTurn() {
+            GAME.day++;
+            GAME.timeState.tw++;
+            GAME.timeState.te += 1 + Math.random() * 0.5 - 0.25;  // Drift
+            GAME.timeState.dt = Math.abs(GAME.timeState.tw - GAME.timeState.te);
+            
+            // Apply Anna's decay
+            if (GAME.regulators.anna.decay > 0) {
+                GAME.resources.crystals = Math.max(0, GAME.resources.crystals - GAME.regulators.anna.decay);
+                GAME.resources.energy = Math.max(0, GAME.resources.energy - Math.floor(GAME.regulators.anna.decay / 2));
+            }
+            
+            // Check Overload
+            if (Math.random() < 0.3) {
+                GAME.regulators.overload.stack++;
+                if (GAME.regulators.overload.stack >= GAME.regulators.overload.maxStack) {
+                    showNotification('⚠️ OVERLOAD COLLAPSE!');
+                    GAME.regulators.overload.stack = 0;
+                    // Collapse effect
+                    GAME.resources.temporal = Math.floor(GAME.resources.temporal / 2);
+                }
+            }
+            
+            // Move enemies
+            moveEnemies();
+            
+            // Update UI
+            updateUI();
+            
+            // Check victory/defeat
+            if (GAME.day >= 25) {
+                showNotification('🎉 VICTOIRE! Vous avez survécu 25 jours!');
+            }
+            
+            if (GAME.resources.crystals <= 0 && GAME.resources.energy <= 0) {
+                showNotification('💀 DÉFAITE! Ressources épuisées...');
+            }
+        }
+
+        function moveEnemies() {
+            GAME.enemies.forEach(enemy => {
+                // Simple AI: move towards hero
+                const dx = Math.sign(GAME.heroPosition.x - enemy.x);
+                const dy = Math.sign(GAME.heroPosition.y - enemy.y);
+                
+                if (Math.random() < 0.5) {
+                    enemy.x += dx;
+                    enemy.y += dy;
+                }
+            });
+            
+            // Redraw enemies
+            // (In a real implementation, we'd update their positions on the map)
+        }
+
+        function toggleCausalFog() {
+            GAME.causalFogActive = !GAME.causalFogActive;
+            showNotification(`Brouillard causal: ${GAME.causalFogActive ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
+        }
+
+        function forkTimeline() {
+            GAME.resources.temporal -= 10;
+            if (GAME.resources.temporal < 0) {
+                showNotification('⚠️ Pas assez d\'énergie temporelle!');
+                GAME.resources.temporal += 10;
+                return;
+            }
+            updateResources();
+            showNotification('🔀 Timeline fork créé!');
+        }
+
+        function mergeTimelines() {
+            GAME.resources.quantum -= 5;
+            if (GAME.resources.quantum < 0) {
+                showNotification('⚠️ Pas assez d\'énergie quantique!');
+                GAME.resources.quantum += 5;
+                return;
+            }
+            updateResources();
+            showNotification('🔄 Timelines fusionnées!');
+        }
+
+        function temporalShift() {
+            GAME.resources.energy -= 20;
+            if (GAME.resources.energy < 0) {
+                showNotification('⚠️ Pas assez d\'énergie!');
+                GAME.resources.energy += 20;
+                return;
+            }
+            
+            // Shift effect
+            GAME.timeState.te -= 3;
+            updateResources();
+            updateUI();
+            showNotification('⏪ Shift temporel de -3 tours!');
+        }
+
+        // UI updates
+        function updateResources() {
+            document.getElementById('crystals').textContent = GAME.resources.crystals;
+            document.getElementById('energy').textContent = GAME.resources.energy;
+            document.getElementById('temporal').textContent = GAME.resources.temporal;
+            document.getElementById('quantum').textContent = GAME.resources.quantum;
+        }
+
+        function updateUI() {
+            document.getElementById('day').textContent = GAME.day;
+            document.getElementById('tw').textContent = GAME.timeState.tw.toFixed(1);
+            document.getElementById('te').textContent = GAME.timeState.te.toFixed(1);
+            document.getElementById('dt').textContent = GAME.timeState.dt.toFixed(1);
+            updateResources();
+        }
+
+        function showNotification(message) {
+            // Simple notification (in real game would be fancier)
+            console.log(message);
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.9);
+                color: #ffd700;
+                padding: 20px;
+                border: 2px solid #ffd700;
+                border-radius: 10px;
+                font-size: 1.5em;
+                z-index: 3000;
+                animation: fadeInOut 2s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 2000);
+        }
+
+        // Mouse controls for map dragging
+        const viewport = document.getElementById('viewport');
+        
+        viewport.addEventListener('mousedown', (e) => {
+            GAME.isDragging = true;
+            GAME.dragStartX = e.clientX + GAME.cameraX;
+            GAME.dragStartY = e.clientY + GAME.cameraY;
+            viewport.classList.add('dragging');
+        });
+        
+        viewport.addEventListener('mousemove', (e) => {
+            if (!GAME.isDragging) return;
+            
+            GAME.cameraX = GAME.dragStartX - e.clientX;
+            GAME.cameraY = GAME.dragStartY - e.clientY;
+            updateCamera();
+        });
+        
+        viewport.addEventListener('mouseup', () => {
+            GAME.isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+        
+        viewport.addEventListener('mouseleave', () => {
+            GAME.isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+        
+        // Zoom controls
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            GAME.zoom = Math.max(0.5, Math.min(2, GAME.zoom * delta));
+            updateCamera();
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            const moveSpeed = 100;
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                    GAME.cameraY -= moveSpeed;
+                    updateCamera();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    GAME.cameraY += moveSpeed;
+                    updateCamera();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                    GAME.cameraX -= moveSpeed;
+                    updateCamera();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                    GAME.cameraX += moveSpeed;
+                    updateCamera();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    endTurn();
+                    break;
+                case 'c':
+                    centerCamera(GAME.heroPosition.x, GAME.heroPosition.y);
+                    break;
+            }
+        });
+        
+        // Initialize viewport dimensions
+        function updateViewportDimensions() {
+            const viewport = document.getElementById('viewport');
+            GAME.viewportWidth = viewport.clientWidth;
+            GAME.viewportHeight = viewport.clientHeight;
+        }
+        
+        // Window resize handler
+        window.addEventListener('resize', updateViewportDimensions);
+        
+        // Initialize
+        updateViewportDimensions();
+        updateUI();
+        
+        // Add CSS animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // ===== AUDIO SYSTEM =====
+        // Système audio super léger avec Web Audio API
+        const AudioSystem = {
+            context: null,
+            masterVolume: 0.3,  // Volume général très bas
+            enabled: true,
+            
+            init() {
+                try {
+                    this.context = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('Audio system initialized');
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                    this.enabled = false;
+                }
+            },
+            
+            // Son ambient temporel (drone très doux)
+            playAmbientDrone() {
+                if (!this.enabled || !this.context) return;
+                
+                const oscillator = this.context.createOscillator();
+                const gainNode = this.context.createGain();
+                const filter = this.context.createBiquadFilter();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(60, this.context.currentTime);  // Très basse fréquence
+                oscillator.frequency.exponentialRampToValueAtTime(65, this.context.currentTime + 10);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(200, this.context.currentTime);
+                
+                gainNode.gain.setValueAtTime(0, this.context.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.05 * this.masterVolume, this.context.currentTime + 2);
+                gainNode.gain.linearRampToValueAtTime(0, this.context.currentTime + 8);
+                
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                oscillator.start(this.context.currentTime);
+                oscillator.stop(this.context.currentTime + 10);
+            },
+            
+            // Click hexagone (son cristallin très doux)
+            playHexClick() {
+                if (!this.enabled || !this.context) return;
+                
+                const oscillator = this.context.createOscillator();
+                const gainNode = this.context.createGain();
+                
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(800, this.context.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, this.context.currentTime + 0.05);
+                oscillator.frequency.exponentialRampToValueAtTime(600, this.context.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.1 * this.masterVolume, this.context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.1);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                oscillator.start(this.context.currentTime);
+                oscillator.stop(this.context.currentTime + 0.1);
+            },
+            
+            // Mouvement du héros (whoosh subtil)
+            playHeroMove() {
+                if (!this.enabled || !this.context) return;
+                
+                const noise = this.createNoise();
+                const filter = this.context.createBiquadFilter();
+                const gainNode = this.context.createGain();
+                
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(400, this.context.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(800, this.context.currentTime + 0.1);
+                filter.Q.setValueAtTime(2, this.context.currentTime);
+                
+                gainNode.gain.setValueAtTime(0, this.context.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.08 * this.masterVolume, this.context.currentTime + 0.02);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.2);
+                
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                noise.start(this.context.currentTime);
+                noise.stop(this.context.currentTime + 0.2);
+            },
+            
+            // Collecte d'artefact (tintement magique)
+            playArtifactCollect() {
+                if (!this.enabled || !this.context) return;
+                
+                const frequencies = [523.25, 659.25, 783.99, 1046.50];  // Do, Mi, Sol, Do octave
+                
+                frequencies.forEach((freq, i) => {
+                    const oscillator = this.context.createOscillator();
+                    const gainNode = this.context.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(freq, this.context.currentTime + i * 0.05);
+                    
+                    gainNode.gain.setValueAtTime(0, this.context.currentTime + i * 0.05);
+                    gainNode.gain.linearRampToValueAtTime(0.1 * this.masterVolume, this.context.currentTime + i * 0.05 + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + i * 0.05 + 0.5);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.context.destination);
+                    
+                    oscillator.start(this.context.currentTime + i * 0.05);
+                    oscillator.stop(this.context.currentTime + i * 0.05 + 0.5);
+                });
+            },
+            
+            // Portal (effet spatial)
+            playPortal() {
+                if (!this.enabled || !this.context) return;
+                
+                const oscillator = this.context.createOscillator();
+                const lfo = this.context.createOscillator();
+                const gainNode = this.context.createGain();
+                const lfoGain = this.context.createGain();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(100, this.context.currentTime);
+                
+                lfo.type = 'sine';
+                lfo.frequency.setValueAtTime(4, this.context.currentTime);
+                
+                lfoGain.gain.setValueAtTime(50, this.context.currentTime);
+                
+                gainNode.gain.setValueAtTime(0, this.context.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1 * this.masterVolume, this.context.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, this.context.currentTime + 1);
+                
+                lfo.connect(lfoGain);
+                lfoGain.connect(oscillator.frequency);
+                oscillator.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                oscillator.start(this.context.currentTime);
+                lfo.start(this.context.currentTime);
+                oscillator.stop(this.context.currentTime + 1);
+                lfo.stop(this.context.currentTime + 1);
+            },
+            
+            // Temporal shift (glitch subtil)
+            playTemporalShift() {
+                if (!this.enabled || !this.context) return;
+                
+                for (let i = 0; i < 5; i++) {
+                    const oscillator = this.context.createOscillator();
+                    const gainNode = this.context.createGain();
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(200 + Math.random() * 800, this.context.currentTime + i * 0.05);
+                    
+                    gainNode.gain.setValueAtTime(0.05 * this.masterVolume, this.context.currentTime + i * 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.context.currentTime + i * 0.05 + 0.05);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.context.destination);
+                    
+                    oscillator.start(this.context.currentTime + i * 0.05);
+                    oscillator.stop(this.context.currentTime + i * 0.05 + 0.05);
+                }
+            },
+            
+            // Fin de tour (ding subtil)
+            playEndTurn() {
+                if (!this.enabled || !this.context) return;
+                
+                const oscillator = this.context.createOscillator();
+                const gainNode = this.context.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(440, this.context.currentTime);  // La
+                oscillator.frequency.setValueAtTime(880, this.context.currentTime + 0.1);  // La octave
+                
+                gainNode.gain.setValueAtTime(0.15 * this.masterVolume, this.context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.3);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                oscillator.start(this.context.currentTime);
+                oscillator.stop(this.context.currentTime + 0.3);
+            },
+            
+            // Créer du bruit blanc (pour effets whoosh)
+            createNoise() {
+                const bufferSize = this.context.sampleRate * 2;
+                const buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+                const output = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = this.context.createBufferSource();
+                noise.buffer = buffer;
+                
+                return noise;
+            }
+        };
+        
+        // Initialiser l'audio au premier clic (required by browsers)
+        document.addEventListener('click', () => {
+            if (!AudioSystem.context) {
+                AudioSystem.init();
+                // Jouer un drone ambient toutes les 30 secondes
+                setInterval(() => AudioSystem.playAmbientDrone(), 30000);
+            }
+        }, { once: true });
+        
+        // Modifier les fonctions existantes pour ajouter les sons
+        const originalSelectHex = selectHex;
+        selectHex = function(x, y) {
+            AudioSystem.playHexClick();
+            originalSelectHex(x, y);
+        };
+        
+        const originalMoveHero = moveHero;
+        moveHero = function(x, y) {
+            AudioSystem.playHeroMove();
+            originalMoveHero(x, y);
+        };
+        
+        const originalCheckInteractions = checkInteractions;
+        checkInteractions = function(x, y) {
+            const artifactIndex = GAME.artifacts.findIndex(a => a.x === x && a.y === y);
+            if (artifactIndex !== -1) {
+                AudioSystem.playArtifactCollect();
+            }
+            
+            const portal = GAME.portals.find(p => p.x === x && p.y === y);
+            if (portal) {
+                AudioSystem.playPortal();
+            }
+            
+            originalCheckInteractions(x, y);
+        };
+        
+        const originalEndTurn = endTurn;
+        endTurn = function() {
+            AudioSystem.playEndTurn();
+            originalEndTurn();
+        };
+        
+        const originalTemporalShift = temporalShift;
+        temporalShift = function() {
+            const hadEnergy = GAME.resources.energy >= 20;
+            originalTemporalShift();
+            if (hadEnergy) {
+                AudioSystem.playTemporalShift();
+            }
+        };
+        
+        // Ajouter un toggle audio dans les contrôles
+        const controlsDiv = document.querySelector('.controls');
+        const audioToggle = document.createElement('button');
+        audioToggle.className = 'control-btn';
+        audioToggle.textContent = '🔊 Audio';
+        audioToggle.onclick = () => {
+            AudioSystem.enabled = !AudioSystem.enabled;
+            audioToggle.textContent = AudioSystem.enabled ? '🔊 Audio' : '🔇 Audio';
+            audioToggle.classList.toggle('active', AudioSystem.enabled);
+        };
+        controlsDiv.appendChild(audioToggle);
+    </script>
+</body>
+</html>

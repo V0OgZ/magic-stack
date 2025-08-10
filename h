@@ -53,16 +53,18 @@ show_main_menu() {
     echo -e "${YELLOW}━━━ INTERFACES DE JEU ━━━${NC}"
     echo -e "  ${CYAN}[10]${NC} 🎮 Démo Multiplayer HOMM3"
     echo -e "  ${CYAN}[11]${NC} 📱 PWA iPad avec Clippy"
-    echo -e "  ${CYAN}[12]${NC} 🤖 IA vs IA Autoplay ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "  ${CYAN}[12]${NC} 🤖 IA vs IA Autoplay"
     echo -e "  ${CYAN}[13]${NC} 👁️  Mode Spectateur God Mode"
     echo -e "  ${CYAN}[14]${NC} 🧪 Test Runner (Scénarios)"
+    echo -e "  ${CYAN}[15]${NC} ⚔️ CHASSE TEMPORELLE ${GOLD}(6x6 écrans!)${NC} ${GREEN}(NOUVEAU!)${NC}"
     echo ""
     
     echo -e "${YELLOW}━━━ DOCUMENTATION & OUTILS ━━━${NC}"
     echo -e "  ${CYAN}[20]${NC} 📖 Manuel du Joueur (Expert)"
-    echo -e "  ${CYAN}[21]${NC} 🎈 Manuel Facile (12 ans+) ${GREEN}(NOUVEAU!)${NC}"
-    echo -e "  ${CYAN}[22]${NC} 🔍 Vector DB Explorer ${GREEN}(NOUVEAU!)${NC}"
+    echo -e "  ${CYAN}[21]${NC} 🎈 Manuel Facile (12 ans+)"
+    echo -e "  ${CYAN}[22]${NC} 🔍 Vector DB Explorer"
     echo -e "  ${CYAN}[23]${NC} 🌐 Portal GitHub Pages"
+    echo -e "  ${CYAN}[24]${NC} 🔮 API Explorer COMPLET ${GREEN}(100% APIs!)${NC}"
     echo ""
     
     echo -e "${YELLOW}━━━ DÉVELOPPEMENT ━━━${NC}"
@@ -77,12 +79,13 @@ show_main_menu() {
     echo -e "  ${CYAN}[41]${NC} 🎯 Ouvrir TOUTES les démos"
     echo -e "  ${CYAN}[42]${NC} 📚 Ouvrir TOUTE la documentation"
     echo -e "  ${CYAN}[43]${NC} 🎬 Lancer scénario Autoplay"
+    echo -e "  ${CYAN}[44]${NC} ⚔️ Lancer CHASSE TEMPORELLE ${GOLD}(Direct!)${NC}"
     echo ""
     
     echo -e "  ${CYAN}[0]${NC} ❌ Quitter"
     echo ""
     echo -e "${MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -n -e "${GOLD}Votre choix: ${NC}"
+    echo -n -e "${GOLD}> ${NC}"
 }
 
 # Lancer tous les services
@@ -178,6 +181,7 @@ open_all_demos() {
     open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
     open_page "SPECTATOR_GOD_MODE.html" "Mode Spectateur"
     open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner"
+    open_page "CHASSE_TEMPORELLE_MEGA_MAP.html" "CHASSE TEMPORELLE"
     echo -e "${GREEN}✅ Toutes les démos sont ouvertes !${NC}"
     sleep 2
 }
@@ -188,6 +192,7 @@ open_all_docs() {
     open_page "MANUEL_DU_JOUEUR_HOT.html" "Manuel Expert"
     open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile"
     open_page "VECTOR_DB_EXPLORER_UI.html" "Vector DB Explorer"
+    open_page "API_EXPLORER_COMPLETE.html" "API Explorer COMPLET"
     open_page "docs/index.html" "Portal GitHub Pages"
     echo -e "${GREEN}✅ Toute la documentation est ouverte !${NC}"
     sleep 2
@@ -207,6 +212,36 @@ launch_autoplay() {
     open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
     echo -e "${GREEN}✅ Cliquez sur DÉMARRER pour lancer la bataille !${NC}"
     sleep 2
+}
+
+# Lancer Chasse Temporelle
+launch_chasse_temporelle() {
+    echo -e "${GOLD}⚔️ LANCEMENT DE LA CHASSE TEMPORELLE${NC}"
+    echo -e "${CYAN}Map 6x6 écrans (120x120 hexagones)${NC}"
+    echo ""
+    
+    # Vérifier que les services sont lancés
+    curl -s http://localhost:$RUST_PORT/health > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}Lancement des services nécessaires...${NC}"
+        start_all_services
+    fi
+    
+    echo -e "${GREEN}Ouverture de la carte massive...${NC}"
+    open_page "CHASSE_TEMPORELLE_MEGA_MAP.html" "CHASSE TEMPORELLE"
+    
+    echo ""
+    echo -e "${YELLOW}Conseils:${NC}"
+    echo "  • Choisissez votre difficulté (Facile → Cauchemar)"
+    echo "  • Utilisez WASD ou les flèches pour naviguer"
+    echo "  • Clic droit pour glisser la carte"
+    echo "  • Molette pour zoomer"
+    echo "  • Espace pour fin du tour"
+    echo "  • C pour centrer sur votre héros"
+    echo "  • Activez l'audio pour l'ambiance!"
+    echo ""
+    echo -e "${GREEN}✅ Prêt pour l'aventure temporelle !${NC}"
+    sleep 3
 }
 
 # Mode développement
@@ -294,11 +329,13 @@ while true; do
         12) open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay" ;;
         13) open_page "SPECTATOR_GOD_MODE.html" "Mode Spectateur" ;;
         14) open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner" ;;
+        15) open_page "CHASSE_TEMPORELLE_MEGA_MAP.html" "CHASSE TEMPORELLE" ;;
         
         20) open_page "MANUEL_DU_JOUEUR_HOT.html" "Manuel Expert" ;;
         21) open_page "MANUEL_FACILE_EASY_MODE.html" "Manuel Facile" ;;
         22) open_page "VECTOR_DB_EXPLORER_UI.html" "Vector DB Explorer" ;;
         23) open_page "docs/index.html" "Portal GitHub Pages" ;;
+        24) open_page "API_EXPLORER_COMPLETE.html" "API Explorer COMPLET" ;;
         
         30) show_status ;;
         31) 
@@ -317,6 +354,7 @@ while true; do
         41) open_all_demos ;;
         42) open_all_docs ;;
         43) launch_autoplay ;;
+        44) launch_chasse_temporelle ;;
         
         0) 
             echo -e "${GOLD}Au revoir ! 🎮${NC}"

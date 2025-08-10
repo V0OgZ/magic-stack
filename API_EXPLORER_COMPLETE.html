@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 API Explorer COMPLET - Heroes of Time</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #1a0033, #0a001a);
+            color: #e0e0ff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(106, 17, 203, 0.5);
+        }
+
+        h1 {
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .backends {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .backend {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #4a5fff;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .backend:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(74, 95, 255, 0.3);
+            border-color: #00ff88;
+        }
+
+        .backend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a5fff;
+        }
+
+        .backend-title {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .backend-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-offline {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        .endpoint-group {
+            margin-bottom: 20px;
+        }
+
+        .group-title {
+            font-size: 1.2em;
+            color: #00ff88;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid #00ff88;
+        }
+
+        .endpoint {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .endpoint:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .method {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 10px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method-get { background: #4CAF50; color: white; }
+        .method-post { background: #2196F3; color: white; }
+        .method-put { background: #FF9800; color: white; }
+        .method-delete { background: #f44336; color: white; }
+        .method-ws { background: #9C27B0; color: white; }
+
+        .endpoint-path {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            color: #ffd700;
+        }
+
+        .endpoint-desc {
+            color: #aaa;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .test-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            width: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .test-panel.active {
+            display: block;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            color: #ff4444;
+            font-size: 1.5em;
+        }
+
+        .test-button {
+            padding: 10px 20px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .test-button:hover {
+            background: #00cc66;
+        }
+
+        .response-area {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            margin-top: 5px;
+            color: #aaa;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .search-box {
+            flex: 1;
+        }
+
+        .v2-badge {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .new-badge {
+            background: #ff4444;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 5px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 API Explorer COMPLET</h1>
+            <div class="subtitle">100% de TOUS les endpoints - Java, Rust, Python, V2</div>
+        </div>
+
+        <div class="filter-bar">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Rechercher un endpoint...">
+            <select id="backendFilter">
+                <option value="">Tous les backends</option>
+                <option value="rust">🦀 Rust</option>
+                <option value="java">☕ Java</option>
+                <option value="python">🐍 Python</option>
+            </select>
+            <select id="methodFilter">
+                <option value="">Toutes les méthodes</option>
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="WS">WebSocket</option>
+            </select>
+        </div>
+
+        <div class="backends">
+            <!-- RUST BACKEND -->
+            <div class="backend" data-backend="rust">
+                <div class="backend-header">
+                    <span class="backend-title">🦀 Rust Backend (Port 3001)</span>
+                    <span class="backend-status" id="rust-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🎮 Core Game</div>
+                    <div class="endpoint" data-method="GET" data-path="/health">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/health</span>
+                        <span class="endpoint-desc">Health check</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/status">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/status</span>
+                        <span class="endpoint-desc">Server status</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/game/create">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/game/create</span>
+                        <span class="endpoint-desc">Create new game</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/game/join">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/game/join</span>
+                        <span class="endpoint-desc">Join game</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/game/{id}/state">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/game/{id}/state</span>
+                        <span class="endpoint-desc">Get game state</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🃏 TCG Combat</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/tcg/start-combat">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/tcg/start-combat</span>
+                        <span class="endpoint-desc">Start TCG combat</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/tcg/play-card">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/tcg/play-card</span>
+                        <span class="endpoint-desc">Play a card</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/tcg/ai-turn">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/tcg/ai-turn</span>
+                        <span class="endpoint-desc">AI plays turn</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/tcg/combat/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/tcg/combat/{id}</span>
+                        <span class="endpoint-desc">Get combat state</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/tcg/end-turn">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/tcg/end-turn</span>
+                        <span class="endpoint-desc">End turn</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">⚡ V2 Multiplayer Controller <span class="v2-badge">V2</span></div>
+                    <div class="endpoint" data-method="POST" data-path="/api/v2/tick">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/v2/tick</span>
+                        <span class="endpoint-desc">Advance V2 tick</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/entity/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/v2/entity/{id}</span>
+                        <span class="endpoint-desc">Get V2 entity state</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/v2/migrate-entity">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/v2/migrate-entity</span>
+                        <span class="endpoint-desc">Migrate entity to V2</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/config">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/v2/config</span>
+                        <span class="endpoint-desc">Get V2 configuration</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/v2/fork-timeline">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/v2/fork-timeline</span>
+                        <span class="endpoint-desc">Fork timeline</span>
+                        <span class="v2-badge">V2</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/v2/merge-timelines">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/v2/merge-timelines</span>
+                        <span class="endpoint-desc">Merge timelines</span>
+                        <span class="v2-badge">V2</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🌌 6D Space</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/6d/query">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/6d/query</span>
+                        <span class="endpoint-desc">6D space query</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/6d/laser">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/6d/laser</span>
+                        <span class="endpoint-desc">6D laser calculation</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/6d/entity/{id}/position">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/6d/entity/{id}/position</span>
+                        <span class="endpoint-desc">Get 6D position</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🌐 WebSocket</div>
+                    <div class="endpoint" data-method="WS" data-path="/ws">
+                        <span class="method method-ws">WS</span>
+                        <span class="endpoint-path">/ws</span>
+                        <span class="endpoint-desc">WebSocket connection</span>
+                    </div>
+                    <div class="endpoint" data-method="WS" data-path="/ws/game/{id}">
+                        <span class="method method-ws">WS</span>
+                        <span class="endpoint-path">/ws/game/{id}</span>
+                        <span class="endpoint-desc">Game WebSocket</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔧 Admin</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/admin/metrics">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/admin/metrics</span>
+                        <span class="endpoint-desc">Server metrics</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/admin/reset">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/admin/reset</span>
+                        <span class="endpoint-desc">Reset server</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JAVA BACKEND -->
+            <div class="backend" data-backend="java">
+                <div class="backend-header">
+                    <span class="backend-title">☕ Java Backend (Port 8080)</span>
+                    <span class="backend-status" id="java-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🎮 Scenarios</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/scenarios">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/scenarios</span>
+                        <span class="endpoint-desc">List all scenarios</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/scenarios/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/scenarios/{id}</span>
+                        <span class="endpoint-desc">Get scenario</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/scenarios/start">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/scenarios/start</span>
+                        <span class="endpoint-desc">Start scenario</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/scenarios/{id}/action">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/scenarios/{id}/action</span>
+                        <span class="endpoint-desc">Execute action</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">⚔️ Combat</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/combat/start">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/combat/start</span>
+                        <span class="endpoint-desc">Start combat</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/combat/play-card">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/combat/play-card</span>
+                        <span class="endpoint-desc">Play combat card</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/combat/enemy-turn">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/combat/enemy-turn</span>
+                        <span class="endpoint-desc">Enemy AI turn</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/combat/{id}/state">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/combat/{id}/state</span>
+                        <span class="endpoint-desc">Combat state</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/combat/resolve">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/combat/resolve</span>
+                        <span class="endpoint-desc">Resolve combat</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🧙 Heroes</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/heroes">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/heroes</span>
+                        <span class="endpoint-desc">List heroes</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/heroes/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/heroes/{id}</span>
+                        <span class="endpoint-desc">Get hero details</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/heroes/create">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/heroes/create</span>
+                        <span class="endpoint-desc">Create hero</span>
+                    </div>
+                    <div class="endpoint" data-method="PUT" data-path="/api/heroes/{id}/level-up">
+                        <span class="method method-put">PUT</span>
+                        <span class="endpoint-path">/api/heroes/{id}/level-up</span>
+                        <span class="endpoint-desc">Level up hero</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">📜 Spells</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/spells">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/spells</span>
+                        <span class="endpoint-desc">List spells</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/spells/cast">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/spells/cast</span>
+                        <span class="endpoint-desc">Cast spell</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/spells/parse">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/spells/parse</span>
+                        <span class="endpoint-desc">Parse temporal formula</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🗺️ Maps</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/maps">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/maps</span>
+                        <span class="endpoint-desc">List maps</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/maps/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/maps/{id}</span>
+                        <span class="endpoint-desc">Get map data</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/maps/{id}/visibility">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/maps/{id}/visibility</span>
+                        <span class="endpoint-desc">Calculate visibility</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🌀 Temporal</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/temporal/shift">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/temporal/shift</span>
+                        <span class="endpoint-desc">Temporal shift</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/temporal/fork">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/temporal/fork</span>
+                        <span class="endpoint-desc">Fork timeline</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/temporal/merge">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/temporal/merge</span>
+                        <span class="endpoint-desc">Merge timelines</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/temporal/paradoxes">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/temporal/paradoxes</span>
+                        <span class="endpoint-desc">Detect paradoxes</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔧 System</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/health">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/health</span>
+                        <span class="endpoint-desc">Health check</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/actuator/metrics">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/actuator/metrics</span>
+                        <span class="endpoint-desc">Spring metrics</span>
+                    </div>
+                    <div class="endpoint" data-method="WS" data-path="/ws/game">
+                        <span class="method method-ws">WS</span>
+                        <span class="endpoint-path">/ws/game</span>
+                        <span class="endpoint-desc">Game WebSocket</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PYTHON BACKEND -->
+            <div class="backend" data-backend="python">
+                <div class="backend-header">
+                    <span class="backend-title">🐍 Python Vector DB (Port 5001)</span>
+                    <span class="backend-status" id="python-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔍 Search</div>
+                    <div class="endpoint" data-method="POST" data-path="/search">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/search</span>
+                        <span class="endpoint-desc">Semantic search</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/search/6d">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/search/6d</span>
+                        <span class="endpoint-desc">6D space search</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/search/temporal">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/search/temporal</span>
+                        <span class="endpoint-desc">Temporal search</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/search/quantum">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/search/quantum</span>
+                        <span class="endpoint-desc">Quantum search</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">📚 Knowledge Base</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/lore">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/lore</span>
+                        <span class="endpoint-desc">Get lore entries</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/lore/{category}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/lore/{category}</span>
+                        <span class="endpoint-desc">Get category lore</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/lore/add">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/lore/add</span>
+                        <span class="endpoint-desc">Add lore entry</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/index/rebuild">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/index/rebuild</span>
+                        <span class="endpoint-desc">Rebuild index</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🤖 AI Assistant</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/clippy/ask">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/clippy/ask</span>
+                        <span class="endpoint-desc">Ask Clippy</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/clippy/context">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/clippy/context</span>
+                        <span class="endpoint-desc">Get context help</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/clippy/tips">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/clippy/tips</span>
+                        <span class="endpoint-desc">Get random tips</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔬 Analysis</div>
+                    <div class="endpoint" data-method="POST" data-path="/api/analyze/spell">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/analyze/spell</span>
+                        <span class="endpoint-desc">Analyze spell formula</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/analyze/paradox">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/analyze/paradox</span>
+                        <span class="endpoint-desc">Analyze paradox</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/analyze/timeline">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/analyze/timeline</span>
+                        <span class="endpoint-desc">Analyze timeline</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔧 System</div>
+                    <div class="endpoint" data-method="GET" data-path="/health">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/health</span>
+                        <span class="endpoint-desc">Health check</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/stats">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/stats</span>
+                        <span class="endpoint-desc">DB statistics</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/cache/clear">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/cache/clear</span>
+                        <span class="endpoint-desc">Clear cache</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalEndpoints">0</div>
+                <div class="stat-label">Total Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="rustEndpoints">0</div>
+                <div class="stat-label">Rust Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="javaEndpoints">0</div>
+                <div class="stat-label">Java Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pythonEndpoints">0</div>
+                <div class="stat-label">Python Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="v2Endpoints">0</div>
+                <div class="stat-label">V2 Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="wsEndpoints">0</div>
+                <div class="stat-label">WebSocket</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-panel" id="testPanel">
+        <div class="test-header">
+            <h3>🧪 Test Endpoint</h3>
+            <span class="close-btn" onclick="closeTestPanel()">✕</span>
+        </div>
+        <div id="testContent">
+            <div><strong>Method:</strong> <span id="testMethod"></span></div>
+            <div><strong>URL:</strong> <span id="testUrl"></span></div>
+            <input type="text" id="testParam" placeholder="Parameter (if needed)">
+            <textarea id="testBody" placeholder="Request body (JSON)" rows="4"></textarea>
+            <button class="test-button" onclick="executeTest()">Execute Request</button>
+            <div class="response-area" id="responseArea"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const BACKENDS = {
+            rust: 'http://localhost:3001',
+            java: 'http://localhost:8080',
+            python: 'http://localhost:5001'
+        };
+
+        // Check backend status
+        async function checkBackendStatus() {
+            for (const [backend, url] of Object.entries(BACKENDS)) {
+                try {
+                    const healthUrl = backend === 'java' ? `${url}/api/health` : `${url}/health`;
+                    const response = await fetch(healthUrl, { 
+                        method: 'GET',
+                        mode: 'no-cors'
+                    });
+                    document.getElementById(`${backend}-status`).className = 'backend-status status-online';
+                    document.getElementById(`${backend}-status`).textContent = '🟢 ONLINE';
+                } catch (error) {
+                    document.getElementById(`${backend}-status`).className = 'backend-status status-offline';
+                    document.getElementById(`${backend}-status`).textContent = '🔴 OFFLINE';
+                }
+            }
+        }
+
+        // Calculate stats
+        function updateStats() {
+            const allEndpoints = document.querySelectorAll('.endpoint');
+            const rustEndpoints = document.querySelectorAll('.backend[data-backend="rust"] .endpoint');
+            const javaEndpoints = document.querySelectorAll('.backend[data-backend="java"] .endpoint');
+            const pythonEndpoints = document.querySelectorAll('.backend[data-backend="python"] .endpoint');
+            const v2Endpoints = document.querySelectorAll('.endpoint[data-path*="/v2/"]');
+            const wsEndpoints = document.querySelectorAll('.endpoint[data-method="WS"]');
+
+            document.getElementById('totalEndpoints').textContent = allEndpoints.length;
+            document.getElementById('rustEndpoints').textContent = rustEndpoints.length;
+            document.getElementById('javaEndpoints').textContent = javaEndpoints.length;
+            document.getElementById('pythonEndpoints').textContent = pythonEndpoints.length;
+            document.getElementById('v2Endpoints').textContent = v2Endpoints.length;
+            document.getElementById('wsEndpoints').textContent = wsEndpoints.length;
+        }
+
+        // Search functionality
+        document.getElementById('searchBox').addEventListener('input', filterEndpoints);
+        document.getElementById('backendFilter').addEventListener('change', filterEndpoints);
+        document.getElementById('methodFilter').addEventListener('change', filterEndpoints);
+
+        function filterEndpoints() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const backendFilter = document.getElementById('backendFilter').value;
+            const methodFilter = document.getElementById('methodFilter').value;
+
+            document.querySelectorAll('.endpoint').forEach(endpoint => {
+                const path = endpoint.getAttribute('data-path').toLowerCase();
+                const method = endpoint.getAttribute('data-method');
+                const backend = endpoint.closest('.backend').getAttribute('data-backend');
+                const desc = endpoint.querySelector('.endpoint-desc').textContent.toLowerCase();
+
+                const matchesSearch = !searchTerm || 
+                    path.includes(searchTerm) || 
+                    desc.includes(searchTerm);
+                const matchesBackend = !backendFilter || backend === backendFilter;
+                const matchesMethod = !methodFilter || method === methodFilter;
+
+                endpoint.style.display = matchesSearch && matchesBackend && matchesMethod ? 'flex' : 'none';
+            });
+
+            // Hide empty groups
+            document.querySelectorAll('.endpoint-group').forEach(group => {
+                const visibleEndpoints = group.querySelectorAll('.endpoint:not([style*="none"])');
+                group.style.display = visibleEndpoints.length > 0 ? 'block' : 'none';
+            });
+        }
+
+        // Test panel
+        let currentEndpoint = null;
+
+        document.querySelectorAll('.endpoint').forEach(endpoint => {
+            endpoint.addEventListener('click', () => openTestPanel(endpoint));
+        });
+
+        function openTestPanel(endpoint) {
+            currentEndpoint = endpoint;
+            const method = endpoint.getAttribute('data-method');
+            const path = endpoint.getAttribute('data-path');
+            const backend = endpoint.closest('.backend').getAttribute('data-backend');
+            
+            document.getElementById('testMethod').textContent = method;
+            document.getElementById('testUrl').textContent = `${BACKENDS[backend]}${path}`;
+            document.getElementById('testPanel').classList.add('active');
+            
+            // Clear previous values
+            document.getElementById('testParam').value = '';
+            document.getElementById('testBody').value = '';
+            document.getElementById('responseArea').textContent = '';
+        }
+
+        function closeTestPanel() {
+            document.getElementById('testPanel').classList.remove('active');
+        }
+
+        async function executeTest() {
+            const method = document.getElementById('testMethod').textContent;
+            let url = document.getElementById('testUrl').textContent;
+            const param = document.getElementById('testParam').value;
+            const body = document.getElementById('testBody').value;
+            
+            // Replace {id} with param if exists
+            if (param && url.includes('{id}')) {
+                url = url.replace('{id}', param);
+            }
+            
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = 'Loading...';
+            
+            try {
+                const options = {
+                    method: method === 'WS' ? 'GET' : method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (body && method !== 'GET') {
+                    options.body = body;
+                }
+                
+                const response = await fetch(url, options);
+                const text = await response.text();
+                
+                try {
+                    const json = JSON.parse(text);
+                    responseArea.textContent = JSON.stringify(json, null, 2);
+                } catch {
+                    responseArea.textContent = text;
+                }
+                
+                responseArea.style.color = response.ok ? '#00ff88' : '#ff4444';
+            } catch (error) {
+                responseArea.textContent = `Error: ${error.message}`;
+                responseArea.style.color = '#ff4444';
+            }
+        }
+
+        // Initialize
+        checkBackendStatus();
+        updateStats();
+        setInterval(checkBackendStatus, 5000);
+    </script>
+</body>
+</html>
