@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Heroes of Time">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    
+    <title>🎮 Heroes of Time - iPad Edition avec Clippy!</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* CLIPPY! */
+        #clippy {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            z-index: 10000;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            transition: all 0.3s;
+        }
+
+        #clippy:active {
+            transform: scale(1.2);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .clippy-bubble {
+            position: fixed;
+            bottom: 130px;
+            right: 20px;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            color: #333;
+            padding: 15px 20px;
+            border-radius: 20px;
+            border: 3px solid #333;
+            max-width: 300px;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10001;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .clippy-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 40px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* iPad Optimized Layout */
+        .game-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Map Panel - Bigger for iPad */
+        .map-panel {
+            flex: 1;
+            position: relative;
+            background: #0a0e27;
+            overflow: hidden;
+            touch-action: pan-x pan-y;
+        }
+
+        /* Touch-friendly tiles */
+        .map-tile {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            cursor: pointer;
+        }
+
+        .map-tile:active {
+            transform: scale(1.15);
+            border-color: gold;
+            box-shadow: 0 0 20px gold;
+            z-index: 100;
+        }
+
+        .map-tile.selected {
+            border: 3px solid gold;
+            box-shadow: 0 0 30px gold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Terrain Types */
+        .terrain-grass { background: linear-gradient(135deg, #2d5016, #4a8025); }
+        .terrain-mountain { background: linear-gradient(135deg, #5a5a5a, #8a8a8a); }
+        .terrain-water { background: linear-gradient(135deg, #1e3a5f, #2e5a8f); }
+        .terrain-forest { background: linear-gradient(135deg, #1a3a1a, #2a5a2a); }
+        .terrain-mystique { 
+            background: linear-gradient(135deg, #4a1a5a, #6a3a7a);
+            animation: shimmer 3s infinite;
+        }
+        .terrain-quantum { 
+            background: linear-gradient(135deg, #1a3a4a, #3a5a6a);
+            animation: quantum 4s infinite;
+        }
+        .terrain-nexus { 
+            background: radial-gradient(circle, #ff00ff, #00ffff);
+            animation: nexus-pulse 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        @keyframes quantum {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+
+        @keyframes nexus-pulse {
+            0%, 100% { opacity: 0.8; box-shadow: 0 0 20px #ff00ff; }
+            50% { opacity: 1; box-shadow: 0 0 40px #00ffff; }
+        }
+
+        /* Fog of War */
+        .fog-total {
+            background: #000 !important;
+            opacity: 0.95;
+        }
+
+        .fog-partial {
+            opacity: 0.6;
+            filter: blur(3px);
+        }
+
+        /* Touch-friendly entities */
+        .hero {
+            animation: hero-float 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px gold);
+            font-size: 48px !important;
+        }
+
+        @keyframes hero-float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
+        }
+
+        /* Right Panel - Collapsible for iPad */
+        .info-panel {
+            width: 350px;
+            background: linear-gradient(180deg, #1a1a2e, #0f0f1e);
+            border-left: 3px solid gold;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+
+        .info-panel.collapsed {
+            transform: translateX(300px);
+        }
+
+        .panel-toggle {
+            position: absolute;
+            left: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3));
+            border: 2px solid gold;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Touch-friendly buttons */
+        .action-btn {
+            width: 100%;
+            padding: 20px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Resources Grid */
+        .resources {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .resource {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .resource:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .resource-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        /* Combat Overlay - Full Screen for iPad */
+        .combat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .combat-container {
+            background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+            border: 4px solid gold;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 90%;
+            width: 900px;
+        }
+
+        /* Touch-friendly cards */
+        .combat-cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            border: 3px solid silver;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 150px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .card:active {
+            transform: translateY(-15px) scale(1.1);
+            border-color: gold;
+            box-shadow: 0 15px 40px rgba(255,215,0,0.6);
+        }
+
+        /* Touch gesture indicator */
+        .gesture-hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .gesture-hint.show {
+            animation: gestureHint 1s;
+        }
+
+        @keyframes gestureHint {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* iPad specific adjustments */
+        @media only screen and (max-width: 1024px) {
+            .info-panel {
+                width: 300px;
+            }
+            
+            .map-tile {
+                width: 70px;
+                height: 70px;
+                font-size: 32px;
+            }
+        }
+
+        /* iPhone support too */
+        @media only screen and (max-width: 768px) {
+            .info-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 40%;
+                border-left: none;
+                border-top: 3px solid gold;
+                transform: translateY(0);
+            }
+            
+            .info-panel.collapsed {
+                transform: translateY(calc(100% - 60px));
+            }
+            
+            .panel-toggle {
+                left: 50%;
+                top: -30px;
+                transform: translateX(-50%);
+                width: 80px;
+                height: 30px;
+                border: 2px solid gold;
+                border-bottom: none;
+                border-radius: 10px 10px 0 0;
+            }
+        }
+
+        /* Victory animation */
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .victory-title {
+            font-size: 72px;
+            color: gold;
+            text-align: center;
+            animation: victory-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes victory-glow {
+            0%, 100% { 
+                text-shadow: 0 0 30px gold, 0 0 60px orange;
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 50px gold, 0 0 100px orange;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .loading-title {
+            font-size: 48px;
+            margin-bottom: 30px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, gold, orange);
+            animation: loading 2s ease-in-out;
+            width: 100%;
+        }
+
+        @keyframes loading {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-title">🎮 Heroes of Time</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        <p style="margin-top: 20px;">Chargement du Multivers...</p>
+    </div>
+
+    <!-- Clippy! -->
+    <div id="clippy">📎</div>
+    <div class="clippy-bubble" id="clippyBubble">
+        <span id="clippyText">Salut! Je suis Clippy! Touche une case pour déplacer ton héros! 🎮</span>
+    </div>
+
+    <!-- Gesture Hint -->
+    <div class="gesture-hint" id="gestureHint">👆</div>
+
+    <!-- Main Game Container -->
+    <div class="game-container">
+        <!-- Map Panel -->
+        <div class="map-panel" id="mapPanel">
+            <div id="gameMap"></div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel" id="infoPanel">
+            <div class="panel-toggle" onclick="togglePanel()">◀</div>
+            
+            <!-- Player Info -->
+            <div class="player-info">
+                <div class="player-name" id="playerName">👑 Alice Prime</div>
+                
+                <div class="resources">
+                    <div class="resource" onclick="showResourceInfo('energy')">
+                        <div class="resource-icon">⚡</div>
+                        <div class="resource-value" id="energyValue">100</div>
+                        <div>Énergie</div>
+                    </div>
+                    <div class="resource" onclick="showResourceInfo('phase')">
+                        <div class="resource-icon">🌀</div>
+                        <div class="resource-value" id="phaseValue">50</div>
+                        <div>Phase</div>
+                    </div>
+                    <div class="resource" onclick="showResourceInfo('drift')">
+                        <div class="resource-icon">⏰</div>
+                        <div class="resource-value" id="timeValue">0</div>
+                        <div>Drift</div>
+                    </div>
+                </div>
+                
+                <div class="resources">
+                    <div class="resource" onclick="showResourceInfo('crystals')">
+                        <div class="resource-icon">💎</div>
+                        <div class="resource-value" id="crystalValue">5</div>
+                        <div>Cristaux</div>
+                    </div>
+                    <div class="resource" onclick="showResourceInfo('spells')">
+                        <div class="resource-icon">📜</div>
+                        <div class="resource-value" id="spellValue">3</div>
+                        <div>Sorts</div>
+                    </div>
+                    <div class="resource" onclick="showResourceInfo('artifacts')">
+                        <div class="resource-icon">🗝️</div>
+                        <div class="resource-value" id="artifactValue">1</div>
+                        <div>Artefacts</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions" style="padding: 20px; overflow-y: auto;">
+                <button class="action-btn" ontouchstart="game.moveMode()" onclick="game.moveMode()">
+                    🚶 Déplacer (3 A)
+                </button>
+                
+                <button class="action-btn" ontouchstart="game.exploreArea()" onclick="game.exploreArea()">
+                    🔍 Explorer (2 A)
+                </button>
+                
+                <button class="action-btn" ontouchstart="game.castSpell()" onclick="game.castSpell()">
+                    ✨ Sort
+                </button>
+                
+                <button class="action-btn" ontouchstart="game.temporalShift()" onclick="game.temporalShift()">
+                    ⏭️ SHIFT (5 A)
+                </button>
+                
+                <button class="action-btn" ontouchstart="game.forkReality()" onclick="game.forkReality()">
+                    🔀 FORK (10 A)
+                </button>
+                
+                <button class="action-btn" ontouchstart="game.endTurn()" onclick="game.endTurn()">
+                    ⏩ Fin Tour
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combat Overlay -->
+    <div class="combat-overlay" id="combatOverlay">
+        <div class="combat-container">
+            <h2 style="font-size: 48px; text-align: center; color: gold; margin-bottom: 30px;">⚔️ COMBAT ⚔️</h2>
+            
+            <div style="display: flex; justify-content: space-around; margin: 40px 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 64px;">🦸</div>
+                    <div style="font-size: 24px;">Alice</div>
+                    <div style="font-size: 32px; font-weight: bold;" id="heroHp">❤️ 100</div>
+                </div>
+                
+                <div style="font-size: 64px; padding: 20px;">VS</div>
+                
+                <div style="text-align: center;">
+                    <div style="font-size: 64px;" id="enemyIcon">👾</div>
+                    <div style="font-size: 24px;" id="enemyName">Gardien</div>
+                    <div style="font-size: 32px; font-weight: bold;" id="enemyHp">❤️ 80</div>
+                </div>
+            </div>
+            
+            <div class="combat-cards" id="combatCards"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="action-btn" ontouchstart="game.fleeCombat()" onclick="game.fleeCombat()" style="width: 250px; background: linear-gradient(135deg, #ff6b6b, #ff3333);">
+                    🏃 Fuir (-20 HP)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div class="victory-screen" id="victoryScreen">
+        <div style="text-align: center;">
+            <h1 class="victory-title">🏆 VICTOIRE! 🏆</h1>
+            <h2 id="victoryMessage" style="font-size: 36px; margin: 30px 0;">Tu as conquis le Nexus!</h2>
+            <button class="action-btn" ontouchstart="location.reload()" onclick="location.reload()" style="width: 300px;">
+                🔄 Nouvelle Partie
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // PWA Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+
+        // Clippy Helper
+        class ClippyHelper {
+            constructor() {
+                this.messages = [
+                    "Salut! Touche une case pour déplacer ton héros! 👆",
+                    "Tu as trouvé un trésor! 💎 Continue comme ça!",
+                    "Attention! Le brouillard cache des dangers! 🌫️",
+                    "Utilise SHIFT pour manipuler le temps! ⏰",
+                    "FORK crée un clone de ton héros! 🔀",
+                    "Le Nexus est au centre de la carte! 🌟",
+                    "Collecte 20 cristaux pour gagner! 💎",
+                    "Les portails téléportent aléatoirement! 🌀",
+                    "Combat! Touche les cartes pour jouer! 🎴",
+                    "N'oublie pas d'explorer pour révéler la carte! 🔍",
+                    "Swipe pour naviguer sur la carte! 👉",
+                    "Double-tap pour zoom! 🔍",
+                    "L'énergie se régénère chaque tour! ⚡",
+                    "La phase affecte tes pouvoirs temporels! 🌀",
+                    "Vincent a créé ce jeu avec amour! ❤️"
+                ];
+                
+                this.currentMessage = 0;
+                this.init();
+            }
+            
+            init() {
+                const clippy = document.getElementById('clippy');
+                const bubble = document.getElementById('clippyBubble');
+                
+                clippy.addEventListener('click', () => {
+                    this.showMessage();
+                });
+                
+                // Show welcome message
+                setTimeout(() => this.showMessage(), 1000);
+                
+                // Random tips
+                setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        this.showRandomTip();
+                    }
+                }, 20000);
+            }
+            
+            showMessage(text) {
+                const bubble = document.getElementById('clippyBubble');
+                const textEl = document.getElementById('clippyText');
+                
+                if (text) {
+                    textEl.textContent = text;
+                } else {
+                    textEl.textContent = this.messages[this.currentMessage];
+                    this.currentMessage = (this.currentMessage + 1) % this.messages.length;
+                }
+                
+                bubble.style.display = 'block';
+                
+                setTimeout(() => {
+                    bubble.style.display = 'none';
+                }, 4000);
+            }
+            
+            showRandomTip() {
+                const randomMsg = this.messages[Math.floor(Math.random() * this.messages.length)];
+                this.showMessage(randomMsg);
+            }
+            
+            celebrate() {
+                const clippy = document.getElementById('clippy');
+                clippy.style.fontSize = '120px';
+                clippy.textContent = '🎉';
+                setTimeout(() => {
+                    clippy.style.fontSize = '100px';
+                    clippy.textContent = '📎';
+                }, 2000);
+            }
+        }
+
+        // Main Game Class
+        class HeroesOfTimeTouch {
+            constructor() {
+                this.mapSize = 10;
+                this.map = [];
+                this.heroes = {};
+                this.currentPlayer = 'player1';
+                this.selectedTile = null;
+                this.moveMode = false;
+                this.resources = {
+                    player1: { energy: 100, phase: 50, drift: 0, crystals: 5, spells: 3, artifacts: 1, hp: 100, mana: 8 }
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Hide loading after delay
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 2000);
+                
+                this.generateMap();
+                this.setupTouch();
+                this.updateUI();
+                
+                // Initialize Clippy
+                this.clippy = new ClippyHelper();
+                
+                // Connect to backend
+                this.connectBackend();
+            }
+            
+            generateMap() {
+                const mapContainer = document.getElementById('gameMap');
+                const tileSize = 80;
+                mapContainer.style.width = (this.mapSize * (tileSize + 2)) + 'px';
+                mapContainer.style.height = (this.mapSize * (tileSize + 2)) + 'px';
+                
+                // Center the map
+                mapContainer.style.position = 'absolute';
+                mapContainer.style.left = '50%';
+                mapContainer.style.top = '50%';
+                mapContainer.style.transform = 'translate(-50%, -50%)';
+                
+                const terrains = ['grass', 'forest', 'mountain', 'water', 'mystique', 'quantum'];
+                
+                for (let y = 0; y < this.mapSize; y++) {
+                    this.map[y] = [];
+                    for (let x = 0; x < this.mapSize; x++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'map-tile';
+                        tile.id = `tile-${x}-${y}`;
+                        tile.style.left = (x * (tileSize + 1)) + 'px';
+                        tile.style.top = (y * (tileSize + 1)) + 'px';
+                        
+                        // Center is Nexus
+                        let terrain = (x === 5 && y === 5) ? 'nexus' : terrains[Math.floor(Math.random() * terrains.length)];
+                        tile.classList.add(`terrain-${terrain}`);
+                        
+                        if (x === 5 && y === 5) {
+                            tile.innerHTML = '🌟';
+                        }
+                        
+                        // Fog
+                        const distance = Math.abs(x - 0) + Math.abs(y - 0);
+                        if (distance > 3) {
+                            tile.classList.add('fog-total');
+                        } else if (distance > 2) {
+                            tile.classList.add('fog-partial');
+                        }
+                        
+                        // Touch events
+                        tile.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            this.onTileTouch(x, y);
+                        });
+                        
+                        tile.addEventListener('click', () => this.onTileTouch(x, y));
+                        
+                        mapContainer.appendChild(tile);
+                        
+                        this.map[y][x] = {
+                            terrain: terrain,
+                            entity: null,
+                            treasure: Math.random() < 0.1 ? '💎' : null,
+                            fog: distance > 3 ? 'total' : (distance > 2 ? 'partial' : 'none')
+                        };
+                    }
+                }
+                
+                // Place hero
+                this.heroes.player1 = { x: 0, y: 0, icon: '🦸' };
+                this.updateTile(0, 0, '🦸');
+            }
+            
+            setupTouch() {
+                const mapPanel = document.getElementById('mapPanel');
+                let startX, startY;
+                let mapX = 0, mapY = 0;
+                
+                // Touch gestures for map panning
+                mapPanel.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                    }
+                });
+                
+                mapPanel.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 1 && !this.moveMode) {
+                        e.preventDefault();
+                        const dx = e.touches[0].clientX - startX;
+                        const dy = e.touches[0].clientY - startY;
+                        
+                        const gameMap = document.getElementById('gameMap');
+                        gameMap.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                    }
+                });
+                
+                // Pinch to zoom
+                let initialDistance = 0;
+                let currentScale = 1;
+                
+                mapPanel.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        initialDistance = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                    }
+                });
+                
+                mapPanel.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        e.preventDefault();
+                        const distance = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        
+                        const scale = (distance / initialDistance) * currentScale;
+                        const gameMap = document.getElementById('gameMap');
+                        gameMap.style.transform += ` scale(${Math.min(2, Math.max(0.5, scale))})`;
+                    }
+                });
+            }
+            
+            onTileTouch(x, y) {
+                const tile = this.map[y][x];
+                
+                if (tile.fog === 'total') {
+                    this.showGesture('🚫');
+                    this.clippy.showMessage("Cette zone est dans le brouillard total! 🌫️");
+                    return;
+                }
+                
+                const hero = this.heroes.player1;
+                const distance = Math.abs(hero.x - x) + Math.abs(hero.y - y);
+                
+                if (distance <= 3 && this.resources.player1.energy >= 3) {
+                    // Clear old position
+                    this.updateTile(hero.x, hero.y, '');
+                    
+                    // Move hero
+                    hero.x = x;
+                    hero.y = y;
+                    this.updateTile(x, y, '🦸');
+                    
+                    // Reveal fog
+                    this.revealFog(x, y, 3);
+                    
+                    // Check treasure
+                    if (tile.treasure) {
+                        this.collectTreasure(x, y);
+                    }
+                    
+                    // Combat chance
+                    if (Math.random() < 0.2) {
+                        this.startCombat();
+                    }
+                    
+                    // Spend energy
+                    this.resources.player1.energy -= 3;
+                    this.updateUI();
+                    
+                    // Check victory
+                    if (x === 5 && y === 5) {
+                        this.checkVictory();
+                    }
+                    
+                    this.showGesture('✅');
+                } else {
+                    this.showGesture('❌');
+                    this.clippy.showMessage("Trop loin! Max 3 cases de distance! 📏");
+                }
+            }
+            
+            updateTile(x, y, content) {
+                const tile = document.getElementById(`tile-${x}-${y}`);
+                if (tile) {
+                    tile.innerHTML = content;
+                    if (content === '🦸') {
+                        tile.classList.add('hero');
+                    } else {
+                        tile.classList.remove('hero');
+                    }
+                }
+            }
+            
+            revealFog(centerX, centerY, radius) {
+                for (let y = 0; y < this.mapSize; y++) {
+                    for (let x = 0; x < this.mapSize; x++) {
+                        const distance = Math.abs(x - centerX) + Math.abs(y - centerY);
+                        const tile = document.getElementById(`tile-${x}-${y}`);
+                        
+                        if (distance <= radius) {
+                            this.map[y][x].fog = 'none';
+                            tile.classList.remove('fog-total', 'fog-partial');
+                            
+                            if (this.map[y][x].treasure) {
+                                this.updateTile(x, y, this.map[y][x].treasure);
+                            }
+                        } else if (distance <= radius + 1) {
+                            if (this.map[y][x].fog === 'total') {
+                                this.map[y][x].fog = 'partial';
+                                tile.classList.remove('fog-total');
+                                tile.classList.add('fog-partial');
+                            }
+                        }
+                    }
+                }
+            }
+            
+            collectTreasure(x, y) {
+                this.resources.player1.crystals += 3;
+                this.map[y][x].treasure = null;
+                this.clippy.showMessage("💎 Super! +3 Cristaux trouvés!");
+                this.clippy.celebrate();
+                this.updateUI();
+            }
+            
+            startCombat() {
+                const enemies = [
+                    { name: 'Gobelin', icon: '👺', hp: 60 },
+                    { name: 'Dragon', icon: '🐉', hp: 100 },
+                    { name: 'Spectre', icon: '👻', hp: 70 }
+                ];
+                
+                const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+                this.currentEnemy = enemy;
+                
+                document.getElementById('enemyIcon').textContent = enemy.icon;
+                document.getElementById('enemyName').textContent = enemy.name;
+                document.getElementById('enemyHp').textContent = `❤️ ${enemy.hp}`;
+                
+                // Generate cards
+                const cards = [
+                    { name: 'Feu', icon: '🔥', damage: 30 },
+                    { name: 'Soin', icon: '💚', heal: 25 },
+                    { name: 'Bouclier', icon: '🛡️', defense: 20 }
+                ];
+                
+                const cardsContainer = document.getElementById('combatCards');
+                cardsContainer.innerHTML = '';
+                
+                cards.forEach(card => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card';
+                    cardDiv.innerHTML = `
+                        <div style="font-size: 48px;">${card.icon}</div>
+                        <div style="font-size: 20px; font-weight: bold;">${card.name}</div>
+                        <div style="color: #aaa;">${card.damage ? `Dégâts: ${card.damage}` : card.heal ? `Soin: ${card.heal}` : `Défense: ${card.defense}`}</div>
+                    `;
+                    
+                    cardDiv.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.playCard(card);
+                    });
+                    
+                    cardDiv.addEventListener('click', () => this.playCard(card));
+                    
+                    cardsContainer.appendChild(cardDiv);
+                });
+                
+                document.getElementById('combatOverlay').style.display = 'flex';
+                this.clippy.showMessage("Combat! Touche les cartes pour attaquer! ⚔️");
+            }
+            
+            playCard(card) {
+                if (card.damage) {
+                    this.currentEnemy.hp -= card.damage;
+                    this.showGesture('💥');
+                }
+                
+                if (card.heal) {
+                    this.resources.player1.hp = Math.min(100, this.resources.player1.hp + card.heal);
+                    this.showGesture('💚');
+                }
+                
+                document.getElementById('enemyHp').textContent = `❤️ ${this.currentEnemy.hp}`;
+                document.getElementById('heroHp').textContent = `❤️ ${this.resources.player1.hp}`;
+                
+                if (this.currentEnemy.hp <= 0) {
+                    this.winCombat();
+                } else {
+                    // Enemy attack
+                    setTimeout(() => {
+                        const damage = Math.floor(Math.random() * 20) + 10;
+                        this.resources.player1.hp -= damage;
+                        document.getElementById('heroHp').textContent = `❤️ ${this.resources.player1.hp}`;
+                        this.showGesture('💔');
+                    }, 500);
+                }
+            }
+            
+            winCombat() {
+                document.getElementById('combatOverlay').style.display = 'none';
+                this.resources.player1.crystals += 5;
+                this.clippy.showMessage("🏆 Victoire! +5 Cristaux!");
+                this.clippy.celebrate();
+                this.updateUI();
+            }
+            
+            fleeCombat() {
+                document.getElementById('combatOverlay').style.display = 'none';
+                this.resources.player1.hp -= 20;
+                this.clippy.showMessage("Tu as fui! -20 HP 😰");
+                this.updateUI();
+            }
+            
+            // Action buttons
+            moveMode() {
+                this.moveMode = true;
+                this.clippy.showMessage("Mode déplacement activé! Touche une case! 👆");
+            }
+            
+            exploreArea() {
+                if (this.resources.player1.energy >= 2) {
+                    this.resources.player1.energy -= 2;
+                    const hero = this.heroes.player1;
+                    this.revealFog(hero.x, hero.y, 5);
+                    this.clippy.showMessage("Zone explorée! Le brouillard se dissipe! 🔍");
+                    this.updateUI();
+                }
+            }
+            
+            castSpell() {
+                if (this.resources.player1.spells > 0) {
+                    this.resources.player1.spells--;
+                    this.resources.player1.energy += 30;
+                    this.showGesture('✨');
+                    this.clippy.showMessage("Sort lancé! +30 Énergie! ✨");
+                    this.updateUI();
+                }
+            }
+            
+            temporalShift() {
+                if (this.resources.player1.energy >= 5) {
+                    this.resources.player1.energy -= 5;
+                    this.resources.player1.drift += 2;
+                    this.showGesture('⏰');
+                    this.clippy.showMessage("SHIFT temporel! Le temps se déforme! ⏭️");
+                    this.updateUI();
+                }
+            }
+            
+            forkReality() {
+                if (this.resources.player1.energy >= 10) {
+                    this.resources.player1.energy -= 10;
+                    this.showGesture('🔀');
+                    this.clippy.showMessage("FORK! Un clone apparaît! 👥");
+                    
+                    // Place clone
+                    const hero = this.heroes.player1;
+                    if (hero.x < this.mapSize - 1) {
+                        this.updateTile(hero.x + 1, hero.y, '👥');
+                    }
+                    
+                    this.updateUI();
+                }
+            }
+            
+            endTurn() {
+                this.resources.player1.energy = Math.min(100, this.resources.player1.energy + 10);
+                this.clippy.showMessage("Fin du tour! +10 Énergie régénérée! ⚡");
+                this.updateUI();
+            }
+            
+            checkVictory() {
+                if (this.resources.player1.crystals >= 20) {
+                    document.getElementById('victoryScreen').style.display = 'flex';
+                    this.clippy.celebrate();
+                } else {
+                    this.clippy.showMessage(`Il te faut 20 cristaux! Tu en as ${this.resources.player1.crystals} 💎`);
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('energyValue').textContent = Math.floor(this.resources.player1.energy);
+                document.getElementById('phaseValue').textContent = this.resources.player1.phase;
+                document.getElementById('timeValue').textContent = this.resources.player1.drift;
+                document.getElementById('crystalValue').textContent = this.resources.player1.crystals;
+                document.getElementById('spellValue').textContent = this.resources.player1.spells;
+                document.getElementById('artifactValue').textContent = this.resources.player1.artifacts;
+            }
+            
+            showGesture(emoji) {
+                const hint = document.getElementById('gestureHint');
+                hint.textContent = emoji;
+                hint.classList.add('show');
+                setTimeout(() => hint.classList.remove('show'), 1000);
+            }
+            
+            connectBackend() {
+                // Try to connect to local servers
+                fetch('http://localhost:3001/health')
+                    .then(r => r.json())
+                    .then(() => {
+                        this.clippy.showMessage("Serveur Rust connecté! 🦀");
+                    })
+                    .catch(() => {});
+                    
+                fetch('http://localhost:8080/api/scenario/list')
+                    .then(r => r.json())
+                    .then(() => {
+                        this.clippy.showMessage("Serveur Java connecté! ☕");
+                    })
+                    .catch(() => {});
+            }
+        }
+
+        // Helper functions
+        function togglePanel() {
+            const panel = document.getElementById('infoPanel');
+            panel.classList.toggle('collapsed');
+            document.querySelector('.panel-toggle').textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        function showResourceInfo(type) {
+            const messages = {
+                'energy': "⚡ L'Énergie (A) permet les actions et mouvements",
+                'phase': "🌀 La Phase (Φ) stabilise les pouvoirs temporels",
+                'drift': "⏰ Le Drift est ta dérive temporelle",
+                'crystals': "💎 Collecte 20 cristaux pour gagner!",
+                'spells': "📜 Les sorts restaurent ton énergie",
+                'artifacts': "🗝️ Les artefacts donnent des pouvoirs spéciaux"
+            };
+            
+            game.clippy.showMessage(messages[type]);
+        }
+
+        // Initialize game
+        let game;
+        window.addEventListener('load', () => {
+            game = new HeroesOfTimeTouch();
+            
+            // Prevent iOS bounce
+            document.body.addEventListener('touchmove', (e) => {
+                if (e.target === document.body) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Add to home screen prompt
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('App running in standalone mode');
+            }
+        });
+    </script>
+</body>
+</html>
