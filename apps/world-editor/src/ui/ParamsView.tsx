@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScenarioSchema, type Scenario } from '../domain/schema';
 import { exportScenarioToJson, importScenarioFromJson } from '../domain/importExport';
+import { importLegacyHsc } from '../domain/importLegacy';
 
 export function ParamsView(): React.ReactElement {
   const [scenario, setScenario] = React.useState<Scenario>(() => ScenarioSchema.parse({
@@ -26,7 +27,16 @@ export function ParamsView(): React.ReactElement {
   const onImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then((t) => setScenario(importScenarioFromJson(t))).catch(() => {});
+    file
+      .text()
+      .then((t) => {
+        try {
+          setScenario(importScenarioFromJson(t));
+        } catch {
+          setScenario(importLegacyHsc(t));
+        }
+      })
+      .catch(() => {});
   };
 
   return (
