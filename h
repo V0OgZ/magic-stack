@@ -74,6 +74,11 @@ show_main_menu() {
     echo -e "  ${CYAN}[37]${NC} 🧪 Tests Playwright World Editor"
     echo ""
     
+    echo -e "${GOLD}━━━ MAGIC STACK UNIFIED (REACT) ━━━${NC}"
+    echo -e "  ${CYAN}[38]${NC} 🎮 Lancer Magic Stack Unified (dev)"
+    echo -e "  ${CYAN}[39]${NC} 📦 Build + Preview Magic Stack Unified"
+    echo ""
+    
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
     echo -e "  ${CYAN}[40]${NC} ⚡ Démarrage rapide (tout lancer)"
     echo -e "  ${CYAN}[41]${NC} 🎯 Ouvrir TOUTES les démos"
@@ -477,6 +482,58 @@ case $choice in
                         echo -e "${RED}Choix invalide${NC}"
                         ;;
                 esac
+                cd ../..
+            else
+                echo -e "${RED}npm n'est pas installé !${NC}"
+                echo "Installation requise: brew install node"
+            fi
+            ;;
+        
+        38)
+            # Magic Stack Unified (dev)
+            echo -e "${GOLD}🎮 Lancement Magic Stack Unified (dev)${NC}"
+            echo -e "${CYAN}Application React unifiée - Port: 5175${NC}"
+            echo ""
+            
+            if command -v npm >/dev/null 2>&1; then
+                cd apps/magic-stack-unified
+                
+                if [ ! -d "node_modules" ]; then
+                    echo -e "${YELLOW}Installation des dépendances...${NC}"
+                    npm install
+                fi
+                
+                echo -e "${GREEN}Lancement du serveur de développement...${NC}"
+                echo -e "${CYAN}• Game: http://localhost:5175/game${NC}"
+                echo -e "${CYAN}• Editor: http://localhost:5175/editor${NC}"
+                echo -e "${CYAN}• Chasse: http://localhost:5175/chasse${NC}"
+                npm run dev
+                cd ../..
+            else
+                echo -e "${RED}npm n'est pas installé !${NC}"
+                echo "Installation requise: brew install node"
+            fi
+            ;;
+            
+        39)
+            # Magic Stack Unified (build + preview)
+            echo -e "${GOLD}📦 Build + Preview Magic Stack Unified${NC}"
+            echo ""
+            
+            if command -v npm >/dev/null 2>&1; then
+                cd apps/magic-stack-unified
+                
+                if [ ! -d "node_modules" ]; then
+                    echo -e "${YELLOW}Installation des dépendances...${NC}"
+                    npm install
+                fi
+                
+                echo -e "${CYAN}Build de l'application...${NC}"
+                npm run build
+                
+                echo -e "${GREEN}Lancement du serveur de preview...${NC}"
+                echo -e "${CYAN}URL: http://localhost:4173${NC}"
+                npm run preview
                 cd ../..
             else
                 echo -e "${RED}npm n'est pas installé !${NC}"
