@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Manuel du Joueur</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #16213e 100%);
+            color: #f0e6d6;
+            line-height: 1.8;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .book-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzIyMiIgb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+'), 
+                        linear-gradient(to bottom, #2a2a3a, #1a1a2a);
+            border: 3px solid #8b7355;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3),
+                        inset 0 0 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        .book-header {
+            background: linear-gradient(135deg, #8b7355 0%, #5d4e37 100%);
+            padding: 40px;
+            text-align: center;
+            border-bottom: 3px solid #3a3a2a;
+            position: relative;
+        }
+        
+        .book-header::before {
+            content: "⚔️ 🔮 ⚔️";
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7),
+                         0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #f0e6d6;
+            font-style: italic;
+        }
+        
+        .book-content {
+            padding: 40px;
+            background: rgba(30, 30, 40, 0.9);
+        }
+        
+        .chapter {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 4px solid #8b7355;
+            border-radius: 5px;
+        }
+        
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid #8b7355;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            color: #ffcc66;
+            margin: 30px 0 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        p {
+            text-indent: 2em;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .formula-box {
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.1), rgba(255, 215, 0, 0.05));
+            border: 2px solid #8b7355;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        
+        .formula-title {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .formula-content {
+            color: #90ee90;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .spell-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .spell-card {
+            background: rgba(139, 115, 85, 0.1);
+            border: 1px solid #8b7355;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .spell-card:hover {
+            background: rgba(139, 115, 85, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .spell-name {
+            color: #ffcc66;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .spell-desc {
+            font-size: 0.9em;
+            color: #d0c0a0;
+        }
+        
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .character-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(50, 50, 70, 0.5);
+            border-radius: 10px;
+            border: 2px solid #5d4e37;
+        }
+        
+        .character-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .character-name {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        /* Clippy Assistant */
+        .clippy-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .clippy-container:hover {
+            transform: scale(1.1);
+        }
+        
+        .clippy-icon {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 5px 30px rgba(255, 215, 0, 0.8); }
+        }
+        
+        .clippy-tooltip {
+            position: fixed;
+            bottom: 130px;
+            right: 20px;
+            background: rgba(30, 30, 40, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 300px;
+            display: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .clippy-tooltip.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .table-of-contents {
+            background: rgba(139, 115, 85, 0.1);
+            border: 2px solid #8b7355;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .toc-title {
+            font-family: 'Cinzel', serif;
+            color: #ffd700;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .toc-list {
+            list-style: none;
+        }
+        
+        .toc-list li {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .toc-list li::before {
+            content: "📖";
+            position: absolute;
+            left: 0;
+        }
+        
+        .toc-list a {
+            color: #ffcc66;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .toc-list a:hover {
+            color: #ffd700;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+        
+        .warning-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff6666;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box::before {
+            content: "⚠️ ATTENTION : ";
+            color: #ff6666;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .book-content { padding: 20px; }
+            .chapter { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="book-container">
+        <div class="book-header">
+            <h1>Heroes of Time</h1>
+            <div class="subtitle">Manuel du Joueur - Édition Complète</div>
+        </div>
+        
+        <div class="book-content">
+            <!-- Table des matières -->
+            <div class="table-of-contents">
+                <div class="toc-title">📚 Table des Matières</div>
+                <ul class="toc-list">
+                    <li><a href="#intro">Introduction au Monde d'Avalon</a></li>
+                    <li><a href="#histoire">L'Histoire des Héros du Temps</a></li>
+                    <li><a href="#personnages">Les Personnages Légendaires</a></li>
+                    <li><a href="#systeme6d">Le Système 6D</a></li>
+                    <li><a href="#formules">Les Formules Magiques</a></li>
+                    <li><a href="#grammaire">La Grammaire Temporelle</a></li>
+                    <li><a href="#tcg">Le Système de Combat TCG</a></li>
+                    <li><a href="#interstice">L'Interstice et les Réalités</a></li>
+                    <li><a href="#conseils">Conseils Stratégiques</a></li>
+                </ul>
+            </div>
+            
+            <!-- Chapitre 1: Introduction -->
+            <div class="chapter" id="intro">
+                <h2>⚔️ Introduction au Monde d'Avalon</h2>
+                <p>
+                    Bienvenue, voyageur temporel, dans l'univers infini de Heroes of Time. Vous êtes sur le point d'entrer dans un monde où le temps n'est pas une ligne droite mais un océan de possibilités, où chaque décision crée une nouvelle branche de réalité, et où la magie suit les lois de la physique quantique.
+                </p>
+                <p>
+                    Dans ce monde, vous incarnez un Héros capable de manipuler les six dimensions de l'existence : les trois dimensions spatiales que nous connaissons (X, Y, Z), le temps (T), la causalité (C), et l'identité quantique (Ψ). Votre maîtrise de ces dimensions déterminera votre survie dans les batailles épiques qui vous attendent.
+                </p>
+                <p>
+                    Ce manuel contient tout ce dont vous avez besoin pour maîtriser les arcanes du jeu : les formules secrètes, les stratégies de combat, et les mystères de l'Interstice. Gardez-le précieusement, car il est votre guide dans ce voyage à travers le temps et l'espace.
+                </p>
+            </div>
+            
+            <!-- Chapitre 2: Histoire -->
+            <div class="chapter" id="histoire">
+                <h2>📜 L'Histoire des Héros du Temps</h2>
+                
+                <h3>L'Âge de la Création</h3>
+                <p>
+                    Il y a des éons, avant que le temps lui-même ne prenne forme, existait l'Interstice - un espace entre les espaces, où toutes les réalités possibles coexistaient en superposition quantique. De cette soupe primordiale émergea GROEKEN, le Premier Programmeur, qui donna forme au chaos en créant la Grammaire Temporelle.
+                </p>
+                
+                <h3>La Grande Fragmentation</h3>
+                <p>
+                    Lorsque GROEKEN prononça la première formule <code>⊙(réalité) + †ψ(collapse) → Δt+0(univers)</code>, l'Interstice se fragmenta en une infinité de timelines. Chaque timeline devint un monde unique, gouverné par ses propres lois, mais tous reliés par les fils invisibles de la causalité.
+                </p>
+                
+                <h3>L'Ère des Héros</h3>
+                <p>
+                    Les premiers Héros du Temps apparurent lors de la Grande Convergence, quand les timelines commencèrent à s'entrecroiser. Ces êtres exceptionnels possédaient la capacité unique de naviguer entre les dimensions, de manipuler la causalité, et de maintenir leur identité quantique (Ψ) à travers les réalités multiples.
+                </p>
+                
+                <h3>La Guerre des Paradoxes</h3>
+                <p>
+                    La manipulation inconsidérée du temps créa les Paradoxes - des anomalies temporelles vivantes qui cherchaient à dévorer la réalité elle-même. Les Héros durent s'unir pour combattre cette menace, développant le système de combat TCG (Trading Card Game) pour canaliser leurs pouvoirs de manière contrôlée.
+                </p>
+            </div>
+            
+            <!-- Chapitre 3: Personnages -->
+            <div class="chapter" id="personnages">
+                <h2>👥 Les Personnages Légendaires</h2>
+                
+                <div class="character-grid">
+                    <div class="character-card">
+                        <div class="character-icon">🧙‍♂️</div>
+                        <div class="character-name">GROEKEN</div>
+                        <div>Le Premier Programmeur</div>
+                        <div class="spell-desc">Maître de la Grammaire Temporelle, créateur des formules primordiales</div>
+                    </div>
+                    
+                    <div class="character-card">
+                        <div class="character-icon">⚔️</div>
+                        <div class="character-name">ARTHUR</div>
+                        <div>Roi d'Avalon</div>
+                        <div class="spell-desc">Porteur d'Excalibur Quantique, unifie les timelines par sa volonté</div>
+                    </div>
+                    
+                    <div class="character-card">
+                        <div class="character-icon">🔮</div>
+                        <div class="character-name">MERLIN</div>
+                        <div>L'Archimage Temporel</div>
+                        <div class="spell-desc">Vit à rebours dans le temps, connaît tous les futurs possibles</div>
+                    </div>
+                    
+                    <div class="character-card">
+                        <div class="character-icon">🌙</div>
+                        <div class="character-name">MORGANA</div>
+                        <div>Tisseuse de Réalités</div>
+                        <div class="spell-desc">Manipule les probabilités causales, crée des réalités alternatives</div>
+                    </div>
+                    
+                    <div class="character-card">
+                        <div class="character-icon">🗡️</div>
+                        <div class="character-name">LANCELOT</div>
+                        <div>Chevalier Quantique</div>
+                        <div class="spell-desc">Existe en superposition, peut être à plusieurs endroits simultanément</div>
+                    </div>
+                    
+                    <div class="character-card">
+                        <div class="character-icon">🏹</div>
+                        <div class="character-name">VIVIANE</div>
+                        <div>Dame du Lac Temporel</div>
+                        <div class="spell-desc">Gardienne des artefacts transcendants, forge les armes quantiques</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chapitre 4: Système 6D -->
+            <div class="chapter" id="systeme6d">
+                <h2>🌌 Le Système 6D</h2>
+                
+                <p>
+                    Le cœur de Heroes of Time repose sur un système révolutionnaire à six dimensions. Chaque entité dans le jeu est définie par ces six coordonnées fondamentales :
+                </p>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Les Six Dimensions</div>
+                    <div class="formula-content">
+                        Position(entité) = [X, Y, Z, T, C, Ψ]<br><br>
+                        • X, Y, Z : Position spatiale (classique)<br>
+                        • T : Position temporelle (timeline actuelle)<br>
+                        • C : Poids causal (0.0 à 1.0)<br>
+                        • Ψ : Cohérence quantique (-1.0 à 1.0)
+                    </div>
+                </div>
+                
+                <h3>La Dimension Temporelle (T)</h3>
+                <p>
+                    Contrairement au temps linéaire, la dimension T permet aux entités d'avoir leur propre temps local (t_e) distinct du temps du serveur (t_w). Cela signifie qu'un héros peut vivre plus vite ou plus lentement que le monde qui l'entoure.
+                </p>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Dilatation Temporelle</div>
+                    <div class="formula-content">
+                        Δt' = Δt × √(1 - v²/c²)<br>
+                        où v = vitesse de l'entité, c = vitesse de la lumière
+                    </div>
+                </div>
+                
+                <h3>La Dimension Causale (C)</h3>
+                <p>
+                    La causalité mesure l'influence qu'une entité exerce sur la trame de la réalité. Plus votre poids causal est élevé, plus vos actions ont d'impact sur les événements futurs.
+                </p>
+                
+                <h3>L'Identité Quantique (Ψ)</h3>
+                <p>
+                    L'identité quantique représente la cohérence d'une entité à travers les timelines multiples. Une valeur de 1.0 signifie une existence parfaitement définie, tandis que 0 indique une superposition quantique totale.
+                </p>
+                
+                <div class="warning-box">
+                    Une identité quantique négative peut causer des paradoxes temporels ! Maintenez toujours Ψ > 0 sauf si vous maîtrisez les techniques avancées de manipulation paradoxale.
+                </div>
+            </div>
+            
+            <!-- Chapitre 5: Formules Magiques -->
+            <div class="chapter" id="formules">
+                <h2>✨ Les Formules Magiques</h2>
+                
+                <p>
+                    La magie dans Heroes of Time n'est pas un art mystique mais une science précise. Chaque sort suit une formule mathématique rigoureuse qui manipule les lois de la physique quantique et temporelle.
+                </p>
+                
+                <h3>Formules Temporelles</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">TEMPORAL_SHIFT</div>
+                    <div class="formula-content">
+                        Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)<br>
+                        Décale une entité dans le temps de Δt unités
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">CHRONO_LOCK</div>
+                    <div class="formula-content">
+                        L(t) = δ(t - t₀) × Ψ(t₀)<br>
+                        Verrouille une entité au temps t₀
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">TIME_DILATION</div>
+                    <div class="formula-content">
+                        Δt' = Δt × √(1 - v²/c²)<br>
+                        Modifie l'écoulement du temps local
+                    </div>
+                </div>
+                
+                <h3>Formules Quantiques</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">QUANTUM_COLLAPSE</div>
+                    <div class="formula-content">
+                        |Ψ⟩ = Σ(α_i|i⟩) → |n⟩<br>
+                        Force l'effondrement d'une superposition quantique
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">WAVE_FUNCTION</div>
+                    <div class="formula-content">
+                        Ψ(x,t) = A × sin(kx - ωt + φ)<br>
+                        Manipule la fonction d'onde d'une entité
+                    </div>
+                </div>
+                
+                <h3>Formules Causales</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">CAUSAL_FORK</div>
+                    <div class="formula-content">
+                        C(t₁→t₂) = ∫P(ξ)dξ × Θ(t₂-t₁)<br>
+                        Crée une bifurcation causale dans la timeline
+                    </div>
+                </div>
+                
+                <h3>Formules Dimensionnelles</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">DIMENSION_FOLD</div>
+                    <div class="formula-content">
+                        D⁶ = X³ × T × C × Ψ<br>
+                        Plie l'espace-temps en six dimensions
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">INTERSTICE_PORTAL</div>
+                    <div class="formula-content">
+                        P = lim_{n→∞} (1 + z/n)ⁿ<br>
+                        Ouvre un portail vers l'Interstice
+                    </div>
+                </div>
+                
+                <h3>Formules d'Énergie Complexe</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">ENERGY_COMPLEX</div>
+                    <div class="formula-content">
+                        E = A × e^(iΦ) + ∇²Ψ<br>
+                        où A = amplitude, Φ = phase<br>
+                        Génère de l'énergie complexe pour les sorts avancés
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">REALITY_WEAVE</div>
+                    <div class="formula-content">
+                        R = Σᵢⱼ (Mᵢⱼ × Ψᵢ × Ψⱼ*)<br>
+                        Tisse la trame de la réalité elle-même
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chapitre 6: Grammaire Temporelle -->
+            <div class="chapter" id="grammaire">
+                <h2>🔤 La Grammaire Temporelle</h2>
+                
+                <p>
+                    La Grammaire Temporelle est le langage sacré créé par GROEKEN pour commander la réalité. Chaque symbole possède un pouvoir intrinsèque, et leur combinaison permet de créer des sorts d'une puissance illimitée.
+                </p>
+                
+                <h3>Les Symboles Fondamentaux</h3>
+                
+                <div class="spell-list">
+                    <div class="spell-card">
+                        <div class="spell-name">⊙ Superposition</div>
+                        <div class="spell-desc">Place une entité en états multiples simultanés</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">†ψ Collapse</div>
+                        <div class="spell-desc">Force l'effondrement quantique par acte de volonté</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">Π Observation</div>
+                        <div class="spell-desc">Observe et fixe un état quantique</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">Δt Delta Temporel</div>
+                        <div class="spell-desc">Modifie le décalage temporel (ex: Δt+5)</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">ℬ Branche</div>
+                        <div class="spell-desc">Crée ou navigue entre les branches temporelles</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">⟶ Projection</div>
+                        <div class="spell-desc">Projette une cause vers son effet</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">∅ Interstice</div>
+                        <div class="spell-desc">Accède à l'espace entre les réalités</div>
+                    </div>
+                </div>
+                
+                <h3>Structures de Formules</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Formule Simple</div>
+                    <div class="formula-content">
+                        symbole(sujet) + verbe + objet<br>
+                        Ex: ⊙(héros) + téléporter + château
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Invocation Complexe</div>
+                    <div class="formula-content">
+                        ⊙(entité) + †ψ(manifestation) → Δt+0(présence)<br>
+                        Ex: ⊙(dragon) + †ψ(feu) → Δt+0(attaque)
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Sort Temporel</div>
+                    <div class="formula-content">
+                        Π(obs) + ℬn(branche) ⟶ Δt+n(futur)<br>
+                        Ex: Π(ennemi) + ℬ3(paralysie) ⟶ Δt+10(victoire)
+                    </div>
+                </div>
+                
+                <h3>Opérateurs Avancés</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Opérateurs de Manipulation</div>
+                    <div class="formula-content">
+                        SHIFT(expr, offset) : Décale dans le temps<br>
+                        FORK(expr) : Crée une superposition<br>
+                        MERGE(left, right) : Fusionne deux états<br>
+                        LOOP(t_start, t_end) : Crée une boucle causale<br>
+                        FREEZE(radius, duration) : Arrête le temps localement
+                    </div>
+                </div>
+                
+                <h3>Exemples de Combinaisons</h3>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Paradoxe Temporel</div>
+                    <div class="formula-content">
+                        SHIFT(-5) ∘ FORK ∘ SHIFT(10) ∘ MERGE<br>
+                        Voyage dans le passé, crée une bifurcation, avance dans le futur, fusionne les timelines
+                    </div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Prison Temporelle</div>
+                    <div class="formula-content">
+                        LOOP(t, t+60) + FREEZE(r=10, d=5)<br>
+                        Emprisonne une zone dans une boucle de 60 secondes avec temps figé
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chapitre 7: Système TCG -->
+            <div class="chapter" id="tcg">
+                <h2>🎴 Le Système de Combat TCG</h2>
+                
+                <p>
+                    Les combats dans Heroes of Time se résolvent via un système de cartes sophistiqué. Chaque carte représente une formule magique, et leur combinaison crée des effets synergiques dévastateurs.
+                </p>
+                
+                <h3>Types de Cartes</h3>
+                
+                <div class="spell-list">
+                    <div class="spell-card">
+                        <div class="spell-name">🔥 Sorts Élémentaires</div>
+                        <div class="spell-desc">Dégâts directs basés sur les éléments classiques</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">⏰ Sorts Temporels</div>
+                        <div class="spell-desc">Manipulent le flux du temps et la séquence des tours</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">🌀 Sorts Quantiques</div>
+                        <div class="spell-desc">Créent des superpositions et des probabilités</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">🔗 Sorts Causaux</div>
+                        <div class="spell-desc">Modifient les relations cause-effet</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">🛡️ Sorts de Protection</div>
+                        <div class="spell-desc">Défenses et contresorts</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">✨ Artefacts</div>
+                        <div class="spell-desc">Effets permanents qui modifient les règles</div>
+                    </div>
+                </div>
+                
+                <h3>Mécaniques de Combat</h3>
+                
+                <p>
+                    Chaque joueur commence avec 100 points de vie et une main de 7 cartes. L'énergie complexe (A + iΦ) est nécessaire pour jouer des cartes :
+                </p>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Coût en Énergie</div>
+                    <div class="formula-content">
+                        Coût = A_base × (1 + sin(Φ))<br>
+                        où A = amplitude de base, Φ = phase actuelle
+                    </div>
+                </div>
+                
+                <h3>L'IA TCG</h3>
+                
+                <p>
+                    Le système intègre une IA avancée (Rust) qui analyse l'état du jeu en 6D pour prendre des décisions optimales. L'IA considère :
+                </p>
+                
+                <ul style="color: #d0c0a0; margin-left: 40px;">
+                    <li>La position 6D de chaque entité</li>
+                    <li>Les probabilités causales des actions futures</li>
+                    <li>Les superpositions quantiques possibles</li>
+                    <li>L'historique temporel des coups joués</li>
+                </ul>
+            </div>
+            
+            <!-- Chapitre 8: L'Interstice -->
+            <div class="chapter" id="interstice">
+                <h2>🌌 L'Interstice et les Réalités</h2>
+                
+                <p>
+                    L'Interstice est l'espace primordial entre toutes les réalités. C'est un lieu où les lois de la physique sont malléables, où le temps n'a pas de direction fixe, et où toutes les possibilités coexistent.
+                </p>
+                
+                <h3>Navigation dans l'Interstice</h3>
+                
+                <p>
+                    Pour naviguer dans l'Interstice, vous devez maintenir votre cohérence quantique (Ψ) tout en manipulant votre position dans les six dimensions :
+                </p>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Équation de Navigation</div>
+                    <div class="formula-content">
+                        Nav(t) = ∫[Ψ(t) × e^(iH·t)] dt<br>
+                        où H = Hamiltonien de l'Interstice
+                    </div>
+                </div>
+                
+                <h3>Géométries Non-Euclidiennes</h3>
+                
+                <p>
+                    L'Interstice permet la création de géométries impossibles qui défient la logique tridimensionnelle :
+                </p>
+                
+                <div class="spell-list">
+                    <div class="spell-card">
+                        <div class="spell-name">Prison Tesseract</div>
+                        <div class="spell-desc">Emprisonne dans un hypercube 4D</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">Champ de Möbius</div>
+                        <div class="spell-desc">Crée un terrain sans endroit ni envers</div>
+                    </div>
+                    
+                    <div class="spell-card">
+                        <div class="spell-name">Réalité de Klein</div>
+                        <div class="spell-desc">Espace qui se traverse lui-même</div>
+                    </div>
+                </div>
+                
+                <h3>Les Régulateurs</h3>
+                
+                <p>
+                    Les Régulateurs sont des mécanismes qui contrôlent les flux entre l'Interstice et les réalités normales. Ils maintiennent la stabilité causale et empêchent les paradoxes de détruire le continuum.
+                </p>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Fonction de Régulation</div>
+                    <div class="formula-content">
+                        R(flux) = tanh(flux/flux_max) × Ψ_stable<br>
+                        Limite les flux pour maintenir la stabilité
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chapitre 9: Conseils -->
+            <div class="chapter" id="conseils">
+                <h2>💡 Conseils Stratégiques</h2>
+                
+                <h3>Pour les Débutants</h3>
+                
+                <p>
+                    <strong>1. Maîtrisez d'abord les trois dimensions spatiales</strong><br>
+                    Avant de vous aventurer dans la manipulation temporelle, assurez-vous de bien comprendre le positionnement spatial classique.
+                </p>
+                
+                <p>
+                    <strong>2. Surveillez votre identité quantique</strong><br>
+                    Ne laissez jamais Ψ descendre en dessous de 0.3 sauf si vous avez un plan de récupération.
+                </p>
+                
+                <p>
+                    <strong>3. Commencez avec des formules simples</strong><br>
+                    Les formules complexes sont puissantes mais dangereuses. Maîtrisez d'abord : FIREBALL, SHIELD, TELEPORT.
+                </p>
+                
+                <h3>Stratégies Intermédiaires</h3>
+                
+                <p>
+                    <strong>Combo Temporel de Base :</strong>
+                </p>
+                <div class="formula-box">
+                    <div class="formula-content">
+                        SHIFT(-2) → Attaque → SHIFT(+2)<br>
+                        Reculez dans le temps, attaquez, revenez au présent
+                    </div>
+                </div>
+                
+                <p>
+                    <strong>Piège Causal :</strong>
+                </p>
+                <div class="formula-box">
+                    <div class="formula-content">
+                        FORK → [Branche A: Feinte] + [Branche B: Vraie attaque] → MERGE<br>
+                        L'ennemi ne peut contrer qu'une branche
+                    </div>
+                </div>
+                
+                <h3>Techniques Avancées</h3>
+                
+                <p>
+                    <strong>Le Paradoxe Offensif :</strong><br>
+                    Créez intentionnellement un paradoxe mineur pour désorienter l'ennemi. Attention : nécessite Ψ > 0.8 pour survivre au contrecoup.
+                </p>
+                
+                <p>
+                    <strong>La Cascade Quantique :</strong><br>
+                    Enchaînez plusieurs FORK sans MERGE pour créer une armée de versions alternatives de vous-même. Coût énergétique exponentialement croissant.
+                </p>
+                
+                <div class="warning-box">
+                    Ne tentez jamais de créer une boucle causale infinie ! Le système de régulation vous bannira dans l'Interstice pour l'éternité.
+                </div>
+                
+                <h3>Conseils pour le TCG</h3>
+                
+                <ul style="color: #d0c0a0; margin-left: 40px; line-height: 2;">
+                    <li>Gardez toujours au moins une carte de contresort en main</li>
+                    <li>Les combos temporels + quantiques sont les plus puissants</li>
+                    <li>L'énergie de phase (Φ) se recharge plus vite si vous alternez les types de sorts</li>
+                    <li>Contre l'IA : elle prédit vos mouvements, soyez imprévisible</li>
+                    <li>En multijoueur : formez des alliances temporaires via les branches causales partagées</li>
+                </ul>
+            </div>
+            
+            <!-- Section Clippy -->
+            <div class="clippy-container" onclick="toggleClippy()">
+                <div class="clippy-icon">📎</div>
+            </div>
+            
+            <div class="clippy-tooltip" id="clippyTooltip">
+                <div style="color: #ffd700; font-weight: bold; margin-bottom: 10px;">
+                    Assistant Clippy - Heroes of Time
+                </div>
+                <div id="clippyMessage" style="color: #f0e6d6;">
+                    Cliquez sur n'importe quel concept pour obtenir une explication détaillée !
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Système Clippy interactif
+        let clippyActive = false;
+        const clippyMessages = {
+            'default': "Salut ! Je suis Clippy, votre assistant magique. Cliquez sur n'importe quel terme technique pour une explication !",
+            '6D': "Le système 6D permet de positionner chaque entité dans l'espace-temps-causalité. C'est la base de toute la physique du jeu !",
+            'Ψ': "Psi (Ψ) représente votre cohérence quantique. Si elle tombe à 0, vous devenez une onde de probabilité pure !",
+            'GROEKEN': "GROEKEN est le créateur de la Grammaire Temporelle. Certains disent qu'il existe encore, codant la réalité depuis l'Interstice...",
+            'TCG': "Le système TCG utilise une IA Rust avancée qui analyse l'état du jeu en 6 dimensions pour prendre des décisions optimales.",
+            'Interstice': "L'Interstice est l'espace entre les espaces. C'est là que se cachent tous les bugs de la réalité !",
+            'formule': "Les formules magiques sont des équations qui manipulent la physique quantique. Chaque symbole a un pouvoir !",
+            'temporal': "La manipulation temporelle permet de jouer avec le temps local (t_e) indépendamment du temps serveur (t_w).",
+            'quantum': "La mécanique quantique permet la superposition - être à plusieurs endroits ou états simultanément !",
+            'causal': "La causalité détermine comment vos actions affectent le futur. Plus votre C est élevé, plus vous influencez la réalité."
+        };
+        
+        function toggleClippy() {
+            clippyActive = !clippyActive;
+            const tooltip = document.getElementById('clippyTooltip');
+            tooltip.classList.toggle('active');
+            
+            if (clippyActive) {
+                document.getElementById('clippyMessage').innerHTML = clippyMessages['default'];
+                setupClippyListeners();
+            } else {
+                removeClippyListeners();
+            }
+        }
+        
+        function setupClippyListeners() {
+            document.addEventListener('click', handleClippyClick);
+        }
+        
+        function removeClippyListeners() {
+            document.removeEventListener('click', handleClippyClick);
+        }
+        
+        function handleClippyClick(e) {
+            if (e.target.closest('.clippy-container') || e.target.closest('.clippy-tooltip')) {
+                return;
+            }
+            
+            const text = e.target.textContent.toLowerCase();
+            let message = null;
+            
+            // Recherche de mots-clés
+            for (let key in clippyMessages) {
+                if (text.includes(key.toLowerCase())) {
+                    message = clippyMessages[key];
+                    break;
+                }
+            }
+            
+            if (message) {
+                document.getElementById('clippyMessage').innerHTML = message;
+                
+                // Animation de mise à jour
+                const tooltip = document.getElementById('clippyTooltip');
+                tooltip.style.animation = 'none';
+                setTimeout(() => {
+                    tooltip.style.animation = 'fadeIn 0.3s ease';
+                }, 10);
+            }
+        }
+        
+        // Connexion au Vector DB pour Clippy (si disponible)
+        async function queryVectorDB(query) {
+            try {
+                const response = await fetch('http://localhost:5001/explain/' + encodeURIComponent(query));
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.explanation;
+                }
+            } catch (e) {
+                console.log('Vector DB non disponible, utilisation des données locales');
+            }
+            return null;
+        }
+        
+        // Animation de défilement fluide pour la table des matières
+        document.querySelectorAll('.toc-list a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+        
+        // Easter egg : Konami code
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                document.body.style.animation = 'pulse 1s infinite';
+                alert("🎮 Mode GROEKEN activé ! Vous avez maintenant accès aux formules interdites !");
+            }
+        });
+        
+        // Message de bienvenue
+        console.log(`
+%c🔮 HEROES OF TIME - MANUEL DU JOUEUR 🔮
+%cBienvenue, Héros du Temps !
+Console de debug activée. Tapez help() pour les commandes.`,
+            'color: #ffd700; font-size: 20px; font-weight: bold;',
+            'color: #90ee90; font-size: 14px;'
+        );
+        
+        // Fonction d'aide dans la console
+        window.help = function() {
+            console.log(`
+Commandes disponibles :
+- showFormulas() : Affiche toutes les formules magiques
+- explain(topic) : Explique un concept (ex: explain('temporal'))
+- queryVector(search) : Recherche dans le Vector DB
+- activateCheat() : Active le mode triche (à vos risques et périls)
+            `);
+        };
+        
+        window.showFormulas = function() {
+            console.table({
+                'TEMPORAL_SHIFT': 'Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)',
+                'QUANTUM_COLLAPSE': '|Ψ⟩ = Σ(α_i|i⟩) → |n⟩',
+                'CAUSAL_FORK': 'C(t₁→t₂) = ∫P(ξ)dξ × Θ(t₂-t₁)',
+                'ENERGY_COMPLEX': 'E = A × e^(iΦ) + ∇²Ψ'
+            });
+        };
+        
+        window.explain = function(topic) {
+            queryVectorDB(topic).then(result => {
+                if (result) {
+                    console.log(`📖 ${topic}: ${result}`);
+                } else {
+                    console.log(`📖 ${topic}: ${clippyMessages[topic] || 'Concept non trouvé'}`);
+                }
+            });
+        };
+        
+        window.queryVector = async function(search) {
+            try {
+                const response = await fetch('http://localhost:5001/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: search, limit: 5 })
+                });
+                const data = await response.json();
+                console.log('Résultats de recherche :', data);
+            } catch (e) {
+                console.error('Vector DB non accessible');
+            }
+        };
+        
+        window.activateCheat = function() {
+            console.warn('⚠️ MODE TRICHE ACTIVÉ - Vos scores ne seront pas enregistrés !');
+            localStorage.setItem('cheatMode', 'true');
+            console.log('Ψ défini à 1.0 (cohérence parfaite)');
+            console.log('Énergie infinie activée');
+            console.log('Toutes les formules débloquées');
+        };
+    </script>
+</body>
+</html>

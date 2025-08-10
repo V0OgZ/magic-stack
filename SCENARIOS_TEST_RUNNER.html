@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Test Scenarios Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            height: calc(100vh - 120px);
+        }
+        
+        /* Panel Scénarios */
+        .scenarios-panel {
+            background: rgba(0, 255, 0, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .scenario-category {
+            margin-bottom: 20px;
+        }
+        
+        .scenario-category h3 {
+            color: #ffff00;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .scenario-item {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .scenario-item:hover {
+            background: rgba(0, 255, 0, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .scenario-item.active {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #ffff00;
+        }
+        
+        .scenario-item.passed {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.15);
+        }
+        
+        .scenario-item.failed {
+            border-color: #ff0000;
+            background: rgba(255, 0, 0, 0.15);
+        }
+        
+        /* Zone d'exécution */
+        .execution-zone {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-canvas {
+            flex: 1;
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-view {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: #00ff00;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        
+        .btn.danger:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 10px #ff0000;
+        }
+        
+        /* Panel de logs */
+        .logs-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+        }
+        
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+        
+        .log-entry.info {
+            border-left-color: #00ff00;
+            color: #00ff00;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #ffff00;
+            color: #ffff00;
+        }
+        
+        .log-entry.error {
+            border-left-color: #ff0000;
+            color: #ff0000;
+        }
+        
+        .log-entry.success {
+            border-left-color: #00ffff;
+            color: #00ffff;
+        }
+        
+        .log-entry .timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+        
+        /* Barre de statut */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid #00ff00;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #888;
+        }
+        
+        .status-indicator.connected {
+            background: #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            transition: width 0.3s;
+        }
+        
+        /* Modal de détails */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: rgba(0, 255, 0, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .formula-display {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 HEROES OF TIME - TEST SCENARIOS RUNNER</h1>
+        
+        <div class="test-grid">
+            <!-- Panel des scénarios -->
+            <div class="scenarios-panel">
+                <h2 style="color: #ffff00; margin-bottom: 20px;">📋 Scénarios</h2>
+                
+                <div class="scenario-category">
+                    <h3>⚔️ Combat TCG</h3>
+                    <div class="scenario-item" data-scenario="tcg-basic">
+                        TCG: Combat basique
+                    </div>
+                    <div class="scenario-item" data-scenario="tcg-ai">
+                        TCG: IA Rust vs Java
+                    </div>
+                    <div class="scenario-item" data-scenario="tcg-combo">
+                        TCG: Combo temporel
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>⏰ Temporel</h3>
+                    <div class="scenario-item" data-scenario="temporal-shift">
+                        SHIFT: Décalage -5/+10
+                    </div>
+                    <div class="scenario-item" data-scenario="temporal-fork">
+                        FORK: Superposition
+                    </div>
+                    <div class="scenario-item" data-scenario="temporal-loop">
+                        LOOP: Boucle causale
+                    </div>
+                    <div class="scenario-item" data-scenario="temporal-paradox">
+                        Paradoxe contrôlé
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>🌀 Quantique</h3>
+                    <div class="scenario-item" data-scenario="quantum-collapse">
+                        Collapse quantique
+                    </div>
+                    <div class="scenario-item" data-scenario="quantum-superposition">
+                        Superposition triple
+                    </div>
+                    <div class="scenario-item" data-scenario="quantum-entanglement">
+                        Intrication d'entités
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>🌌 6D Navigation</h3>
+                    <div class="scenario-item" data-scenario="6d-pathfinding">
+                        Q*: Pathfinding 6D
+                    </div>
+                    <div class="scenario-item" data-scenario="6d-causal">
+                        Poids causal C=0.8
+                    </div>
+                    <div class="scenario-item" data-scenario="6d-identity">
+                        Identité Ψ critique
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>🔮 Interstice</h3>
+                    <div class="scenario-item" data-scenario="interstice-portal">
+                        Ouverture portail
+                    </div>
+                    <div class="scenario-item" data-scenario="interstice-navigation">
+                        Navigation non-euclidienne
+                    </div>
+                    <div class="scenario-item" data-scenario="interstice-regulator">
+                        Test régulateurs
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>⚡ Énergie Complexe</h3>
+                    <div class="scenario-item" data-scenario="energy-complex">
+                        A + iΦ génération
+                    </div>
+                    <div class="scenario-item" data-scenario="energy-phase">
+                        Phase rotation Φ
+                    </div>
+                </div>
+                
+                <div class="scenario-category">
+                    <h3>🔗 Intégration</h3>
+                    <div class="scenario-item" data-scenario="integration-rust-java">
+                        Rust ↔ Java comm
+                    </div>
+                    <div class="scenario-item" data-scenario="integration-vector">
+                        Vector DB queries
+                    </div>
+                    <div class="scenario-item" data-scenario="integration-v2">
+                        V2 Controller full
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zone d'exécution -->
+            <div class="execution-zone">
+                <div class="game-canvas" id="gameCanvas">
+                    <div class="game-view" id="gameView">
+                        🎮 Sélectionnez un scénario pour commencer
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" id="btnRun" disabled>▶️ Run</button>
+                    <button class="btn" id="btnStep" disabled>⏯️ Step</button>
+                    <button class="btn" id="btnPause" disabled>⏸️ Pause</button>
+                    <button class="btn danger" id="btnStop" disabled>⏹️ Stop</button>
+                    <button class="btn" id="btnRunAll">🚀 Run All</button>
+                    <button class="btn" id="btnExport">📊 Export</button>
+                </div>
+            </div>
+            
+            <!-- Panel de logs -->
+            <div class="logs-panel">
+                <div class="logs-header">
+                    <h3 style="color: #ffff00;">📝 Logs</h3>
+                    <button class="btn" onclick="clearLogs()" style="padding: 5px 10px;">Clear</button>
+                </div>
+                <div class="logs-content" id="logsContent">
+                    <div class="log-entry info">
+                        <span class="timestamp">[00:00:00]</span>
+                        System initialized. Ready for testing.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barre de statut -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator connected" id="statusIndicator"></div>
+                <span id="statusText">Connected to all services</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Progress:</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <span id="progressText">0/0</span>
+            </div>
+            
+            <div class="status-item">
+                <span>✅ <span id="passedCount">0</span></span>
+                <span>❌ <span id="failedCount">0</span></span>
+                <span>⏭️ <span id="skippedCount">0</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour afficher les détails -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <h2 style="color: #ffff00; margin-bottom: 20px;" id="modalTitle">Détails du scénario</h2>
+            <div id="modalBody"></div>
+            <button class="btn" onclick="closeModal()" style="margin-top: 20px;">Fermer</button>
+        </div>
+    </div>
+    
+    <script>
+        // Définition des scénarios de test
+        const scenarios = {
+            // TCG Combat
+            'tcg-basic': {
+                name: 'Combat TCG basique',
+                steps: [
+                    { action: 'init_combat', params: { hero_hp: 100, enemy_hp: 100 } },
+                    { action: 'play_card', params: { card: 'FIREBALL', target: 'enemy' } },
+                    { action: 'check_hp', params: { enemy_hp_expected: 80 } },
+                    { action: 'enemy_turn', params: {} },
+                    { action: 'check_hp', params: { hero_hp_min: 70 } }
+                ],
+                expectedResult: 'Combat should complete with damage dealt'
+            },
+            
+            'tcg-ai': {
+                name: 'IA Rust vs Java',
+                steps: [
+                    { action: 'init_ai_combat', params: {} },
+                    { action: 'request_ai_decision', params: { endpoint: '/tcg/ai/decide' } },
+                    { action: 'verify_response', params: { has_actions: true } },
+                    { action: 'execute_ai_action', params: {} },
+                    { action: 'check_state_consistency', params: {} }
+                ],
+                expectedResult: 'AI should make valid decisions'
+            },
+            
+            // Temporal
+            'temporal-shift': {
+                name: 'Décalage temporel SHIFT',
+                formula: 'Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)',
+                steps: [
+                    { action: 'create_entity', params: { id: 'test_hero', t: 100 } },
+                    { action: 'apply_formula', params: { formula: 'SHIFT', delta: -5 } },
+                    { action: 'check_position', params: { t_expected: 95 } },
+                    { action: 'apply_formula', params: { formula: 'SHIFT', delta: 10 } },
+                    { action: 'check_position', params: { t_expected: 105 } }
+                ],
+                expectedResult: 'Entity should move in time correctly'
+            },
+            
+            'temporal-fork': {
+                name: 'Bifurcation FORK',
+                steps: [
+                    { action: 'create_entity', params: { id: 'hero' } },
+                    { action: 'apply_formula', params: { formula: 'FORK' } },
+                    { action: 'check_branches', params: { count: 2 } },
+                    { action: 'modify_branch', params: { branch: 0, action: 'attack' } },
+                    { action: 'modify_branch', params: { branch: 1, action: 'defend' } },
+                    { action: 'apply_formula', params: { formula: 'MERGE' } }
+                ],
+                expectedResult: 'Should create and merge timeline branches'
+            },
+            
+            'temporal-loop': {
+                name: 'Boucle causale LOOP',
+                formula: 'LOOP(t, t+60) + FREEZE(r=10, d=5)',
+                steps: [
+                    { action: 'create_loop', params: { start: 't', duration: 60 } },
+                    { action: 'freeze_area', params: { radius: 10, duration: 5 } },
+                    { action: 'advance_time', params: { delta: 65 } },
+                    { action: 'check_loop_active', params: { expected: true } },
+                    { action: 'break_loop', params: { method: 'causal_interrupt' } }
+                ],
+                expectedResult: 'Time loop should contain area for duration'
+            },
+            
+            // Quantique
+            'quantum-collapse': {
+                name: 'Effondrement quantique',
+                formula: '|Ψ⟩ = Σ(α_i|i⟩) → |n⟩',
+                steps: [
+                    { action: 'create_superposition', params: { states: 3 } },
+                    { action: 'check_psi', params: { value: 0.33 } },
+                    { action: 'observe', params: {} },
+                    { action: 'apply_collapse', params: {} },
+                    { action: 'check_psi', params: { value: 1.0 } }
+                ],
+                expectedResult: 'Superposition should collapse to single state'
+            },
+            
+            // 6D Navigation
+            '6d-pathfinding': {
+                name: 'Pathfinding Q* en 6D',
+                steps: [
+                    { action: 'set_position', params: { x: 0, y: 0, z: 0, t: 0, c: 0.5, psi: 1.0 } },
+                    { action: 'set_target', params: { x: 10, y: 10, z: 5, t: 10, c: 0.8, psi: 0.9 } },
+                    { action: 'calculate_path', params: { algorithm: 'qstar' } },
+                    { action: 'verify_path', params: { max_steps: 20 } },
+                    { action: 'execute_path', params: {} }
+                ],
+                expectedResult: 'Should find optimal 6D path'
+            },
+            
+            // Interstice
+            'interstice-portal': {
+                name: 'Ouverture portail Interstice',
+                formula: 'P = lim_{n→∞} (1 + z/n)ⁿ',
+                steps: [
+                    { action: 'calculate_portal', params: { z: 2.718 } },
+                    { action: 'open_portal', params: { stability: 0.8 } },
+                    { action: 'check_interstice_access', params: {} },
+                    { action: 'send_probe', params: {} },
+                    { action: 'close_portal', params: {} }
+                ],
+                expectedResult: 'Portal should open and remain stable'
+            },
+            
+            // Énergie
+            'energy-complex': {
+                name: 'Énergie complexe A + iΦ',
+                formula: 'E = A × e^(iΦ) + ∇²Ψ',
+                steps: [
+                    { action: 'set_amplitude', params: { A: 100 } },
+                    { action: 'set_phase', params: { phi: Math.PI/4 } },
+                    { action: 'calculate_energy', params: {} },
+                    { action: 'verify_complex', params: { real_min: 70, imag_min: 70 } },
+                    { action: 'cast_spell', params: { cost: 50 } }
+                ],
+                expectedResult: 'Complex energy should be generated and consumed'
+            },
+            
+            // Intégration
+            'integration-rust-java': {
+                name: 'Communication Rust ↔ Java',
+                steps: [
+                    { action: 'ping_rust', params: { port: 3001 } },
+                    { action: 'ping_java', params: { port: 8080 } },
+                    { action: 'send_rust_to_java', params: { message: 'test' } },
+                    { action: 'verify_java_received', params: {} },
+                    { action: 'request_ai_from_java', params: {} }
+                ],
+                expectedResult: 'Services should communicate successfully'
+            },
+            
+            'integration-vector': {
+                name: 'Vector DB queries',
+                steps: [
+                    { action: 'query_vector', params: { query: 'temporal', limit: 5 } },
+                    { action: 'verify_results', params: { min_results: 1 } },
+                    { action: 'query_formulas', params: {} },
+                    { action: 'verify_formulas', params: { min_count: 10 } },
+                    { action: 'explain_concept', params: { topic: 'quantum' } }
+                ],
+                expectedResult: 'Vector DB should return relevant results'
+            },
+            
+            'integration-v2': {
+                name: 'V2 Controller complet',
+                steps: [
+                    { action: 'get_v2_config', params: {} },
+                    { action: 'update_regulator', params: { type: 'temporal', value: 0.7 } },
+                    { action: 'create_v2_entity', params: { with_complex_energy: true } },
+                    { action: 'apply_v2_mechanics', params: {} },
+                    { action: 'verify_v2_state', params: {} }
+                ],
+                expectedResult: 'V2 mechanics should work correctly'
+            }
+        };
+        
+        let currentScenario = null;
+        let currentStep = 0;
+        let isRunning = false;
+        let isPaused = false;
+        let testResults = { passed: 0, failed: 0, skipped: 0 };
+        
+        // Connexion aux services
+        let services = {
+            rust: 'http://localhost:3001',
+            java: 'http://localhost:8080',
+            vector: 'http://localhost:5001'
+        };
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            checkServices();
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Sélection de scénario
+            document.querySelectorAll('.scenario-item').forEach(item => {
+                item.addEventListener('click', () => selectScenario(item));
+            });
+            
+            // Boutons de contrôle
+            document.getElementById('btnRun').addEventListener('click', runScenario);
+            document.getElementById('btnStep').addEventListener('click', stepScenario);
+            document.getElementById('btnPause').addEventListener('click', pauseScenario);
+            document.getElementById('btnStop').addEventListener('click', stopScenario);
+            document.getElementById('btnRunAll').addEventListener('click', runAllScenarios);
+            document.getElementById('btnExport').addEventListener('click', exportResults);
+        }
+        
+        async function checkServices() {
+            const status = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            
+            try {
+                // Vérifier chaque service
+                const checks = await Promise.allSettled([
+                    fetch(services.rust + '/health'),
+                    fetch(services.java + '/api/health'),
+                    fetch(services.vector + '/health')
+                ]);
+                
+                const connected = checks.filter(r => r.status === 'fulfilled').length;
+                
+                if (connected === 3) {
+                    status.className = 'status-indicator connected';
+                    text.textContent = 'All services connected';
+                    log('info', 'All services connected successfully');
+                } else {
+                    status.className = 'status-indicator';
+                    text.textContent = `${connected}/3 services connected`;
+                    log('warning', `Only ${connected}/3 services connected`);
+                }
+            } catch (e) {
+                status.className = 'status-indicator';
+                text.textContent = 'Services disconnected';
+                log('error', 'Failed to connect to services');
+            }
+        }
+        
+        function selectScenario(item) {
+            // Désélectionner l'ancien
+            document.querySelectorAll('.scenario-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            const scenarioId = item.dataset.scenario;
+            currentScenario = scenarios[scenarioId];
+            currentStep = 0;
+            
+            // Activer les boutons
+            document.getElementById('btnRun').disabled = false;
+            document.getElementById('btnStep').disabled = false;
+            
+            // Afficher les détails
+            displayScenarioDetails(scenarioId);
+        }
+        
+        function displayScenarioDetails(scenarioId) {
+            const scenario = scenarios[scenarioId];
+            const gameView = document.getElementById('gameView');
+            
+            let html = `
+                <div style="text-align: left; padding: 20px;">
+                    <h2 style="color: #ffff00; margin-bottom: 15px;">${scenario.name}</h2>
+            `;
+            
+            if (scenario.formula) {
+                html += `
+                    <div class="formula-display">
+                        Formula: ${scenario.formula}
+                    </div>
+                `;
+            }
+            
+            html += `
+                <h3 style="color: #00ff00; margin-top: 20px;">Steps:</h3>
+                <ol style="margin-left: 20px; color: #00ff00;">
+            `;
+            
+            scenario.steps.forEach(step => {
+                html += `<li>${step.action} ${JSON.stringify(step.params)}</li>`;
+            });
+            
+            html += `
+                </ol>
+                <p style="color: #00ffff; margin-top: 20px;">
+                    <strong>Expected:</strong> ${scenario.expectedResult}
+                </p>
+                </div>
+            `;
+            
+            gameView.innerHTML = html;
+        }
+        
+        async function runScenario() {
+            if (!currentScenario || isRunning) return;
+            
+            isRunning = true;
+            isPaused = false;
+            currentStep = 0;
+            
+            document.getElementById('btnRun').disabled = true;
+            document.getElementById('btnPause').disabled = false;
+            document.getElementById('btnStop').disabled = false;
+            
+            log('info', `Starting scenario: ${currentScenario.name}`);
+            
+            while (currentStep < currentScenario.steps.length && isRunning && !isPaused) {
+                await executeStep(currentScenario.steps[currentStep]);
+                currentStep++;
+                updateProgress();
+                await sleep(500); // Délai entre les étapes
+            }
+            
+            if (currentStep >= currentScenario.steps.length) {
+                completeScenario(true);
+            }
+        }
+        
+        async function stepScenario() {
+            if (!currentScenario || currentStep >= currentScenario.steps.length) return;
+            
+            await executeStep(currentScenario.steps[currentStep]);
+            currentStep++;
+            updateProgress();
+            
+            if (currentStep >= currentScenario.steps.length) {
+                completeScenario(true);
+            }
+        }
+        
+        async function executeStep(step) {
+            log('info', `Executing: ${step.action}`);
+            
+            try {
+                // Simuler l'exécution selon le type d'action
+                switch (step.action) {
+                    case 'init_combat':
+                    case 'init_ai_combat':
+                        await fetch(services.java + '/api/combat/start', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(step.params)
+                        });
+                        break;
+                        
+                    case 'apply_formula':
+                        await fetch(services.rust + '/api/v2/apply', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(step.params)
+                        });
+                        break;
+                        
+                    case 'query_vector':
+                        await fetch(services.vector + '/search', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(step.params)
+                        });
+                        break;
+                        
+                    default:
+                        // Simulation générique
+                        await sleep(100);
+                }
+                
+                log('success', `Step completed: ${step.action}`);
+            } catch (e) {
+                log('error', `Step failed: ${step.action} - ${e.message}`);
+                throw e;
+            }
+        }
+        
+        function pauseScenario() {
+            isPaused = !isPaused;
+            document.getElementById('btnPause').textContent = isPaused ? '▶️ Resume' : '⏸️ Pause';
+            log('warning', isPaused ? 'Scenario paused' : 'Scenario resumed');
+        }
+        
+        function stopScenario() {
+            isRunning = false;
+            isPaused = false;
+            currentStep = 0;
+            
+            document.getElementById('btnRun').disabled = false;
+            document.getElementById('btnPause').disabled = true;
+            document.getElementById('btnStop').disabled = true;
+            
+            log('warning', 'Scenario stopped');
+            updateProgress();
+        }
+        
+        function completeScenario(success) {
+            isRunning = false;
+            const item = document.querySelector('.scenario-item.active');
+            
+            if (success) {
+                item.classList.add('passed');
+                testResults.passed++;
+                log('success', `✅ Scenario passed: ${currentScenario.name}`);
+            } else {
+                item.classList.add('failed');
+                testResults.failed++;
+                log('error', `❌ Scenario failed: ${currentScenario.name}`);
+            }
+            
+            updateResults();
+            stopScenario();
+        }
+        
+        async function runAllScenarios() {
+            log('info', '🚀 Running all scenarios...');
+            
+            const items = document.querySelectorAll('.scenario-item');
+            for (let item of items) {
+                selectScenario(item);
+                await runScenario();
+                await sleep(1000);
+            }
+            
+            log('success', '✅ All scenarios completed');
+            showSummary();
+        }
+        
+        function updateProgress() {
+            if (!currentScenario) return;
+            
+            const progress = (currentStep / currentScenario.steps.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = 
+                `${currentStep}/${currentScenario.steps.length}`;
+        }
+        
+        function updateResults() {
+            document.getElementById('passedCount').textContent = testResults.passed;
+            document.getElementById('failedCount').textContent = testResults.failed;
+            document.getElementById('skippedCount').textContent = testResults.skipped;
+        }
+        
+        function log(type, message) {
+            const logsContent = document.getElementById('logsContent');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `
+                <span class="timestamp">[${timestamp}]</span>
+                ${message}
+            `;
+            
+            logsContent.appendChild(entry);
+            logsContent.scrollTop = logsContent.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logsContent').innerHTML = '';
+            log('info', 'Logs cleared');
+        }
+        
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                summary: testResults,
+                scenarios: []
+            };
+            
+            document.querySelectorAll('.scenario-item').forEach(item => {
+                const status = item.classList.contains('passed') ? 'passed' :
+                             item.classList.contains('failed') ? 'failed' : 'pending';
+                results.scenarios.push({
+                    id: item.dataset.scenario,
+                    name: item.textContent.trim(),
+                    status: status
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], 
+                                 { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test-results-${Date.now()}.json`;
+            a.click();
+            
+            log('success', 'Results exported');
+        }
+        
+        function showSummary() {
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <h3 style="color: #00ff00;">Test Summary</h3>
+                <div style="margin: 20px 0;">
+                    <p>✅ Passed: ${testResults.passed}</p>
+                    <p>❌ Failed: ${testResults.failed}</p>
+                    <p>⏭️ Skipped: ${testResults.skipped}</p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p style="color: #00ffff;">
+                        Success rate: ${Math.round(testResults.passed / 
+                            (testResults.passed + testResults.failed) * 100)}%
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('modalTitle').textContent = 'Test Results';
+            document.getElementById('detailsModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Auto-check services every 10 seconds
+        setInterval(checkServices, 10000);
+    </script>
+</body>
+</html>

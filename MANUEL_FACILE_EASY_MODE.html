@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Mode Facile / Easy Mode</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Kalam:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #fff;
+            border-radius: 50px;
+            padding: 10px 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        
+        .lang-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: transform 0.3s;
+        }
+        
+        .lang-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .lang-btn.active {
+            filter: brightness(1.5);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.3em;
+            color: #764ba2;
+            margin-bottom: 40px;
+        }
+        
+        .intro-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            line-height: 1.8;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .intro-box p {
+            margin-bottom: 15px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            font-size: 2.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .icon {
+            font-size: 1.2em;
+        }
+        
+        .magic-concept {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .magic-concept h3 {
+            color: #5f3dc4;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .magic-concept .simple {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .magic-concept .example {
+            background: rgba(255, 255, 255, 0.8);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-style: italic;
+        }
+        
+        .scenario {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .scenario h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .scenario-level {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        
+        .steps {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .step-number {
+            background: #fff;
+            color: #f5576c;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+            line-height: 1.6;
+        }
+        
+        .spell-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        
+        .spell-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .spell-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .spell-effect {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .character-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .character-card {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .character-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .character-emoji {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .character-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .character-power {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95em;
+        }
+        
+        .link-advanced {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            margin: 20px auto;
+            display: block;
+            text-align: center;
+            max-width: 400px;
+            font-size: 1.2em;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        
+        .link-advanced:hover {
+            transform: scale(1.05);
+        }
+        
+        .tips-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #dfe6e9 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .tips-box h3 {
+            color: #2d3436;
+            margin-bottom: 15px;
+        }
+        
+        .tips-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .tips-box li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .tips-box li::before {
+            content: "✨";
+            position: absolute;
+            left: 0;
+        }
+        
+        .fun-fact {
+            background: linear-gradient(135deg, #ff9ff3 0%, #feca57 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #fff;
+            font-size: 1.1em;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fun-fact::before {
+            content: "💡 ";
+            font-size: 1.3em;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Clippy Helper */
+        .clippy-helper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+        
+        .clippy-helper:hover {
+            transform: scale(1.1);
+        }
+        
+        .clippy-bubble {
+            position: fixed;
+            bottom: 110px;
+            right: 20px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 15px;
+            max-width: 250px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 998;
+        }
+        
+        .clippy-bubble.active {
+            display: block;
+        }
+        
+        .clippy-bubble::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            right: 35px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #fff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .character-gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-toggle">
+        <button class="lang-btn active" onclick="setLanguage('fr')">🇫🇷</button>
+        <button class="lang-btn" onclick="setLanguage('en')">🇬🇧</button>
+    </div>
+    
+    <div class="container">
+        <h1 class="floating">
+            <span class="fr">🎮 Heroes of Time - Mode Facile</span>
+            <span class="en" style="display:none">🎮 Heroes of Time - Easy Mode</span>
+        </h1>
+        
+        <div class="subtitle">
+            <span class="fr">Apprends la magie du temps en t'amusant !</span>
+            <span class="en" style="display:none">Learn time magic while having fun!</span>
+        </div>
+        
+        <div class="intro-box">
+            <p class="fr">
+                <strong>Salut jeune héros !</strong> 👋 Bienvenue dans Heroes of Time, un jeu où TU peux contrôler le temps comme dans tes films préférés ! 
+                Imagine que tu peux mettre le monde en pause, revenir en arrière, ou même être à plusieurs endroits en même temps !
+            </p>
+            <p class="en" style="display:none">
+                <strong>Hello young hero!</strong> 👋 Welcome to Heroes of Time, a game where YOU can control time like in your favorite movies!
+                Imagine you can pause the world, go back in time, or even be in multiple places at once!
+            </p>
+            
+            <p class="fr">
+                Dans ce guide, on va t'apprendre 3 sorts super cool pour commencer. C'est comme apprendre des tours de magie, 
+                mais en vrai, c'est de la science ! 🔬✨
+            </p>
+            <p class="en" style="display:none">
+                In this guide, we'll teach you 3 super cool spells to start with. It's like learning magic tricks,
+                but actually, it's science! 🔬✨
+            </p>
+        </div>
+        
+        <!-- Section: Les Bases Magiques -->
+        <div class="section">
+            <h2>
+                <span class="icon">🌟</span>
+                <span class="fr">Les Bases Magiques (mais c'est de la vraie science !)</span>
+                <span class="en" style="display:none">Magic Basics (but it's real science!)</span>
+            </h2>
+            
+            <div class="magic-concept">
+                <h3>
+                    <span class="fr">🕐 Le Temps n'est pas une ligne droite !</span>
+                    <span class="en" style="display:none">🕐 Time is not a straight line!</span>
+                </h3>
+                <div class="simple fr">
+                    Tu sais quand tu joues à un jeu vidéo et que tu peux sauvegarder ? 
+                    Eh bien, dans Heroes of Time, le temps fonctionne pareil ! 
+                    Tu peux avoir plusieurs "sauvegardes" (on appelle ça des <strong>timelines</strong>) 
+                    et sauter entre elles.
+                </div>
+                <div class="simple en" style="display:none">
+                    You know when you play a video game and you can save?
+                    Well, in Heroes of Time, time works the same way!
+                    You can have multiple "saves" (we call them <strong>timelines</strong>)
+                    and jump between them.
+                </div>
+                <div class="example">
+                    <span class="fr">
+                        <strong>Exemple :</strong> Tu rates un saut ? Pas de problème ! 
+                        Retourne 5 secondes en arrière avec le sort SHIFT(-5) !
+                    </span>
+                    <span class="en" style="display:none">
+                        <strong>Example:</strong> You miss a jump? No problem!
+                        Go back 5 seconds with the SHIFT(-5) spell!
+                    </span>
+                </div>
+            </div>
+            
+            <div class="magic-concept">
+                <h3>
+                    <span class="fr">🌀 Tu peux être à plusieurs endroits !</span>
+                    <span class="en" style="display:none">🌀 You can be in multiple places!</span>
+                </h3>
+                <div class="simple fr">
+                    C'est ce qu'on appelle la <strong>superposition quantique</strong>. 
+                    C'est comme si tu pouvais envoyer des clones de toi explorer différents chemins, 
+                    puis choisir le meilleur !
+                </div>
+                <div class="simple en" style="display:none">
+                    This is called <strong>quantum superposition</strong>.
+                    It's like you can send clones of yourself to explore different paths,
+                    then choose the best one!
+                </div>
+                <div class="example">
+                    <span class="fr">
+                        <strong>Exemple :</strong> Deux portes devant toi ? 
+                        Utilise FORK() pour te diviser et explorer les deux !
+                    </span>
+                    <span class="en" style="display:none">
+                        <strong>Example:</strong> Two doors in front of you?
+                        Use FORK() to split yourself and explore both!
+                    </span>
+                </div>
+            </div>
+            
+            <div class="magic-concept">
+                <h3>
+                    <span class="fr">⚡ L'énergie magique est comme une pile !</span>
+                    <span class="en" style="display:none">⚡ Magic energy is like a battery!</span>
+                </h3>
+                <div class="simple fr">
+                    Chaque sort utilise de l'<strong>énergie complexe</strong>. 
+                    C'est comme la batterie de ton téléphone : plus le sort est puissant, 
+                    plus il consomme d'énergie !
+                </div>
+                <div class="simple en" style="display:none">
+                    Each spell uses <strong>complex energy</strong>.
+                    It's like your phone's battery: the more powerful the spell,
+                    the more energy it uses!
+                </div>
+                <div class="fun-fact">
+                    <span class="fr">
+                        Le savais-tu ? L'énergie dans le jeu suit la vraie formule E = A × e^(iΦ) 
+                        utilisée en physique quantique !
+                    </span>
+                    <span class="en" style="display:none">
+                        Did you know? The energy in the game follows the real formula E = A × e^(iΦ)
+                        used in quantum physics!
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section: Les Personnages -->
+        <div class="section">
+            <h2>
+                <span class="icon">👥</span>
+                <span class="fr">Tes Héros Préférés</span>
+                <span class="en" style="display:none">Your Favorite Heroes</span>
+            </h2>
+            
+            <div class="character-gallery">
+                <div class="character-card">
+                    <div class="character-emoji">⚔️</div>
+                    <div class="character-name">ARTHUR</div>
+                    <div class="character-power">
+                        <span class="fr">Roi du temps</span>
+                        <span class="en" style="display:none">King of time</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-emoji">🔮</div>
+                    <div class="character-name">MERLIN</div>
+                    <div class="character-power">
+                        <span class="fr">Vit à l'envers</span>
+                        <span class="en" style="display:none">Lives backwards</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-emoji">🌙</div>
+                    <div class="character-name">MORGANA</div>
+                    <div class="character-power">
+                        <span class="fr">Crée des réalités</span>
+                        <span class="en" style="display:none">Creates realities</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-emoji">🗡️</div>
+                    <div class="character-name">LANCELOT</div>
+                    <div class="character-power">
+                        <span class="fr">Super rapide</span>
+                        <span class="en" style="display:none">Super fast</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section: 3 Scénarios Faciles -->
+        <div class="section">
+            <h2>
+                <span class="icon">🎯</span>
+                <span class="fr">3 Missions pour Débuter</span>
+                <span class="en" style="display:none">3 Missions to Start</span>
+            </h2>
+            
+            <!-- Scénario 1 -->
+            <div class="scenario">
+                <h3>
+                    <span class="fr">🏃 Mission 1 : Le Saut Impossible</span>
+                    <span class="en" style="display:none">🏃 Mission 1: The Impossible Jump</span>
+                    <span class="scenario-level">
+                        <span class="fr">Très Facile</span>
+                        <span class="en" style="display:none">Very Easy</span>
+                    </span>
+                </h3>
+                
+                <p class="fr">
+                    Tu dois sauter par-dessus un grand trou, mais c'est trop loin ! 
+                    Heureusement, tu peux ralentir le temps pour sauter plus loin !
+                </p>
+                <p class="en" style="display:none">
+                    You need to jump over a big gap, but it's too far!
+                    Luckily, you can slow down time to jump further!
+                </p>
+                
+                <div class="spell-card">
+                    <div class="spell-name">⏰ TIME SLOW</div>
+                    <div class="spell-effect">
+                        <span class="fr">Ralentit le temps autour de toi</span>
+                        <span class="en" style="display:none">Slows time around you</span>
+                    </div>
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <span class="fr">Approche-toi du bord du trou</span>
+                            <span class="en" style="display:none">Approach the edge of the gap</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <span class="fr">Active TIME SLOW (bouton ⏰)</span>
+                            <span class="en" style="display:none">Activate TIME SLOW (⏰ button)</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <span class="fr">Saute ! Tu iras 2x plus loin !</span>
+                            <span class="en" style="display:none">Jump! You'll go 2x further!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fun-fact">
+                    <span class="fr">
+                        C'est basé sur la vraie relativité d'Einstein : 
+                        quand le temps ralentit pour toi, tu peux faire plus de choses !
+                    </span>
+                    <span class="en" style="display:none">
+                        This is based on Einstein's real relativity:
+                        when time slows for you, you can do more things!
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Scénario 2 -->
+            <div class="scenario">
+                <h3>
+                    <span class="fr">🚪 Mission 2 : Les Deux Portes</span>
+                    <span class="en" style="display:none">🚪 Mission 2: The Two Doors</span>
+                    <span class="scenario-level">
+                        <span class="fr">Facile</span>
+                        <span class="en" style="display:none">Easy</span>
+                    </span>
+                </h3>
+                
+                <p class="fr">
+                    Deux portes : une avec un trésor, l'autre avec un piège. 
+                    Tu ne sais pas laquelle choisir ? Pas de problème, explore les deux !
+                </p>
+                <p class="en" style="display:none">
+                    Two doors: one with treasure, the other with a trap.
+                    Don't know which to choose? No problem, explore both!
+                </p>
+                
+                <div class="spell-card">
+                    <div class="spell-name">🌀 QUANTUM SPLIT</div>
+                    <div class="spell-effect">
+                        <span class="fr">Te divise en 2 versions de toi</span>
+                        <span class="en" style="display:none">Splits you into 2 versions</span>
+                    </div>
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <span class="fr">Place-toi entre les deux portes</span>
+                            <span class="en" style="display:none">Stand between the two doors</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <span class="fr">Active QUANTUM SPLIT (bouton 🌀)</span>
+                            <span class="en" style="display:none">Activate QUANTUM SPLIT (🌀 button)</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <span class="fr">Contrôle tes 2 clones avec les flèches</span>
+                            <span class="en" style="display:none">Control your 2 clones with arrows</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <span class="fr">Choisis la bonne version avec MERGE !</span>
+                            <span class="en" style="display:none">Choose the right version with MERGE!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fun-fact">
+                    <span class="fr">
+                        C'est comme le chat de Schrödinger : tu es dans les deux portes 
+                        jusqu'à ce que tu choisisses !
+                    </span>
+                    <span class="en" style="display:none">
+                        It's like Schrödinger's cat: you're in both doors
+                        until you choose!
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Scénario 3 -->
+            <div class="scenario">
+                <h3>
+                    <span class="fr">⚡ Mission 3 : Le Dragon du Temps</span>
+                    <span class="en" style="display:none">⚡ Mission 3: The Time Dragon</span>
+                    <span class="scenario-level">
+                        <span class="fr">Moyen</span>
+                        <span class="en" style="display:none">Medium</span>
+                    </span>
+                </h3>
+                
+                <p class="fr">
+                    Un dragon attaque ! Mais attends... et si tu pouvais savoir ses attaques à l'avance ?
+                    Utilise le voyage dans le temps pour voir le futur et esquiver !
+                </p>
+                <p class="en" style="display:none">
+                    A dragon attacks! But wait... what if you could know its attacks in advance?
+                    Use time travel to see the future and dodge!
+                </p>
+                
+                <div class="spell-card">
+                    <div class="spell-name">🔮 FUTURE SIGHT</div>
+                    <div class="spell-effect">
+                        <span class="fr">Vois 5 secondes dans le futur</span>
+                        <span class="en" style="display:none">See 5 seconds into the future</span>
+                    </div>
+                </div>
+                
+                <div class="spell-card">
+                    <div class="spell-name">⏪ TIME REWIND</div>
+                    <div class="spell-effect">
+                        <span class="fr">Retourne 3 secondes en arrière</span>
+                        <span class="en" style="display:none">Go back 3 seconds</span>
+                    </div>
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <span class="fr">Quand le dragon prépare son attaque, active FUTURE SIGHT</span>
+                            <span class="en" style="display:none">When the dragon prepares its attack, activate FUTURE SIGHT</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <span class="fr">Regarde où le feu va aller (zones rouges)</span>
+                            <span class="en" style="display:none">See where the fire will go (red zones)</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <span class="fr">Place-toi dans une zone sûre</span>
+                            <span class="en" style="display:none">Position yourself in a safe zone</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <span class="fr">Si tu te trompes, TIME REWIND pour réessayer !</span>
+                            <span class="en" style="display:none">If you mess up, TIME REWIND to try again!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fun-fact">
+                    <span class="fr">
+                        Les vrais physiciens appellent ça une "boucle causale" - 
+                        tu changes le passé grâce à ce que tu sais du futur !
+                    </span>
+                    <span class="en" style="display:none">
+                        Real physicists call this a "causal loop" -
+                        you change the past thanks to what you know about the future!
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conseils -->
+        <div class="tips-box">
+            <h3>
+                <span class="fr">💡 Conseils de Pro</span>
+                <span class="en" style="display:none">💡 Pro Tips</span>
+            </h3>
+            <ul>
+                <li>
+                    <span class="fr">N'aie pas peur d'expérimenter - tu peux toujours revenir en arrière !</span>
+                    <span class="en" style="display:none">Don't be afraid to experiment - you can always go back!</span>
+                </li>
+                <li>
+                    <span class="fr">Combine les sorts : SLOW + SPLIT = super combo !</span>
+                    <span class="en" style="display:none">Combine spells: SLOW + SPLIT = super combo!</span>
+                </li>
+                <li>
+                    <span class="fr">Regarde ta barre d'énergie - les gros sorts coûtent cher !</span>
+                    <span class="en" style="display:none">Watch your energy bar - big spells are expensive!</span>
+                </li>
+                <li>
+                    <span class="fr">Chaque personnage a des sorts spéciaux - essaie-les tous !</span>
+                    <span class="en" style="display:none">Each character has special spells - try them all!</span>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Lien vers version avancée -->
+        <a href="manuel.html" class="link-advanced">
+            <span class="fr">🎓 Prêt pour le Mode Expert ?</span>
+            <span class="en" style="display:none">🎓 Ready for Expert Mode?</span>
+        </a>
+        
+        <div class="fun-fact" style="text-align: center; margin-top: 40px;">
+            <span class="fr">
+                Toute la magie du jeu est basée sur de vraies équations de physique ! 
+                Plus tu joues, plus tu apprends la science ! 🧪🎮
+            </span>
+            <span class="en" style="display:none">
+                All the game's magic is based on real physics equations!
+                The more you play, the more you learn science! 🧪🎮
+            </span>
+        </div>
+    </div>
+    
+    <!-- Clippy Helper -->
+    <div class="clippy-helper" onclick="toggleClippy()">
+        📎
+    </div>
+    
+    <div class="clippy-bubble" id="clippyBubble">
+        <div class="fr">
+            Salut ! Je suis Clippy ! 
+            Clique sur n'importe quel sort pour que je t'explique comment ça marche ! 
+            Tu peux aussi appuyer sur C pour m'appeler !
+        </div>
+        <div class="en" style="display:none">
+            Hi! I'm Clippy!
+            Click on any spell and I'll explain how it works!
+            You can also press C to call me!
+        </div>
+    </div>
+    
+    <script>
+        // Gestion du changement de langue
+        let currentLang = 'fr';
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            
+            // Update buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide content
+            document.querySelectorAll('.fr').forEach(el => {
+                el.style.display = lang === 'fr' ? '' : 'none';
+            });
+            document.querySelectorAll('.en').forEach(el => {
+                el.style.display = lang === 'en' ? '' : 'none';
+            });
+        }
+        
+        // Clippy Helper
+        let clippyActive = false;
+        
+        function toggleClippy() {
+            clippyActive = !clippyActive;
+            document.getElementById('clippyBubble').classList.toggle('active');
+            
+            if (clippyActive) {
+                // Animation de bienvenue
+                const clippy = document.querySelector('.clippy-helper');
+                clippy.style.animation = 'float 1s ease-in-out';
+                setTimeout(() => {
+                    clippy.style.animation = '';
+                }, 1000);
+            }
+        }
+        
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                toggleClippy();
+            }
+        });
+        
+        // Explication interactive des sorts
+        document.querySelectorAll('.spell-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const spellName = card.querySelector('.spell-name').textContent;
+                let explanation = '';
+                
+                if (currentLang === 'fr') {
+                    switch(spellName) {
+                        case '⏰ TIME SLOW':
+                            explanation = "TIME SLOW utilise la relativité d'Einstein ! Quand tu ralentis le temps autour de toi, tu bouges plus vite par rapport au reste du monde !";
+                            break;
+                        case '🌀 QUANTUM SPLIT':
+                            explanation = "QUANTUM SPLIT crée une superposition quantique - tu existes dans plusieurs états jusqu'à ce que tu choisisses lequel garder !";
+                            break;
+                        case '🔮 FUTURE SIGHT':
+                            explanation = "FUTURE SIGHT simule les probabilités futures basées sur l'état actuel - comme un super ordinateur qui calcule toutes les possibilités !";
+                            break;
+                        case '⏪ TIME REWIND':
+                            explanation = "TIME REWIND inverse l'entropie localement pour revenir à un état antérieur - c'est comme ctrl+Z dans la vraie vie !";
+                            break;
+                    }
+                } else {
+                    switch(spellName) {
+                        case '⏰ TIME SLOW':
+                            explanation = "TIME SLOW uses Einstein's relativity! When you slow time around you, you move faster relative to the rest of the world!";
+                            break;
+                        case '🌀 QUANTUM SPLIT':
+                            explanation = "QUANTUM SPLIT creates a quantum superposition - you exist in multiple states until you choose which one to keep!";
+                            break;
+                        case '🔮 FUTURE SIGHT':
+                            explanation = "FUTURE SIGHT simulates future probabilities based on current state - like a super computer calculating all possibilities!";
+                            break;
+                        case '⏪ TIME REWIND':
+                            explanation = "TIME REWIND reverses entropy locally to return to a previous state - it's like ctrl+Z in real life!";
+                            break;
+                    }
+                }
+                
+                if (explanation && clippyActive) {
+                    const bubble = document.getElementById('clippyBubble');
+                    bubble.innerHTML = explanation;
+                    bubble.classList.add('active');
+                    
+                    // Animation
+                    card.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        card.style.transform = '';
+                    }, 300);
+                }
+            });
+        });
+        
+        // Easter Egg
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
+                               'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                document.body.style.background = 'linear-gradient(135deg, #ffd700 0%, #ff6b6b 100%)';
+                if (currentLang === 'fr') {
+                    alert("🎮 MODE SECRET ACTIVÉ ! Tu as débloqué le pouvoir de GROEKEN !");
+                } else {
+                    alert("🎮 SECRET MODE ACTIVATED! You've unlocked GROEKEN's power!");
+                }
+            }
+        });
+        
+        // Animation au scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'float 1s ease-in-out';
+                }
+            });
+        });
+        
+        document.querySelectorAll('.scenario, .magic-concept').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Message de bienvenue dans la console
+        console.log('%c🎮 HEROES OF TIME - MODE FACILE', 
+                   'color: #667eea; font-size: 20px; font-weight: bold;');
+        console.log('%cTape secretMode() pour débloquer des sorts cachés !', 
+                   'color: #764ba2; font-size: 14px;');
+        
+        window.secretMode = function() {
+            console.log('🔓 Sorts secrets débloqués :');
+            console.log('- PARADOX_CREATE : Crée un paradoxe temporel');
+            console.log('- INFINITY_LOOP : Boucle temporelle infinie');
+            console.log('- DIMENSION_SHIFT : Change de dimension');
+            console.log('Utilise-les avec sagesse !');
+        };
+    </script>
+</body>
+</html>

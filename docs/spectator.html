@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Spectator God Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .mosaic-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            height: 100vh;
+            background: #111;
+            padding: 2px;
+        }
+        
+        .player-view {
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .player-view.main {
+            grid-column: span 2;
+            grid-row: span 2;
+            border-color: #ffff00;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.3);
+        }
+        
+        .player-header {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 5px 10px;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        
+        .player-name {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .player-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8em;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .hp-bar {
+            width: 50px;
+            height: 8px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #ff0000;
+            position: relative;
+        }
+        
+        .hp-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6600);
+            transition: width 0.3s;
+        }
+        
+        .energy-bar {
+            width: 50px;
+            height: 8px;
+            background: rgba(0, 100, 255, 0.3);
+            border: 1px solid #0066ff;
+            position: relative;
+        }
+        
+        .energy-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #0066ff, #00ccff);
+            transition: width 0.3s;
+        }
+        
+        .game-board {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            gap: 1px;
+            padding: 5px;
+        }
+        
+        .tile {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6em;
+            transition: all 0.2s;
+        }
+        
+        .tile.entity {
+            background: rgba(255, 255, 0, 0.2);
+            border-color: #ffff00;
+        }
+        
+        .tile.enemy {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+        }
+        
+        .tile.portal {
+            background: rgba(255, 0, 255, 0.3);
+            border-color: #ff00ff;
+            animation: portal-pulse 2s infinite;
+        }
+        
+        @keyframes portal-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .timeline-view {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .timeline-segment {
+            flex: 1;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            position: relative;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            top: -5px;
+            width: 2px;
+            height: 30px;
+            background: #ffff00;
+            box-shadow: 0 0 5px #ffff00;
+            transition: left 0.1s;
+        }
+        
+        .formula-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            color: #00ffff;
+            font-size: 1.2em;
+            display: none;
+            text-align: center;
+            min-width: 200px;
+            animation: formula-glow 0.5s;
+        }
+        
+        @keyframes formula-glow {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .formula-overlay.active {
+            display: block;
+        }
+        
+        .dimension-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+        
+        .dimension-value {
+            display: inline-block;
+            margin: 0 5px;
+            color: #00ffff;
+        }
+        
+        .sidebar {
+            grid-column: 3;
+            grid-row: span 3;
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        
+        .event-log {
+            margin-bottom: 20px;
+        }
+        
+        .event-log h3 {
+            color: #ffff00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        
+        .event-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(0, 255, 0, 0.05);
+            border-left: 3px solid #00ff00;
+            font-size: 0.85em;
+        }
+        
+        .event-item.combat {
+            border-left-color: #ff0000;
+        }
+        
+        .event-item.temporal {
+            border-left-color: #00ffff;
+        }
+        
+        .event-item.quantum {
+            border-left-color: #ff00ff;
+        }
+        
+        .event-timestamp {
+            color: #888;
+            font-size: 0.8em;
+        }
+        
+        .control-panel {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-panel h3 {
+            color: #ffff00;
+            margin-bottom: 10px;
+        }
+        
+        .control-btn {
+            display: inline-block;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 5px #00ff00;
+        }
+        
+        .control-btn.active {
+            background: rgba(255, 255, 0, 0.3);
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+        
+        .quantum-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffff;
+            animation: quantum-float 10s infinite linear;
+        }
+        
+        @keyframes quantum-float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(100px, 50px) rotate(90deg); }
+            50% { transform: translate(-50px, 100px) rotate(180deg); }
+            75% { transform: translate(50px, -50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        
+        .causal-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: causal-pulse 3s infinite;
+        }
+        
+        @keyframes causal-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .alert-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 0, 0, 0.9);
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            display: none;
+            z-index: 1000;
+            animation: alert-flash 0.5s infinite;
+        }
+        
+        @keyframes alert-flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .alert-banner.active {
+            display: block;
+        }
+        
+        .stats-overlay {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 250px;
+        }
+        
+        .stats-overlay h4 {
+            color: #ffff00;
+            margin-bottom: 10px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        
+        .stat-label {
+            color: #00ff00;
+        }
+        
+        .stat-value {
+            color: #00ffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-banner" id="alertBanner">
+        ⚠️ PARADOXE TEMPOREL DÉTECTÉ ⚠️
+    </div>
+    
+    <div class="mosaic-container">
+        <!-- Vue principale Player 1 -->
+        <div class="player-view main" id="player1">
+            <div class="player-header">
+                <span class="player-name">👑 ARTHUR</span>
+                <div class="player-stats">
+                    <div class="stat">
+                        ❤️ <div class="hp-bar"><div class="hp-fill" style="width: 80%"></div></div> 80/100
+                    </div>
+                    <div class="stat">
+                        ⚡ <div class="energy-bar"><div class="energy-fill" style="width: 60%"></div></div> 60/100
+                    </div>
+                    <div class="stat">Ψ: 0.85</div>
+                </div>
+            </div>
+            
+            <div class="game-board" id="board1">
+                <!-- Grille générée dynamiquement -->
+            </div>
+            
+            <div class="dimension-indicator">
+                <span>6D:</span>
+                <span class="dimension-value">X:10</span>
+                <span class="dimension-value">Y:15</span>
+                <span class="dimension-value">Z:5</span>
+                <span class="dimension-value">T:1025</span>
+                <span class="dimension-value">C:0.75</span>
+                <span class="dimension-value">Ψ:0.85</span>
+            </div>
+            
+            <div class="timeline-view">
+                <div class="timeline-segment"></div>
+                <div class="timeline-segment"></div>
+                <div class="timeline-segment"></div>
+                <div class="timeline-segment"></div>
+                <div class="timeline-segment"></div>
+                <div class="timeline-marker" style="left: 40%"></div>
+            </div>
+            
+            <div class="formula-overlay" id="formula1">
+                TEMPORAL_SHIFT<br>
+                Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)
+            </div>
+            
+            <div class="quantum-view">
+                <div class="quantum-particle" style="top: 20%; left: 30%"></div>
+                <div class="quantum-particle" style="top: 60%; left: 70%; animation-delay: -2s"></div>
+                <div class="quantum-particle" style="top: 40%; left: 50%; animation-delay: -4s"></div>
+            </div>
+        </div>
+        
+        <!-- Player 2 -->
+        <div class="player-view" id="player2">
+            <div class="player-header">
+                <span class="player-name">🔮 MERLIN</span>
+                <div class="player-stats">
+                    <div class="stat">❤️ 95/100</div>
+                    <div class="stat">⚡ 85/100</div>
+                    <div class="stat">Ψ: -0.2</div>
+                </div>
+            </div>
+            <div class="game-board" id="board2"></div>
+        </div>
+        
+        <!-- Player 3 -->
+        <div class="player-view" id="player3">
+            <div class="player-header">
+                <span class="player-name">🌙 MORGANA</span>
+                <div class="player-stats">
+                    <div class="stat">❤️ 70/100</div>
+                    <div class="stat">⚡ 90/100</div>
+                    <div class="stat">Ψ: 0.5</div>
+                </div>
+            </div>
+            <div class="game-board" id="board3"></div>
+        </div>
+        
+        <!-- Player 4 -->
+        <div class="player-view" id="player4">
+            <div class="player-header">
+                <span class="player-name">🗡️ LANCELOT</span>
+                <div class="player-stats">
+                    <div class="stat">❤️ 85/100</div>
+                    <div class="stat">⚡ 70/100</div>
+                    <div class="stat">Ψ: 0.33</div>
+                </div>
+            </div>
+            <div class="game-board" id="board4"></div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="control-panel">
+                <h3>🎮 God Mode Controls</h3>
+                <button class="control-btn" onclick="toggleTimeFlow()">⏸️ Pause Time</button>
+                <button class="control-btn" onclick="speedUp()">⏩ Speed x2</button>
+                <button class="control-btn" onclick="slowDown()">⏪ Slow x0.5</button>
+                <button class="control-btn" onclick="toggleQuantumView()">🌀 Quantum</button>
+                <button class="control-btn" onclick="toggleCausalView()">🔗 Causal</button>
+                <button class="control-btn" onclick="createParadox()">⚠️ Paradox</button>
+                <button class="control-btn" onclick="switchMainView()">🔄 Switch</button>
+                <button class="control-btn active" onclick="toggleAutoFollow()">👁️ Auto</button>
+            </div>
+            
+            <div class="event-log">
+                <h3>📜 Event Stream</h3>
+                <div id="eventList">
+                    <!-- Events générés dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-overlay">
+        <h4>🌍 World Stats</h4>
+        <div class="stat-row">
+            <span class="stat-label">Server Time:</span>
+            <span class="stat-value" id="serverTime">T:1025</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Active Timelines:</span>
+            <span class="stat-value">4</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Paradoxes:</span>
+            <span class="stat-value" id="paradoxCount">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Causal Weight:</span>
+            <span class="stat-value">Σ C = 2.83</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Quantum Coherence:</span>
+            <span class="stat-value">⟨Ψ⟩ = 0.48</span>
+        </div>
+    </div>
+    
+    <script>
+        // État du jeu
+        let gameState = {
+            serverTime: 1025,
+            timeSpeed: 1,
+            isPaused: false,
+            quantumView: false,
+            causalView: false,
+            autoFollow: true,
+            mainPlayer: 1,
+            paradoxes: 0,
+            players: [
+                { id: 1, name: 'ARTHUR', x: 10, y: 10, hp: 80, energy: 60, psi: 0.85, timeline: 'main' },
+                { id: 2, name: 'MERLIN', x: 5, y: 15, hp: 95, energy: 85, psi: -0.2, timeline: 'past' },
+                { id: 3, name: 'MORGANA', x: 15, y: 5, hp: 70, energy: 90, psi: 0.5, timeline: 'alt-1' },
+                { id: 4, name: 'LANCELOT', x: 8, y: 12, hp: 85, energy: 70, psi: 0.33, timeline: 'alt-2' }
+            ]
+        };
+        
+        // Initialisation des grilles
+        function initBoards() {
+            for (let b = 1; b <= 4; b++) {
+                const board = document.getElementById(`board${b}`);
+                board.innerHTML = '';
+                
+                for (let i = 0; i < 400; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.id = `tile-${b}-${i}`;
+                    board.appendChild(tile);
+                }
+            }
+            
+            // Placer les entités initiales
+            updateEntityPositions();
+        }
+        
+        // Mise à jour des positions
+        function updateEntityPositions() {
+            gameState.players.forEach((player, idx) => {
+                const boardIdx = idx + 1;
+                const tileIdx = player.y * 20 + player.x;
+                const tile = document.getElementById(`tile-${boardIdx}-${tileIdx}`);
+                if (tile) {
+                    tile.className = 'tile entity';
+                    tile.textContent = player.name[0];
+                }
+                
+                // Ajouter des ennemis aléatoires
+                for (let i = 0; i < 3; i++) {
+                    const enemyIdx = Math.floor(Math.random() * 400);
+                    const enemyTile = document.getElementById(`tile-${boardIdx}-${enemyIdx}`);
+                    if (enemyTile && !enemyTile.classList.contains('entity')) {
+                        enemyTile.className = 'tile enemy';
+                        enemyTile.textContent = '👹';
+                    }
+                }
+                
+                // Ajouter un portail
+                const portalIdx = Math.floor(Math.random() * 400);
+                const portalTile = document.getElementById(`tile-${boardIdx}-${portalIdx}`);
+                if (portalTile && !portalTile.classList.contains('entity')) {
+                    portalTile.className = 'tile portal';
+                    portalTile.textContent = '🌀';
+                }
+            });
+        }
+        
+        // Ajouter un événement au log
+        function addEvent(type, message) {
+            const eventList = document.getElementById('eventList');
+            const event = document.createElement('div');
+            event.className = `event-item ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            event.innerHTML = `
+                <span class="event-timestamp">[${timestamp}]</span><br>
+                ${message}
+            `;
+            
+            eventList.insertBefore(event, eventList.firstChild);
+            
+            // Limiter à 20 événements
+            while (eventList.children.length > 20) {
+                eventList.removeChild(eventList.lastChild);
+            }
+        }
+        
+        // Contrôles God Mode
+        function toggleTimeFlow() {
+            gameState.isPaused = !gameState.isPaused;
+            const btn = event.target;
+            btn.textContent = gameState.isPaused ? '▶️ Resume' : '⏸️ Pause';
+            addEvent('temporal', gameState.isPaused ? 'Time PAUSED' : 'Time RESUMED');
+        }
+        
+        function speedUp() {
+            gameState.timeSpeed *= 2;
+            addEvent('temporal', `Time speed: x${gameState.timeSpeed}`);
+        }
+        
+        function slowDown() {
+            gameState.timeSpeed /= 2;
+            addEvent('temporal', `Time speed: x${gameState.timeSpeed}`);
+        }
+        
+        function toggleQuantumView() {
+            gameState.quantumView = !gameState.quantumView;
+            document.querySelectorAll('.quantum-view').forEach(v => {
+                v.style.display = gameState.quantumView ? 'block' : 'none';
+            });
+            addEvent('quantum', `Quantum view: ${gameState.quantumView ? 'ON' : 'OFF'}`);
+        }
+        
+        function toggleCausalView() {
+            gameState.causalView = !gameState.causalView;
+            if (gameState.causalView) {
+                drawCausalLines();
+            } else {
+                document.querySelectorAll('.causal-line').forEach(l => l.remove());
+            }
+            addEvent('combat', `Causal view: ${gameState.causalView ? 'ON' : 'OFF'}`);
+        }
+        
+        function createParadox() {
+            gameState.paradoxes++;
+            document.getElementById('paradoxCount').textContent = gameState.paradoxes;
+            
+            const alert = document.getElementById('alertBanner');
+            alert.classList.add('active');
+            setTimeout(() => alert.classList.remove('active'), 3000);
+            
+            addEvent('temporal', '⚠️ PARADOX CREATED! Timeline instability detected!');
+            
+            // Effet visuel de paradoxe
+            showFormula(1, 'PARADOX<br>Ψ → -Ψ');
+        }
+        
+        function switchMainView() {
+            gameState.mainPlayer = (gameState.mainPlayer % 4) + 1;
+            
+            // Réorganiser les vues
+            document.querySelectorAll('.player-view').forEach(v => v.classList.remove('main'));
+            document.getElementById(`player${gameState.mainPlayer}`).classList.add('main');
+            
+            addEvent('combat', `Main view: ${gameState.players[gameState.mainPlayer - 1].name}`);
+        }
+        
+        function toggleAutoFollow() {
+            gameState.autoFollow = !gameState.autoFollow;
+            event.target.classList.toggle('active');
+            addEvent('combat', `Auto-follow: ${gameState.autoFollow ? 'ON' : 'OFF'}`);
+        }
+        
+        // Dessiner les lignes causales
+        function drawCausalLines() {
+            gameState.players.forEach((p1, i) => {
+                gameState.players.forEach((p2, j) => {
+                    if (i < j) {
+                        const line = document.createElement('div');
+                        line.className = 'causal-line';
+                        line.style.width = `${Math.random() * 200 + 100}px`;
+                        line.style.top = `${Math.random() * 100}%`;
+                        line.style.left = `${Math.random() * 100}%`;
+                        line.style.transform = `rotate(${Math.random() * 360}deg)`;
+                        document.getElementById(`player${i + 1}`).appendChild(line);
+                    }
+                });
+            });
+        }
+        
+        // Afficher une formule
+        function showFormula(playerId, formula) {
+            const overlay = document.getElementById(`formula${playerId}`);
+            if (overlay) {
+                overlay.innerHTML = formula;
+                overlay.classList.add('active');
+                setTimeout(() => overlay.classList.remove('active'), 3000);
+            }
+        }
+        
+        // Simulation du jeu
+        function simulateGame() {
+            if (gameState.isPaused) return;
+            
+            // Mise à jour du temps serveur
+            gameState.serverTime += gameState.timeSpeed;
+            document.getElementById('serverTime').textContent = `T:${gameState.serverTime}`;
+            
+            // Déplacements aléatoires des joueurs
+            if (Math.random() < 0.3) {
+                const player = gameState.players[Math.floor(Math.random() * 4)];
+                const oldX = player.x, oldY = player.y;
+                
+                player.x = Math.max(0, Math.min(19, player.x + Math.floor(Math.random() * 3) - 1));
+                player.y = Math.max(0, Math.min(19, player.y + Math.floor(Math.random() * 3) - 1));
+                
+                if (oldX !== player.x || oldY !== player.y) {
+                    addEvent('combat', `${player.name} moved to (${player.x}, ${player.y})`);
+                    initBoards(); // Rafraîchir les boards
+                }
+            }
+            
+            // Événements aléatoires
+            if (Math.random() < 0.1) {
+                const events = [
+                    { type: 'combat', msg: 'FIREBALL cast! 20 damage dealt' },
+                    { type: 'temporal', msg: 'TEMPORAL_SHIFT activated: Δt = -5' },
+                    { type: 'quantum', msg: 'Quantum superposition: 3 states' },
+                    { type: 'combat', msg: 'Shield activated: +50 defense' },
+                    { type: 'temporal', msg: 'Timeline branch detected' },
+                    { type: 'quantum', msg: 'Wave function collapse observed' }
+                ];
+                
+                const event = events[Math.floor(Math.random() * events.length)];
+                addEvent(event.type, event.msg);
+                
+                // Afficher une formule parfois
+                if (Math.random() < 0.3) {
+                    const formulas = [
+                        'TEMPORAL_SHIFT<br>Ψ(t) = Ψ₀ × e^(iωt)',
+                        'QUANTUM_COLLAPSE<br>|Ψ⟩ → |n⟩',
+                        'CAUSAL_FORK<br>C(t₁→t₂)',
+                        'ENERGY_COMPLEX<br>E = A × e^(iΦ)'
+                    ];
+                    showFormula(1, formulas[Math.floor(Math.random() * formulas.length)]);
+                }
+            }
+            
+            // Mise à jour des stats
+            gameState.players.forEach(p => {
+                if (Math.random() < 0.1) {
+                    p.hp = Math.max(0, p.hp + Math.floor(Math.random() * 10) - 5);
+                    p.energy = Math.max(0, Math.min(100, p.energy + Math.floor(Math.random() * 10) - 3));
+                    p.psi = Math.max(-1, Math.min(1, p.psi + (Math.random() * 0.2 - 0.1)));
+                }
+            });
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            initBoards();
+            
+            // Démarrer la simulation
+            setInterval(simulateGame, 1000);
+            
+            // Événements initiaux
+            addEvent('combat', 'God Mode Spectator initialized');
+            addEvent('temporal', 'All timelines synchronized');
+            addEvent('quantum', 'Quantum monitoring active');
+        });
+        
+        // WebSocket simulation (pour connexion future)
+        function connectToGame() {
+            // Simule une connexion WebSocket
+            console.log('Connecting to game servers...');
+            // ws = new WebSocket('ws://localhost:8002/spectator');
+        }
+    </script>
+</body>
+</html>
