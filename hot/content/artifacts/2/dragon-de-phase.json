@@ -1,0 +1,53 @@
+{
+  "id": "phase_dragon",
+  "name": "🐲 Dragon de Phase",
+  "type": "CREATURE",
+  "tier": 2,
+  "level": 8,
+  "rarity": "RARE",
+  "icon": "🐲",
+  "stats": {
+    "health": 150,
+    "attack": 20,
+    "defense": 15,
+    "speed": 6,
+    "temporal_energy": 200
+  },
+  "quantum_abilities": {
+    "phase_breath": {
+      "name": "🔥 Souffle de Phase",
+      "description": "Alterne entre 3 phases différentes",
+      "cost": 40,
+      "amplitudes": [
+        {
+          "real": 1.0,
+          "imaginary": 0.0
+        },
+        {
+          "real": 0.707,
+          "imaginary": 0.707
+        },
+        {
+          "real": 0.0,
+          "imaginary": 1.0
+        }
+      ],
+      "damage": 30
+    },
+    "interference_wings": {
+      "name": "🦅 Ailes d'Interférence",
+      "description": "Crée des patterns d'interférence constructive",
+      "cost": 35,
+      "range": 3,
+      "interference_type": "CONSTRUCTIVE",
+      "amplification": 1.5
+    }
+  },
+  "interference_capabilities": {
+    "constructive_bonus": 0.4,
+    "destructive_resistance": 0.25,
+    "phase_control": "MASTER"
+  },
+  "description": "Un dragon ancien qui a appris à contrôler les phases quantiques.",
+  "slug": "dragon-de-phase"
+}

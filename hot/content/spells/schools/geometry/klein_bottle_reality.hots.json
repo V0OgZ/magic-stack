@@ -1,0 +1,38 @@
+{
+  "name": "klein_bottle_reality",
+  "id": "spell_klein_001",
+  "category": "geometrie_non_euclidienne",
+  "level": 85,
+  "description": "Transforme la map en bouteille de Klein - l'intérieur devient l'extérieur",
+  "formula": "⊙(réalité) + ∂(topologie) + ℵ(auto-intersection) → Δt+1(bouteille_klein)",
+  "effects": {
+    "primary": {
+      "type": "topology_change",
+      "manifold": "klein_bottle",
+      "self_intersection": true,
+      "dimension_folding": 4
+    },
+    "visual": {
+      "shader": "klein_bottle_projection",
+      "particles": "mobius_flow",
+      "transparency": "dynamic_based_on_angle"
+    },
+    "gameplay": {
+      "gravity_reversal_zones": true,
+      "portal_auto_generation": true,
+      "inside_outside_confusion": true
+    }
+  },
+  "cost": {
+    "mana": 300,
+    "paradox_tokens": 3,
+    "sanity_check": -20
+  },
+  "3d_transformation": {
+    "mesh_topology": "non_orientable",
+    "uv_mapping": "impossible_continuous",
+    "render_passes": 4
+  },
+  "slug": "klein_bottle_reality",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}

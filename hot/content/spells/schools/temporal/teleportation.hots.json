@@ -1,0 +1,46 @@
+{
+  "nom": "teleportation",
+  "type": "mouvement",
+  "niveau": 1,
+  "description": "Déplace instantanément une entité d'un point A à un point B dans l'espace-temps",
+  "formule": "⊙(entité) + Π(destination) → Δt+0(téléportation)",
+  "parametres": {
+    "entite": {
+      "type": "string",
+      "requis": true,
+      "description": "L'entité à téléporter"
+    },
+    "destination": {
+      "type": "object",
+      "requis": true,
+      "proprietes": {
+        "x": "number",
+        "y": "number",
+        "dimension": "number"
+      }
+    },
+    "securise": {
+      "type": "boolean",
+      "requis": false,
+      "defaut": true,
+      "description": "Vérifie la sécurité de la destination"
+    }
+  },
+  "effet": "L'entité disparaît de sa position actuelle et réapparaît instantanément à la destination",
+  "cout_mana": 50,
+  "temps_incantation": 0,
+  "portee": "infinie",
+  "restrictions": [
+    "Ne peut traverser les barrières dimensionnelles sans autorisation",
+    "La destination doit être observable",
+    "Consomme plus de mana si la distance > 1000 unités"
+  ],
+  "effets_secondaires": [
+    "Légère désorientation temporelle (1-2 secondes)",
+    "Traces quantiques visibles pendant 5 secondes"
+  ],
+  "groeken_notes": "Sort fondamental. La clé est dans l'observation de la destination avant le collapse.",
+  "id": "01198937B5B9AAA01EE59B0FB",
+  "slug": "teleportation",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}

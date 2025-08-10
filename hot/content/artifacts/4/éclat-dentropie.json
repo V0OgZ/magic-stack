@@ -1,0 +1,17 @@
+{
+  "id": "entropy_shard",
+  "name": "Éclat d'Entropie",
+  "rarity": "Légendaire",
+  "tier": 4,
+  "charges": 3,
+  "description": "Crée une zone d'entropie temporelle. Réduit le nombre d'actions possibles. Vieillit les unités (statistiques réduites).",
+  "temporal_formula": "ψ_entropy: DECAY_ZONE(@x,y, radius=3, decay_rate=0.1)",
+  "trigger": "FOR entity IN zone: REDUCE_STATS(entity, 0.9)",
+  "effects": {
+    "type": "ZONE",
+    "radius": 3,
+    "decay_rate": 0.1,
+    "stat_reduction": 0.9
+  },
+  "slug": "éclat-dentropie"
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "id",
+    "slug",
+    "name",
+    "school",
+    "cost"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "school": {
+      "type": "string"
+    },
+    "cost": {
+      "type": "object",
+      "properties": {
+        "mana": {
+          "type": "number"
+        },
+        "cooldown": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

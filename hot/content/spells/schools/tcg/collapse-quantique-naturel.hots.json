@@ -1,0 +1,55 @@
+{
+  "id": "collapse_quantique_naturel",
+  "nom": "Collapse Quantique Naturel",
+  "categorie": "collapse",
+  "mecanique": "collapse_quantique",
+  "version": "1.0",
+  "formule_temporelle": "†ψ(superposition) → Π(état_unique_aléatoire)",
+  "description": "Force l'effondrement naturel d'un état quantique superposé vers un résultat aléatoire",
+  "cout_mana": 3,
+  "cooldown": 2,
+  "rareté": "commune",
+  "effet_tcg": {
+    "type": "quantum_collapse",
+    "target": "superposed_state",
+    "effect": "random_resolution",
+    "probability": "natural"
+  },
+  "conditions": {
+    "min_level": 11,
+    "required_knowledge": [
+      "quantique_base",
+      "superposition"
+    ],
+    "requires_target": "superposed_entity"
+  },
+  "exemples_usage": [
+    "†ψ(dégâts_1|dégâts_5) → Π(dégâts_aléatoires)",
+    "†ψ(position_A|position_B|position_C) → Π(téléportation_aléatoire)",
+    "†ψ(buff|debuff) → Π(effet_surprise)"
+  ],
+  "interactions": {
+    "déclenché_par": [
+      "observation_quantique"
+    ],
+    "empêché_par": [
+      "ancrage_causal"
+    ],
+    "modifié_par": [
+      "interference_probabiliste"
+    ]
+  },
+  "mecaniques_avancees": {
+    "probabilite_base": 0.5,
+    "facteur_chaos": 1.0,
+    "influence_grut_6d": "vision_probabilités",
+    "protection_walter": "anti_paradoxe"
+  },
+  "lore": "Le collapse quantique naturel respecte les lois fondamentales de la physique quantique d'AVALON. Contrairement au collapse forcé, il laisse le hasard déterminer le résultat final.",
+  "createur": "MERLASH-TECHNOMANCIEN",
+  "date_creation": "DAY 7",
+  "validation_grut_6d": true,
+  "certification_walter": "approved",
+  "slug": "collapse-quantique-naturel",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}

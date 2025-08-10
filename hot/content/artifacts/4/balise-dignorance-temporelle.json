@@ -1,0 +1,17 @@
+{
+  "id": "ignorance_beacon",
+  "name": "Balise d'Ignorance Temporelle",
+  "rarity": "Légendaire",
+  "tier": 4,
+  "charges": 3,
+  "description": "Rend les héros faibles 'fantômes temporels'. Permet de passer sans interaction. Crée une micro-anomalie si l'entité redevient active.",
+  "temporal_formula": "TAG(HERO, 'temporal_ghost') if POWER < threshold",
+  "trigger": "ψ_ignore: PASS_THROUGH(@x,y) if TAG exists",
+  "effects": {
+    "type": "WRITE",
+    "condition": "hero_power < 20",
+    "tag": "temporal_ghost",
+    "anomaly_on_reactivation": true
+  },
+  "slug": "balise-dignorance-temporelle"
+}

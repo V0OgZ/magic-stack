@@ -1,0 +1,17 @@
+{
+  "id": "avantworld_blade",
+  "name": "Lame de l'Avant-Monde",
+  "rarity": "Paradoxe",
+  "tier": 5,
+  "charges": 2,
+  "description": "Écrit un événement futur incertain. Ignore les timelines non-hostiles. Déclenche une bataille fantôme si un autre joueur entre en conflit temporel avec l'action prévue.",
+  "temporal_formula": "ψ_blade: ⊙(Δt+3 @x,y ⟶ WRITE_FUTURE(EVENT))",
+  "trigger": "Π(Enemy enters zone @x,y at Δt+3) ⇒ PHANTOM_BATTLE(ψ_blade)",
+  "effects": {
+    "type": "WRITE",
+    "range": 3,
+    "duration": "until_observed",
+    "special": "phantom_battle_on_conflict"
+  },
+  "slug": "lame-de-lavant-monde"
+}

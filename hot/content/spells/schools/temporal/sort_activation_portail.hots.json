@@ -1,0 +1,36 @@
+{
+  "nom": "Sort_Activation_Portail",
+  "formule": "⊙(portal_id) + †ψ(timeline_target) → Δt+0(activation)",
+  "description": "Active un portail dormant pour permettre le voyage entre timelines ou mondes.",
+  "niveau": 5,
+  "cout_mana": 30,
+  "composants": [
+    "essence_temporelle",
+    "clé_dimensionnelle",
+    "cristal_de_brisure"
+  ],
+  "effet": {
+    "type": "activation",
+    "cible": "portail",
+    "duree": "permanent",
+    "rayon": 0,
+    "conditions": [
+      "portail_inactif",
+      "phase_niveau_2_minimum",
+      "causalité_stable"
+    ]
+  },
+  "incantation": {
+    "geste": "Tracer un cercle dans l'air",
+    "parole": "Par la Brisure, j'ouvre le chemin",
+    "focus": "Le portail ciblé"
+  },
+  "echec_possible": {
+    "probabilite": 0.2,
+    "consequence": "Instabilité temporelle locale"
+  },
+  "groeken_dit": "Les portails sont les veines d'AVALON. Ce sort les réveille.",
+  "id": "01198937B5B99213E29C6013A",
+  "slug": "sort_activation_portail",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}

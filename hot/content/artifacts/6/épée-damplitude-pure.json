@@ -1,0 +1,51 @@
+{
+  "id": "amplitude_sword",
+  "name": "⚔️ Épée d'Amplitude Pure",
+  "rarity": "Légendaire",
+  "tier": 6,
+  "charges": 7,
+  "icon": "⚔️",
+  "slot": "WEAPON",
+  "description": "Une épée dont la lame existe dans toutes les phases quantiques simultanément. Coupe à travers les phases et résonne avec les amplitudes ennemies.",
+  "temporal_formula": "ψ_sword: |ψ|e^(iφ) where φ adapts to enemy phase",
+  "quantum_amplitude": {
+    "real": 1.0,
+    "imaginary": 0.0,
+    "formula": "|ψ|e^(iφ)",
+    "adaptive_phase": true
+  },
+  "quantum_abilities": {
+    "phase_cut": {
+      "cost": 40,
+      "amplitudes": [
+        {
+          "real": 1.0,
+          "imaginary": 0.0
+        },
+        {
+          "real": 0.0,
+          "imaginary": 1.0
+        }
+      ],
+      "damage": 80,
+      "ignore_armor": true
+    },
+    "resonance_strike": {
+      "cost": 35,
+      "resonance_factor": 3.0,
+      "amplification": 2.5
+    }
+  },
+  "interference_capabilities": {
+    "constructive_bonus": 1.0,
+    "destructive_resistance": 0.6,
+    "phase_control": "MASTER"
+  },
+  "stats": {
+    "attack": 50,
+    "temporal_energy": 100,
+    "precision": 30,
+    "critical_chance": 0.4
+  },
+  "slug": "épée-damplitude-pure"
+}

@@ -1,0 +1,51 @@
+{
+  "id": "interference_shield",
+  "name": "🛡️ Bouclier d'Interférence",
+  "rarity": "Légendaire",
+  "tier": 6,
+  "charges": 6,
+  "icon": "🛡️",
+  "slot": "SHIELD",
+  "description": "Un bouclier qui annule les attaques par interférence destructive. Réfléchit les amplitudes entrantes avec phase inversée.",
+  "temporal_formula": "ψ_shield: Σ(ψ_incoming * e^(iπ))",
+  "quantum_amplitude": {
+    "real": 0.6,
+    "imaginary": 0.8,
+    "formula": "Σ(ψ_incoming * e^(iπ))",
+    "phase_inversion": true
+  },
+  "quantum_abilities": {
+    "destructive_wall": {
+      "cost": 50,
+      "amplitudes": [
+        {
+          "real": 1.0,
+          "imaginary": 0.0
+        },
+        {
+          "real": -1.0,
+          "imaginary": 0.0
+        }
+      ],
+      "range": 3,
+      "duration": 5
+    },
+    "phase_reflection": {
+      "cost": 30,
+      "reflection_damage": 1.5,
+      "phase_shift": 3.14159
+    }
+  },
+  "interference_capabilities": {
+    "constructive_bonus": 0.3,
+    "destructive_resistance": 1.2,
+    "phase_control": "GRANDMASTER"
+  },
+  "stats": {
+    "defense": 40,
+    "temporal_energy": 120,
+    "reflection": 0.6,
+    "absorption": 0.4
+  },
+  "slug": "bouclier-dinterférence"
+}

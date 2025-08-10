@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../core/schemas/graph.schema.json",
+  "world_id": "01WD_CAVE_OF_PLATON",
+  "nodes": [
+    {
+      "id": "N1",
+      "label": "Spawn",
+      "cid": [
+        0,
+        0,
+        0
+      ],
+      "tags": [
+        "spawn"
+      ]
+    },
+    {
+      "id": "N2",
+      "label": "Center",
+      "cid": [
+        5,
+        5,
+        0
+      ],
+      "tags": [
+        "objective"
+      ]
+    },
+    {
+      "id": "N3",
+      "label": "Portal",
+      "cid": [
+        10,
+        10,
+        0
+      ],
+      "tags": [
+        "portal"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "E1",
+      "from": "N1",
+      "to": "N2",
+      "type": "road",
+      "cost": 1
+    },
+    {
+      "id": "E2",
+      "from": "N2",
+      "to": "N3",
+      "type": "portal",
+      "cost": 2
+    }
+  ]
+}

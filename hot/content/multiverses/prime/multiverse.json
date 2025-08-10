@@ -1,0 +1,31 @@
+{
+  "$schema": "../../core/schemas/multiverse.schema.json",
+  "id": "01MV_PRIME",
+  "slug": "prime",
+  "name": "Prime Multiverse",
+  "policies": {
+    "overlay_order": [
+      "core",
+      "packs",
+      "content",
+      "map-local",
+      "session"
+    ],
+    "regulators_default": [
+      "anna",
+      "vince",
+      "overload"
+    ],
+    "ai_default": true
+  },
+  "defaults": {
+    "causal_fog": {
+      "baseline": 0.3,
+      "growth": "linear"
+    },
+    "time": {
+      "tick_rate": 20,
+      "drift_base": 0.01
+    }
+  }
+}

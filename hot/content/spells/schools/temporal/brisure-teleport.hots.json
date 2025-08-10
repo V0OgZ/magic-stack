@@ -1,0 +1,43 @@
+{
+  "id": "psi_brisure",
+  "nom": "BRISURE TELEPORT",
+  "type": "RUNIC_QUANTUM",
+  "formule": "ψ001: ⊙(Δt+1 @10,10 ⟶ MOV(Sid_Meier, @10,10))",
+  "description": "Téléportation interdimensionnelle via la BRISURE",
+  "effects": [
+    {
+      "action": "TELEPORT",
+      "target": "Sid_Meier",
+      "position": {
+        "x": 10,
+        "y": 10
+      }
+    },
+    {
+      "action": "WSG_CONNECT",
+      "message": "Pont interdimensionnel ouvert !"
+    },
+    {
+      "action": "BATTLE",
+      "opponent": "Paradox_Guardian",
+      "outcome": "VICTORY"
+    }
+  ],
+  "cost": {
+    "energy": 50,
+    "paradox_risk": 0.3
+  },
+  "walter_approved": true,
+  "grofi_properties": {
+    "engine_processed": true,
+    "brisure_enabled": true
+  },
+  "ours_signature": "GRRRR... La BRISURE est ouverte !",
+  "interstice_connection": {
+    "dimensions": 6,
+    "stability": 0.8,
+    "portal_active": true
+  },
+  "slug": "brisure-teleport",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}

@@ -1,0 +1,39 @@
+{
+  "name": "hyperbolic_space_warp",
+  "id": "spell_hyperbolic_001",
+  "category": "geometrie_non_euclidienne",
+  "level": 75,
+  "description": "Transforme l'espace en géométrie hyperbolique où les lignes parallèles divergent",
+  "formula": "⊙(espace) + ∇²(hyperbolique) + Ψ(courbure=-1) → Δt+0(déformation_spatiale)",
+  "effects": {
+    "primary": {
+      "type": "map_transformation",
+      "geometry": "hyperbolic",
+      "curvature": -1,
+      "radius": 500,
+      "duration": "permanent_until_dispel"
+    },
+    "visual": {
+      "shader": "hyperbolic_distortion",
+      "particles": "curved_space_lines",
+      "color_shift": "purple_to_blue"
+    },
+    "gameplay": {
+      "movement_multiplier": 0.5,
+      "distance_perception": "warped",
+      "teleport_accuracy": -50
+    }
+  },
+  "cost": {
+    "mana": 200,
+    "quantum_charge": 5,
+    "cooldown": 60
+  },
+  "3d_transformation": {
+    "vertex_shader": "hyperbolic_vertex_transform",
+    "tessellation": "adaptive_curved",
+    "lod_system": "curvature_based"
+  },
+  "slug": "hyperbolic_space_warp",
+  "$schema": "../../../core/schemas/spell.schema.json"
+}
