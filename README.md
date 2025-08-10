@@ -343,7 +343,7 @@ python3 test-traducteur-fractal.py
 ### 🔗 **Liens Officiels**
 - **🐙 GitHub**: [Heroes of Time Repository](https://github.com/V0OgZ/heroes-of-time)
 - **📡 Discord**: Serveur Développeurs (lien privé)
-- **📧 Email**: contact@heroes-of-time.com
+
 
 ### 📡 **Communication Interdimensionnelle**
 - **Ansible**: `/workspace/ANSIBLE/COMMUNICATIONS/`

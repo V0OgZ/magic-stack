@@ -229,7 +229,20 @@ export function UnifiedGameExperience(): React.ReactElement {
     
     // Obtenir la réponse de l'IA
     const response = await getAIDialogue(npc, 'greeting');
-    setAiResponse(response);
+    
+    // Créer une bulle de dialogue
+    const newBubble = {
+      id: `bubble-${Date.now()}`,
+      character: npc.name,
+      text: response.response,
+      emotion: response.emotion,
+      position: { x: 50, y: 70 },
+      avatar: npc.icon,
+      color: '#667eea'
+    };
+    
+    setCurrentBubbles([newBubble]);
+    setAiResponse(response.response);
     
     // Améliorer la relation
     setWorld(prev => ({

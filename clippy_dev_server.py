@@ -58,14 +58,15 @@ def get_vector_context(query, mode="story"):
     try:
         response = requests.post(
             f"{VECTOR_DB_URL}/api/archives/search",
-            json={"query": query, "mode": mode, "top_k": 3},
-            timeout=1
+            json={"query": query, "mode": mode, "top_k": 5},
+            timeout=2
         )
         if response.ok:
             results = response.json().get("results", [])
-            return "\n".join([r.get("content", "")[:200] for r in results])
-    except:
-        pass
+            # Prendre plus de contexte (500 chars par résultat)
+            return "\n\n".join([r.get("content", "")[:500] for r in results])
+    except Exception as e:
+        print(f"Vector DB error: {e}")
     return ""
 
 def generate_with_ollama(prompt, model="qwen2.5:0.5b", max_tokens=150):
@@ -128,23 +129,32 @@ def character_speak():
     message = data.get('message', '')
     context = data.get('context', '')  # Situation de jeu
     
-    # Récupérer la personnalité
+    # CHERCHER LA VRAIE BACKSTORY DANS LA VECTOR DB !
+    backstory_query = f"{character} backstory histoire personnalité lore"
+    real_backstory = get_vector_context(backstory_query, mode="story")
+    
+    # Si pas de backstory trouvée, utiliser la personnalité par défaut
     personality = PERSONALITIES.get(character, PERSONALITIES['clippy'])
     
-    # Prompt pour le personnage
+    # Prompt enrichi avec la VRAIE backstory de la Vector DB
     prompt = f"""You are {character} from Heroes of Time.
+    
+BACKSTORY FROM DATABASE:
+{real_backstory[:1000] if real_backstory else personality.get('knowledge', '')}
+
 Voice: {personality['voice']}
-Knowledge: {personality['knowledge']}
-Game situation: {context}
+Current game situation: {context}
 Player says: {message}
-Respond in character (max 2 sentences):"""
+
+Respond in character based on your backstory (max 2 sentences):"""
     
     response = generate_with_ollama(prompt, max_tokens=100)
     
     return jsonify({
         "character": character,
         "response": response,
-        "personality": personality
+        "personality": personality,
+        "backstory_found": bool(real_backstory)
     })
 
 @app.route('/dialogue', methods=['POST'])

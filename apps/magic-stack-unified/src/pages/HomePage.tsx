@@ -41,7 +41,7 @@ export function HomePage(): React.ReactElement {
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: 20,
         width: '100%',
-        maxWidth: 800,
+        maxWidth: 1200,
       }}>
         <ModeCard
           to="/game"
@@ -65,6 +65,30 @@ export function HomePage(): React.ReactElement {
           title="Chasse Temporelle"
           description="Mode aventure 120x120 avec 4 difficultés"
           color="#f6ad55"
+        />
+        
+        <ModeCard
+          to="/multiplayer"
+          icon="🎭"
+          title="Multijoueur HOMM3"
+          description="Combat TCG, exploration et conquête du Nexus"
+          color="#e53e3e"
+        />
+        
+        <ModeCard
+          to="/ai-battle"
+          icon="🤖"
+          title="IA vs IA Autoplay"
+          description="Batailles automatiques avec formules quantiques"
+          color="#9f7aea"
+        />
+        
+        <ModeCard
+          to="/spectator"
+          icon="👁️"
+          title="God Mode Spectateur"
+          description="Observez tout le multivers en temps réel"
+          color="#38b2ac"
         />
       </div>
       

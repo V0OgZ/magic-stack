@@ -10,6 +10,9 @@ import { GameView } from './modes/game/GameView';
 import { EditorView } from './modes/editor/EditorView';
 import { ChasseView } from './modes/chasse/ChasseView';
 import { HomePage } from './pages/HomePage';
+import { MultiplayerMode } from './modes/multiplayer/MultiplayerMode';
+import { AIBattleAutoplay } from './modes/ai-battle/AIBattleAutoplay';
+import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
 
 const queryClient = new QueryClient();
 
@@ -30,6 +33,11 @@ export function App(): React.ReactElement {
             <Route path="/game/*" element={<GameView />} />
             <Route path="/editor/*" element={<EditorView />} />
             <Route path="/chasse/*" element={<ChasseView />} />
+            
+            {/* Nouveaux modes intégrés */}
+            <Route path="/multiplayer" element={<MultiplayerMode />} />
+            <Route path="/ai-battle" element={<AIBattleAutoplay />} />
+            <Route path="/spectator" element={<SpectatorGodMode />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />
