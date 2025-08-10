@@ -109,9 +109,7 @@ start_all_services() {
     echo "Lancement Vector DB..."
     python3 simple_vector_server.py > logs/vector.log 2>&1 &
     
-    sleep 3
     echo -e "${GREEN}✅ Tous les services sont lancés !${NC}"
-    sleep 2
 }
 
 # Arrêter tous les services
@@ -121,7 +119,6 @@ stop_all_services() {
     lsof -ti:$JAVA_PORT | xargs kill -9 2>/dev/null
     lsof -ti:$VECTOR_PORT | xargs kill -9 2>/dev/null
     echo -e "${GREEN}✅ Services arrêtés${NC}"
-    sleep 2
 }
 
 # Status des services
@@ -155,8 +152,6 @@ show_status() {
     fi
     
     echo ""
-    echo "Appuyez sur une touche pour continuer..."
-    read -n 1
 }
 
 # Ouvrir une page
@@ -167,7 +162,7 @@ open_page() {
     if [ -f "$file" ]; then
         echo -e "${GREEN}Ouverture: $name${NC}"
         open "$file"
-        sleep 0.5
+
     else
         echo -e "${RED}Fichier non trouvé: $file${NC}"
     fi
@@ -183,7 +178,6 @@ open_all_demos() {
     open_page "SCENARIOS_TEST_RUNNER.html" "Test Runner"
     open_page "CHASSE_TEMPORELLE_MEGA_MAP.html" "CHASSE TEMPORELLE"
     echo -e "${GREEN}✅ Toutes les démos sont ouvertes !${NC}"
-    sleep 2
 }
 
 # Ouvrir toute la documentation
@@ -195,7 +189,6 @@ open_all_docs() {
     open_page "API_EXPLORER_COMPLETE.html" "API Explorer COMPLET"
     open_page "docs/index.html" "Portal GitHub Pages"
     echo -e "${GREEN}✅ Toute la documentation est ouverte !${NC}"
-    sleep 2
 }
 
 # Lancer autoplay
@@ -211,7 +204,6 @@ launch_autoplay() {
     
     open_page "IA_VS_IA_AUTOPLAY.html" "IA vs IA Autoplay"
     echo -e "${GREEN}✅ Cliquez sur DÉMARRER pour lancer la bataille !${NC}"
-    sleep 2
 }
 
 # Lancer Chasse Temporelle
@@ -241,7 +233,6 @@ launch_chasse_temporelle() {
     echo "  • Activez l'audio pour l'ambiance!"
     echo ""
     echo -e "${GREEN}✅ Prêt pour l'aventure temporelle !${NC}"
-    sleep 3
 }
 
 # Mode développement
@@ -259,7 +250,6 @@ dev_mode() {
     osascript -e 'tell app "Terminal" to do script "cd '$PWD' && python3 simple_vector_server.py"'
     
     echo -e "${GREEN}✅ 3 terminaux ouverts pour le développement${NC}"
-    sleep 2
 }
 
 # Nettoyer logs et PIDs
@@ -268,7 +258,6 @@ clean_all() {
     rm -f logs/*.log
     rm -f ../.pids/surface/*
     echo -e "${GREEN}✅ Nettoyé${NC}"
-    sleep 1
 }
 
 # Démarrage rapide
@@ -292,35 +281,34 @@ quick_start() {
     echo "  • Recherchez 'temporal' dans le Vector DB"
     echo "  • Changez la langue avec 🇫🇷/🇬🇧"
     echo ""
-    echo "Appuyez sur une touche pour continuer..."
-    read -n 1
 }
 
-# Boucle principale
-while true; do
+# Si pas d'argument, afficher le menu et sortir
+if [ $# -eq 0 ]; then
     show_main_menu
-    read choice
-    
-    case $choice in
+    exit 0
+fi
+
+# Sinon, exécuter l'action demandée
+choice=$1
+
+case $choice in
         1) start_all_services ;;
         2) 
             cd backends/rust
             cargo build --release && ./target/release/magic-stack-server &
             cd ../..
             echo -e "${GREEN}Rust lancé${NC}"
-            sleep 2
             ;;
         3)
             cd simple-scenario-backend
             mvn spring-boot:run &
             cd ..
             echo -e "${GREEN}Java lancé${NC}"
-            sleep 2
             ;;
         4)
             python3 simple_vector_server.py &
             echo -e "${GREEN}Vector DB lancé${NC}"
-            sleep 2
             ;;
         5) stop_all_services ;;
         
@@ -361,8 +349,8 @@ while true; do
             exit 0
             ;;
         *)
-            echo -e "${RED}Option invalide${NC}"
-            sleep 1
+            echo -e "${RED}Option invalide: $choice${NC}"
+            echo "Usage: ./h [option]"
+            show_main_menu
             ;;
-    esac
-done
+esac
