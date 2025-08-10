@@ -6,6 +6,7 @@ Generated from `world-editor-spec.md`
 
 - Ouvrir `WORLD_EDITOR.html` (touch/mouse, iPad friendly)
 - Clippy intégré: tips contextuels et célébrations
+- App React PWA (pro): `apps/world-editor` (Vite+TS)
 
 ## Sections
 
@@ -25,3 +26,8 @@ Generated from `world-editor-spec.md`
 - [Compiler backend](14-compiler-backend.md)
 - [Guide de style – Avalon Editor / MagicStack](15-guide-de-style-avalon-editor-magicstack.md)
 - [MagicStack – Documentation Éditeur Avalon](16-magicstack-documentation-editeur-avalon.md)
+
+## Guides rapides
+
+- PRO Dev: voir `docs/PRO_DEVELOPER_GUIDE.md`
+- Créateur de carte: voir `docs/MAP_MAKER_GUIDE.md`
