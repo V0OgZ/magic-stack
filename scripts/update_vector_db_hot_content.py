@@ -9,7 +9,7 @@ import os
 import requests
 from pathlib import Path
 
-VECTOR_DB_URL = "http://localhost:5001"
+VECTOR_DB_URL = "http://localhost:7500"  # Changé! Vector DB est sur 7500, pas 5001
 
 def index_content():
     """Index tout le nouveau contenu dans la Vector DB"""

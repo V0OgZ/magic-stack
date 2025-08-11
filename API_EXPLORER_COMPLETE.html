@@ -310,9 +310,12 @@
             </select>
         </div>
 
-        <div class="backends">
-            <!-- RUST BACKEND -->
-            <div class="backend" data-backend="rust">
+        <!-- Conteneur principal avec 2 colonnes -->
+        <div class="backends" style="display: flex; gap: 20px;">
+            <!-- COLONNE GAUCHE: Rust + Services IA -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                <!-- RUST BACKEND -->
+                <div class="backend" data-backend="rust">
                 <div class="backend-header">
                     <span class="backend-title">🦀 Rust Backend (Port 3001)</span>
                     <span class="backend-status" id="rust-status">Checking...</span>
@@ -462,13 +465,167 @@
                         <span class="endpoint-desc">Reset server</span>
                     </div>
                 </div>
+                </div>
+
+                <!-- CLIPPY LLM SERVICE (sous Rust) -->
+                <div class="backend" data-backend="clippy">
+                    <div class="backend-header">
+                        <span class="backend-title">🤖 Clippy LLM Service (Port 7501)</span>
+                        <span class="backend-status" id="clippy-status">Checking...</span>
+                    </div>
+                    <div class="endpoint-group">
+                        <div class="group-title">💬 Chat & Memory</div>
+                        <div class="endpoint" data-method="POST" data-path="/chat">
+                            <span class="method method-post">POST</span>
+                            <span class="endpoint-path">/chat</span>
+                            <span class="endpoint-desc">Chat avec LLM</span>
+                        </div>
+                        <div class="endpoint" data-method="POST" data-path="/character/speak">
+                            <span class="method method-post">POST</span>
+                            <span class="endpoint-path">/character/speak</span>
+                            <span class="endpoint-desc">Personnage parle</span>
+                        </div>
+                        <div class="endpoint" data-method="POST" data-path="/ai/think">
+                            <span class="method method-post">POST</span>
+                            <span class="endpoint-path">/ai/think</span>
+                            <span class="endpoint-desc">IA stratégie</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VECTOR DB SERVICE (sous Clippy) -->
+                <div class="backend" data-backend="vectordb">
+                    <div class="backend-header">
+                        <span class="backend-title">🔍 Vector DB (Port 7500)</span>
+                        <span class="backend-status" id="vectordb-status">Checking...</span>
+                    </div>
+                    <div class="endpoint-group">
+                        <div class="group-title">🔍 Search & Index</div>
+                        <div class="endpoint" data-method="POST" data-path="/search">
+                            <span class="method method-post">POST</span>
+                            <span class="endpoint-path">/search</span>
+                            <span class="endpoint-desc">Recherche</span>
+                        </div>
+                        <div class="endpoint" data-method="POST" data-path="/index">
+                            <span class="method method-post">POST</span>
+                            <span class="endpoint-path">/index</span>
+                            <span class="endpoint-desc">Index doc</span>
+                        </div>
+                        <div class="endpoint" data-method="GET" data-path="/stats">
+                            <span class="method method-get">GET</span>
+                            <span class="endpoint-path">/stats</span>
+                            <span class="endpoint-desc">Stats DB</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- JAVA BACKEND -->
-            <div class="backend" data-backend="java">
+            <!-- COLONNE DROITE: Java Backend -->
+            <div class="backend" data-backend="java" style="flex: 1;">
                 <div class="backend-header">
                     <span class="backend-title">☕ Java Backend (Port 8082)</span>
                     <span class="backend-status" id="java-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🦸 Heroes CRUD</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/heroes">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/heroes</span>
+                        <span class="endpoint-desc">Liste tous les héros</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/heroes/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/heroes/{id}</span>
+                        <span class="endpoint-desc">Récupère un héros</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/heroes">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/heroes</span>
+                        <span class="endpoint-desc">Créer un héros</span>
+                    </div>
+                    <div class="endpoint" data-method="PUT" data-path="/api/heroes/{id}">
+                        <span class="method method-put">PUT</span>
+                        <span class="endpoint-path">/api/heroes/{id}</span>
+                        <span class="endpoint-desc">Modifier un héros</span>
+                    </div>
+                    <div class="endpoint" data-method="DELETE" data-path="/api/heroes/{id}">
+                        <span class="method method-delete">DELETE</span>
+                        <span class="endpoint-path">/api/heroes/{id}</span>
+                        <span class="endpoint-desc">Supprimer un héros</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🐉 Creatures CRUD</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/creatures">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/creatures</span>
+                        <span class="endpoint-desc">Liste toutes les créatures</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/creatures/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/creatures/{id}</span>
+                        <span class="endpoint-desc">Récupère une créature</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/creatures">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/creatures</span>
+                        <span class="endpoint-desc">Créer une créature</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/creatures/types">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/creatures/types</span>
+                        <span class="endpoint-desc">Liste les types</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">💎 Artifacts CRUD</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/artifacts">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/artifacts</span>
+                        <span class="endpoint-desc">Liste tous les artefacts</span>
+                        <span class="new-badge">NEW</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/artifacts/{id}">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/artifacts/{id}</span>
+                        <span class="endpoint-desc">Récupère un artefact</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/artifacts">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/artifacts</span>
+                        <span class="endpoint-desc">Créer un artefact</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🎮 Resources Unifiées</div>
+                    <div class="endpoint" data-method="GET" data-path="/api/resources/all">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/resources/all</span>
+                        <span class="endpoint-desc">TOUTES les ressources</span>
+                        <span class="new-badge">UNIFIED</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/resources/for-editor">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/resources/for-editor</span>
+                        <span class="endpoint-desc">Format pour l'éditeur</span>
+                        <span class="new-badge">EDITOR</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/resources/icons">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/resources/icons</span>
+                        <span class="endpoint-desc">Tous les emojis/icônes</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/resources/search?q=">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/api/resources/search?q=</span>
+                        <span class="endpoint-desc">Recherche globale</span>
+                    </div>
                 </div>
 
                 <div class="endpoint-group">
@@ -627,87 +784,6 @@
                         <span class="method method-ws">WS</span>
                         <span class="endpoint-path">/ws/game</span>
                         <span class="endpoint-desc">Game WebSocket</span>
-                    </div>
-                </div>
-            </div>
-
-
-            
-            <!-- CLIPPY LLM SERVICE -->
-            <div class="backend" data-backend="clippy">
-                <div class="backend-header">
-                    <span class="backend-title">🤖 Clippy LLM Service (Port 7501)</span>
-                    <span class="backend-status" id="clippy-status">Checking...</span>
-                </div>
-
-                <div class="endpoint-group">
-                    <div class="group-title">💬 Chat LLM</div>
-                    <div class="endpoint" data-method="GET" data-path="/health">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-path">/health</span>
-                        <span class="endpoint-desc">Health check</span>
-                    </div>
-                    <div class="endpoint" data-method="POST" data-path="/chat">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/chat</span>
-                        <span class="endpoint-desc">Chat avec Clippy LLM</span>
-                        <span class="new-badge">LLM</span>
-                    </div>
-                    <div class="endpoint" data-method="GET" data-path="/memory">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-path">/memory</span>
-                        <span class="endpoint-desc">Get session memory</span>
-                    </div>
-                    <div class="endpoint" data-method="POST" data-path="/embed">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/embed</span>
-                        <span class="endpoint-desc">Encode text to vector</span>
-                    </div>
-                </div>
-
-                <div class="endpoint-group">
-                    <div class="group-title">🎭 Personnages IA</div>
-                    <div class="endpoint" data-method="POST" data-path="/character/speak">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/character/speak</span>
-                        <span class="endpoint-desc">Fait parler un personnage</span>
-                    </div>
-                    <div class="endpoint" data-method="POST" data-path="/dialogue">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/dialogue</span>
-                        <span class="endpoint-desc">Dialogue entre personnages</span>
-                    </div>
-                    <div class="endpoint" data-method="POST" data-path="/ai/think">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/ai/think</span>
-                        <span class="endpoint-desc">IA pense sa stratégie</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VECTOR DB SERVICE -->
-            <div class="backend" data-backend="vectordb">
-                <div class="backend-header">
-                    <span class="backend-title">🔍 Vector DB (Port 7500)</span>
-                    <span class="backend-status" id="vectordb-status">Checking...</span>
-                </div>
-
-                <div class="endpoint-group">
-                    <div class="group-title">🔍 Recherche Vectorielle</div>
-                    <div class="endpoint" data-method="POST" data-path="/search">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/search</span>
-                        <span class="endpoint-desc">Recherche semantique</span>
-                    </div>
-                    <div class="endpoint" data-method="POST" data-path="/index">
-                        <span class="method method-post">POST</span>
-                        <span class="endpoint-path">/index</span>
-                        <span class="endpoint-desc">Index new document</span>
-                    </div>
-                    <div class="endpoint" data-method="GET" data-path="/stats">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-path">/stats</span>
-                        <span class="endpoint-desc">Database stats</span>
                     </div>
                 </div>
             </div>
