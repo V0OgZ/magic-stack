@@ -1,4 +1,17 @@
-CONTEXTE GLOBAL - HEROES OF TIME - JOUR 32
+CONTEXTE GLOBAL - HEROES OF TIME - JOUR 35 (11 AOÛT)
+
+=== ALERTE CRITIQUE - FICHIERS HORS GIT ===
+
+PROBLÈME DÉCOUVERT:
+Des fichiers créés HORS du repo git dans /Volumes/HOT_DEV/Magic/ :
+- apps/ (dupliqué du magic-stack/apps/)
+- hot/ (version différente de magic-stack/hot/)
+- clippy_*.py (plusieurs versions)
+- LANCE_CLIPPY_MEMENTO.sh
+
+STRUCTURE RÉELLE:
+/Volumes/HOT_DEV/Magic/              ❌ PAS UN REPO GIT
+└── magic-stack/                     ✅ LE VRAI REPO GIT
 
 === VISION DU JEU (Vincent) ===
 
@@ -18,69 +31,86 @@ CONCEPTS CLÉS:
 - OPC (Ombre Portée Causalité): brut/qualité/effectif
 - Régulateurs: Anna, Vince, Overload (anti-abus)
 
-APIs V2 OBLIGATOIRES:
-- Tick toutes les 100ms
-- Q* search (37x plus rapide que embeddings)
-- Positions 6D partout
-- v2-adapter.js existe déjà dans shared/
+APIs V2 OFFICIELLES (v2spec/API_SURFACE_COMPLETE.md):
 
-=== ÉTAT ACTUEL ===
+RUST (3001):
+- /api/v2/tick, /api/v2/entity/{id}
+- /agents/plan, /agents/fork, /agents/merge
+- /api/map/generate, /api/map/init
 
-12 ROUTES HTML (100% fonctionnelles):
-1. HOT_GAME_UNIFIED.html - Le jeu principal
-2. CHASSE_TEMPORELLE_MEGA_MAP.html - Mode aventure
-3. HOMM3_PWA_IPAD_CLIPPY.html - Version tablette
-4. MAP_ICON_PLACER_ADVANCED.html - Éditeur magnifique
-+ 8 autres
+JAVA (8080):
+- /api/magic/cast, /api/magic/formulas (869!)
+- /api/interstice/upload, /api/interstice/download
+- /api/regulators/*
 
-MIGRATION REACT (30% fait):
-- Magic Stack Unified essaie de tout migrer
-- /game, /chasse, /editor partiellement migrés
-- Composants basiques OK (HexGrid, ResourceBar)
-- MANQUE: Combat TCG, IA, sauvegarde, drag&drop
+MANQUANT (montrés dans API_EXPLORER_COMPLETE.html mais N'EXISTENT PAS):
+- /api/heroes ❌
+- /api/creatures ❌
+- /api/artifacts ❌
+- /api/portals ❌
 
-BRIDGE V2-ADAPTER:
-- shared/v2-adapter.js EXISTE DÉJÀ
-- Gère Rust (3001), Java (8080), Python (5001)
-- Calcule drift, énergie complexe, paradoxes
-- MAIS pas utilisé dans les HTML actuels
+=== ÉTAT ACTUEL JOUR 35 ===
 
-=== PROBLÈME IDENTIFIÉ ===
+INFRASTRUCTURE:
+- 1 seul serveur React (5175)
+- Script ./go unifié (pas de go2!)
+- Dashboard: http://localhost:5175/dashboard.html
+- Backend Rust lancé sur 3001
 
-1. HTML utilisent vieilles APIs V1
-2. React essaie V2 mais incomplet
-3. v2-adapter existe mais pas branché
-4. Tout éparpillé dans plusieurs repos
+PORTAILS AJOUTÉS:
+- 🌀 Avalon (dimensional)
+- 🌌 Poche (pocket_world)
+- ⏳ Temporel (temporal)
+Dans AssetsService.ts mais pas d'API backend
 
-=== SOLUTION PROPOSÉE ===
+MIGRATION REACT:
+- Magic Stack Unified (5175) = app principale
+- /unified = éditeur principal (90%)
+- /combat = wrapper HTML (IA_VS_IA_AUTOPLAY.html)
+- /chasse-mega = wrapper HTML (CHASSE_TEMPORELLE_MEGA_MAP.html)
 
-MIGRATION INTELLIGENTE:
-1. Garder le design HTML (magnifique)
-2. Migrer progressivement en React
-3. Utiliser v2-adapter.js partout
-4. Tout dans un seul dossier
+=== PROBLÈMES IDENTIFIÉS ===
 
-PRIORITÉS:
-1. MAP_ICON_PLACER_ADVANCED - L'éditeur magnifique
-2. HOT_GAME_UNIFIED - Le jeu principal  
-3. Connexion APIs V2 via adapter
+1. Fichiers créés HORS du repo git (critique!)
+2. API_EXPLORER_COMPLETE.html montre des endpoints qui n'existent pas
+3. Confusion entre specs V1 et V2
+4. Frontend avec données en dur au lieu du backend
 
-STRATÉGIE:
-- Pas de refactor massif
-- Drop-in v2-adapter dans HTML d'abord
-- Migration React progressive
-- Garder CSS/design à 100%
+=== SOLUTION VINCENT ===
 
-=== PHILOSOPHIE ===
+"Frontend bête, backend intelligent"
+- Les ressources viennent du backend
+- hot/content/ comme source de données
+- Backend vérifie les formules correctes
+- Pas de logique dans le frontend
 
-"Pace is a resource" - On orchestre le tempo, pas des tours figés
-Drift léger par défaut, jamais EV+ en AFK
-Double halo UI: anneau pâle (OPC brut) + cœur lumineux (qualité)
-Lisibilité > réalisme dans l'UI
+=== PRIORITÉS IMMÉDIATES ===
+
+1. Décider quoi faire avec fichiers hors GIT
+2. Implémenter /api/heroes, /api/creatures, /api/artifacts
+3. Utiliser hot/content/ comme source
+4. Corriger API_EXPLORER_COMPLETE.html
+5. Frontend appelle vraies APIs V2
+
+=== FICHIERS CLÉS ===
+
+DOCUMENTATION:
+- .map = architecture et statut
+- .contexte = ce fichier
+- v2spec/API_SURFACE_COMPLETE.md = vraies APIs V2
+
+SCRIPTS:
+- ./go = script unifié (status, game, admin, combat, stop)
+- ./h = menu avec toutes les pages
+
+FRONTEND:
+- apps/magic-stack-unified/ = app React principale
+- public/dashboard.html = dashboard central
 
 === NEXT STEPS ===
 
-1. Brancher v2-adapter.js dans MAP_ICON_PLACER_ADVANCED.html
-2. Tester connexion APIs V2
-3. Si OK, migrer en React en gardant le design
-4. Tout regrouper dans magic-stack-unified
+1. Nettoyer fichiers hors GIT (attendre décision Vincent)
+2. Créer endpoints /api/heroes, /api/creatures dans Rust
+3. Charger données depuis hot/content/
+4. Tester avec ./go game
+5. Vérifier que tout est jouable

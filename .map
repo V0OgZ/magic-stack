@@ -222,6 +222,62 @@ Le composant 6D que tu cherchais:
 
 Accessible via: http://localhost:5175 → Editor
 
+## 🔧 APIS BACKEND OFFICIELLES V2
+
+### RUST (Port 3001)
+**OpenAPI**: http://localhost:3001/openapi/all
+- `/agents/plan` - A* weighted planning
+- `/agents/fork` - Fork identity
+- `/agents/merge` - Merge identity
+- `/agents/cast` - Cast formula via Java
+- `/api/causality/resolve` - Resolve causality
+- `/api/map/generate` - Generate map
+- `/api/map/init` - Initialize 6D entities
+- `/api/v2/tick` - V2 tick
+- `/api/v2/entity/{id}` - Get V2 entity
+- `/api/v2/migrate-entity` - Migrate to V2
+
+### JAVA (Port 8080)
+**Doc API**: http://localhost:8080/api
+- `/api/magic/health` - Vérifier magie active
+- `/api/magic/cast` - Lancer un sort
+- `/api/magic/translate` - Traduire formule
+- `/api/magic/shift` - Décalage temporel
+- `/api/magic/fork` - Fork réalité
+- `/api/magic/merge` - Fusion timelines
+- `/api/magic/formulas` - 869 formules
+- `/api/interstice/upload` - Sauvegarder entité 6D
+- `/api/interstice/download` - Récupérer entité
+- `/api/regulators/*` - Régulateurs Vince/Anna
+
+### RESOURCES (À IMPLÉMENTER)
+- `/api/heroes` - Liste des héros
+- `/api/creatures` - Liste des créatures  
+- `/api/artifacts` - Liste des artefacts
+- `/api/portals` - Liste des portails
+- `/api/resources/all` - Tout en un appel
+
+**Source données**: hot/content/*
+
+## ⚠️ ALERTE CRITIQUE - FICHIERS HORS GIT
+
+**PROBLÈME DÉCOUVERT:** Des fichiers ont été créés HORS du repo git!
+
+**Structure actuelle:**
+```
+/Volumes/HOT_DEV/Magic/              ❌ PAS UN REPO GIT
+├── apps/                            ❌ HORS GIT!
+├── hot/                             ❌ HORS GIT! (version différente)
+├── clippy_*.py                      ❌ HORS GIT! (plusieurs versions)
+├── LANCE_CLIPPY_MEMENTO.sh          ❌ HORS GIT!
+└── magic-stack/                     ✅ LE VRAI REPO GIT
+    ├── apps/                        ✅ Version officielle
+    ├── hot/                         ✅ Version officielle
+    └── backends/                    ✅ Tout OK
+```
+
+**ACTION REQUISE:** Décider quoi faire avec les fichiers hors GIT
+
 ---
-Généré le: Jour 32
-Par: Claude Opus - Architecte des Deux Mondes
+Généré le: Jour 35
+Par: Claude 3.5 Sonnet - Gardien de la Magic Stack
