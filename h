@@ -68,15 +68,37 @@ show_main_menu() {
     echo -e "  ${CYAN}[31]${NC} 📝 Voir les logs"
     echo -e "  ${CYAN}[32]${NC} 🧹 Nettoyer logs et PIDs"
     echo -e "  ${CYAN}[33]${NC} 🔧 Mode développement"
+    echo ""
+    
+    echo -e "${RED}━━━ 🔥 MODE DEV HYBRIDE 🔥 ━━━${NC}"
+    echo -e "  ${CYAN}[60]${NC} 🎯 Lancer CORE (Vector Bus + LLM) - VINCENT"
+    echo -e "  ${CYAN}[61]${NC} 🔨 Lancer BACKEND (Java + Rust) - JEAN"
+    echo -e "  ${CYAN}[62]${NC} 🎨 Lancer FRONTEND (React) - PAUL"
+    echo -e "  ${CYAN}[63]${NC} 📡 Test Bus Communication"
     echo -e "  ${CYAN}[34]${NC} 🧩 World Editor (React PWA)"
     echo -e "  ${CYAN}[35]${NC} 🚀 Lancer World Editor (dev server)"
     echo -e "  ${CYAN}[36]${NC} 📦 Build + Servir World Editor (static HTTP)"
     echo -e "  ${CYAN}[37]${NC} 🧪 Tests Playwright World Editor"
     echo ""
     
+    echo -e "${YELLOW}━━━ BUILD & RELEASE ━━━${NC}"
+    echo -e "  ${CYAN}[50]${NC} 🔨 Compiler les binaires (Java + Rust)"
+    echo -e "  ${CYAN}[51]${NC} 📦 Préparer release complète (binaires + docs)"
+    echo -e "  ${CYAN}[52]${NC} 🚀 Publier sur GitHub Releases"
+    echo -e "  ${CYAN}[53]${NC} 🗂️ Organiser les docs (sans rien perdre)"
+    echo -e "  ${CYAN}[54]${NC} ⚡ CHECK COMPLET (vérifier que TOUT marche)"
+    echo -e "  ${CYAN}[55]${NC} 🚀 LANCER TOUT (Java+Rust+Python) AUTOMATIQUE"
+    echo -e "  ${CYAN}[56]${NC} 🧪 TEST V2 RAPIDE (positions 6D)"
+    echo ""
+    
     echo -e "${GOLD}━━━ MAGIC STACK UNIFIED (REACT) ━━━${NC}"
     echo -e "  ${CYAN}[38]${NC} 🎮 Lancer Magic Stack Unified (dev)"
     echo -e "  ${CYAN}[39]${NC} 📦 Build + Preview Magic Stack Unified"
+    echo ""
+    
+    echo -e "${RED}━━━ 🔴 CONTINUITÉ SESSION 🔴 ━━━${NC}"
+    echo -e "  ${CYAN}[99]${NC} 📌 CHECK CONTINUITÉ (OBLIGATOIRE AU DÉBUT)"
+    echo -e "  ${CYAN}[100]${NC} 🔄 REBOOT - Guide complet du projet"
     echo ""
     
     echo -e "${YELLOW}━━━ ACTIONS RAPIDES ━━━${NC}"
@@ -489,7 +511,7 @@ case $choice in
             fi
             ;;
         
-gi        38)
+        38)
             # Magic Stack Unified (dev)
             echo -e "${GOLD}🎮 Lancement Magic Stack Unified (dev)${NC}"
             echo -e "${CYAN}Application React unifiée - Port: 5175${NC}"
@@ -547,10 +569,194 @@ gi        38)
         43) launch_autoplay ;;
         44) launch_chasse_temporelle ;;
         
+        # BUILD & RELEASE
+        50)
+            echo -e "${CYAN}🔨 Compilation des binaires...${NC}"
+            if [ -f "Magic-Stack/build.sh" ]; then
+                cd Magic-Stack
+                chmod +x build.sh
+                ./build.sh
+                cd ..
+                echo -e "${GREEN}✅ Binaires compilés dans dist/${NC}"
+            else
+                echo -e "${RED}❌ Script Magic-Stack/build.sh non trouvé${NC}"
+            fi
+            ;;
+        51)
+            echo -e "${CYAN}📦 Préparation de la release complète...${NC}"
+            if [ -f "PREPARE_COMPLETE_RELEASE.sh" ]; then
+                chmod +x PREPARE_COMPLETE_RELEASE.sh
+                ./PREPARE_COMPLETE_RELEASE.sh
+                echo -e "${GREEN}✅ Release prête dans dist/${NC}"
+                echo "  - Binaires : dist/binaries/"
+                echo "  - Docs V2 : dist/docs/"
+                echo "  - Archive : dist/magic-stack-v2-complete.zip"
+            else
+                echo -e "${RED}❌ Script PREPARE_COMPLETE_RELEASE.sh non trouvé${NC}"
+            fi
+            ;;
+        52)
+            echo -e "${CYAN}🚀 Publication sur GitHub Releases...${NC}"
+            if [ -f "PUBLISH_RELEASE_GITHUB.sh" ]; then
+                chmod +x PUBLISH_RELEASE_GITHUB.sh
+                echo -n "Version (ex: v2.0.0): "
+                read VERSION
+                ./PUBLISH_RELEASE_GITHUB.sh ${VERSION:-v2.0.0}
+            else
+                echo -e "${RED}❌ Script PUBLISH_RELEASE_GITHUB.sh non trouvé${NC}"
+            fi
+            ;;
+        53)
+            echo -e "${CYAN}🗂️ Organisation des docs (sans rien perdre)...${NC}"
+            if [ -f "ORGANISE_DOCS_SANS_PERDRE.sh" ]; then
+                chmod +x ORGANISE_DOCS_SANS_PERDRE.sh
+                ./ORGANISE_DOCS_SANS_PERDRE.sh
+                echo -e "${GREEN}✅ Docs organisées dans docs_organized/${NC}"
+                echo "📖 Voir l'index : docs_organized/INDEX.md"
+            else
+                echo -e "${RED}❌ Script ORGANISE_DOCS_SANS_PERDRE.sh non trouvé${NC}"
+            fi
+            ;;
+        
         0) 
             echo -e "${GOLD}Au revoir ! 🎮${NC}"
             exit 0
             ;;
+            
+        # MODE DEV HYBRIDE
+        60)
+            echo -e "${RED}🎯 LANCEMENT CORE (Vector Bus + LLM)${NC}"
+            echo "Services centraux pour communication Backend/Frontend"
+            echo ""
+            
+            # Lancer Vector Bus
+            echo "📡 Lancement Vector Bus (port 5001)..."
+            python enhanced_vector_bus.py > logs/vector_bus.log 2>&1 &
+            echo "PID: $!"
+            
+            # Lancer LLM
+            echo "🤖 Lancement LLM Ollama..."
+            ./llm start
+            
+            echo ""
+            echo -e "${GREEN}✅ CORE lancé !${NC}"
+            echo "  Vector Bus: http://localhost:5001"
+            echo "  LLM: http://localhost:11434"
+            ;;
+            
+        61)
+            echo -e "${YELLOW}🔨 LANCEMENT BACKEND (Java + Rust)${NC}"
+            
+            # Java
+            if [ -f "dist/binaries/magic-stack.jar" ]; then
+                java -jar dist/binaries/magic-stack.jar > logs/java.log 2>&1 &
+                echo "Java (8080): PID $!"
+            fi
+            
+            # Rust
+            if [ -f "dist/binaries/magic-stack-server" ]; then
+                ./dist/binaries/magic-stack-server > logs/rust.log 2>&1 &
+                echo "Rust (3001): PID $!"
+            fi
+            
+            echo -e "${GREEN}✅ Backend lancé !${NC}"
+            ;;
+            
+        62)
+            echo -e "${CYAN}🎨 LANCEMENT FRONTEND (React)${NC}"
+            
+            if [ -d "apps/magic-stack-unified" ]; then
+                cd apps/magic-stack-unified
+                npm run dev &
+                cd ../..
+                echo -e "${GREEN}✅ Frontend lancé sur http://localhost:5173${NC}"
+            else
+                echo -e "${RED}❌ Dossier React non trouvé${NC}"
+            fi
+            ;;
+            
+        63)
+            echo -e "${YELLOW}📡 TEST BUS COMMUNICATION${NC}"
+            echo ""
+            echo "1. Push depuis Backend:"
+            curl -X POST http://localhost:5001/api/bus/push \
+                -H "Content-Type: application/json" \
+                -d '{"type":"game_state","source":"backend","data":{"test":true}}'
+            echo ""
+            echo ""
+            echo "2. Pull depuis Frontend:"
+            curl "http://localhost:5001/api/bus/pull?since=0"
+            echo ""
+            ;;
+            
+        99)
+            echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${RED}     🔴 CHECK CONTINUITÉ - OBLIGATOIRE AU DÉBUT 🔴     ${NC}"
+            echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            
+            echo -e "${YELLOW}📌 1. LECTURE DES FICHIERS CRITIQUES...${NC}"
+            echo -e "${CYAN}Session courante:${NC}"
+            if [ -f "🔴_SESSION_COURANTE_LIRE_OBLIGATOIRE.md" ]; then
+                head -20 "🔴_SESSION_COURANTE_LIRE_OBLIGATOIRE.md"
+                echo "..."
+            else
+                echo -e "${RED}❌ Fichier SESSION_COURANTE manquant!${NC}"
+            fi
+            echo ""
+            
+            echo -e "${CYAN}Dernier rapport:${NC}"
+            if [ -f "RAPPORT_JOUR_31_FINAL.md" ]; then
+                head -10 "RAPPORT_JOUR_31_FINAL.md"
+                echo "..."
+            else
+                echo -e "${YELLOW}⚠️  Pas de rapport jour 31${NC}"
+            fi
+            echo ""
+            
+            echo -e "${YELLOW}📌 2. ÉTAT DES SYSTÈMES...${NC}"
+            echo -n "Binaires compilés: "
+            if [ -f "dist/binaries/magic-stack.jar" ] && [ -f "dist/binaries/magic-stack-server" ]; then
+                echo -e "${GREEN}✅ OK${NC}"
+            else
+                echo -e "${RED}❌ MANQUANTS (faire ./h 50)${NC}"
+            fi
+            
+            echo -n "LLM status: "
+            if pgrep -f "ollama" > /dev/null; then
+                echo -e "${GREEN}✅ Actif${NC}"
+            else
+                echo -e "${YELLOW}⚠️  Inactif (faire ./llm start)${NC}"
+            fi
+            
+            echo ""
+            echo -e "${YELLOW}📌 3. COMMITS RÉCENTS...${NC}"
+            git log --oneline -5
+            
+            echo ""
+            echo -e "${YELLOW}📌 4. RAPPEL RÈGLES CRITIQUES:${NC}"
+            echo -e "${RED}❌ JAMAIS git reset --hard${NC}"
+            echo -e "${RED}❌ JAMAIS créer de .sh (utiliser h)${NC}"
+            echo -e "${RED}❌ JAMAIS supprimer sans vérifier${NC}"
+            echo -e "${GREEN}✅ TOUJOURS utiliser le menu h${NC}"
+            echo -e "${GREEN}✅ TOUJOURS lire les rapports${NC}"
+            
+            echo ""
+            echo -e "${GOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${GOLD}   VINCENT A 31 JOURS DE TRAVAIL - NE PAS OUBLIER!    ${NC}"
+            echo -e "${GOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            ;;
+            
+        "reboot"|100)
+            # Lancer le script h_reboot.sh qui explique tout
+            if [ -f "./h_reboot.sh" ]; then
+                ./h_reboot.sh
+            else
+                echo -e "${RED}Script h_reboot.sh non trouvé!${NC}"
+                echo "Créez-le avec ./h 99 d'abord"
+            fi
+            ;;
+            
         *)
             echo -e "${RED}Option invalide: $choice${NC}"
             echo "Usage: ./h [option]"
