@@ -123,6 +123,23 @@ class V2AdapterClass {
     }
 
     /**
+     * Crée ou met à jour une entité V2 côté serveur
+     */
+    async upsertEntity(entity: {
+        id: string;
+        position: { x: number; y: number; z?: number; t?: number; c?: number; psi?: number };
+        te?: number;
+        energy_complex?: { A?: number; amplitude?: number; phi?: number; phase?: number };
+    }) {
+        const response = await fetch(`${this.config.rustBackend}/api/v2/entity`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entity)
+        });
+        return response.json();
+    }
+
+    /**
      * API Java - Interstice et persistance
      */
     async uploadToInterstice(data: any) {

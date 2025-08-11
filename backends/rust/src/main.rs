@@ -329,6 +329,11 @@ async fn main() {
         .route("/api/v2/entity/:id", get(v2_get_entity_handler))
         .route("/api/v2/migrate-entity", post(v2_migrate_entity_handler))
         .route("/api/v2/config", get(v2_config_handler))
+        // New minimal V2 endpoints for playable editor
+        .route("/api/v2/entity", post(v2_upsert_entity_handler))
+        .route("/api/v2/regulators/vince", post(v2_reg_vince_handler))
+        .route("/api/v2/regulators/anna", post(v2_reg_anna_handler))
+        .route("/api/v2/regulators/overload", post(v2_reg_overload_handler))
         .layer(cors)
         .with_state(app_state);
     
@@ -467,6 +472,97 @@ async fn v2_config_handler(
             "message": "V2 controller not enabled"
         }))
     }
+}
+
+/// Upsert a V2 entity (create or update minimal fields)
+async fn v2_upsert_entity_handler(
+    State(state): State<AppState>,
+    Json(req): Json<serde_json::Value>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let id = req["id"].as_str().unwrap_or("").to_string();
+        if id.is_empty() {
+            return Json(serde_json::json!({"success": false, "error": "missing id"}));
+        }
+        let px = req["position"]["x"].as_i64().unwrap_or(0) as i32;
+        let py = req["position"]["y"].as_i64().unwrap_or(0) as i32;
+        let te = req["te"].as_f64().unwrap_or(0.0);
+        let a = req["energy_complex"]["A"].as_f64()
+            .or_else(|| req["energy_complex"]["amplitude"].as_f64())
+            .unwrap_or(req["energy"].as_f64().unwrap_or(100.0));
+        let phi = req["energy_complex"]["phi"].as_f64()
+            .or_else(|| req["energy_complex"]["phase"].as_f64())
+            .unwrap_or(0.0);
+        let mut entities = controller.entities_v2.write().await;
+        use crate::multiplayer_v2::*;
+        let entry = entities.entry(id.clone()).or_insert_with(|| EntityV2 {
+            id: id.clone(),
+            position: (px, py),
+            energy: a,
+            temporal: Some(TemporalState { t_e: te, day_hidden: 0, drift_rate: 0.02, last_tick: 0 }),
+            energy_complex: Some(EnergyComplexV2 { a, phi: Some(phi), debt_a: 0.0, a_max: 150.0 }),
+            identity: Some(IdentityV2 { psi_vector: vec![1.0, 0.0], coherence: 1.0, entanglements: vec![], interference_cache: std::collections::HashMap::new() }),
+            visibility: None,
+        });
+        // Update fields if already existed
+        entry.position = (px, py);
+        entry.energy = a;
+        if let Some(t) = &mut entry.temporal { t.t_e = te; }
+        if let Some(ec) = &mut entry.energy_complex { ec.a = a; if let Some(p) = &mut ec.phi { *p = phi; } else { ec.phi = Some(phi); } }
+        drop(entities);
+        return Json(serde_json::json!({"success": true, "id": id, "position": {"x": px, "y": py}, "A": a, "phi": phi }));
+    }
+    Json(serde_json::json!({"success": false, "error": "V2 controller not enabled"}))
+}
+
+#[derive(serde::Deserialize)]
+struct VinceReq { position: Option<Position2D>, intensity: Option<f64> }
+
+/// Activate/pulse Vince regulator (pierce fog)
+async fn v2_reg_vince_handler(
+    State(state): State<AppState>,
+    Json(_req): Json<VinceReq>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let mut regs = controller.regulators.write().await;
+        regs.vince.active = true;
+        regs.vince.cooldown_remaining = 0.0;
+        drop(regs);
+        return Json(serde_json::json!({"success": true, "regulator": "vince"}));
+    }
+    Json(serde_json::json!({"success": false, "error": "V2 controller not enabled"}))
+}
+
+#[derive(serde::Deserialize)]
+struct AnnaReq { decay_rate: Option<f64>, zone: Option<String> }
+
+/// Activate Anna regulator with optional decay rate
+async fn v2_reg_anna_handler(
+    State(state): State<AppState>,
+    Json(req): Json<AnnaReq>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let mut regs = controller.regulators.write().await;
+        regs.anna.active = true;
+        if let Some(r) = req.decay_rate { regs.anna.decay_rate = r; }
+        drop(regs);
+        return Json(serde_json::json!({"success": true, "regulator": "anna"}));
+    }
+    Json(serde_json::json!({"success": false, "error": "V2 controller not enabled"}))
+}
+
+/// Trigger Overload regulator (mark last_trigger)
+async fn v2_reg_overload_handler(
+    State(state): State<AppState>,
+    Json(_req): Json<serde_json::Value>,
+) -> Json<serde_json::Value> {
+    if let Some(controller) = &state.v2_controller {
+        let mut regs = controller.regulators.write().await;
+        regs.overload.last_trigger = crate::now_ms();
+        drop(regs);
+        return Json(serde_json::json!({"success": true, "regulator": "overload"}));
+    }
+    Json(serde_json::json!({"success": false, "error": "V2 controller not enabled"}))
 }
 // ==== Agents Handlers (MVP) ====
 async fn agents_health() -> Json<serde_json::Value> {

@@ -117,6 +117,18 @@ class V2Adapter {
         return paradoxes;
     }
     
+    /**
+     * Upsert d'une entité V2 (pour éditeur jouable)
+     */
+    async upsertEntity(entity) {
+        const res = await fetch(`${this.endpoints.rust}/api/v2/entity`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entity)
+        });
+        return res.json();
+    }
+
     // ========== REGULATORS ==========
     
     async activateVince(position, intensity = 1) {
