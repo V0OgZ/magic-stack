@@ -1,0 +1,309 @@
+.chasse-mega-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(135deg, #0a0014 0%, #1a0033 100%);
+}
+
+.chasse-controls {
+    background: linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
+    border-bottom: 3px solid #ffd700;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+}
+
+.control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.control-header h2 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.8em;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    font-family: 'Courier New', monospace;
+}
+
+.mode-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.mode-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #666;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1em;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
+    border-color: #ffd700;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.v2-indicators {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.indicator {
+    font-size: 1.2em;
+}
+
+.indicator.connected { animation: pulse-green 2s infinite; }
+.indicator.connecting { animation: pulse-yellow 1s infinite; }
+.indicator.disconnected { opacity: 0.5; }
+
+.tick-indicator {
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    animation: tick-pulse 0.1s infinite;
+}
+
+@keyframes tick-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes pulse-yellow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Position 6D Display */
+.position-display {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    margin-bottom: 15px;
+}
+
+.position-display h3 {
+    color: #ffd700;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    font-family: 'Courier New', monospace;
+}
+
+.coords-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+}
+
+.coords-grid > div {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+/* Game Stats */
+.game-stats {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    margin-bottom: 15px;
+}
+
+.game-stats h3 {
+    color: #ffd700;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+}
+
+.stats-grid > div {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border: 2px solid #4CAF50;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.action-btn.temporal {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    border-color: #9C27B0;
+}
+
+.action-btn.temporal:hover {
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+}
+
+.action-btn.portal {
+    background: linear-gradient(135deg, #00BCD4, #0097A7);
+    border-color: #00BCD4;
+}
+
+.action-btn.portal:hover {
+    box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+}
+
+/* Bridge Status */
+.bridge-status {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+}
+
+.bridge-indicator {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.bridge-indicator.connected {
+    color: #4CAF50;
+}
+
+.bridge-indicator.disconnected {
+    color: #f44336;
+}
+
+/* iFrame Container */
+.chasse-iframe-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid rgba(255, 215, 0, 0.2);
+    box-shadow: inset 0 0 50px rgba(255, 215, 0, 0.1);
+}
+
+.chasse-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* Animation d'entrée */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chasse-mega-wrapper {
+    animation: slideIn 0.5s ease;
+}
+
+/* Effet brillant sur les bordures */
+@keyframes borderGlow {
+    0%, 100% { 
+        box-shadow: 
+            0 0 20px rgba(255, 215, 0, 0.2),
+            inset 0 0 20px rgba(255, 215, 0, 0.1);
+    }
+    50% { 
+        box-shadow: 
+            0 0 40px rgba(255, 215, 0, 0.4),
+            inset 0 0 40px rgba(255, 215, 0, 0.2);
+    }
+}
+
+.chasse-controls {
+    animation: borderGlow 3s infinite;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .coords-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .control-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .mode-selector {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .mode-btn {
+        width: 100%;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .coords-grid,
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

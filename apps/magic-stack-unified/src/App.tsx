@@ -16,6 +16,7 @@ import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
 import { HeroBackstoryEditor } from './modes/editor/HeroBackstoryEditor';
 import { UnifiedMapSystem } from './modes/unified/UnifiedMapSystem';
 import AIBattleWrapper from './modes/combat/AIBattleWrapper';
+import ChasseMegaMapWrapper from './modes/chasse/ChasseMegaMapWrapper';
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,9 @@ export function App(): React.ReactElement {
             
             {/* 🤖 COMBAT IA vs IA avec connexion V2 */}
             <Route path="/combat" element={<AIBattleWrapper />} />
+            
+            {/* ⚔️ CHASSE TEMPORELLE MEGA MAP 6x6 */}
+            <Route path="/chasse-mega" element={<ChasseMegaMapWrapper />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />

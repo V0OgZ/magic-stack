@@ -41,6 +41,7 @@ show_help() {
     echo -e "${GREEN}  game${NC}        - Lance le Unified Map System (éditeur + jeu)"
     echo -e "${GREEN}  admin${NC}       - Ouvre toutes les consoles d'administration"
     echo -e "${GREEN}  combat${NC}      - Lance le mode Combat IA vs IA (avec connexion V2)"
+    echo -e "${GREEN}  chasse${NC}      - Lance la Chasse Temporelle Mega Map 6x6"
     echo -e "${GREEN}  stop${NC}        - Arrête tous les services"
     echo -e "${GREEN}  status${NC}      - Affiche le statut des services"
     echo -e "${GREEN}  backend${NC}     - Lance seulement les backends"
@@ -187,6 +188,23 @@ case "$COMMAND" in
         sleep 3
         if [[ "$OSTYPE" == "darwin"* ]]; then
             open "http://localhost:5175/combat"
+        fi
+        ;;
+        
+    "chasse"|"ch")
+        echo -e "${MAGENTA}⚔️ Lancement de la Chasse Temporelle Mega Map...${NC}"
+        echo ""
+        # Vérifier les backends
+        if ! check_port 3001; then
+            echo -e "${BLUE}Le backend Rust n'est pas lancé. Démarrage...${NC}"
+            launch_backends
+        fi
+        # Lancer l'app unified et ouvrir sur chasse-mega
+        cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
+        npm run dev &
+        sleep 3
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open "http://localhost:5175/chasse-mega"
         fi
         ;;
         
