@@ -193,16 +193,20 @@ interfaces/
 
 **Magic Stack Unified (port 5175) essaie de TOUT migrer en React:**
 
-| HTML Original | → | Route React | Statut Migration |
-|---------------|---|-------------|------------------|
-| HOT_GAME_UNIFIED.html | → | /game | ❌ Partiel |
-| CHASSE_TEMPORELLE_MEGA_MAP.html | → | /chasse | ❌ Partiel |
-| MAP_ICON_PLACER_ADVANCED.html | → | /editor | ✅ 100% FAIT! MapIconPlacerV2.tsx |
-| MULTIPLAYER_DEMO_HOMM3.html | → | /multiplayer | ✅ Squelette |
-| IA_VS_IA_AUTOPLAY.html | → | /ai-battle | ✅ Squelette |
-| SPECTATOR_GOD_MODE.html | → | /spectator | ✅ Squelette |
+| HTML Original | → | Route React | Statut Migration | Jour |
+|---------------|---|-------------|------------------|------|
+| HOT_GAME_UNIFIED.html | → | /game | ❌ Partiel | J32 |
+| CHASSE_TEMPORELLE_MEGA_MAP.html | → | /chasse-mega | ✅ WRAPPER FAIT! | J34 |
+| MAP_ICON_PLACER_ADVANCED.html | → | /editor | ✅ 100% MIGRÉ! MapIconPlacerV2.tsx | J33 |
+| MULTIPLAYER_DEMO_HOMM3.html | → | /multiplayer | ✅ Squelette | J32 |
+| IA_VS_IA_AUTOPLAY.html | → | /combat | ✅ WRAPPER FAIT! | J34 |
+| SPECTATOR_GOD_MODE.html | → | /spectator | ✅ Squelette | J32 |
+| UnifiedMapSystem | → | /unified | ✅ 90% L'ÉDITEUR PRINCIPAL! | J33 |
 
-**RÉSUMÉ:** Les HTML marchent à 100%, React est à 40% migré (MapIconPlacerV2 COMPLET ✨)
+**RÉSUMÉ JOUR 34:** 
+- 2 nouveaux wrappers HTML créés (combat + chasse)
+- L'éditeur unifié fonctionne à 90%
+- React est à 60% migré
 
 ## 🎯 DÉCISIONS À PRENDRE
 
