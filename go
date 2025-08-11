@@ -365,6 +365,20 @@ case "$1" in
         open "http://localhost:8000/HTML_INDEX.html"
         ;;
     
+    "mcp")
+        echo -e "${CYAN}🎯 Lancement MCP Server (port 9000)...${NC}"
+        if ! check_port 9000; then
+            cd "$MAGIC_DIR"
+            python3 mcp_server.py > logs/mcp_server.log 2>&1 &
+            sleep 2
+            echo -e "${GREEN}✅ MCP Server lancé!${NC}"
+            echo "📊 Bridge actif: Rust + Java + VectorDB + Clippy"
+            echo "🔗 http://localhost:9000/mcp/health"
+        else
+            echo -e "${GREEN}✅ MCP Server déjà actif!${NC}"
+        fi
+        ;;
+    
     # HELP (et cas par défaut)
     "help"|"h"|"")
         echo "═══════════════════════════════════"
@@ -376,6 +390,7 @@ case "$1" in
         echo "  ./go stop     - Arrête tout"
         echo "  ./go status   - Voir l'état des services"
         echo "  ./go html     - Lance serveur HTML (port 8000)"
+        echo "  ./go mcp      - Lance MCP Server (port 9000)"
         echo ""
         echo "🔨 Build & Deploy:"
         echo "  ./go compile  - Compile tout (Rust + Java + Frontend)"
