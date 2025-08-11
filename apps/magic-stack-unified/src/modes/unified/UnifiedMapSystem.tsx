@@ -41,15 +41,24 @@ export function UnifiedMapSystem(): React.ReactElement {
     canPlayMap,
   } = useUnifiedMapStore();
 
+  // Initialize AssetsService
+  useEffect(() => {
+    import('../../services/AssetsService').then(({ AssetsService }) => {
+      AssetsService.initialize();
+    });
+  }, []);
+
   // Auto-create world/map si nécessaire
   useEffect(() => {
     if (!currentWorld) {
-      newWorld('Nouveau Monde', 50, 50);
+      console.log('Creating default world...');
+      newWorld('Nouveau Monde', 20, 20); // Plus petit pour commencer
     }
   }, [currentWorld, newWorld]);
 
   useEffect(() => {
     if (currentWorld && !currentMap) {
+      console.log('Creating default map...');
       newMap('Nouvelle Map');
     }
   }, [currentWorld, currentMap, newMap]);

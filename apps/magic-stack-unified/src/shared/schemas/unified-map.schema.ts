@@ -306,11 +306,14 @@ export function validateMap(data: unknown): Map {
 export function createEmptyWorld(name: string, width: number, height: number): World {
   const hexagons: HexTerrain[] = [];
   
-  // Génère une grille hexagonale
-  for (let q = 0; q < width; q++) {
-    for (let r = 0; r < height; r++) {
+  // Génère une grille hexagonale (axial coordinates)
+  // On utilise un pattern plus compact pour les coordonnées axiales
+  for (let r = 0; r < height; r++) {
+    for (let q = 0; q < width; q++) {
+      // Décalage pour les lignes impaires (offset-r)
+      const offsetQ = q - Math.floor(r / 2);
       hexagons.push({
-        position: { q, r },
+        position: { q: offsetQ, r },
         type: 'grass',
         elevation: 0,
         passable: true,

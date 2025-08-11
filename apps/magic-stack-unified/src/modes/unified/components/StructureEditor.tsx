@@ -60,8 +60,8 @@ export function StructureEditor(): React.ReactElement {
     const y = HEX_SIZE * (3 / 2 * r);
     
     return {
-      x: x * zoomLevel + viewOffset.x,
-      y: y * zoomLevel + viewOffset.y,
+      x: x * zoomLevel + viewOffset.x + 100, // Offset pour centrer
+      y: y * zoomLevel + viewOffset.y + 100,
     };
   };
 
@@ -92,6 +92,21 @@ export function StructureEditor(): React.ReactElement {
     }
   };
 
+  // Resize canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 200;
+    };
+    
+    resize();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
+
   // Rendu du canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -99,6 +114,12 @@ export function StructureEditor(): React.ReactElement {
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
+    // S'assurer que le canvas a les bonnes dimensions
+    if (canvas.width === 0 || canvas.height === 0) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 200;
+    }
     
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -176,11 +197,11 @@ export function StructureEditor(): React.ReactElement {
     }}>
       <canvas
         ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight - 200}
         style={{
           cursor: 'crosshair',
           display: 'block',
+          width: '100%',
+          height: '100%',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
