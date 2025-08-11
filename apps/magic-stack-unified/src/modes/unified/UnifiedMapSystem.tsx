@@ -6,6 +6,8 @@
  */
 
 import React, { useState, useEffect, lazy, Suspense } from 'react';
+import V2Adapter from '../../shared/v2-adapter';
+import { MapFileService } from '../../services/MapFileService';
 import { useUnifiedMapStore } from '../../shared/store/unifiedMapStore';
 import type { EditorMode } from '../../shared/store/unifiedMapStore';
 
@@ -160,6 +162,47 @@ export function UnifiedMapSystem(): React.ReactElement {
           >
             🆕 Nouveau World
           </button>
+
+          <button
+            onClick={async () => {
+              if (useUnifiedMapStore.getState().currentMap) {
+                await useUnifiedMapStore.getState().saveMap();
+              }
+            }}
+            style={{
+              padding: '8px 16px',
+              background: 'rgba(72, 187, 120, 0.2)',
+              border: '1px solid rgba(72, 187, 120, 0.5)',
+              borderRadius: 8,
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            💾 Save Map
+          </button>
+
+          <button
+            onClick={async () => {
+              const { local } = await MapFileService.listMaps();
+              if (local && local.length > 0) {
+                // charge la dernière entrée
+                const last = local[local.length - 1];
+                useUnifiedMapStore.getState().loadMap(last);
+              }
+            }}
+            style={{
+              padding: '8px 16px',
+              background: 'rgba(66, 153, 225, 0.2)',
+              border: '1px solid rgba(66, 153, 225, 0.5)',
+              borderRadius: 8,
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            ⤓ Load Last
+          </button>
           
           <button
             onClick={exportToFile}
@@ -192,6 +235,40 @@ export function UnifiedMapSystem(): React.ReactElement {
               }}
             >
               ▶️ PLAY THIS MAP
+            </button>
+          )}
+
+          {canPlayMap() && (
+            <button
+              onClick={async () => {
+                const state = useUnifiedMapStore.getState();
+                const map = state.currentMap;
+                if (!map) return;
+                // Push toutes les resources vers le moteur
+                for (const r of map.resources) {
+                  try {
+                    await V2Adapter.upsertEntity({
+                      id: r.id,
+                      position: { x: r.position_6d.x, y: r.position_6d.y },
+                      te: r.temporal?.te ?? map.initial_state.te,
+                      energy_complex: r.energy_complex ? { A: r.energy_complex.A, phi: r.energy_complex.phi } : { A: 50, phi: 0 }
+                    });
+                  } catch (e) {
+                    // continue
+                  }
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                background: 'rgba(237, 137, 54, 0.2)',
+                border: '1px solid rgba(237, 137, 54, 0.5)',
+                borderRadius: 8,
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              🔄 Sync to Engine
             </button>
           )}
         </div>
