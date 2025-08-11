@@ -35,8 +35,8 @@ export function SpeechBubble({
   const [displayedText, setDisplayedText] = useState('');
   const [isVisible, setIsVisible] = useState(true);
   const [animationClass, setAnimationClass] = useState('bubble-enter');
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const typingRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const typingRef = useRef<ReturnType<typeof setTimeout>>();
   
   // Effet de typing
   useEffect(() => {

@@ -1,0 +1,86 @@
+CONTEXTE GLOBAL - HEROES OF TIME - JOUR 32
+
+=== VISION DU JEU (Vincent) ===
+
+Heroes of Time = Jeu stratégique multivers avec CD Engine (Causalité-Déphasée)
+- Inspiré Heroes of Might & Magic mais avec TEMPS comme terrain de jeu
+- Brouillard de causalité remplace tour par tour
+- Actions superposées jusqu'à observation (quantique)
+- Combat TCG (cartes) en attendant animations complètes
+- Sortie prévue 2026
+
+=== ARCHITECTURE V2 (Specs complètes) ===
+
+CONCEPTS CLÉS:
+- Positions 6D: x,y,z,t (temps), c (causal), psi (quantum)  
+- Énergie complexe: E = A + iΦ (amplitude + phase)
+- Drift temporel: t_w (monde) vs t_e (entité)
+- OPC (Ombre Portée Causalité): brut/qualité/effectif
+- Régulateurs: Anna, Vince, Overload (anti-abus)
+
+APIs V2 OBLIGATOIRES:
+- Tick toutes les 100ms
+- Q* search (37x plus rapide que embeddings)
+- Positions 6D partout
+- v2-adapter.js existe déjà dans shared/
+
+=== ÉTAT ACTUEL ===
+
+12 ROUTES HTML (100% fonctionnelles):
+1. HOT_GAME_UNIFIED.html - Le jeu principal
+2. CHASSE_TEMPORELLE_MEGA_MAP.html - Mode aventure
+3. HOMM3_PWA_IPAD_CLIPPY.html - Version tablette
+4. MAP_ICON_PLACER_ADVANCED.html - Éditeur magnifique
++ 8 autres
+
+MIGRATION REACT (30% fait):
+- Magic Stack Unified essaie de tout migrer
+- /game, /chasse, /editor partiellement migrés
+- Composants basiques OK (HexGrid, ResourceBar)
+- MANQUE: Combat TCG, IA, sauvegarde, drag&drop
+
+BRIDGE V2-ADAPTER:
+- shared/v2-adapter.js EXISTE DÉJÀ
+- Gère Rust (3001), Java (8080), Python (5001)
+- Calcule drift, énergie complexe, paradoxes
+- MAIS pas utilisé dans les HTML actuels
+
+=== PROBLÈME IDENTIFIÉ ===
+
+1. HTML utilisent vieilles APIs V1
+2. React essaie V2 mais incomplet
+3. v2-adapter existe mais pas branché
+4. Tout éparpillé dans plusieurs repos
+
+=== SOLUTION PROPOSÉE ===
+
+MIGRATION INTELLIGENTE:
+1. Garder le design HTML (magnifique)
+2. Migrer progressivement en React
+3. Utiliser v2-adapter.js partout
+4. Tout dans un seul dossier
+
+PRIORITÉS:
+1. MAP_ICON_PLACER_ADVANCED - L'éditeur magnifique
+2. HOT_GAME_UNIFIED - Le jeu principal  
+3. Connexion APIs V2 via adapter
+
+STRATÉGIE:
+- Pas de refactor massif
+- Drop-in v2-adapter dans HTML d'abord
+- Migration React progressive
+- Garder CSS/design à 100%
+
+=== PHILOSOPHIE ===
+
+"Pace is a resource" - On orchestre le tempo, pas des tours figés
+Drift léger par défaut, jamais EV+ en AFK
+Double halo UI: anneau pâle (OPC brut) + cœur lumineux (qualité)
+Lisibilité > réalisme dans l'UI
+
+=== NEXT STEPS ===
+
+1. Brancher v2-adapter.js dans MAP_ICON_PLACER_ADVANCED.html
+2. Tester connexion APIs V2
+3. Si OK, migrer en React en gardant le design
+4. Tout regrouper dans magic-stack-unified

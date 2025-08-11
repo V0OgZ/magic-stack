@@ -153,7 +153,7 @@ export const AIPersonality: React.FC<CharacterSpeechProps> = ({
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .ai-personality-container {
           position: relative;
           padding: 10px;

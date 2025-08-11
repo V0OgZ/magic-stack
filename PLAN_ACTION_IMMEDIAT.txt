@@ -1,0 +1,52 @@
+PLAN ACTION IMMÉDIAT - JOUR 32
+
+=== ÉTAPE 1: BRANCHER v2-adapter.js ===
+
+Dans MAP_ICON_PLACER_ADVANCED.html, ajouter:
+
+<script src="../shared/v2-adapter.js"></script>
+<script>
+const adapter = new V2Adapter();
+
+// Tick obligatoire
+setInterval(() => {
+  adapter.tick({
+    temporal: { tw: Date.now(), te: Date.now() },
+    entities: placedIcons
+  });
+}, 100);
+
+// Sauvegarder avec API V2
+function saveMap() {
+  const mapData = {
+    position: {x:0, y:0, z:0, t:0, c:1, psi:0.5},
+    icons: placedIcons
+  };
+  
+  fetch('http://localhost:8080/api/interstice/upload', {
+    method: 'POST',
+    body: JSON.stringify(mapData)
+  });
+}
+</script>
+
+=== ÉTAPE 2: MIGRER EN REACT ===
+
+Créer MapIconPlacerV2.tsx:
+- Copier TOUT le CSS de l'HTML
+- Utiliser v2-adapter
+- Garder le design 100%
+
+=== ÉTAPE 3: TOUT DANS magic-stack-unified ===
+
+Structure finale:
+/apps/magic-stack-unified/
+  /game (HOT_GAME avec V2)
+  /editor (MAP_ICON_PLACER avec V2)
+  /chasse (CHASSE_TEMPORELLE avec V2)
+
+=== CE QU'ON FAIT MAINTENANT ===
+
+1. Test v2-adapter dans MAP_ICON_PLACER_ADVANCED.html
+2. Si OK, migration React progressive
+3. Un seul dossier, une seule app

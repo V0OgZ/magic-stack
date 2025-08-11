@@ -9,9 +9,10 @@ import { HexGrid } from '../../shared/components/HexGrid';
 import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { ResourceBar } from '../../shared/components/ResourceBar';
 import { useEditorStore } from './store/editorStore';
+import { MapIconPlacerV2 } from './MapIconPlacerV2';
 
 export function EditorView(): React.ReactElement {
-  const [mode, setMode] = React.useState<'edit' | 'test' | 'import'>('import');
+  const [mode, setMode] = React.useState<'edit' | 'test' | 'import' | 'icon-placer'>('import');
   const [isRunning, setIsRunning] = React.useState(false);
   const { hexes, selectedHex, setSelectedHex, importMap } = useEditorStore();
   
@@ -65,6 +66,11 @@ export function EditorView(): React.ReactElement {
     input.click();
   };
   
+  // Mode Icon Placer V2 - Éditeur de carte avec APIs V2
+  if (mode === 'icon-placer') {
+    return <MapIconPlacerV2 />;
+  }
+  
   // Mode Import - écran d'accueil
   if (mode === 'import') {
     return (
@@ -117,6 +123,25 @@ export function EditorView(): React.ReactElement {
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             📂 Importer un Scénario
+          </button>
+          
+          <button
+            onClick={() => setMode('icon-placer')}
+            style={{
+              padding: '15px 30px',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 12,
+              fontSize: 18,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            🗺️ Map Icon Placer V2
           </button>
           
           <a

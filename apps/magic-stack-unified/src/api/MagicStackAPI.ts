@@ -14,9 +14,9 @@ class MagicStackAPI {
   
   // Configuration des endpoints
   private endpoints = {
-    rust: process.env.RUST_API || 'http://localhost:3001',
-    java: process.env.JAVA_API || 'http://localhost:8080',
-    vector: process.env.VECTOR_API || 'http://localhost:5001'
+    rust: import.meta.env?.VITE_RUST_API || 'http://localhost:3001',
+    java: import.meta.env?.VITE_JAVA_API || 'http://localhost:8080',
+    vector: import.meta.env?.VITE_VECTOR_API || 'http://localhost:5001'
   };
   
   private constructor() {

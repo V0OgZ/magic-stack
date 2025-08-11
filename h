@@ -10,6 +10,16 @@ CYAN='\033[0;36m'
 GOLD='\033[0;33m'
 NC='\033[0m' # No Color
 
+# Traitement direct de la commande map
+if [ "$1" = "map" ]; then
+    if [ -f ".map" ]; then
+        cat .map
+    else
+        echo "Fichier .map non trouve"
+    fi
+    exit 0
+fi
+
 # Configuration
 FRONTEND_PORT=5002
 GAME_SERVER_PORT=3002
@@ -48,6 +58,7 @@ show_main_menu() {
     echo -e "  ${CYAN}[3]${NC} ☕ Java Backend (8080)            $(check_port $JAVA_PORT)"
     echo -e "  ${CYAN}[4]${NC} 🐍 Vector DB (5001)               $(check_port $VECTOR_PORT)"
     echo -e "  ${CYAN}[5]${NC} ⏹️  Arrêter tous les services"
+    echo -e "  ${CYAN}[6]${NC} 🔧 MODE DEV (lance tout + évite conflits)"
     echo ""
     
     echo -e "${YELLOW}━━━ LE VRAI JEU ━━━${NC}"
@@ -606,6 +617,16 @@ gi        38)
         0) 
             echo -e "${GOLD}Au revoir ! 🎮${NC}"
             exit 0
+            ;;
+        map)
+            if [ -f ".map" ]; then
+                echo -e "${GOLD}🗺️ CARTE DU PROJET MAGIC-STACK${NC}"
+                echo ""
+                cat .map
+            else
+                echo -e "${RED}❌ Fichier .map non trouvé${NC}"
+                echo -e "${YELLOW}Le fichier .map contient la carte complète du projet${NC}"
+            fi
             ;;
         *)
             echo -e "${RED}Option invalide: $choice${NC}"
