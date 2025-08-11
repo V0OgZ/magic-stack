@@ -20,6 +20,7 @@ import { ToolPalette } from './components/ToolPalette';
 import { TimelineBar } from './components/TimelineBar';
 import { PlayControls } from './components/PlayControls';
 import { StatusBar } from './components/StatusBar';
+import { PlayMapBridge } from './PlayMapBridge';
 
 export function UnifiedMapSystem(): React.ReactElement {
   const {
@@ -74,7 +75,7 @@ export function UnifiedMapSystem(): React.ReactElement {
         );
       
       case 'play':
-        return <PlayMode />;
+        return <PlayMapBridge />;
       
       case 'overlay':
         return <OverlayMode />;
@@ -265,47 +266,7 @@ function TimelineWrapper(): React.ReactElement {
   );
 }
 
-function PlayMode(): React.ReactElement {
-  const { currentMap, currentWorld } = useUnifiedMapStore();
-  
-  return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1d3a 100%)',
-    }}>
-      <div style={{
-        padding: 40,
-        background: 'rgba(102, 126, 234, 0.1)',
-        borderRadius: 20,
-        border: '2px solid rgba(102, 126, 234, 0.5)',
-        textAlign: 'center',
-      }}>
-        <h2 style={{
-          fontSize: 32,
-          marginBottom: 20,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>
-          🎮 Mode Jeu
-        </h2>
-        <p style={{ fontSize: 18, marginBottom: 10 }}>
-          Map: {currentMap?.name}
-        </p>
-        <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }}>
-          World: {currentWorld?.name}
-        </p>
-        <p style={{ marginTop: 20, fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
-          Le jeu se lance ici avec la map actuelle !
-        </p>
-      </div>
-    </div>
-  );
-}
+
 
 function OverlayMode(): React.ReactElement {
   // Mode overlay avec tous les éditeurs superposés

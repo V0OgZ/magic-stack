@@ -19,6 +19,7 @@ import type {
   Position6D,
 } from '../schemas/unified-map.schema';
 import { createEmptyWorld, createEmptyMap } from '../schemas/unified-map.schema';
+import { MapFileService } from '../../services/MapFileService';
 
 // ========== TYPES ==========
 
@@ -202,8 +203,13 @@ export const useUnifiedMapStore = create<UnifiedMapState>()(
           const { currentWorld, worldPath } = get();
           if (!currentWorld) return;
           
-          // TODO: Implémenter la sauvegarde via API
-          console.log('Saving world:', worldPath, currentWorld);
+          const result = await MapFileService.saveWorldBackend(currentWorld);
+          if (result.success) {
+            set({ worldPath: result.path });
+            console.log('✅ World sauvegardé:', result.path);
+          } else {
+            console.error('❌ Erreur sauvegarde world:', result.error);
+          }
         },
         
         newMap: (name) => {
@@ -234,38 +240,34 @@ export const useUnifiedMapStore = create<UnifiedMapState>()(
           const { currentMap, mapPath } = get();
           if (!currentMap) return;
           
-          // TODO: Implémenter la sauvegarde via API
-          console.log('Saving map:', mapPath, currentMap);
+          const result = await MapFileService.saveMapBackend(currentMap);
+          if (result.success) {
+            set({ mapPath: result.path });
+            console.log('✅ Map sauvegardée:', result.path);
+          } else {
+            console.error('❌ Erreur sauvegarde map:', result.error);
+          }
         },
         
         exportToFile: () => {
           const { currentWorld, currentMap } = get();
-          const data = {
-            world: currentWorld,
-            map: currentMap,
-            version: '2.0',
-            exported: new Date().toISOString(),
-          };
+          if (!currentWorld || !currentMap) {
+            console.error('World et Map requis pour export');
+            return;
+          }
           
-          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `unified_map_${Date.now()}.json`;
-          a.click();
+          const bundle = MapFileService.exportBundle(currentWorld, currentMap);
+          MapFileService.downloadFile(bundle, `unified_map_${Date.now()}.json`);
         },
         
-        importFromFile: (jsonData) => {
-          try {
-            const data = JSON.parse(jsonData);
-            if (data.world) {
-              get().loadWorld(data.world);
-            }
-            if (data.map) {
-              get().loadMap(data.map);
-            }
-          } catch (err) {
-            console.error('Failed to import:', err);
+        importFromFile: async (jsonData) => {
+          const result = await MapFileService.importBundle(jsonData);
+          if (result.success && result.data) {
+            get().loadWorld(result.data.world);
+            get().loadMap(result.data.map);
+            console.log('✅ Import réussi');
+          } else {
+            console.error('❌ Erreur import:', result.error);
           }
         },
         
