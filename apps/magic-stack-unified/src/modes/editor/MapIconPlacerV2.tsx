@@ -226,7 +226,7 @@ export function MapIconPlacerV2(props: MapIconPlacerCallbacks = {}): React.React
     v2AdapterRef.current = new V2Adapter({
       rustUrl: 'http://localhost:3001',
       javaUrl: 'http://localhost:8082',
-      pythonUrl: 'http://localhost:5001'
+      pythonUrl: 'http://localhost:7500'
     });
     
     const adapter = v2AdapterRef.current;
