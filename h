@@ -74,6 +74,13 @@ show_main_menu() {
     echo -e "  ${CYAN}[37]${NC} 🧪 Tests Playwright World Editor"
     echo ""
     
+    echo -e "${YELLOW}━━━ BUILD & RELEASE ━━━${NC}"
+    echo -e "  ${CYAN}[50]${NC} 🔨 Compiler les binaires (Java + Rust)"
+    echo -e "  ${CYAN}[51]${NC} 📦 Préparer release complète (binaires + docs)"
+    echo -e "  ${CYAN}[52]${NC} 🚀 Publier sur GitHub Releases"
+    echo -e "  ${CYAN}[53]${NC} 🗂️ Organiser les docs (sans rien perdre)"
+    echo ""
+    
     echo -e "${GOLD}━━━ MAGIC STACK UNIFIED (REACT) ━━━${NC}"
     echo -e "  ${CYAN}[38]${NC} 🎮 Lancer Magic Stack Unified (dev)"
     echo -e "  ${CYAN}[39]${NC} 📦 Build + Preview Magic Stack Unified"
@@ -546,6 +553,55 @@ gi        38)
         42) open_all_docs ;;
         43) launch_autoplay ;;
         44) launch_chasse_temporelle ;;
+        
+        # BUILD & RELEASE
+        50)
+            echo -e "${CYAN}🔨 Compilation des binaires...${NC}"
+            if [ -f "Magic-Stack/build.sh" ]; then
+                cd Magic-Stack
+                chmod +x build.sh
+                ./build.sh
+                cd ..
+                echo -e "${GREEN}✅ Binaires compilés dans dist/${NC}"
+            else
+                echo -e "${RED}❌ Script Magic-Stack/build.sh non trouvé${NC}"
+            fi
+            ;;
+        51)
+            echo -e "${CYAN}📦 Préparation de la release complète...${NC}"
+            if [ -f "PREPARE_COMPLETE_RELEASE.sh" ]; then
+                chmod +x PREPARE_COMPLETE_RELEASE.sh
+                ./PREPARE_COMPLETE_RELEASE.sh
+                echo -e "${GREEN}✅ Release prête dans dist/${NC}"
+                echo "  - Binaires : dist/binaries/"
+                echo "  - Docs V2 : dist/docs/"
+                echo "  - Archive : dist/magic-stack-v2-complete.zip"
+            else
+                echo -e "${RED}❌ Script PREPARE_COMPLETE_RELEASE.sh non trouvé${NC}"
+            fi
+            ;;
+        52)
+            echo -e "${CYAN}🚀 Publication sur GitHub Releases...${NC}"
+            if [ -f "PUBLISH_RELEASE_GITHUB.sh" ]; then
+                chmod +x PUBLISH_RELEASE_GITHUB.sh
+                echo -n "Version (ex: v2.0.0): "
+                read VERSION
+                ./PUBLISH_RELEASE_GITHUB.sh ${VERSION:-v2.0.0}
+            else
+                echo -e "${RED}❌ Script PUBLISH_RELEASE_GITHUB.sh non trouvé${NC}"
+            fi
+            ;;
+        53)
+            echo -e "${CYAN}🗂️ Organisation des docs (sans rien perdre)...${NC}"
+            if [ -f "ORGANISE_DOCS_SANS_PERDRE.sh" ]; then
+                chmod +x ORGANISE_DOCS_SANS_PERDRE.sh
+                ./ORGANISE_DOCS_SANS_PERDRE.sh
+                echo -e "${GREEN}✅ Docs organisées dans docs_organized/${NC}"
+                echo "📖 Voir l'index : docs_organized/INDEX.md"
+            else
+                echo -e "${RED}❌ Script ORGANISE_DOCS_SANS_PERDRE.sh non trouvé${NC}"
+            fi
+            ;;
         
         0) 
             echo -e "${GOLD}Au revoir ! 🎮${NC}"
