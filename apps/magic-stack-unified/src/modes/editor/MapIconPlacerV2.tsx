@@ -205,7 +205,7 @@ export function MapIconPlacerV2(): React.ReactElement {
     console.log('🚀 Initialisation V2 Adapter...');
     v2AdapterRef.current = new V2Adapter({
       rustUrl: 'http://localhost:3001',
-      javaUrl: 'http://localhost:8080',
+      javaUrl: 'http://localhost:8082',
       pythonUrl: 'http://localhost:5001'
     });
     
@@ -245,7 +245,7 @@ export function MapIconPlacerV2(): React.ReactElement {
     });
     
     // Test de connexion orchestrateur
-    fetch('http://localhost:3001/health')
+    fetch(`${adapter.endpoints.rust}/health`)
       .then(res => res.ok && setOrchestratorStatus('online'))
       .catch(() => setOrchestratorStatus('offline'));
     
@@ -346,6 +346,17 @@ export function MapIconPlacerV2(): React.ReactElement {
     };
     
     setPlacedIcons([...placedIcons, newIcon]);
+    // Upsert côté serveur (éditeur jouable)
+    try {
+      v2AdapterRef.current?.upsertEntity({
+        id: newIcon.id,
+        position: { x: newIcon.position_6d.x, y: newIcon.position_6d.y },
+        te: newIcon.temporal?.te ?? temporalState.te,
+        energy_complex: { A: newIcon.energy_complex?.A, phi: newIcon.energy_complex?.phi }
+      });
+    } catch (e) {
+      console.warn('Upsert entity failed (placeIcon):', e);
+    }
     
     // Notification via WebSocket si connecté
     if (v2AdapterRef.current && wsConnected) {
@@ -425,7 +436,8 @@ export function MapIconPlacerV2(): React.ReactElement {
     };
     
     try {
-      const response = await fetch('http://localhost:8080/api/interstice/upload', {
+      const javaBase = v2AdapterRef.current?.endpoints?.java || 'http://localhost:8082';
+      const response = await fetch(`${javaBase}/api/interstice/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mapData)
@@ -1123,13 +1135,16 @@ export function MapIconPlacerV2(): React.ReactElement {
                 <input
                   type="number"
                   value={Math.round(selectedPlaced.position_6d.x)}
-                  onChange={(e) => {
+                    onChange={(e) => {
                     const updated = placedIcons.map(i => 
                       i.id === selectedPlaced.id 
                         ? { ...i, position_6d: { ...i.position_6d, x: Number(e.target.value) }}
                         : i
                     );
                     setPlacedIcons(updated);
+                      // Sync serveur
+                      const nx = Number(e.target.value);
+                      try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: nx, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: selectedPlaced.energy_complex?.phi } }); } catch {}
                   }}
                   style={{
                     width: '100%',
@@ -1146,13 +1161,16 @@ export function MapIconPlacerV2(): React.ReactElement {
                 <input
                   type="number"
                   value={Math.round(selectedPlaced.position_6d.y)}
-                  onChange={(e) => {
+                    onChange={(e) => {
                     const updated = placedIcons.map(i => 
                       i.id === selectedPlaced.id 
                         ? { ...i, position_6d: { ...i.position_6d, y: Number(e.target.value) }}
                         : i
                     );
                     setPlacedIcons(updated);
+                      // Sync serveur
+                      const ny = Number(e.target.value);
+                      try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: ny }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: selectedPlaced.energy_complex?.phi } }); } catch {}
                   }}
                   style={{
                     width: '100%',
@@ -1286,6 +1304,8 @@ export function MapIconPlacerV2(): React.ReactElement {
                         : i
                     );
                     setPlacedIcons(updated);
+                    // Sync serveur
+                    try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: Number(e.target.value), phi: selectedPlaced.energy_complex?.phi } }); } catch {}
                   }}
                   style={{ width: '100%' }}
                 />
@@ -1307,6 +1327,8 @@ export function MapIconPlacerV2(): React.ReactElement {
                         : i
                     );
                     setPlacedIcons(updated);
+                    // Sync serveur
+                    try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: Number(e.target.value) } }); } catch {}
                   }}
                   style={{ width: '100%' }}
                 />

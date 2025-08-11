@@ -73,12 +73,11 @@ class V2Adapter {
      */
     calculateInterference(entity1, entity2) {
         if (!entity1.energy_complex || !entity2.energy_complex) return 0;
-        
-        const phaseDiff = entity1.energy_complex.phase - entity2.energy_complex.phase;
+        const p1 = (entity1.energy_complex.phi ?? entity1.energy_complex.phase ?? 0);
+        const p2 = (entity2.energy_complex.phi ?? entity2.energy_complex.phase ?? 0);
+        const phaseDiff = p1 - p2;
         const distance = this.getDistance(entity1.position, entity2.position);
-        
         if (distance > 10) return 0;
-        
         return Math.cos(phaseDiff) * (1 - distance / 10);
     }
     
