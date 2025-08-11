@@ -151,7 +151,27 @@ interface Connection {
   interference?: number; // Interférence quantique
 }
 
-export function MapIconPlacerV2(): React.ReactElement {
+type MapIconPlacerCallbacks = {
+  onPlace?: (resource: {
+    id: string;
+    emoji: string;
+    name: string;
+    category: string;
+    position_6d: { x: number; y: number; z: number; t: number; c: number; psi: number };
+    size: number;
+    rotation: number;
+    opacity: number;
+  }) => void;
+  onUpdate?: (id: string, updates: Partial<{
+    position_6d: { x?: number; y?: number; z?: number; t?: number; c?: number; psi?: number };
+    energy_complex: { A?: number; phi?: number };
+    size?: number; rotation?: number; opacity?: number; name?: string;
+  }>) => void;
+  onDelete?: (id: string) => void;
+  onConnect?: (from: string, to: string, type: 'temporal' | 'causal' | 'spatial') => void;
+}
+
+export function MapIconPlacerV2(props: MapIconPlacerCallbacks = {}): React.ReactElement {
   // État principal avec UNDO/REDO!
   const {
     state: placedIcons,
@@ -346,6 +366,16 @@ export function MapIconPlacerV2(): React.ReactElement {
     };
     
     setPlacedIcons([...placedIcons, newIcon]);
+    props.onPlace?.({
+      id: newIcon.id,
+      emoji: newIcon.emoji,
+      name: newIcon.name,
+      category: newIcon.category,
+      position_6d: newIcon.position_6d,
+      size: newIcon.size,
+      rotation: newIcon.rotation,
+      opacity: newIcon.opacity,
+    });
     // Upsert côté serveur (éditeur jouable)
     try {
       v2AdapterRef.current?.upsertEntity({
@@ -365,7 +395,7 @@ export function MapIconPlacerV2(): React.ReactElement {
         payload: newIcon
       }));
     }
-  }, [selectedIcon, currentTool, placedIcons, temporalState, wsConnected]);
+  }, [selectedIcon, currentTool, placedIcons, temporalState, wsConnected, props]);
   
   // Créer une connexion entre icônes
   const createConnection = useCallback((fromId: string, toId: string) => {
@@ -397,7 +427,8 @@ export function MapIconPlacerV2(): React.ReactElement {
     };
     
     setConnections([...connections, newConnection]);
-  }, [placedIcons, connections]);
+    props.onConnect?.(fromId, toId, newConnection.type);
+  }, [placedIcons, connections, props]);
   
   // Gérer le clic sur le canvas
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -1145,6 +1176,7 @@ export function MapIconPlacerV2(): React.ReactElement {
                       // Sync serveur
                       const nx = Number(e.target.value);
                       try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: nx, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: selectedPlaced.energy_complex?.phi } }); } catch {}
+                      props.onUpdate?.(selectedPlaced.id, { position_6d: { x: nx } });
                   }}
                   style={{
                     width: '100%',
@@ -1171,6 +1203,7 @@ export function MapIconPlacerV2(): React.ReactElement {
                       // Sync serveur
                       const ny = Number(e.target.value);
                       try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: ny }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: selectedPlaced.energy_complex?.phi } }); } catch {}
+                      props.onUpdate?.(selectedPlaced.id, { position_6d: { y: ny } });
                   }}
                   style={{
                     width: '100%',
@@ -1306,6 +1339,7 @@ export function MapIconPlacerV2(): React.ReactElement {
                     setPlacedIcons(updated);
                     // Sync serveur
                     try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: Number(e.target.value), phi: selectedPlaced.energy_complex?.phi } }); } catch {}
+                    props.onUpdate?.(selectedPlaced.id, { energy_complex: { A: Number(e.target.value) } });
                   }}
                   style={{ width: '100%' }}
                 />
@@ -1329,6 +1363,7 @@ export function MapIconPlacerV2(): React.ReactElement {
                     setPlacedIcons(updated);
                     // Sync serveur
                     try { v2AdapterRef.current?.upsertEntity({ id: selectedPlaced.id, position: { x: selectedPlaced.position_6d.x, y: selectedPlaced.position_6d.y }, te: selectedPlaced.temporal?.te ?? temporalState.te, energy_complex: { A: selectedPlaced.energy_complex?.A, phi: Number(e.target.value) } }); } catch {}
+                    props.onUpdate?.(selectedPlaced.id, { energy_complex: { phi: Number(e.target.value) } });
                   }}
                   style={{ width: '100%' }}
                 />
@@ -1388,6 +1423,7 @@ export function MapIconPlacerV2(): React.ReactElement {
               setPlacedIcons(placedIcons.filter(i => i.id !== selectedPlaced.id));
               setConnections(connections.filter(c => c.from !== selectedPlaced.id && c.to !== selectedPlaced.id));
               setSelectedPlaced(null);
+              props.onDelete?.(selectedPlaced.id);
             }}
             style={{
               width: '100%',

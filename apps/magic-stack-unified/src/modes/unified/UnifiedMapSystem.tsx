@@ -72,7 +72,20 @@ export function UnifiedMapSystem(): React.ReactElement {
       case 'resources':
         return (
           <Suspense fallback={<LoadingEditor />}>
-            <MapIconPlacerWrapper />
+            <MapIconPlacerV2
+              onPlace={(res) => {
+                useUnifiedMapStore.getState().placeResource(res.position_6d.x, res.position_6d.y);
+              }}
+              onUpdate={(id, updates) => {
+                useUnifiedMapStore.getState().updateResource(id, updates as any);
+              }}
+              onDelete={(id) => {
+                useUnifiedMapStore.getState().deleteResource(id);
+              }}
+              onConnect={(from, to, type) => {
+                useUnifiedMapStore.getState().createConnection(from, to, type as any);
+              }}
+            />
           </Suspense>
         );
       
