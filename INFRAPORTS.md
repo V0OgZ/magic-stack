@@ -1,15 +1,15 @@
 # 🚀 INFRAPORTS - CONFIGURATION ACTUELLE
 
-## ✅ SERVICES ACTIFS
+## ✅ SERVICES ACTIFS - JOUR 35 (11 août 2025)
 
 | Service | Port | Status | Description |
 |---------|------|--------|-------------|
 | **Frontend React** | 5175 | ✅ ONLINE | App React unifiée (1 seule!) |
+| **HTML Server** | 8000 | ✅ ONLINE | Serveur Python pour TOUS les vieux HTML |
 | **Backend Rust** | 3001 | ✅ ONLINE | Calculs 6D, Q*, GraphCD |
 | **Backend Java** | 8082 | ✅ ONLINE | CRUD, APIs, Resources |
 | **Vector DB Service** | 7500 | ✅ ONLINE | Recherche sémantique, mémoire du jeu |
 | **LLM Clippy** | 7501 | ✅ ONLINE | IA qui parle, utilise Vector DB |
-| ~~Backend Python~~ | ~~5001~~ | ❌ NON UTILISÉ | Remplacé par services 7500/7501 |
 
 ## 📂 STRUCTURE
 

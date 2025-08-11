@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 TOUS LES HTML - Magic Stack</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e4e8f1;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 25%, #ff00ff 50%, #ff6b00 75%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .category {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .category h2 {
+            color: #60efff;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .link-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .link-card:hover {
+            background: rgba(96, 239, 255, 0.1);
+            border-color: #60efff;
+            transform: translateY(-2px);
+        }
+        .link-card a {
+            color: #60efff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .link-card .desc {
+            color: #8892b0;
+            font-size: 0.9em;
+        }
+        .link-card .path {
+            color: #565f79;
+            font-size: 0.8em;
+            font-family: monospace;
+            margin-top: 5px;
+        }
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .new { background: #ff4444; color: white; }
+        .old { background: #666; color: white; }
+        .test { background: #ff9800; color: white; }
+        .backup { background: #9c27b0; color: white; }
+        .rust { background: #f74c00; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🎮 TOUS LES HTML - Magic Stack</h1>
+    <p>Serveur HTML sur port 8000 - Accès à TOUS les fichiers HTML du projet</p>
+
+    <div class="category">
+        <h2>🚀 RACINE - HTML Principaux</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/HOT_GAME_UNIFIED.html" target="_blank">HOT Game Unified</a>
+                <span class="status new">PRINCIPAL</span>
+                <div class="desc">Interface unifiée du jeu</div>
+            </div>
+            <div class="link-card">
+                <a href="/IA_VS_IA_AUTOPLAY.html" target="_blank">IA vs IA Autoplay</a>
+                <span class="status new">COMBAT</span>
+                <div class="desc">Combat automatique entre IA</div>
+            </div>
+            <div class="link-card">
+                <a href="/CHASSE_TEMPORELLE_MEGA_MAP.html" target="_blank">Chasse Temporelle MEGA</a>
+                <span class="status new">MAP</span>
+                <div class="desc">Grande carte temporelle</div>
+            </div>
+            <div class="link-card">
+                <a href="/SPECTATOR_GOD_MODE.html" target="_blank">Spectator God Mode</a>
+                <span class="status new">ADMIN</span>
+                <div class="desc">Mode spectateur omniscient</div>
+            </div>
+            <div class="link-card">
+                <a href="/TEST_PORTAILS.html" target="_blank">Test Portails</a>
+                <span class="status test">TEST</span>
+                <div class="desc">Test du système de portails</div>
+            </div>
+            <div class="link-card">
+                <a href="/MULTIPLAYER_DEMO_HOMM3.html" target="_blank">Multiplayer Demo</a>
+                <span class="status new">MULTI</span>
+                <div class="desc">Démo multijoueur HoMM3</div>
+            </div>
+            <div class="link-card">
+                <a href="/VECTOR_DB_EXPLORER.html" target="_blank">Vector DB Explorer</a>
+                <span class="status new">DB</span>
+                <div class="desc">Explorateur base vectorielle</div>
+            </div>
+            <div class="link-card">
+                <a href="/VECTOR_DB_EXPLORER_UI.html" target="_blank">Vector DB UI</a>
+                <span class="status new">DB</span>
+                <div class="desc">Interface Vector DB améliorée</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🦀 RUST BACKEND</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="http://localhost:3001/explorer" target="_blank">Rust API Explorer</a>
+                <span class="status rust">RUST</span>
+                <div class="desc">Explorer intégré de Rust (port 3001)</div>
+                <div class="path">backends/rust/explorer</div>
+            </div>
+            <div class="link-card">
+                <a href="/backends/rust/explorer.html" target="_blank">Explorer HTML</a>
+                <span class="status rust">RUST</span>
+                <div class="desc">Version HTML de l'explorer</div>
+                <div class="path">backends/rust/explorer.html</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📚 DOCUMENTATION</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/MANUEL_DU_JOUEUR_HOT.html" target="_blank">Manuel du Joueur</a>
+                <span class="status new">DOC</span>
+                <div class="desc">Guide complet du joueur</div>
+            </div>
+            <div class="link-card">
+                <a href="/MANUEL_FACILE_EASY_MODE.html" target="_blank">Manuel Easy Mode</a>
+                <span class="status new">DOC</span>
+                <div class="desc">Guide simplifié</div>
+            </div>
+            <div class="link-card">
+                <a href="/index.html" target="_blank">Index Principal</a>
+                <div class="desc">Page d'accueil</div>
+            </div>
+            <div class="link-card">
+                <a href="/compare-apis.html" target="_blank">Compare APIs</a>
+                <span class="status test">TOOL</span>
+                <div class="desc">Comparateur d'APIs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📁 ARCHIVE</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/archive/WORLD_EDITOR.html" target="_blank">World Editor</a>
+                <span class="status old">ARCHIVE</span>
+                <div class="desc">Ancien éditeur de monde</div>
+            </div>
+            <div class="link-card">
+                <a href="/archive/SCENARIOS_TEST_RUNNER.html" target="_blank">Scenarios Test Runner</a>
+                <span class="status old">ARCHIVE</span>
+                <div class="desc">Testeur de scénarios</div>
+            </div>
+            <div class="link-card">
+                <a href="/archive/TEST_WEBSOCKET.html" target="_blank">Test WebSocket</a>
+                <span class="status test">TEST</span>
+                <div class="desc">Test connexion WebSocket</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>💾 BACKUP JOUR 35</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/BACKUP_JOUR35/hot/assets/ICON_EXPLORER.html" target="_blank">Icon Explorer</a>
+                <span class="status backup">BACKUP</span>
+                <div class="desc">Explorateur d'icônes</div>
+            </div>
+            <div class="link-card">
+                <a href="/BACKUP_JOUR35/hot/assets/MAP_ICON_PLACER.html" target="_blank">Map Icon Placer</a>
+                <span class="status backup">BACKUP</span>
+                <div class="desc">Placement d'icônes sur carte</div>
+            </div>
+            <div class="link-card">
+                <a href="/BACKUP_JOUR35/hot/assets/MAP_ICON_PLACER_ADVANCED.html" target="_blank">Map Icon Placer Advanced</a>
+                <span class="status backup">BACKUP</span>
+                <div class="desc">Version avancée du placer</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📂 DOCS</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/docs/index.html" target="_blank">Docs Index</a>
+                <div class="desc">Documentation principale</div>
+            </div>
+            <div class="link-card">
+                <a href="/docs/vector-explorer.html" target="_blank">Vector Explorer Doc</a>
+                <div class="desc">Doc Vector DB</div>
+            </div>
+            <div class="link-card">
+                <a href="/docs/spectator.html" target="_blank">Spectator Doc</a>
+                <div class="desc">Doc mode spectateur</div>
+            </div>
+            <div class="link-card">
+                <a href="/docs/test-runner.html" target="_blank">Test Runner Doc</a>
+                <div class="desc">Doc test runner</div>
+            </div>
+            <div class="link-card">
+                <a href="/docs/pwa.html" target="_blank">PWA Doc</a>
+                <div class="desc">Progressive Web App</div>
+            </div>
+            <div class="link-card">
+                <a href="/docs/demo.html" target="_blank">Demo</a>
+                <div class="desc">Page de démo</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🧪 SHARED & TESTS</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="/shared/test-v2-integration.html" target="_blank">Test V2 Integration</a>
+                <span class="status test">TEST</span>
+                <div class="desc">Tests intégration V2</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🔗 SERVICES ACTIFS</h2>
+        <div class="links">
+            <div class="link-card">
+                <a href="http://localhost:5175" target="_blank">Frontend React</a>
+                <span class="status new">ACTIF</span>
+                <div class="desc">Application React principale</div>
+            </div>
+            <div class="link-card">
+                <a href="http://localhost:3001/explorer" target="_blank">Rust Explorer</a>
+                <span class="status rust">ACTIF</span>
+                <div class="desc">API Explorer Rust</div>
+            </div>
+            <div class="link-card">
+                <a href="http://localhost:8082/api" target="_blank">Java API Docs</a>
+                <span class="status new">ACTIF</span>
+                <div class="desc">Documentation Java Spring</div>
+            </div>
+            <div class="link-card">
+                <a href="http://localhost:5175/html/API_EXPLORER_COMPLETE.html" target="_blank">API Explorer Global</a>
+                <span class="status new">ACTIF</span>
+                <div class="desc">Explorer complet tous backends</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh pour voir les nouveaux fichiers
+        setTimeout(() => {
+            console.log("Page prête. Tous les liens disponibles!");
+        }, 1000);
+    </script>
+</body>
+</html>

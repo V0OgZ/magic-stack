@@ -267,6 +267,7 @@ show_status() {
     
     echo -e "${CYAN}🎨 Frontend:${NC}"
     check_port 5175 && echo -e "  ${GREEN}✅${NC} React App (5175)" || echo -e "  ${RED}❌${NC} React App (5175)"
+    check_port 8000 && echo -e "  ${GREEN}✅${NC} HTML Server (8000)" || echo -e "  ${YELLOW}⚪${NC} HTML Server (8000)"
     
     echo ""
     echo -e "${CYAN}⚙️ Backend:${NC}"
@@ -353,16 +354,28 @@ case "$1" in
         open_api
         ;;
     
+    "html")
+        echo -e "${CYAN}🌐 Lancement serveur HTML (port 8000)...${NC}"
+        if ! check_port 8000; then
+            cd "$MAGIC_DIR"
+            python3 html_server.py > logs/html_server.log 2>&1 &
+            sleep 2
+        fi
+        echo -e "${GREEN}✅ Serveur HTML lancé!${NC}"
+        open "http://localhost:8000/HTML_INDEX.html"
+        ;;
+    
     # HELP (et cas par défaut)
     "help"|"h"|"")
         echo "═══════════════════════════════════"
-        echo "    🎮 MAGIC STACK DEVOPS"
+        echo "    🎮 MAGIC STACK DEVOPS - JOUR 35"
         echo "═══════════════════════════════════"
         echo ""
         echo "🚀 Commandes principales:"
         echo "  ./go start    - Démarre TOUS les services"
         echo "  ./go stop     - Arrête tout"
         echo "  ./go status   - Voir l'état des services"
+        echo "  ./go html     - Lance serveur HTML (port 8000)"
         echo ""
         echo "🔨 Build & Deploy:"
         echo "  ./go compile  - Compile tout (Rust + Java + Frontend)"
@@ -375,6 +388,7 @@ case "$1" in
         echo "  ./go api      - Ouvre l'API Explorer"
         echo "  ./go combat   - Ouvre le combat IA vs IA"
         echo "  ./go chasse   - Ouvre la chasse temporelle"
+        echo "  ./go html     - Ouvre TOUS les vieux HTML"
         echo ""
         echo "📍 Ports ACTUELS:"
         echo "  5175 - Frontend React"
@@ -382,6 +396,7 @@ case "$1" in
         echo "  8082 - Backend Java (CRUD, APIs)"
         echo "  7500 - Vector DB (recherche)"
         echo "  7501 - LLM Clippy (IA)"
+        echo "  8000 - Serveur HTML (tous les vieux trucs)"
         ;;
     
     *)
