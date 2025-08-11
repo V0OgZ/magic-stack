@@ -8,6 +8,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import V2Adapter from '../../../../../shared/v2-adapter.js';
 import './MapIconPlacerV2.css';
 
+// NOUVEAUX IMPORTS - Composants exportables!
+import { MiniMap } from '../../shared/components/MiniMap';
+import { useUndoRedo } from '../../shared/hooks/useUndoRedo';
+import { useMapLayers } from '../../shared/hooks/useMapLayers';
+import * as MapUtils from '../../shared/utils/mapUtils';
+
 // CATALOGUE D'ICÔNES - Exactement comme dans HTML
 const ICON_CATALOG = {
   "🏞️ Terrains": {
@@ -146,8 +152,16 @@ interface Connection {
 }
 
 export function MapIconPlacerV2(): React.ReactElement {
-  // État principal
-  const [placedIcons, setPlacedIcons] = useState<PlacedIcon[]>([]);
+  // État principal avec UNDO/REDO!
+  const {
+    state: placedIcons,
+    setState: setPlacedIcons,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    handleKeyPress,
+  } = useUndoRedo<PlacedIcon[]>([]);
   const [selectedIcon, setSelectedIcon] = useState<{emoji: string, name: string, category: string} | null>(null);
   const [selectedPlaced, setSelectedPlaced] = useState<PlacedIcon | null>(null);
   const [currentTool, setCurrentTool] = useState<'place' | 'connect' | 'delete'>('place');
@@ -176,6 +190,15 @@ export function MapIconPlacerV2(): React.ReactElement {
   const nextId = useRef(1);
   const v2AdapterRef = useRef<any>(null);
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  // Viewport pour la mini-map
+  const [viewport, setViewport] = useState({ x: 0, y: 0, width: 800, height: 600 });
+  
+  // Raccourcis clavier pour undo/redo
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [handleKeyPress]);
   
   // Initialisation V2 Adapter avec WebSocket
   useEffect(() => {
@@ -1002,6 +1025,69 @@ export function MapIconPlacerV2(): React.ReactElement {
               />
             ))}
           </div>
+        </div>
+        
+        {/* MINI-MAP */}
+        <MiniMap
+          mapWidth={2000}
+          mapHeight={2000}
+          entities={placedIcons.map(icon => ({
+            x: icon.position_6d.x,
+            y: icon.position_6d.y,
+            icon: icon.emoji,
+            size: icon.size,
+          }))}
+          viewportX={viewport.x}
+          viewportY={viewport.y}
+          viewportWidth={viewport.width}
+          viewportHeight={viewport.height}
+          onViewportChange={(x, y) => setViewport(prev => ({ ...prev, x, y }))}
+          style={{ top: 70 }}
+        />
+        
+        {/* UNDO/REDO Controls */}
+        <div style={{
+          position: 'absolute',
+          top: 20,
+          left: 340,
+          display: 'flex',
+          gap: 10,
+          zIndex: 1000,
+        }}>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            title="Undo (Cmd+Z)"
+            style={{
+              padding: '8px 16px',
+              background: canUndo ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'rgba(0,0,0,0.3)',
+              border: 'none',
+              borderRadius: 8,
+              color: 'white',
+              cursor: canUndo ? 'pointer' : 'not-allowed',
+              opacity: canUndo ? 1 : 0.5,
+              fontSize: 16,
+            }}
+          >
+            ↩️ Undo
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            title="Redo (Cmd+Shift+Z)"
+            style={{
+              padding: '8px 16px',
+              background: canRedo ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'rgba(0,0,0,0.3)',
+              border: 'none',
+              borderRadius: 8,
+              color: 'white',
+              cursor: canRedo ? 'pointer' : 'not-allowed',
+              opacity: canRedo ? 1 : 0.5,
+              fontSize: 16,
+            }}
+          >
+            ↪️ Redo
+          </button>
         </div>
       </div>
       

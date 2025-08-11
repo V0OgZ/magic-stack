@@ -57,13 +57,16 @@ export function SpatioTemporalMapEditor({
     present: true,
     future: true
   });
+  const [draggedEntity, setDraggedEntity] = useState<any>(null);
+  const [hoveredCell, setHoveredCell] = useState<{x: number, y: number} | null>(null);
   
   // Référence pour le canvas de la map
   const mapCanvasRef = useRef<HTMLDivElement>(null);
 
   // Placer un événement spatio-temporel
-  const placeEvent = (x: number, y: number) => {
-    if (!selectedEntity) return;
+  const placeEvent = (x: number, y: number, entity?: any) => {
+    const entityToPlace = entity || selectedEntity;
+    if (!entityToPlace) return;
     
     const newEvent: TemporalEvent = {
       id: `event_${Date.now()}`,
@@ -71,10 +74,10 @@ export function SpatioTemporalMapEditor({
       y,
       time: timelineDay,
       entity: {
-        type: selectedTool!,
-        id: selectedEntity.id,
-        icon: selectedEntity.icon_id || selectedEntity.icon || '❓',
-        name: selectedEntity.name
+        type: selectedTool || 'resource',
+        id: entityToPlace.id,
+        icon: entityToPlace.icon_id || entityToPlace.icon || '❓',
+        name: entityToPlace.name
       },
       cycle: {
         enabled: false,
@@ -87,7 +90,31 @@ export function SpatioTemporalMapEditor({
     onEventPlace?.(newEvent);
     
     // Notifier le backend
-    console.log(`📡 Événement placé: ${selectedEntity.name} au jour ${timelineDay} en (${x}, ${y})`);
+    console.log(`📡 Événement placé: ${entityToPlace.name} au jour ${timelineDay} en (${x}, ${y})`);
+  };
+
+  // Gestion du drag & drop
+  const handleDragStart = (e: React.DragEvent, entity: any, type: string) => {
+    setDraggedEntity({ ...entity, type });
+    setSelectedTool(type as any);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent, x: number, y: number) => {
+    e.preventDefault();
+    if (draggedEntity) {
+      placeEvent(x, y, draggedEntity);
+      setDraggedEntity(null);
+    }
+  };
+
+  const handleCellHover = (x: number, y: number) => {
+    setHoveredCell({ x, y });
   };
 
   // Filtrer les événements visibles selon le jour actuel
