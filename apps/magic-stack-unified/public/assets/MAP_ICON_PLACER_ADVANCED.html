@@ -1190,6 +1190,15 @@
                     totalConnections: connections.length
                 }
             };
+            
+            // ENVOIE AU WRAPPER REACT SI ON EST DANS UNE IFRAME
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'SAVE_MAP',
+                    data: data
+                }, '*');
+            }
+            
             document.getElementById('exportData').textContent = JSON.stringify(data, null, 2);
             document.getElementById('exportModal').style.display = 'flex';
         }

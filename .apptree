@@ -1,0 +1,69 @@
+# ARBORESCENCE DES PAGES REACT - MAGIC STACK
+# ============================================
+
+localhost:5175/
+│
+├── / (HomePage - Accueil principal)
+│   ├── [Bouton Game] → /game
+│   ├── [Bouton Editor] → /editor  
+│   ├── [Bouton Admin] → /admin
+│   └── [Bouton Unified] → /unified
+│
+├── /game (GameView - Mode Jeu)
+│   ├── Combat TCG
+│   ├── Exploration
+│   └── Brouillard de guerre
+│
+├── /editor (EditorView - Écran d'accueil éditeur)
+│   │
+│   ├── [Mode Import] → Écran avec 3 boutons:
+│   │   ├── [Importer un Scénario] → Ouvre sélecteur fichier
+│   │   ├── [Éditeur de Map] → mode='icon-placer'
+│   │   └── [Tester un Scénario] → mode='test'
+│   │
+│   ├── mode='icon-placer' → MapIconPlacerV2 (React)
+│   │   └── Éditeur Space-Time (grille carrée, 6D)
+│   │
+│   └── mode='test' → Mode test instantiation
+│       └── Test avec backends actifs
+│
+├── /unified (UnifiedMapSystem) 
+│   ├── HexGrid (Géographie fixe)
+│   ├── SquareGrid (Space-Time)
+│   └── Controls unifiés
+│
+└── /admin (AdminView - Outils admin)
+    ├── API Explorer → /html/API_EXPLORER_COMPLETE.html
+    ├── Vector DB Manager
+    └── System Status
+
+# AUTRES PAGES HTML (servies sur port 8000)
+# ==========================================
+
+localhost:8000/
+│
+├── MAP_ICON_PLACER_ADVANCED.html (Original HTML adoré)
+├── VINCENT_DASHBOARD_PRINCIPAL.html
+├── API_EXPLORER_COMPLETE.html (aussi sur React)
+└── Autres HTML legacy...
+
+# SERVICES BACKEND
+# =================
+
+localhost:3001 → Rust (calculs 6D, Q*)
+localhost:8082 → Java (CRUD, APIs)
+localhost:7500 → Vector DB
+localhost:7501 → LLM Clippy
+localhost:9000 → MCP Server (bridge unifié)
+
+# COMMANDES GO
+# =============
+
+./go          → Aide
+./go start    → Lance tout
+./go game     → Ouvre localhost:5175/game
+./go editor   → Ouvre localhost:5175/editor
+./go admin    → Ouvre localhost:5175/admin
+./go api      → Ouvre API Explorer
+./go mcp      → Lance MCP Server
+./go status   → État des services

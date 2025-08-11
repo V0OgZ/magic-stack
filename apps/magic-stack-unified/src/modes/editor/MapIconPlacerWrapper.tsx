@@ -1,0 +1,176 @@
+import React, { useEffect, useRef, useState } from 'react';
+
+export function MapIconPlacerWrapper() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [apiStatus, setApiStatus] = useState({ rust: false, java: false, vectorDB: false });
+
+  useEffect(() => {
+    // Vérifier les APIs au démarrage
+    checkAPIs();
+
+    // Communication bidirectionnelle avec le HTML
+    const handleMessage = async (event: MessageEvent) => {
+      const { type, data } = event.data;
+
+      switch(type) {
+        case 'SAVE_MAP':
+          // Sauvegarder sur Java backend
+          try {
+            const response = await fetch('http://localhost:8082/api/maps/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            if (response.ok) {
+              sendToIframe({ type: 'SAVE_SUCCESS', message: 'Map sauvegardée!' });
+            }
+          } catch (error) {
+            sendToIframe({ type: 'SAVE_ERROR', message: 'Erreur sauvegarde' });
+          }
+          break;
+
+        case 'LOAD_MAP':
+          // Charger depuis Java backend
+          try {
+            const response = await fetch(`http://localhost:8082/api/maps/${data.mapId}`);
+            if (response.ok) {
+              const mapData = await response.json();
+              sendToIframe({ type: 'MAP_LOADED', data: mapData });
+            }
+          } catch (error) {
+            sendToIframe({ type: 'LOAD_ERROR', message: 'Erreur chargement' });
+          }
+          break;
+
+        case 'CALCULATE_6D':
+          // Calcul 6D via Rust
+          try {
+            const response = await fetch('http://localhost:3001/api/v2/calculate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            if (response.ok) {
+              const result = await response.json();
+              sendToIframe({ type: '6D_RESULT', data: result });
+            }
+          } catch (error) {
+            console.error('Erreur calcul 6D:', error);
+          }
+          break;
+
+        case 'SEARCH_LORE':
+          // Recherche dans Vector DB
+          try {
+            const response = await fetch('http://localhost:7500/search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query: data.query })
+            });
+            if (response.ok) {
+              const results = await response.json();
+              sendToIframe({ type: 'LORE_RESULTS', data: results });
+            }
+          } catch (error) {
+            console.error('Erreur recherche lore:', error);
+          }
+          break;
+
+        case 'ASK_CLIPPY':
+          // Question à Clippy
+          try {
+            const response = await fetch('http://localhost:7501/api/clippy/ask', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ question: data.question, context: data.context })
+            });
+            if (response.ok) {
+              const answer = await response.json();
+              sendToIframe({ type: 'CLIPPY_ANSWER', data: answer });
+            }
+          } catch (error) {
+            console.error('Erreur Clippy:', error);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const sendToIframe = (message: any) => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(message, '*');
+    }
+  };
+
+  const checkAPIs = async () => {
+    // Vérifier chaque backend
+    const checks = [
+      { url: 'http://localhost:3001/health', key: 'rust' },
+      { url: 'http://localhost:8082/health', key: 'java' },
+      { url: 'http://localhost:7500/health', key: 'vectorDB' }
+    ];
+
+    for (const check of checks) {
+      try {
+        const response = await fetch(check.url);
+        setApiStatus(prev => ({ ...prev, [check.key]: response.ok }));
+      } catch {
+        setApiStatus(prev => ({ ...prev, [check.key]: false }));
+      }
+    }
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+      {/* Barre de statut des APIs */}
+      <div style={{
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 1000,
+        background: 'rgba(0, 0, 0, 0.8)',
+        padding: '10px',
+        borderRadius: '8px',
+        display: 'flex',
+        gap: '10px'
+      }}>
+        <span style={{ color: apiStatus.rust ? '#4ade80' : '#ef4444' }}>
+          Rust {apiStatus.rust ? '✓' : '✗'}
+        </span>
+        <span style={{ color: apiStatus.java ? '#4ade80' : '#ef4444' }}>
+          Java {apiStatus.java ? '✓' : '✗'}
+        </span>
+        <span style={{ color: apiStatus.vectorDB ? '#4ade80' : '#ef4444' }}>
+          Vector {apiStatus.vectorDB ? '✓' : '✗'}
+        </span>
+      </div>
+
+      {/* Le chef-d'œuvre HTML */}
+      <iframe
+        ref={iframeRef}
+        src="/assets/MAP_ICON_PLACER_ADVANCED.html"
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none'
+        }}
+        title="Map Icon Placer HD"
+        onLoad={() => {
+          // Envoyer la config initiale au HTML
+          sendToIframe({
+            type: 'INIT',
+            apis: {
+              rust: 'http://localhost:3001',
+              java: 'http://localhost:8082',
+              vectorDB: 'http://localhost:7500',
+              clippy: 'http://localhost:7501'
+            }
+          });
+        }}
+      />
+    </div>
+  );
+}

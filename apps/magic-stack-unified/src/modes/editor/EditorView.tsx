@@ -10,6 +10,7 @@ import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { ResourceBar } from '../../shared/components/ResourceBar';
 import { useEditorStore } from './store/editorStore';
 import { MapIconPlacerV2 } from './MapIconPlacerV2';
+import { MapIconPlacerWrapper } from './MapIconPlacerWrapper';
 
 export function EditorView(): React.ReactElement {
   const [mode, setMode] = React.useState<'edit' | 'test' | 'import' | 'icon-placer'>('import');
@@ -68,7 +69,7 @@ export function EditorView(): React.ReactElement {
   
   // Mode Icon Placer V2 - Éditeur de carte avec APIs V2
   if (mode === 'icon-placer') {
-    return <MapIconPlacerV2 />;
+    return <MapIconPlacerWrapper />;
   }
   
   // Mode Import - écran d'accueil
@@ -145,7 +146,7 @@ export function EditorView(): React.ReactElement {
           </button>
           
           <a
-            href="http://localhost:5174"
+            onClick={() => setMode('icon-placer')}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -179,7 +180,7 @@ export function EditorView(): React.ReactElement {
             💡 Workflow recommandé
           </h3>
           <ol style={{ color: '#a0aec0', lineHeight: 1.8 }}>
-            <li>Créez votre map dans le <strong>World Editor</strong> (port 5174)</li>
+            <li>Créez votre map dans le <strong>World Editor</strong> (cet éditeur)</li>
             <li>Exportez en JSON</li>
             <li>Importez ici pour tester avec V2</li>
             <li>Vérifiez drift, paradoxes, régulateurs</li>
