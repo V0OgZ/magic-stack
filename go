@@ -145,18 +145,7 @@ start_frontend() {
     fi
 }
 
-start_python() {
-    if ! check_port 5001; then
-        echo -e "${CYAN}Démarrage Python Vector DB (optionnel)...${NC}"
-        cd "$MAGIC_DIR/backends/python"
-        if [ -f "app.py" ]; then
-            python3 app.py > "$MAGIC_DIR/logs/python.log" 2>&1 &
-            sleep 2
-        else
-            echo -e "${YELLOW}  Python backend non trouvé (optionnel)${NC}"
-        fi
-    fi
-}
+# Python 5001 n'existe plus - remplacé par services 7500/7501
 
 # === LLM CLIPPY ===
 start_llm() {
@@ -199,7 +188,6 @@ start_all() {
     echo -e "${CYAN}Backends principaux:${NC}"
     start_rust
     start_java
-    start_python
     
     echo ""
     echo -e "${CYAN}Services IA (optionnels):${NC}"
@@ -284,12 +272,11 @@ show_status() {
     echo -e "${CYAN}⚙️ Backend:${NC}"
     check_port 3001 && echo -e "  ${GREEN}✅${NC} Rust (3001) - Calculs 6D" || echo -e "  ${RED}❌${NC} Rust (3001)"
     check_port 8082 && echo -e "  ${GREEN}✅${NC} Java (8082) - CRUD & APIs" || echo -e "  ${RED}❌${NC} Java (8082)"
-    check_port 5001 && echo -e "  ${GREEN}✅${NC} Python (5001) - Vector DB" || echo -e "  ${YELLOW}⚪${NC} Python (5001) - Optionnel"
     
     echo ""
     echo -e "${CYAN}🤖 Services IA:${NC}"
-    check_port 7501 && echo -e "  ${GREEN}✅${NC} LLM Clippy (7501)" || echo -e "  ${YELLOW}⚪${NC} LLM Clippy (7501) - Optionnel"
     check_port 7500 && echo -e "  ${GREEN}✅${NC} Vector DB (7500)" || echo -e "  ${YELLOW}⚪${NC} Vector DB (7500) - Optionnel"
+    check_port 7501 && echo -e "  ${GREEN}✅${NC} LLM Clippy (7501)" || echo -e "  ${YELLOW}⚪${NC} LLM Clippy (7501) - Optionnel"
     
     echo ""
 }
@@ -368,32 +355,33 @@ case "$1" in
     
     # HELP (et cas par défaut)
     "help"|"h"|"")
-        echo -e "${CYAN}═══════════════════════════════════${NC}"
-        echo -e "${CYAN}    🎮 MAGIC STACK DEVOPS${NC}"
-        echo -e "${CYAN}═══════════════════════════════════${NC}"
+        echo "═══════════════════════════════════"
+        echo "    🎮 MAGIC STACK DEVOPS"
+        echo "═══════════════════════════════════"
         echo ""
-        echo -e "${GREEN}🚀 Commandes principales:${NC}"
-        echo "  ${BLUE}./go start${NC}    - Démarre TOUS les services"
-        echo "  ${BLUE}./go stop${NC}     - Arrête tout"
-        echo "  ${BLUE}./go status${NC}   - Voir l'état des services"
+        echo "🚀 Commandes principales:"
+        echo "  ./go start    - Démarre TOUS les services"
+        echo "  ./go stop     - Arrête tout"
+        echo "  ./go status   - Voir l'état des services"
         echo ""
-        echo -e "${GREEN}🔨 Build & Deploy:${NC}"
-        echo "  ${BLUE}./go compile${NC}  - Compile tout (Rust + Java + Frontend)"
-        echo "  ${BLUE}./go test${NC}     - Lance tous les tests"
-        echo "  ${BLUE}./go deploy${NC}   - Crée les artifacts production"
+        echo "🔨 Build & Deploy:"
+        echo "  ./go compile  - Compile tout (Rust + Java + Frontend)"
+        echo "  ./go test     - Lance tous les tests"
+        echo "  ./go deploy   - Crée les artifacts production"
         echo ""
-        echo -e "${GREEN}🎯 Accès rapide:${NC}"
-        echo "  ${BLUE}./go game${NC}     - Ouvre l'éditeur de map"
-        echo "  ${BLUE}./go admin${NC}    - Ouvre le dashboard admin"
-        echo "  ${BLUE}./go api${NC}      - Ouvre l'API Explorer"
-        echo "  ${BLUE}./go combat${NC}   - Ouvre le combat IA vs IA"
+        echo "🎯 Accès rapide:"
+        echo "  ./go game     - Ouvre l'éditeur de map"
+        echo "  ./go admin    - Ouvre le dashboard admin"
+        echo "  ./go api      - Ouvre l'API Explorer"
+        echo "  ./go combat   - Ouvre le combat IA vs IA"
+        echo "  ./go chasse   - Ouvre la chasse temporelle"
         echo ""
-        echo -e "${YELLOW}📍 Ports utilisés:${NC}"
+        echo "📍 Ports ACTUELS:"
         echo "  5175 - Frontend React"
         echo "  3001 - Backend Rust (calculs 6D)"
         echo "  8082 - Backend Java (CRUD, APIs)"
-        echo "  5001 - Python Vector DB (optionnel)"
-        echo "  7501 - LLM Clippy (optionnel)"
+        echo "  7500 - Vector DB (recherche)"
+        echo "  7501 - LLM Clippy (IA)"
         ;;
     
     *)
