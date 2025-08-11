@@ -1,0 +1,129 @@
+{
+  "$schema": "../../core/schemas/artifact.schema.json",
+  "id": "artifact_excalibur",
+  "type": "artifact",
+  "tier": "LEGENDARY++",
+  "name": {
+    "fr": "Excalibur",
+    "en": "Excalibur",
+    "ru": "Экскалибур"
+  },
+  "description": {
+    "fr": "L'épée légendaire du Roi Arthur, forgée dans les flammes du temps",
+    "en": "King Arthur's legendary sword, forged in the flames of time",
+    "ru": "Легендарный меч короля Артура, выкованный в пламени времени"
+  },
+  "icon_id": "lore:excalibur_flat",
+  "fx_preset": "spin_in",
+  "sound_event": "artifact_reveal",
+  "theme_color": "#FFD700",
+  "output_modes": [
+    "literary",
+    "runic",
+    "iconic"
+  ],
+  "stats": {
+    "attack": 50,
+    "defense": 20,
+    "temporal_power": 30,
+    "quantum_resonance": 15
+  },
+  "abilities": [
+    {
+      "id": "holy_strike",
+      "name": {
+        "fr": "Frappe Sacrée",
+        "en": "Holy Strike"
+      },
+      "icon_id": "combat:swords_crossed",
+      "fx_preset": "spark_trail",
+      "sound_event": "hit_blade",
+      "theme_color": "#FFFFFF",
+      "output_modes": [
+        "iconic",
+        "literary"
+      ],
+      "effect": "Deal 100 pure damage, ignores armor",
+      "cooldown": 5
+    },
+    {
+      "id": "temporal_shield",
+      "name": {
+        "fr": "Bouclier Temporel",
+        "en": "Temporal Shield"
+      },
+      "icon_id": "combat:shield",
+      "fx_preset": "ripple",
+      "sound_event": "cast_shield",
+      "theme_color": "#87CEEB",
+      "output_modes": [
+        "iconic",
+        "runic"
+      ],
+      "effect": "Block next 3 attacks from any timeline",
+      "duration": 3
+    }
+  ],
+  "lore": {
+    "origin": "Forgée par Merlin dans le Nexus Temporel",
+    "legend": "Seul le vrai roi peut la retirer de la pierre temporelle",
+    "current_bearer": "Arthur Pendragon"
+  },
+  "visual_effects": {
+    "idle": {
+      "fx_preset": "pulse",
+      "interval": 2000,
+      "color_shift": true
+    },
+    "equipped": {
+      "fx_preset": "spark_trail",
+      "particle_count": 20,
+      "glow_intensity": 0.8
+    },
+    "activation": {
+      "fx_preset": "spin_in",
+      "duration": 1000,
+      "screen_shake": true
+    }
+  },
+  "audio": {
+    "equip": "artifact_equip_legendary",
+    "unequip": "artifact_unequip",
+    "idle_hum": "ambient_legendary_sword",
+    "activation": "excalibur_unsheath"
+  },
+  "requirements": {
+    "level": 50,
+    "class": [
+      "warrior",
+      "temporal_agent"
+    ],
+    "quest": "quest_arthur_legacy",
+    "alignment": "lawful"
+  },
+  "tags": [
+    "legendary",
+    "unique",
+    "quest_item",
+    "temporal_artifact",
+    "arthur_pendragon",
+    "excalibur",
+    "sword"
+  ],
+  "market": {
+    "tradeable": false,
+    "value": 999999,
+    "rarity": "UNIQUE"
+  },
+  "metadata": {
+    "created": "2025-08-10",
+    "version": "1.0.0",
+    "author": "Archéologue du Contenu",
+    "validated": true,
+    "asset_check": {
+      "icon": "ready",
+      "sounds": "ready",
+      "fx": "ready"
+    }
+  }
+}

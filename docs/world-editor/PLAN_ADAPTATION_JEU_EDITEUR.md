@@ -1,343 +1,428 @@
-# 🎮 Plan d'Adaptation Heroes of Time → Éditeur Universel
+# Plan d'Adaptation - Heroes of Time vers Éditeur Avalon
 
-## 📊 Status Actuel : Où on en est par rapport à la Vision
+## Vue d'Ensemble
 
-### ✅ RÉALISÉ (40%)
-1. **Éditeur React PWA** fonctionnel
-2. **Configuration centralisée** des endpoints (équipe PROFONDEUR)
-3. **Vector DB intégré** avec panneau de recherche
-4. **Clippy connecté** au Vector DB pour tips contextuels
-5. **UI Professionnelle** style StarCraft/Warcraft
-6. **Terrain painting** avec 7 types + undo/redo
-7. **Build & Deploy** prêt (Vite + TypeScript)
+Ce document détaille comment adapter notre jeu Heroes of Time (actuellement en HTML/JS) vers l'éditeur Avalon unifié.
 
-### 🚧 EN COURS (30%)
-1. **Timeline visuelle** (basique, manque causalité)
-2. **Import/Export** scénarios (JSON officiel)
-3. **Publication backend** (map.generate, map.init)
+---
 
-### ❌ À FAIRE (30%)
-1. **Mécaniques V2** (énergie complexe, dette, drift)
-2. **Régulateurs** (Vince, Anna, Overload)
-3. **WebSocket** temps réel
-4. **Mode Test/Play** intégré
-5. **Formules magiques** éditables
-6. **Q* pathfinding** visuel
+## Phase 1 : Migration des Fonctionnalités Core (Semaine 1-2)
 
-## 🗺️ Plan de Migration en 5 Phases
+### 1.1 Map & Navigation
 
-### 📅 PHASE 1 : Migration Core (1 semaine)
+**Actuellement** : `CHASSE_TEMPORELLE_MEGA_MAP.html` avec map 120x120 hexagones
 
-#### Objectif : Unifier HOT_GAME_UNIFIED.html avec l'éditeur
-
-```javascript
-// Étapes techniques
-1. Extraire la logique de jeu de HOT_GAME_UNIFIED.html
-2. Créer GameEngine.ts dans apps/world-editor/src/engine/
-3. Migrer:
-   - La map 120x120 hexagonale
-   - Le système de temps (tw, te, drift)
-   - Les ressources (crystals, energy, temporal, quantum)
-   - La logique de tick
-```
-
-#### Fichiers à migrer
-```
-HOT_GAME_UNIFIED.html → apps/world-editor/src/
-├── engine/
-│   ├── GameEngine.ts       // Moteur principal
-│   ├── TemporalSystem.ts   // tw, te, drift
-│   ├── ResourceManager.ts  // Gestion ressources
-│   └── TickController.ts   // Boucle de jeu
-```
-
-### 📅 PHASE 2 : Intégration Régulateurs (3 jours)
-
-#### Vince - Perçage Temporel
+**Migration vers Éditeur** :
 ```typescript
-// ui/regulators/VincePanel.tsx
-const VinceRegulator = () => {
-  const pierce = async (from: Timeline, to: Timeline) => {
-    await fetch(ENDPOINTS.rust.v2.pierce, {
+// Dans MapView.tsx - étendre la grille existante
+interface ExtendedMapProps {
+  cols: 120,  // 6x6 écrans
+  rows: 120,
+  layers: ['terrain', 'objects', 'fog', 'temporal']
+}
+
+// Ajouter navigation viewport
+const viewport = {
+  x: 0, y: 0,
+  width: 20, height: 20,  // Vue 20x20
+  zoom: 1.0,
+  minimap: true
+};
+```
+
+### 1.2 Système Temporel V2
+
+**Actuellement** : Variables JS globales dans `HOT_GAME_UNIFIED.html`
+
+**Migration vers Store** :
+```typescript
+// Dans useEditorStore.ts - ajouter slice temporel
+interface TemporalSlice {
+  // Temps monde (serveur autoritaire)
+  tw: number;
+  
+  // Par entité
+  entities: Map<string, {
+    te: number;           // Temps entité
+    energy: ComplexEnergy;
+    identity: QuantumIdentity;
+    debt: number;
+    drift: number;
+  }>;
+  
+  // Actions
+  tick: () => void;
+  applyDrift: (entityId: string, delta: number) => void;
+  resolveDebt: (entityId: string) => void;
+}
+```
+
+### 1.3 Combat TCG
+
+**Actuellement** : Appels directs à Java backend dans les HTML
+
+**Migration** :
+```typescript
+// Nouveau composant CombatResolver.tsx
+export function CombatResolver({ entities }: Props) {
+  const [mode, setMode] = useState<'tcg' | 'auto' | 'collapse'>('tcg');
+  
+  const initiateCombat = async () => {
+    // Appel Java backend
+    const response = await fetch(`${JAVA_URL}/api/combat/start`, {
       method: 'POST',
-      body: JSON.stringify({
-        from_timeline: from.id,
-        to_timeline: to.id,
-        position: selectedHex,
-        energy_cost: 50
-      })
+      body: JSON.stringify({ entities, mode })
     });
-  };
-  
-  return (
-    <Panel title="Vince - Perçage">
-      <TimelineSelector onSelect={pierce} />
-      <EnergyGauge current={energy} required={50} />
-    </Panel>
-  );
-};
-```
-
-#### Anna - Décroissance
-```typescript
-// ui/regulators/AnnaPanel.tsx
-const AnnaRegulator = () => {
-  const [decayRate, setDecayRate] = useState(5);
-  
-  const applyDecay = () => {
-    worldState.applyExponentialDecay(decayRate);
-    updateVisualization();
-  };
-  
-  return (
-    <Panel title="Anna - Décroissance">
-      <Slider value={decayRate} onChange={setDecayRate} min={1} max={10} />
-      <DecayPreview rate={decayRate} />
-      <Button onClick={applyDecay}>Appliquer</Button>
-    </Panel>
-  );
-};
-```
-
-#### Overload - Surcharge
-```typescript
-// ui/regulators/OverloadPanel.tsx
-const OverloadRegulator = () => {
-  const [stack, setStack] = useState(0);
-  const MAX_STACK = 10;
-  
-  const addStack = () => {
-    const newStack = stack + 1;
-    setStack(newStack);
     
-    if (newStack >= MAX_STACK) {
-      triggerParadoxExplosion();
+    // Afficher UI combat si TCG
+    if (mode === 'tcg') {
+      openTCGInterface(response.battleId);
     }
   };
-  
-  return (
-    <Panel title="Overload - Surcharge">
-      <StackMeter current={stack} max={MAX_STACK} />
-      <Button onClick={addStack} danger={stack > 7}>
-        Ajouter Charge (+1)
-      </Button>
-    </Panel>
-  );
-};
+}
 ```
 
-### 📅 PHASE 3 : Timeline & Événements (4 jours)
+---
 
-#### Timeline Visuelle Avancée
+## Phase 2 : Intégration des Régulateurs (Semaine 2-3)
+
+### 2.1 Panneau Régulateurs
+
 ```typescript
-// ui/TimelineAdvanced.tsx
-const TimelineAdvanced = () => {
+// Nouveau composant RegulatorsPanel.tsx
+interface Regulator {
+  id: 'vince' | 'anna' | 'overload';
+  active: boolean;
+  intensity: number;  // 0-1
+  position?: { x: number; y: number; };
+}
+
+export function RegulatorsPanel() {
+  const regulators = useEditorStore(s => s.regulators);
+  
   return (
-    <div className="timeline-container">
-      {/* Ligne de temps principale */}
-      <TimeAxis min={0} max={3600} current={tw} />
-      
-      {/* Événements avec liens causaux */}
-      <EventLayer>
-        {events.map(evt => (
-          <Event 
-            key={evt.id}
-            position={evt.time}
-            type={evt.type}
-            causalLinks={evt.causes}
-            visibility={evt.visibility} // public, fogged, hidden
-          />
-        ))}
-      </EventLayer>
-      
-      {/* Brouillard de causalité */}
-      <CausalityFog 
-        density={cfDensity}
-        zones={cfZones}
+    <div className="regulators-panel">
+      <RegulatorCard 
+        name="Vince" 
+        icon="🗡️"
+        description="Perce le brouillard"
+        onToggle={() => toggleRegulator('vince')}
       />
-      
-      {/* Branches temporelles */}
-      <TimelineBranches 
-        main={mainTimeline}
-        alternates={altTimelines}
-        mergePoints={mergePoints}
+      <RegulatorCard 
+        name="Anna" 
+        icon="⏳"
+        description="Décroissance économique"
+        onToggle={() => toggleRegulator('anna')}
+      />
+      <RegulatorCard 
+        name="Overload" 
+        icon="💥"
+        description="Collapse des stacks"
+        onToggle={() => toggleRegulator('overload')}
       />
     </div>
   );
-};
+}
 ```
 
-### 📅 PHASE 4 : Modes Unifiés (5 jours)
+### 2.2 Visualisation Brouillard/Ombre
 
-#### Switch Edit/Test/Play
 ```typescript
-// App.tsx modifié
-const App = () => {
-  const [mode, setMode] = useState<'edit' | 'test' | 'play'>('edit');
-  
-  return (
-    <div className="app">
-      <Header>
-        <ModeSelector value={mode} onChange={setMode} />
-      </Header>
-      
-      {mode === 'edit' && <EditorView />}
-      {mode === 'test' && <TestView simulation={true} />}
-      {mode === 'play' && <GameView fullGame={true} />}
-    </div>
-  );
-};
-```
-
-#### Mode Test (Simulation)
-```typescript
-const TestView = () => {
-  const [simSpeed, setSimSpeed] = useState(1);
-  const [showDebug, setShowDebug] = useState(true);
+// Dans HexGrid.tsx - ajouter overlays
+const renderCausalOverlay = (hex: Hex) => {
+  const { opc, cf } = calculateVisibility(hex);
   
   return (
     <>
-      <GameEngine speed={simSpeed} />
-      <DebugPanel show={showDebug}>
-        <TickInfo tw={tw} te={te} drift={drift} />
-        <EntityList entities={entities} />
-        <ParadoxDetector active={true} />
-      </DebugPanel>
-      <SimulationControls>
-        <SpeedControl value={simSpeed} onChange={setSimSpeed} />
-        <Button onClick={pause}>Pause</Button>
-        <Button onClick={step}>Step</Button>
-      </SimulationControls>
+      {/* Ombre Portée Causale */}
+      <circle 
+        r={opc.radius} 
+        fill="rgba(100,200,255,0.2)"
+        className="opc-overlay"
+      />
+      
+      {/* Brouillard de Causalité */}
+      <circle 
+        r={cf.radius}
+        fill={`rgba(150,150,150,${cf.opacity})`}
+        className="fog-overlay"
+      />
     </>
   );
 };
 ```
 
-### 📅 PHASE 5 : Clippy Intelligent (3 jours)
+---
 
-#### Clippy avec Contexte V2 Complet
+## Phase 3 : Timeline & Événements (Semaine 3-4)
+
+### 3.1 Composant Timeline
+
 ```typescript
-// lib/clippy-v2.tsx
-const ClippyV2 = () => {
-  const context = useV2Context();
+// TimelineView.tsx amélioré
+export function TimelineView() {
+  const events = useEditorStore(s => s.timeline.events);
+  const tw = useEditorStore(s => s.temporal.tw);
   
-  // Tips basés sur l'état V2
-  const getContextualTips = () => {
-    const tips = [];
-    
-    // Dette temporelle
-    if (context.debt > 50) {
-      tips.push("⚠️ Ta dette temporelle est élevée! Résous des paradoxes pour la réduire.");
-    }
-    
-    // Drift
-    if (Math.abs(context.tw - context.te) > 100) {
-      tips.push("⏰ Le drift temporel est important. Attention aux interférences!");
-    }
-    
-    // Énergie complexe
-    if (context.energy.phase > Math.PI) {
-      tips.push("🌀 Phase énergétique inversée détectée. Effets temporels inversés!");
-    }
-    
-    // Régulateurs
-    if (context.regulators.vince.active) {
-      tips.push("🔷 Vince est actif. Tu peux percer vers d'autres timelines!");
-    }
-    
-    return tips;
-  };
+  return (
+    <div className="timeline-container">
+      <div className="time-ruler">
+        <CurrentTimeMarker position={tw} />
+      </div>
+      
+      <div className="events-track">
+        {events.map(event => (
+          <EventNode 
+            key={event.id}
+            event={event}
+            onEdit={editEvent}
+            onLink={linkEvents}
+          />
+        ))}
+      </div>
+      
+      <div className="causal-links">
+        {renderCausalLinks(events)}
+      </div>
+    </div>
+  );
+}
+```
+
+### 3.2 Simulation & Test
+
+```typescript
+// SimulationPanel.tsx
+export function SimulationPanel() {
+  const [simulating, setSimulating] = useState(false);
+  const [trace, setTrace] = useState<SimTrace[]>([]);
   
-  // Recherche Vector DB avec contexte V2
-  const searchWithContext = async (query: string) => {
-    return vectorDB.search(query, 'story', 5, {
-      v2_context: {
-        temporal_state: context.temporal,
-        energy_state: context.energy,
-        active_regulators: context.regulators
-      }
+  const runSimulation = async (duration: string) => {
+    setSimulating(true);
+    
+    const response = await fetch(`${RUST_URL}/api/v2/simulate`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'now',
+        to: duration,  // "+300s"
+        mode: 'deterministic'
+      })
     });
+    
+    const { trace, paradoxes } = await response.json();
+    setTrace(trace);
+    
+    if (paradoxes.length > 0) {
+      highlightParadoxes(paradoxes);
+    }
   };
   
-  return <ClippyUI tips={getContextualTips()} search={searchWithContext} />;
-};
+  return (
+    <div className="simulation-panel">
+      <button onClick={() => runSimulation('+300s')}>
+        Simuler 5 minutes
+      </button>
+      <TraceViewer trace={trace} />
+    </div>
+  );
+}
 ```
-
-## 🔧 Intégration Technique
-
-### Structure Finale
-```
-apps/world-editor/
-├── src/
-│   ├── engine/          # Moteur de jeu migré
-│   │   ├── GameEngine.ts
-│   │   ├── V2Controller.ts
-│   │   └── TemporalSystem.ts
-│   ├── ui/
-│   │   ├── game/        # Vue jeu
-│   │   ├── editor/      # Vue éditeur
-│   │   ├── regulators/  # Panneaux régulateurs
-│   │   └── shared/      # Composants partagés
-│   ├── services/
-│   │   ├── v2Engine.ts  # Connexion V2
-│   │   ├── vectorDB.ts  # Déjà fait ✅
-│   │   └── formulas.ts  # Système de formules
-│   └── modes/
-│       ├── EditMode.tsx
-│       ├── TestMode.tsx
-│       └── PlayMode.tsx
-```
-
-### Commandes de Migration
-```bash
-# 1. Extraire le code de HOT_GAME_UNIFIED.html
-node tools/extract_game_logic.js
-
-# 2. Générer les types TypeScript
-npx ts-migrate apps/world-editor/src/engine
-
-# 3. Connecter au V2 Controller
-python test_v2_integration.py
-
-# 4. Build unifié
-cd apps/world-editor && npm run build
-```
-
-## 📈 Métriques de Succès
-
-### Court Terme (1 mois)
-- [ ] 100% du gameplay HOT dans l'éditeur
-- [ ] Mode Test fonctionnel
-- [ ] Régulateurs intégrés
-- [ ] Timeline causale visible
-
-### Moyen Terme (3 mois)
-- [ ] Éditeur = Client principal
-- [ ] Plus de HTML séparés
-- [ ] WebSocket temps réel
-- [ ] Formules éditables visuellement
-
-### Long Terme (6 mois)
-- [ ] Marketplace de maps
-- [ ] Mode multijoueur dans l'éditeur
-- [ ] AI assistant pour création
-- [ ] Export standalone des jeux
-
-## 🚨 Points d'Attention
-
-1. **Performance** : La map 120x120 est lourde, implémenter le LOD
-2. **Compatibilité** : Garder les saves existantes fonctionnelles
-3. **UX** : Le passage edit→test→play doit être instantané
-4. **V2 Core** : Ne JAMAIS ignorer tw, te, drift, dette
-5. **Intégration** : Tout doit passer par les endpoints centralisés
-
-## 🎯 Objectif Final
-
-> **Un seul éditeur pour les gouverner tous** : créer, tester, jouer, partager.
-> Plus de fragmentation, plus de HTML éparpillés, juste une app React PWA unifiée.
 
 ---
 
-**Status actuel : 40% réalisé, 30% en cours, 30% à faire**
+## Phase 4 : Unification & Polish (Semaine 4-5)
 
-*Prochaine étape immédiate : Phase 1 - Migration Core*
+### 4.1 Mode de Jeu Intégré
+
+```typescript
+// GameModeSelector.tsx
+export function GameModeSelector() {
+  const modes = [
+    { id: 'edit', name: 'Édition', icon: '✏️' },
+    { id: 'test', name: 'Test', icon: '🧪' },
+    { id: 'play', name: 'Jouer', icon: '🎮' },
+    { id: 'spectate', name: 'Observer', icon: '👁️' }
+  ];
+  
+  return (
+    <div className="mode-selector">
+      {modes.map(mode => (
+        <ModeButton 
+          key={mode.id}
+          {...mode}
+          onClick={() => switchMode(mode.id)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### 4.2 Export/Import Scénarios
+
+```typescript
+// ScenarioManager.tsx
+interface Scenario {
+  version: '2.0.0';
+  world: WorldConfig;
+  timeline: TimelineConfig;
+  entities: EntityConfig[];
+  regulators: RegulatorConfig[];
+}
+
+const exportScenario = (): Scenario => {
+  const state = useEditorStore.getState();
+  return {
+    version: '2.0.0',
+    world: state.world,
+    timeline: state.timeline,
+    entities: Array.from(state.temporal.entities),
+    regulators: state.regulators
+  };
+};
+```
+
+---
+
+## Phase 5 : Intégration Memento/Clippy (Continue)
+
+### 5.1 Amélioration Clippy
+
+```typescript
+// Dans clippy.tsx - ajouter contexte V2
+const getContextualHelp = async (context: EditorContext) => {
+  const query = buildSmartQuery(context);
+  
+  const response = await fetch(`${PYTHON_URL}/search`, {
+    method: 'POST',
+    body: JSON.stringify({
+      query,
+      k: 5,
+      scope: ['V2Spec', 'Tutorials', 'Examples'],
+      context: {
+        mode: context.mode,
+        selection: context.selected,
+        errors: context.errors
+      }
+    })
+  });
+  
+  return formatHelpResults(response);
+};
+```
+
+### 5.2 Auto-complétion Code
+
+```typescript
+// CodeEditor.tsx avec Memento
+import { MementoProvider } from '../lib/memento';
+
+export function CodeEditor() {
+  return (
+    <MementoProvider>
+      <MonacoEditor 
+        language="typescript"
+        theme="avalon-dark"
+        options={{
+          suggestOnTriggerCharacters: true,
+          quickSuggestions: true
+        }}
+        onMount={(editor) => {
+          setupMementoAutocomplete(editor);
+        }}
+      />
+    </MementoProvider>
+  );
+}
+```
+
+---
+
+## Métriques de Succès
+
+### MVP (2 semaines)
+- [ ] Map 120x120 navigable
+- [ ] Placement entités basique
+- [ ] Timeline simple
+- [ ] Connexion backends (Rust/Java/Python)
+- [ ] Export JSON fonctionnel
+
+### Version Complète (5 semaines)
+- [ ] Tous les modes de jeu intégrés
+- [ ] Simulation complète avec paradoxes
+- [ ] Régulateurs fonctionnels
+- [ ] Combat TCG intégré
+- [ ] Memento/Clippy amélioré
+- [ ] Import/Export complet
+- [ ] Tests E2E passants
+
+---
+
+## Ressources Nécessaires
+
+### Développeurs
+- 1 dev React senior (UI/UX)
+- 1 dev full-stack (intégration backends)
+- 1 dev junior/stagiaire (tests, doc)
+
+### Infrastructure
+- Backends running (ports 3001, 8080, 5001)
+- Vector DB avec specs indexées
+- CI/CD pour tests automatiques
+
+### Documentation
+- Specs V2 dans Vector DB
+- Guides développeurs à jour
+- Exemples de code fonctionnels
+
+---
+
+## Risques & Mitigations
+
+| Risque | Impact | Mitigation |
+|--------|--------|------------|
+| Performance avec map 120x120 | Haut | Virtualisation, viewport, LOD |
+| Complexité intégration V2 | Moyen | Tests unitaires, doc claire |
+| Synchronisation backends | Moyen | WebSocket, event sourcing |
+| UX complexe pour débutants | Bas | Tutoriel interactif, Clippy |
+
+---
+
+## Prochaines Étapes
+
+1. **Immédiat** : Valider ce plan avec l'équipe
+2. **Jour 1-3** : Setup environnement, branches Git
+3. **Jour 4-7** : Implémenter Phase 1 (Core)
+4. **Jour 8-14** : Phases 2-3 (Régulateurs, Timeline)
+5. **Jour 15-21** : Phase 4 (Unification)
+6. **Jour 22-28** : Tests, polish, documentation
+7. **Jour 30** : Release MVP 🎉
+
+---
+
+## Commandes Utiles
+
+```bash
+# Lancer l'éditeur en dev
+cd apps/world-editor
+pnpm dev
+
+# Lancer tous les backends
+./h stack    # Menu interactif
+./h 1        # Lancer stack complète
+
+# Tester intégration V2
+python test_v2_controller.py
+
+# Chercher dans Vector DB
+curl -X POST http://localhost:5001/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "editor V2 integration", "k": 5}'
+```
+
+## Contact & Support
+
+- **Specs V2** : `/v2spec/` directory
+- **Vector DB** : Port 5001, endpoint `/search`
+- **Clippy** : Intégré dans l'éditeur
+- **Tests** : `TEST_INTEGRATION_COMPLETE.sh`

@@ -75,6 +75,13 @@ class AssetsServiceClass {
   private formulas: Map<string, Formula> = new Map();
   private audioMappings: AudioMapping = {};
   private loaded = false;
+  
+  // NOUVEAU: Portails pour pocket worlds
+  private static portals = new Map([
+    ['portal_avalon', { name: 'Portail Avalon', icon: '🌀', type: 'dimensional' }],
+    ['portal_pocket', { name: 'Portail de Poche', icon: '🌌', type: 'pocket_world' }],
+    ['portal_temporal', { name: 'Portail Temporel', icon: '⏳', type: 'temporal' }]
+  ]);
 
   // Données intégrées depuis VECTOR_DB_ASSETS
   private readonly ASSETS_DATA = {
@@ -402,6 +409,19 @@ class AssetsServiceClass {
         f.description?.toLowerCase().includes(q)
       )
     };
+  }
+  
+  // Méthodes pour PORTAILS
+  static getPortal(id: string) {
+    return AssetsServiceClass.portals.get(id);
+  }
+  
+  static getAllPortals() {
+    return Array.from(AssetsServiceClass.portals.entries()).map(([id, portal]) => ({
+      id,
+      ...portal,
+      category: 'portal'
+    }));
   }
 }
 

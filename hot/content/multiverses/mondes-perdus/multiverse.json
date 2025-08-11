@@ -1,0 +1,46 @@
+{
+  "$schema": "../../core/schemas/multiverse.schema.json",
+  "id": "01LOST_WORLDS_SURFACE_TEAM",
+  "slug": "mondes-perdus",
+  "name": "Les 200 Mondes Perdus de l'Équipe Surface",
+  "description": "200 mondes découverts par l'équipe Surface lors de leurs explorations temporelles. Certains sont brisés et accessibles uniquement par drift temporel excessif.",
+  "metadata": {
+    "team": "Surface",
+    "discovered": "2025-07",
+    "total_worlds": 200,
+    "broken_worlds": 42,
+    "stable_worlds": 158
+  },
+  "drift_mechanics": {
+    "threshold": 10.0,
+    "broken_world_trigger": 15.0,
+    "effects": {
+      "mild_drift": {
+        "range": [5.0, 10.0],
+        "effect": "Vision floue, légère désynchronisation"
+      },
+      "moderate_drift": {
+        "range": [10.0, 15.0],
+        "effect": "Début de glissement vers mondes parallèles"
+      },
+      "extreme_drift": {
+        "range": [15.0, null],
+        "effect": "Basculement dans un monde brisé alternatif"
+      }
+    }
+  },
+  "world_categories": {
+    "stable": {
+      "count": 158,
+      "description": "Mondes normaux accessibles classiquement"
+    },
+    "unstable": {
+      "count": 30,
+      "description": "Mondes instables, drift naturel élevé"
+    },
+    "broken": {
+      "count": 42,
+      "description": "Mondes brisés, réalités alternatives (Star Trek, Cyberpunk, etc.)"
+    }
+  }
+}

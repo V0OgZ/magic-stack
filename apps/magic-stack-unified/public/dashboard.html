@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Stack - Dashboard Central</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1d3a 100%);
+            color: #e8ecff;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: rgba(26, 31, 46, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .section:hover {
+            transform: translateY(-2px);
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .link-list li {
+            margin: 8px 0;
+        }
+        
+        .link-list a {
+            color: #e8ecff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .link-list a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: auto;
+        }
+        
+        .status.ready { background: rgba(72, 187, 120, 0.3); color: #48bb78; }
+        .status.migrated { background: rgba(66, 153, 225, 0.3); color: #4299e1; }
+        .status.wrapper { background: rgba(237, 137, 54, 0.3); color: #ed8936; }
+        .status.beta { background: rgba(159, 122, 234, 0.3); color: #9f7aea; }
+    </style>
+</head>
+<body>
+    <h1>🎮 MAGIC STACK DASHBOARD 🎮</h1>
+    
+    <div class="grid">
+        <!-- REACT APPS -->
+        <div class="section">
+            <h2>⚛️ Applications React</h2>
+            <ul class="link-list">
+                <li>
+                    <a href="/">
+                        <span>🏠</span> Home Page
+                        <span class="status ready">READY</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/unified">
+                        <span>🌌</span> Éditeur Unifié (Structure + Resources + Timeline)
+                        <span class="status ready">90%</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/editor">
+                        <span>🗺️</span> Map Icon Placer V2
+                        <span class="status migrated">MIGRÉ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/game">
+                        <span>🎮</span> Game View
+                        <span class="status beta">BETA</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/combat">
+                        <span>⚔️</span> Combat IA vs IA
+                        <span class="status wrapper">WRAPPER</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/chasse-mega">
+                        <span>🏹</span> Chasse Temporelle Mega
+                        <span class="status wrapper">WRAPPER</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- HTML DEMOS -->
+        <div class="section">
+            <h2>📄 Démos HTML</h2>
+            <ul class="link-list">
+                <li>
+                    <a href="/html/API_EXPLORER_COMPLETE.html">
+                        <span>🔍</span> API Explorer
+                        <span class="status ready">READY</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/html/IA_VS_IA_AUTOPLAY.html">
+                        <span>🤖</span> IA vs IA Autoplay
+                        <span class="status ready">READY</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/html/CHASSE_TEMPORELLE_MEGA_MAP.html">
+                        <span>⏳</span> Chasse Temporelle 6x6
+                        <span class="status ready">READY</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- BACKEND SERVICES -->
+        <div class="section">
+            <h2>🔧 Services Backend</h2>
+            <ul class="link-list">
+                <li>
+                    <a href="http://localhost:3001" target="_blank">
+                        <span>🦀</span> Rust Backend (3001)
+                        <span class="status" id="rust-status">?</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://localhost:8080" target="_blank">
+                        <span>☕</span> Java Backend (8080)
+                        <span class="status" id="java-status">?</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://localhost:5001" target="_blank">
+                        <span>🐍</span> Python Backend (5001)
+                        <span class="status" id="python-status">?</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- COMMANDES -->
+        <div class="section">
+            <h2>🚀 Commandes Rapides</h2>
+            <ul class="link-list">
+                <li><code>./go2 status</code> - Voir l'état des services</li>
+                <li><code>./go2 game</code> - Lancer le jeu unifié</li>
+                <li><code>./go2 combat</code> - Mode combat IA</li>
+                <li><code>./go2 chasse</code> - Chasse temporelle</li>
+                <li><code>./go2 admin</code> - Dashboard (cette page)</li>
+                <li><code>./go2 stop</code> - Arrêter tous les services</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Check backend status
+        async function checkBackend(url, elementId) {
+            try {
+                const response = await fetch(url, { 
+                    method: 'GET',
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+                document.getElementById(elementId).textContent = 'UP';
+                document.getElementById(elementId).className = 'status ready';
+            } catch {
+                document.getElementById(elementId).textContent = 'DOWN';
+                document.getElementById(elementId).className = 'status';
+            }
+        }
+        
+        // Check all backends
+        checkBackend('http://localhost:3001', 'rust-status');
+        checkBackend('http://localhost:8080', 'java-status');
+        checkBackend('http://localhost:5001', 'python-status');
+    </script>
+</body>
+</html>

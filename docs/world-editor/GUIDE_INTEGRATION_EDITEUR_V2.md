@@ -1,321 +1,214 @@
-# 🔮 Guide d'Intégration Éditeur V2 - Heroes of Time
+# Guide d'Intégration Éditeur Avalon - Moteur V2
 
-## 📊 État Actuel & Vision
+## Document Conseil pour l'Éditeur Avalon
 
-### ✅ Ce qui est fait
-- **UI Professionnelle** : Theme StarCraft/Warcraft implémenté
-- **Architecture PROFONDEUR** : Ports corrects (3001, 5001, 8001)
-- **Vector DB Intégré** : Panneau de recherche + Clippy contextuel
-- **Build React PWA** : Fonctionne avec Vite + TypeScript
-- **Terrain Painting** : 7 types avec undo/redo
-- **Timeline basique** : Gestion événements
+### 1. État Actuel & Vision
 
-### ⚠️ Points Critiques V2 à Respecter
+L'éditeur Avalon existe déjà avec :
+- **Interface React/TypeScript** fonctionnelle (MapView, HexGrid)
+- **Store Zustand** pour la gestion d'état
+- **Intégration Clippy** pour l'aide contextuelle
+- **Publication vers backend Rust** (endpoint `/api/v2/scenario/publish`)
 
-#### 1. Énergie Complexe (OBLIGATOIRE)
+### 2. Points Critiques à Respecter
+
+#### 2.1 Compatibilité V2 Specs
+Le moteur V2 utilise maintenant :
+- **Énergie complexe** : `E = A + iΦ` (réel + imaginaire)
+- **Identité quantique** : `|ψ⟩` normalisé avec conservation
+- **Dette temporelle** : `Debt_A` au lieu d'énergie négative
+- **Clonage avec cohérence** : split de `ρ` entre main et clones
+
+#### 2.2 Ne Pas Toucher (User Request)
+- **Graphismes actuels** : ne pas modifier l'aspect visuel
+- **Structure React existante** : conserver l'architecture en place
+- **Intégration dans le client principal** : pas de HTML standalone
+
+### 3. Conseils d'Architecture
+
+#### 3.1 Connexion aux Backends
+
 ```typescript
-// NE PAS OUBLIER : E = A + iΦ
-interface ComplexEnergy {
-  amplitude: number;      // A : puissance réelle
-  phase: number;         // Φ : décalage temporel
-  
-  // Calculs critiques
-  getComplex(): { real: number; imaginary: number } {
-    return {
-      real: this.amplitude * Math.cos(this.phase),
-      imaginary: this.amplitude * Math.sin(this.phase)
-    };
-  }
-}
-```
-
-#### 2. Dette Temporelle
-```typescript
-interface TemporalDebt {
-  amount: number;         // Dette accumulée
-  interest_rate: 0.05;   // 5% par tick
-  max_before_collapse: 100;
-  
-  // CRITIQUE : Doit être visible dans l'éditeur
-  visualization: 'red_overlay' | 'debt_counter';
-}
-```
-
-#### 3. Identité Quantique |ψ⟩
-```typescript
-interface QuantumIdentity {
-  state: string;  // Format: |ψ⟩ = α|0⟩ + β|1⟩
-  coherence: number;  // 0-1 : niveau de cohérence
-  entangled_with?: string[];  // Autres entités liées
-}
-```
-
-## 🏗️ Architecture Recommandée
-
-### Connexion aux 3 Backends
-```typescript
-// config/endpoints.ts COMPLET
-export const V2_ENDPOINTS = {
-  // Rust - Moteur V2 Core
-  rust: {
-    base: 'http://localhost:3001',
-    v2: {
-      tick: '/api/v2/tick',
-      entity: '/api/v2/entity',
-      config: '/api/v2/config',
-      drift: '/api/v2/drift',
-      interference: '/api/v2/interference'
-    }
-  },
-  
-  // Java - Business Logic & Formules
-  java: {
-    base: 'http://localhost:8080',
-    interstice: '/api/interstice',
-    formulas: '/api/formulas/cast',
-    tcg: '/api/tcg/battle'
-  },
-  
-  // Python - Vector DB & AI
-  python: {
-    base: 'http://localhost:5001',
-    search: '/search',
-    embed: '/embed',
-    qstar: '/qstar/path'
-  }
+// Configuration des endpoints (déjà dans config/endpoints.ts)
+const BACKENDS = {
+  rust: 'http://localhost:3001',    // V2 Controller
+  java: 'http://localhost:8080',    // Combat TCG
+  python: 'http://localhost:5001'   // Vector DB
 };
 ```
 
-### Service Layer V2
+#### 3.2 État Global Recommandé
+
 ```typescript
-// services/v2Engine.ts
-class V2EngineService {
-  async tick(state: WorldState): Promise<V2TickResult> {
-    const response = await fetch(V2_ENDPOINTS.rust.v2.tick, {
-      method: 'POST',
-      body: JSON.stringify({
-        current_tw: state.tw,
-        current_te: state.te,
-        entities: state.entities.map(e => ({
-          id: e.id,
-          energy: e.energy.getComplex(),
-          debt: e.temporalDebt,
-          identity: e.quantumIdentity
-        }))
-      })
-    });
-    
-    return response.json();
-  }
+interface EditorState {
+  // World
+  world: {
+    id: string;
+    mode: 'heroes_like' | 'tcg' | 'sandbox';
+    ruleset: WorldRuleset;
+    graph: WorldGraph;
+  };
   
-  async calculateInterference(e1: Entity, e2: Entity): Promise<number> {
-    // CRITIQUE : Interférence = clé du gameplay
-    return fetch(V2_ENDPOINTS.rust.v2.interference, {
-      method: 'POST',
-      body: JSON.stringify({
-        entity1: e1.quantumIdentity,
-        entity2: e2.quantumIdentity
-      })
-    }).then(r => r.json());
-  }
-}
-```
-
-## 🔄 Intégration Memento/Vector DB Améliorée
-
-### Contexte V2 pour Clippy
-```typescript
-// lib/clippy.tsx amélioré
-const getV2Context = () => ({
-  // Contexte temporel
+  // V2 Temporal State
   temporal: {
-    tw: store.world.tw,
-    te: store.world.te,
-    drift: store.world.tw - store.world.te,
-    debt: store.getTotalDebt()
-  },
+    tw: number;      // World time
+    entities: Map<string, {
+      te: number;    // Entity time
+      energy: { A: number; phi: number; };
+      identity: { psi: number[]; coherence: number; };
+      debt: number;
+    }>;
+  };
   
-  // Contexte énergétique
-  energy: {
-    total_amplitude: store.getTotalAmplitude(),
-    phase_variance: store.getPhaseVariance(),
-    interference_zones: store.getInterferenceZones()
-  },
+  // Timeline & Events
+  timeline: {
+    events: Event[];
+    links: CausalLink[];
+    simulation: SimulationTrace;
+  };
+}
+```
+
+### 4. Intégration Memento/Vector DB
+
+#### 4.1 Améliorer Clippy Existant
+```typescript
+// Dans src/lib/clippy.tsx
+const searchVectorDB = async (query: string) => {
+  // Ajouter scope V2Spec
+  const response = await fetch(`${PYTHON_URL}/search`, {
+    method: 'POST',
+    body: JSON.stringify({
+      query,
+      k: 5,
+      scope: ['V2Spec', 'API', 'GameMechanics']
+    })
+  });
+  // ...
+};
+```
+
+#### 4.2 Aide Contextuelle V2
+- Ajouter des tooltips pour énergie complexe
+- Expliquer la dette temporelle
+- Visualiser la cohérence des clones
+
+### 5. Workflow Recommandé
+
+```mermaid
+graph LR
+    A[Éditeur] --> B[Validation Schema]
+    B --> C[Preview Local]
+    C --> D[Test Simulation]
+    D --> E[Publish to Backend]
+    E --> F[Live Play]
+```
+
+### 6. Fonctionnalités Prioritaires
+
+1. **Timeline Visuelle** ✨
+   - Afficher `tw` vs `te` pour chaque entité
+   - Montrer la dérive temporelle
+   - Visualiser les paradoxes
+
+2. **Panneau Énergie Complexe** ⚡
+   - Slider pour A (réel)
+   - Slider pour Φ (phase)
+   - Indicateur de dette
+
+3. **Gestion des Régulateurs** 🎮
+   - Placer Vince/Anna/Overload
+   - Configurer leurs paramètres
+   - Tester leurs interactions
+
+### 7. Erreurs à Éviter
+
+❌ **Ne pas faire** :
+- Modifier les graphiques existants
+- Créer des fichiers HTML séparés
+- Ignorer la Vector DB existante
+- Hardcoder les URLs des backends
+
+✅ **Faire** :
+- Utiliser les endpoints V2 existants
+- Respecter les JSON Schemas
+- Intégrer dans le client React principal
+- Utiliser Memento pour l'aide
+
+### 8. Tests Recommandés
+
+```typescript
+// Test de compatibilité V2
+describe('V2 Integration', () => {
+  it('should handle complex energy', () => {
+    const energy = { A: 10, phi: 0.5 };
+    expect(calculateEnergyMagnitude(energy)).toBe(10.012);
+  });
   
-  // Contexte causal
-  causality: {
-    fog_density: store.getCFDensity(),
-    opc_active: store.getOPCZones(),
-    paradox_risk: store.getParadoxRisk()
-  }
+  it('should enforce identity conservation', () => {
+    const identities = splitIdentity(1.0, 0.3);
+    expect(identities.main + identities.clone).toBe(1.0);
+  });
 });
+```
 
-// Recherche contextuelle V2
-const searchWithV2Context = async (query: string) => {
-  const context = getV2Context();
-  
-  return vectorDB.search(query, 'story', 5, {
-    filters: {
-      temporal_relevance: context.temporal.drift > 10 ? 'high' : 'normal',
-      energy_level: context.energy.total_amplitude,
-      causality_state: context.causality.fog_density > 0.5 ? 'fogged' : 'clear'
-    }
+### 9. Exemples de Code
+
+#### 9.1 Appel V2 Tick
+```typescript
+const tickV2 = async () => {
+  const response = await fetch(`${RUST_URL}/api/v2/tick`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      current_tw: temporal.tw,
+      entities: Array.from(temporal.entities.entries())
+    })
   });
+  // Update state with response
 };
 ```
 
-## 📝 Exemples de Code V2
-
-### Créer une Zone avec Énergie Complexe
+#### 9.2 Résolution de Paradoxe
 ```typescript
-// Dans MapView
-const createComplexEnergyZone = (x: number, y: number) => {
-  addObjectAt(x, y, 'energy_source', {
-    energy: {
-      amplitude: 100,
-      phase: Math.PI / 4,  // 45° de décalage
-      type: 'resonator'
-    },
-    effects: {
-      range: 5,
-      interference_pattern: 'constructive',
-      affects: ['temporal_drift', 'quantum_coherence']
-    }
+const resolveParadox = async (entities: string[]) => {
+  const response = await fetch(`${RUST_URL}/api/v2/paradox/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({
+      mode: 'tcg',
+      entities,
+      seed: Date.now()
+    })
   });
+  // Apply patches
 };
 ```
 
-### Visualiser la Dette Temporelle
-```typescript
-// Nouveau composant DebtOverlay.tsx
-const DebtOverlay = () => {
-  const debt = useEditorStore(s => s.getTemporalDebt());
-  
-  if (debt.amount === 0) return null;
-  
-  const opacity = Math.min(debt.amount / debt.max_before_collapse, 0.8);
-  const pulseRate = 2 - (debt.amount / debt.max_before_collapse); // Plus rapide quand critique
-  
-  return (
-    <div style={{
-      position: 'absolute',
-      inset: 0,
-      background: `radial-gradient(circle, transparent, rgba(255,0,0,${opacity}))`,
-      pointerEvents: 'none',
-      animation: `pulse ${pulseRate}s infinite`,
-      zIndex: 1000
-    }}>
-      <div style={{
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        color: 'red',
-        fontSize: 24,
-        fontWeight: 'bold'
-      }}>
-        ⚠️ Dette: {debt.amount.toFixed(1)} / {debt.max_before_collapse}
-      </div>
-    </div>
-  );
-};
-```
+### 10. Checklist d'Intégration
 
-### Gestion des Régulateurs V2
-```typescript
-// Régulateurs avec nouvelles mécaniques
-const regulators = {
-  vince: {
-    pierce: (timeline: string) => {
-      // Perce vers une timeline alternative
-      return fetch(V2_ENDPOINTS.rust.v2.pierce, {
-        method: 'POST',
-        body: JSON.stringify({ 
-          from: currentTimeline,
-          to: timeline,
-          energy_cost: 50
-        })
-      });
-    }
-  },
-  
-  anna: {
-    decay: (rate: number) => {
-      // Applique décroissance exponentielle
-      return fetch(V2_ENDPOINTS.rust.v2.decay, {
-        method: 'POST',
-        body: JSON.stringify({
-          rate,
-          affects: 'all_entities',
-          preserve_quantum_state: true
-        })
-      });
-    }
-  },
-  
-  overload: {
-    stack: (amount: number) => {
-      // Accumule de la surcharge
-      if (amount > 10) {
-        triggerParadox('overload_explosion');
-      }
-    }
-  }
-};
-```
-
-## ✅ Checklist d'Intégration
-
-### Phase 1 : Core V2 (URGENT)
-- [ ] Implémenter ComplexEnergy dans le store
-- [ ] Ajouter visualisation dette temporelle
-- [ ] Connecter au endpoint `/api/v2/tick`
-- [ ] Afficher tw, te, drift dans la status bar
-
-### Phase 2 : Régulateurs
-- [ ] UI pour Vince (perçage)
-- [ ] UI pour Anna (décroissance) 
-- [ ] UI pour Overload (surcharge)
-- [ ] Visualisation des zones d'effet
-
-### Phase 3 : Causalité
-- [ ] Brouillard de causalité (CF)
-- [ ] Zones OPC
-- [ ] Liens causaux dans Timeline
-- [ ] Détection paradoxes
-
-### Phase 4 : Tests
-- [ ] Test avec `test_v2_controller.py`
-- [ ] Validation énergie complexe
-- [ ] Stress test dette temporelle
-- [ ] Simulation paradoxes
-
-## ⚠️ Pièges à Éviter
-
-1. **NE PAS** ignorer la phase Φ dans l'énergie
-2. **NE PAS** oublier la dette temporelle (crash garanti)
-3. **NE PAS** mélanger tw et te (ce sont 2 temps différents!)
-4. **TOUJOURS** calculer l'interférence entre entités proches
-5. **TOUJOURS** valider avec le V2 Controller Rust
-
-## 🚀 Quick Start
-
-```bash
-# 1. Lancer les backends
-./h-profondeur start    # Rust V2 sur 3001
-./h-backend start       # Java sur 8080
-./h-profondeur vector   # Vector DB sur 5001
-
-# 2. Lancer l'éditeur
-cd apps/world-editor
-npm run dev
-
-# 3. Tester V2
-python test_v2_controller.py
-
-# 4. Vérifier les logs
-tail -f logs/profondeur-rust.log
-```
+- [ ] Connexion aux 3 backends (Rust, Java, Python)
+- [ ] Validation JSON Schema
+- [ ] Timeline visuelle fonctionnelle
+- [ ] Panneau énergie complexe
+- [ ] Gestion des régulateurs
+- [ ] Simulation +300s sans erreur
+- [ ] Export/Import de scénarios
+- [ ] Tests unitaires passants
+- [ ] Memento connecté à Vector DB
+- [ ] Documentation à jour
 
 ---
 
-**⚡ Remember: "V2 is not just an update, it's a quantum leap!"**
+## Notes pour l'Équipe
+
+1. **V2Spec** : Consulter `/Volumes/HOT_DEV/Magic/magic-stack/v2spec/` pour les détails
+2. **Vector DB** : Déjà indexée avec les specs, utiliser l'API Python port 5001
+3. **Clippy** : Améliorer `src/lib/clippy.tsx` pour chercher dans V2Spec
+4. **Tests** : Lancer `test_v2_controller.py` pour valider l'intégration
+
+## Support
+
+Pour toute question sur l'intégration V2, consulter :
+- `CLAUDE_MEMORY_GUIDE.md` : Guide condensé
+- `FRONTEND_DEV_ULTIMATE_GUIDE.md` : Guide complet front
+- Vector DB : `POST /search` avec query "V2 integration"

@@ -1,0 +1,175 @@
+{
+  "format_version": "1.0.0",
+  "description": "Presets d'effets visuels légers pour le jeu",
+  
+  "presets": {
+    "pulse": {
+      "type": "scale",
+      "duration_ms": 500,
+      "easing": "ease-in-out",
+      "params": {
+        "scale_min": 0.9,
+        "scale_max": 1.1,
+        "repeat": "infinite"
+      }
+    },
+    
+    "shake": {
+      "type": "position",
+      "duration_ms": 200,
+      "easing": "linear",
+      "params": {
+        "amplitude": 3,
+        "frequency": 50,
+        "decay": 0.8
+      }
+    },
+    
+    "spark_trail": {
+      "type": "particle",
+      "duration_ms": 1000,
+      "params": {
+        "particle_count": 5,
+        "color": "#FFD700",
+        "size": 2,
+        "lifetime_ms": 300,
+        "velocity": 50
+      }
+    },
+    
+    "glow": {
+      "type": "filter",
+      "duration_ms": 0,
+      "params": {
+        "blur": 2,
+        "color": "#FFFFFF",
+        "intensity": 0.5,
+        "persistent": true
+      }
+    },
+    
+    "fade_in": {
+      "type": "opacity",
+      "duration_ms": 300,
+      "easing": "ease-out",
+      "params": {
+        "from": 0,
+        "to": 1
+      }
+    },
+    
+    "fade_out": {
+      "type": "opacity",
+      "duration_ms": 300,
+      "easing": "ease-in",
+      "params": {
+        "from": 1,
+        "to": 0
+      }
+    },
+    
+    "flash": {
+      "type": "color",
+      "duration_ms": 100,
+      "easing": "linear",
+      "params": {
+        "color": "#FFFFFF",
+        "blend_mode": "additive",
+        "intensity": 0.8
+      }
+    },
+    
+    "rotate": {
+      "type": "rotation",
+      "duration_ms": 2000,
+      "easing": "linear",
+      "params": {
+        "degrees": 360,
+        "repeat": "infinite"
+      }
+    },
+    
+    "bounce": {
+      "type": "position",
+      "duration_ms": 400,
+      "easing": "bounce-out",
+      "params": {
+        "height": 20,
+        "squash": 0.8
+      }
+    },
+    
+    "ripple": {
+      "type": "composite",
+      "duration_ms": 600,
+      "params": {
+        "rings": 3,
+        "color": "#0099FF",
+        "spread_speed": 100,
+        "fade": true
+      }
+    },
+    
+    "temporal_glitch": {
+      "type": "distortion",
+      "duration_ms": 150,
+      "params": {
+        "chromatic_aberration": 5,
+        "scan_lines": true,
+        "noise": 0.1,
+        "flicker": true
+      }
+    },
+    
+    "quantum_phase": {
+      "type": "composite",
+      "duration_ms": 1000,
+      "params": {
+        "opacity_wave": true,
+        "color_shift": "#9932CC",
+        "blur_cycle": true,
+        "particle_aura": true
+      }
+    },
+    
+    "damage_flash": {
+      "type": "color",
+      "duration_ms": 150,
+      "params": {
+        "color": "#FF0000",
+        "blend_mode": "multiply",
+        "intensity": 0.6,
+        "shake": true
+      }
+    },
+    
+    "heal_aura": {
+      "type": "composite",
+      "duration_ms": 800,
+      "params": {
+        "color": "#00FF00",
+        "particles": "ascending",
+        "glow": true,
+        "pulse": true
+      }
+    },
+    
+    "artifact_shine": {
+      "type": "composite",
+      "duration_ms": 2000,
+      "params": {
+        "gleam": true,
+        "rainbow_shift": true,
+        "star_particles": true,
+        "aura_expand": true
+      }
+    }
+  },
+  
+  "combinations": {
+    "epic_item": ["glow", "pulse", "artifact_shine"],
+    "critical_damage": ["flash", "shake", "damage_flash"],
+    "temporal_event": ["temporal_glitch", "quantum_phase", "ripple"],
+    "level_up": ["flash", "ripple", "heal_aura", "spark_trail"]
+  }
+}

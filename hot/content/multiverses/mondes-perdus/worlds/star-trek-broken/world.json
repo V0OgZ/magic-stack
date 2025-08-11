@@ -1,0 +1,91 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01BROKEN_STAR_TREK_DRIFT",
+  "slug": "star-trek-broken",
+  "name": "USS Temporalis - Monde Brisé Star Trek",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 20.0,
+  "description": "Un vaisseau spatial coincé dans une boucle temporelle. Réalité alternative où la magie a fusionné avec la technologie du 24ème siècle.",
+  
+  "chronology": {
+    "timescale": 0.1,
+    "drift": {
+      "base": 5.0,
+      "variance": 3.0,
+      "direction": "accelerating"
+    },
+    "decay_profile": "exponential",
+    "stardate_conversion": true
+  },
+  
+  "physics_override": {
+    "gravity": "artificial",
+    "space": "non-euclidean_warp",
+    "dimensions": 11,
+    "warp_capable": true,
+    "transporters": true,
+    "replicators": true
+  },
+  
+  "pool": {
+    "heroes_allowed": ["starfleet", "klingon", "vulcan", "borg"],
+    "schools_allowed": ["technomancy", "warp_physics", "quantum_computing", "telepathy"],
+    "special_units": ["redshirts", "security_officers", "engineers", "science_officers"]
+  },
+  
+  "special_mechanics": {
+    "prime_directive": {
+      "active": true,
+      "violation_penalty": -1000
+    },
+    "holodeck": {
+      "available": true,
+      "can_create_scenarios": true,
+      "safety_protocols": "disabled"
+    },
+    "transporters": {
+      "range": "unlimited_in_system",
+      "cooldown": 3,
+      "accident_chance": 0.001
+    }
+  },
+  
+  "entry_effects": [
+    "GRANT_ABILITY(universal_translator)",
+    "EQUIP(tricorder)",
+    "SET_UNIFORM(starfleet_2380)",
+    "PLAY_SOUND(transporter_beam)"
+  ],
+  
+  "exit_conditions": {
+    "solve_temporal_paradox": true,
+    "repair_warp_core": true,
+    "defeat_borg_cube": false,
+    "find_way_home": true
+  },
+  
+  "ambient_events": [
+    {
+      "id": "red_alert",
+      "frequency": 0.1,
+      "effect": "All combat units +50% speed for 3 turns"
+    },
+    {
+      "id": "holodeck_malfunction",
+      "frequency": 0.05,
+      "effect": "Random scenario spawns hostile NPCs"
+    },
+    {
+      "id": "q_appearance",
+      "frequency": 0.01,
+      "effect": "Reality warps, all rules temporarily suspended"
+    }
+  ],
+  
+  "lore": {
+    "discovery": "Découvert par l'équipe Surface lors d'un drift extrême de 25.3 unités temporelles.",
+    "warning": "ATTENTION: Les lois de la physique sont altérées. La magie fonctionne différemment ici.",
+    "captain_log": "Journal du Capitaine, Date Stellaire 47853.2: Nous sommes coincés dans ce qui semble être une fusion entre notre réalité et un jeu de stratégie médiéval..."
+  }
+}

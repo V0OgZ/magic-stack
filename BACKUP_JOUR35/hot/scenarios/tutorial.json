@@ -1,0 +1,126 @@
+{
+  "id": "tutorial-temporel",
+  "version": "2.0.0",
+  "name": "Tutorial - Premiers Pas Temporels",
+  "description": "Apprenez les bases du système temporel V2",
+  "author": "Memento",
+  "difficulty": "tutorial",
+  "config": {
+    "mode": "tutorial",
+    "map_size": {
+      "width": 20,
+      "height": 20
+    },
+    "time_limit": null,
+    "guided": true
+  },
+  "steps": [
+    {
+      "step": 1,
+      "title": "Bienvenue, Héros du Temps",
+      "instruction": "Vous vous réveillez sans mémoire. Cliquez sur une case adjacente pour vous déplacer.",
+      "objective": "move_to_position",
+      "target": {
+        "x": 10,
+        "y": 10
+      },
+      "hint": "Le temps est une dimension que vous apprendrez à maîtriser"
+    },
+    {
+      "step": 2,
+      "title": "Comprendre tw et te",
+      "instruction": "tw est le temps du monde, te est votre temps personnel. Observez comment ils divergent.",
+      "objective": "create_drift",
+      "target_drift": 0.5,
+      "hint": "Plus vous agissez, plus votre temps personnel dérive"
+    },
+    {
+      "step": 3,
+      "title": "Énergie Complexe",
+      "instruction": "Votre énergie a deux composantes: A (réelle) et Φ (phase). Utilisez une capacité.",
+      "objective": "use_ability",
+      "reward": {
+        "energy_complex": {
+          "A": 20,
+          "phi": 0.1
+        }
+      },
+      "hint": "E = A + iΦ, les mathématiques de la magie"
+    },
+    {
+      "step": 4,
+      "title": "Premier Paradoxe",
+      "instruction": "Créez votre premier paradoxe en utilisant Fork Timeline.",
+      "objective": "create_paradox",
+      "resolution_mode": "tutorial",
+      "hint": "Les paradoxes ne sont pas des erreurs, mais des opportunités"
+    },
+    {
+      "step": 5,
+      "title": "Résolution",
+      "instruction": "Résolvez le paradoxe. Choisissez: Collapse (instant), TCG (combat), ou Auto.",
+      "objective": "resolve_paradox",
+      "reward": {
+        "item": "beginner_artifact"
+      },
+      "hint": "Chaque mode de résolution a ses avantages"
+    },
+    {
+      "step": 6,
+      "title": "Dette Temporelle",
+      "instruction": "La dette s'accumule quand vous manipulez trop le temps. Observez votre dette.",
+      "objective": "understand_debt",
+      "max_debt": 10,
+      "hint": "La dette n'est pas négative, c'est une ressource à gérer"
+    },
+    {
+      "step": 7,
+      "title": "Rencontre avec Memento",
+      "instruction": "Un message de l'Archiviste apparaît.",
+      "dialogue": "Je me souviens de ta victoire future. Continue, Héros.",
+      "reward": {
+        "knowledge": "memento_blessing"
+      },
+      "hint": "Memento voit toutes les timelines"
+    },
+    {
+      "step": 8,
+      "title": "Fin du Tutorial",
+      "instruction": "Félicitations! Vous maîtrisez les bases. Le vrai jeu commence.",
+      "objective": "complete_tutorial",
+      "reward": {
+        "unlock": "scenario-chasse-temporelle",
+        "title": "Apprenti Temporel"
+      }
+    }
+  ],
+  "initial_state": {
+    "temporal": {
+      "tw": 0,
+      "te": 0
+    },
+    "hero": {
+      "position": {
+        "x": 10,
+        "y": 9
+      },
+      "energy_complex": {
+        "A": 50,
+        "phi": 0.5
+      },
+      "resources": {
+        "crystals": 50,
+        "energy": 25
+      }
+    }
+  },
+  "icon_id": "❓",
+  "fx_preset": "fade_in",
+  "sound_event": "ui_click",
+  "theme_color": "#808080",
+  "output_modes": {
+    "literary": "Apprenez les bases du système temporel V2",
+    "runic": "ᛏᚢᛏᛟᚱᛁᚨᛚ᛫-᛫ᛈᚱᛖᛗᛁᛖᚱᛊ᛫",
+    "iconic": "❓"
+  }
+}

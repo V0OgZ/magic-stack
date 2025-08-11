@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Explorateur d'Icônes - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        select, input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .icon-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid #f0f0f0;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .icon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .icon-display {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .icon-display img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .icon-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .icon-id {
+            font-size: 0.75em;
+            color: #999;
+            font-family: monospace;
+            margin-bottom: 8px;
+        }
+        
+        .icon-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+        }
+        
+        .tag.good {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .tag.bad {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .tag.status-ready {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .tag.status-pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-good {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-bad {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-copy {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .selected {
+            border-color: #4caf50 !important;
+            background: #e8f5e9 !important;
+        }
+        
+        .rejected {
+            border-color: #f44336 !important;
+            background: #ffebee !important;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Explorateur d'Icônes OpenMoji</h1>
+        <p class="subtitle">Sélectionnez et taggez les icônes pour Heroes of Time</p>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Catégorie</label>
+                <select id="categoryFilter">
+                    <option value="">Toutes</option>
+                    <option value="lore">Lore (HD)</option>
+                    <option value="combat">Combat</option>
+                    <option value="resources">Ressources</option>
+                    <option value="creatures">Créatures</option>
+                    <option value="temporal">Temporel</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Statut</label>
+                <select id="statusFilter">
+                    <option value="">Tous</option>
+                    <option value="ready">Ready</option>
+                    <option value="pending">Pending</option>
+                    <option value="good">Validé ✅</option>
+                    <option value="bad">Rejeté ❌</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Recherche</label>
+                <input type="text" id="searchInput" placeholder="Nom, tag, id...">
+            </div>
+            
+            <div class="filter-group">
+                <label>Actions</label>
+                <button class="btn btn-copy" onclick="exportSelection()">📋 Export Sélection</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="goodCount">0</div>
+                <div class="stat-label">Validées</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="badCount">0</div>
+                <div class="stat-label">Rejetées</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="pendingCount">0</div>
+                <div class="stat-label">En attente</div>
+            </div>
+        </div>
+        
+        <div class="icon-grid" id="iconGrid">
+            <!-- Les icônes seront ajoutées ici -->
+        </div>
+    </div>
+    
+    <script>
+        // Base de données d'icônes OpenMoji + Custom
+        const icons = [
+            // RESSOURCES CARTE 2D (ce que tu veux!)
+            {
+                id: "resource:gold_mine",
+                name: "Mine d'Or",
+                emoji: "⛏️",
+                category: "resources",
+                tags: ["mine", "or", "ressource", "carte"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=26CF",
+                color: "#FFD700"
+            },
+            {
+                id: "resource:crystal_mine",
+                name: "Mine de Cristaux",
+                emoji: "💎",
+                category: "resources",
+                tags: ["mine", "cristal", "ressource", "carte"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F48E",
+                color: "#E91E63"
+            },
+            {
+                id: "resource:sword_stone",
+                name: "Épée dans la Pierre",
+                emoji: "🗡️",
+                category: "resources",
+                tags: ["excalibur", "épée", "pierre", "artefact"],
+                status: "ready",
+                source: "https://www.svgrepo.com/svg/321546/sword-in-stone",
+                color: "#9E9E9E"
+            },
+            {
+                id: "resource:wood_camp",
+                name: "Camp de Bûcherons",
+                emoji: "🪵",
+                category: "resources",
+                tags: ["bois", "ressource", "camp"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1FAB5",
+                color: "#8D6E63"
+            },
+            {
+                id: "resource:magic_well",
+                name: "Puits Magique",
+                emoji: "⛲",
+                category: "resources",
+                tags: ["puits", "magie", "mana"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=26F2",
+                color: "#03A9F4"
+            },
+            
+            // HÉROS & AGENTS
+            {
+                id: "hero:vinz_vega",
+                name: "Vinz Vega",
+                emoji: "🔫",
+                category: "lore",
+                tags: ["héros", "pistolet", "vert"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F52B",
+                color: "#4CAF50"
+            },
+            {
+                id: "hero:merlin",
+                name: "Merlin",
+                emoji: "🧙‍♂️",
+                category: "lore",
+                tags: ["héros", "mage", "magicien"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F9D9-200D-2642-FE0F"
+            },
+            {
+                id: "hero:anna",
+                name: "Anna",
+                emoji: "⏳",
+                category: "lore",
+                tags: ["héros", "temps", "décroissance"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=231B"
+            },
+            {
+                id: "hero:rapidus",
+                name: "Rapidus",
+                emoji: "⚡",
+                category: "lore",
+                tags: ["héros", "vitesse", "éclair"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=26A1"
+            },
+            {
+                id: "hero:lantus",
+                name: "Lantus",
+                emoji: "🐢",
+                category: "lore",
+                tags: ["héros", "lent", "tortue"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F422"
+            },
+            
+            // CRÉATURES
+            {
+                id: "creature:dragon",
+                name: "Dragon",
+                emoji: "🐉",
+                category: "creatures",
+                tags: ["créature", "dragon", "feu"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F409"
+            },
+            {
+                id: "creature:phoenix",
+                name: "Phénix",
+                emoji: "🦅",
+                category: "creatures",
+                tags: ["créature", "phénix", "renaissance"],
+                status: "pending",
+                source: "https://openmoji.org/library/#emoji=1F985"
+            },
+            {
+                id: "creature:golem",
+                name: "Golem",
+                emoji: "🗿",
+                category: "creatures",
+                tags: ["créature", "golem", "pierre"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F5FF"
+            },
+            
+            // TEMPOREL
+            {
+                id: "temporal:portal",
+                name: "Portail",
+                emoji: "🚪",
+                category: "temporal",
+                tags: ["portail", "transport", "dimension"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F6AA"
+            },
+            {
+                id: "temporal:vortex",
+                name: "Vortex",
+                emoji: "🌀",
+                category: "temporal",
+                tags: ["vortex", "spirale", "temps"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F300"
+            },
+            {
+                id: "temporal:infinity",
+                name: "Infini",
+                emoji: "♾️",
+                category: "temporal",
+                tags: ["infini", "paradoxe", "boucle"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=267E"
+            },
+            {
+                id: "temporal:clock",
+                name: "Horloge",
+                emoji: "🕰️",
+                category: "temporal",
+                tags: ["horloge", "temps", "mesure"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F570"
+            },
+            
+            // COMBAT
+            {
+                id: "combat:shield",
+                name: "Bouclier",
+                emoji: "🛡️",
+                category: "combat",
+                tags: ["défense", "protection", "bouclier"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F6E1"
+            },
+            {
+                id: "combat:sword",
+                name: "Épée",
+                emoji: "⚔️",
+                category: "combat",
+                tags: ["attaque", "épée", "combat"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=2694"
+            },
+            {
+                id: "combat:explosion",
+                name: "Explosion",
+                emoji: "💥",
+                category: "combat",
+                tags: ["explosion", "dégâts", "aoe"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F4A5"
+            },
+            {
+                id: "combat:fire",
+                name: "Feu",
+                emoji: "🔥",
+                category: "combat",
+                tags: ["feu", "brûlure", "dégâts"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F525"
+            },
+            {
+                id: "combat:ice",
+                name: "Glace",
+                emoji: "❄️",
+                category: "combat",
+                tags: ["glace", "gel", "ralentissement"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=2744"
+            },
+            {
+                id: "combat:lightning",
+                name: "Foudre",
+                emoji: "⚡",
+                category: "combat",
+                tags: ["foudre", "électricité", "choc"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=26A1"
+            },
+            
+            // OBJETS
+            {
+                id: "item:potion_health",
+                name: "Potion de Vie",
+                emoji: "🧪",
+                category: "lore",
+                tags: ["potion", "soin", "vie"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F9EA"
+            },
+            {
+                id: "item:potion_mana",
+                name: "Potion de Mana",
+                emoji: "🧴",
+                category: "lore",
+                tags: ["potion", "mana", "magie"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F9F4"
+            },
+            {
+                id: "item:treasure_chest",
+                name: "Coffre au Trésor",
+                emoji: "🗝️",
+                category: "resources",
+                tags: ["coffre", "trésor", "loot"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F5DD"
+            },
+            {
+                id: "item:scroll",
+                name: "Parchemin",
+                emoji: "📜",
+                category: "lore",
+                tags: ["parchemin", "sort", "connaissance"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F4DC"
+            },
+            {
+                id: "item:crystal_ball",
+                name: "Boule de Cristal",
+                emoji: "🔮",
+                category: "lore",
+                tags: ["cristal", "divination", "magie"],
+                status: "ready",
+                source: "https://openmoji.org/library/#emoji=1F52E"
+            }
+        ];
+        
+        // État de l'application
+        let selectedIcons = new Set();
+        let rejectedIcons = new Set();
+        
+        // Fonctions de rendu
+        function renderIcons(iconsToRender = icons) {
+            const grid = document.getElementById('iconGrid');
+            grid.innerHTML = '';
+            
+            iconsToRender.forEach(icon => {
+                const card = document.createElement('div');
+                card.className = 'icon-card';
+                if (selectedIcons.has(icon.id)) card.classList.add('selected');
+                if (rejectedIcons.has(icon.id)) card.classList.add('rejected');
+                
+                card.innerHTML = `
+                    <div class="icon-display" style="${icon.color ? `background: ${icon.color}22;` : ''}">
+                        ${icon.emoji}
+                    </div>
+                    <div class="icon-name">${icon.name}</div>
+                    <div class="icon-id">${icon.id}</div>
+                    <div class="icon-tags">
+                        <span class="tag status-${icon.status}">${icon.status}</span>
+                        ${icon.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-good" onclick="toggleGood('${icon.id}')">✅</button>
+                        <button class="btn btn-bad" onclick="toggleBad('${icon.id}')">❌</button>
+                        <button class="btn btn-copy" onclick="copyInfo('${icon.id}')">📋</button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            updateStats();
+        }
+        
+        function toggleGood(id) {
+            if (selectedIcons.has(id)) {
+                selectedIcons.delete(id);
+            } else {
+                selectedIcons.add(id);
+                rejectedIcons.delete(id);
+            }
+            renderIcons(getFilteredIcons());
+        }
+        
+        function toggleBad(id) {
+            if (rejectedIcons.has(id)) {
+                rejectedIcons.delete(id);
+            } else {
+                rejectedIcons.add(id);
+                selectedIcons.delete(id);
+            }
+            renderIcons(getFilteredIcons());
+        }
+        
+        function copyInfo(id) {
+            const icon = icons.find(i => i.id === id);
+            const info = `ID: ${icon.id}\nNom: ${icon.name}\nEmoji: ${icon.emoji}\nSource: ${icon.source}`;
+            navigator.clipboard.writeText(info);
+            alert('Infos copiées !');
+        }
+        
+        function getFilteredIcons() {
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            return icons.filter(icon => {
+                if (category && icon.category !== category) return false;
+                
+                if (status) {
+                    if (status === 'good' && !selectedIcons.has(icon.id)) return false;
+                    if (status === 'bad' && !rejectedIcons.has(icon.id)) return false;
+                    if (status !== 'good' && status !== 'bad' && icon.status !== status) return false;
+                }
+                
+                if (search) {
+                    const searchIn = `${icon.name} ${icon.id} ${icon.tags.join(' ')}`.toLowerCase();
+                    if (!searchIn.includes(search)) return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        function updateStats() {
+            document.getElementById('totalCount').textContent = icons.length;
+            document.getElementById('goodCount').textContent = selectedIcons.size;
+            document.getElementById('badCount').textContent = rejectedIcons.size;
+            document.getElementById('pendingCount').textContent = icons.filter(i => i.status === 'pending').length;
+        }
+        
+        function exportSelection() {
+            const selected = icons.filter(i => selectedIcons.has(i.id));
+            const output = {
+                selected: selected.map(i => ({
+                    id: i.id,
+                    name: i.name,
+                    emoji: i.emoji,
+                    source: i.source
+                })),
+                rejected: Array.from(rejectedIcons)
+            };
+            
+            const json = JSON.stringify(output, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'icon_selection.json';
+            a.click();
+        }
+        
+        // Event listeners
+        document.getElementById('categoryFilter').addEventListener('change', () => {
+            renderIcons(getFilteredIcons());
+        });
+        
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            renderIcons(getFilteredIcons());
+        });
+        
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderIcons(getFilteredIcons());
+        });
+        
+        // Initialisation
+        renderIcons();
+    </script>
+</body>
+</html>

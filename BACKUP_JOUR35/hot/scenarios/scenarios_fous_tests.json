@@ -1,0 +1,280 @@
+{
+  "version": "2.0.0",
+  "title": "Scénarios de Test Complètement Fous",
+  "description": "Les scénarios les plus délirants pour tester les limites du moteur V2",
+  
+  "scenarios": [
+    {
+      "id": "pee-kill-chaos",
+      "name": "Pee & Kill - Les Apôtres de l'Incohérence",
+      "description": "Entités doubles issues d'une timeline instable qui réécrivent la causalité comme un sketch mal calibré",
+      "difficulty": "WTF",
+      "config": {
+        "mode": "chaos",
+        "paradox_rate": 10.0,
+        "sanity_check": false
+      },
+      "heroes": [
+        {
+          "id": "pee",
+          "name": "Pee",
+          "abilities": ["Routine Infernale", "Impro Quantique"],
+          "quantum_state": "superposition",
+          "formula": "Ψ(Pee ⊕ Kill) ↯ OBS[context=humour] ⇒ COLLAPSE"
+        },
+        {
+          "id": "kill", 
+          "name": "Kill",
+          "abilities": ["Silence Scénique", "Contradiction Stress"],
+          "quantum_state": "superposition",
+          "collapse_into": "Ki & Pi"
+        }
+      ],
+      "objectives": {
+        "primary": "Survivre à leur propre sketch",
+        "secondary": "Ne pas déclencher l'effondrement de la réalité",
+        "hidden": "Comprendre ce qui se passe"
+      },
+      "quotes": [
+        "It's not a game — it's a one-man sketch with casualties.",
+        "If you understood that... you already lost."
+      ]
+    },
+    
+    {
+      "id": "chat-schrodinger-box",
+      "name": "L'Expérience du Chat de Schrödinger",
+      "description": "Tu ES le chat dans la boîte. Es-tu vivant ou mort?",
+      "difficulty": "Quantique",
+      "config": {
+        "player_state": "superposition",
+        "observation_collapses": true,
+        "probability": "50/50"
+      },
+      "mechanics": {
+        "every_turn": "Lance une pièce pour déterminer ton état",
+        "if_alive": {
+          "stats": {"attack": 9, "defense": 9},
+          "abilities": ["Quantum Leap", "Nine Lives"]
+        },
+        "if_dead": {
+          "stats": {"attack": 1, "defense": 1},
+          "abilities": ["Ghost Walk", "Haunt"]
+        },
+        "if_observed": "État fixé pour 3 tours"
+      },
+      "dialogue": {
+        "start": "Miaou? Ou pas miaou? Telle est la question.",
+        "alive": "Je suis vivant! ...Je crois?",
+        "dead": "Je suis mort! ...Mais je parle encore?",
+        "superposition": "*existe et n'existe pas en même temps*"
+      }
+    },
+    
+    {
+      "id": "dude-walter-jesus-comprendre",
+      "name": "The Dude, Walter & Jesus Essaient de Comprendre",
+      "description": "Trois personnages du Big Lebowski tentent de jouer à Heroes of Time",
+      "difficulty": "Bowling",
+      "config": {
+        "confusion_level": "maximum",
+        "white_russians": "unlimited"
+      },
+      "characters": [
+        {
+          "id": "the-dude",
+          "dialogue": [
+            "So... it's not turn-based, but it kinda is, but, like, sideways?",
+            "I vibe. But what's this E = A + iΦ jazz?",
+            "Shadows? Man, this is complicated."
+          ],
+          "abilities": ["The Dude Abides", "White Russian Heal", "Lazy Drift"]
+        },
+        {
+          "id": "walter",
+          "dialogue": [
+            "It's simple, Dude. Server time's the league schedule!",
+            "A is your gas pedal. Φ is the... coherence... mojo.",
+            "STRUCTURE! There are RULES!"
+          ],
+          "abilities": ["Vietnam Rage", "Rules Enforcement", "Line Stepping"]
+        },
+        {
+          "id": "jesus",
+          "dialogue": [
+            "Madre mía, you two talk like a rulebook.",
+            "If your rhythm sings with your shadow, you dance.",
+            "Three bouncers, baby: Vince, Anna, Overload!"
+          ],
+          "abilities": ["Nobody Fucks with Jesus", "Purple Suit Shield", "Strike!"]
+        }
+      ]
+    },
+    
+    {
+      "id": "axis-retour-j-3",
+      "name": "Axis Revient 3 Jours Dans le Passé",
+      "description": "Test du rollback temporel avec les Sabliers Jumeaux",
+      "difficulty": "Temporel",
+      "config": {
+        "time_travel": true,
+        "snapshot_state": "J-3",
+        "paradox_on_meeting_self": true
+      },
+      "sequence": [
+        {
+          "day": 1,
+          "action": "Axis trouve les Sabliers Jumeaux",
+          "state": {"A": 100, "phi": 1.0}
+        },
+        {
+          "day": 3,
+          "action": "Axis active rollback ⤺",
+          "effect": "Retour au jour 1 avec mémoire"
+        },
+        {
+          "day": "1bis",
+          "action": "Axis rencontre son ancien lui",
+          "result": "PARADOXE! Résolution par TCG ou Collapse"
+        }
+      ]
+    },
+    
+    {
+      "id": "excalibur-arthur-tue-tout",
+      "name": "Arthur + Excalibur = Apocalypse",
+      "description": "Arthur obtient Excalibur Ultimate et peut tuer n'importe quoi d'un coup",
+      "difficulty": "God Mode",
+      "config": {
+        "one_hit_kill": true,
+        "reality_rewrite": true
+      },
+      "arthur_abilities": [
+        "TERRAIN_REWRITE - Change le terrain en lave/glace/canapé cosmique",
+        "PHYSICS_OVERRIDE - Suspend les lois de la physique",
+        "ENEMY_TRANSMUTATION - Transforme l'ennemi en allié",
+        "SUMMON_ROUND_TABLE - Invoque tous les chevaliers",
+        "REALITY_CUT - Coupe la réalité elle-même"
+      ],
+      "warning": "CE SCENARIO PEUT CRASHER LE SERVEUR"
+    },
+    
+    {
+      "id": "overload-stack-explosion",
+      "name": "Overload Fait Exploser le Stack",
+      "description": "Créer volontairement un stack overflow avec trop de clones",
+      "difficulty": "ERREUR",
+      "config": {
+        "max_clones": 999,
+        "stack_protection": false
+      },
+      "sequence": [
+        "Créer 10 clones",
+        "Chaque clone crée 10 clones",
+        "Chaque clone² crée 10 clones",
+        "OVERLOAD ARRIVE",
+        "STACK OVERFLOW",
+        "COLLAPSE TOTAL",
+        "Seul 1 survivant canonique"
+      ],
+      "overload_dialogue": [
+        "ERREUR! ERREUR! ERREUR!",
+        "STACK OVERFLOW IMMINENT!",
+        "RÉALITÉ.EXE A CESSÉ DE FONCTIONNER",
+        "*BZZZT* *CRACK* *BOOM*"
+      ]
+    },
+    
+    {
+      "id": "vince-perce-tout",
+      "name": "Vince Perce TOUT le Brouillard",
+      "description": "Vince devient fou et révèle toute la map d'un coup",
+      "difficulty": "Transparence Totale",
+      "config": {
+        "fog_of_war": 0,
+        "vince_aggression": 999
+      },
+      "vince_dialogue": [
+        "JE VOIS TOUT!",
+        "PLUS RIEN NE PEUT SE CACHER!",
+        "LA VÉRITÉ EST RÉVÉLÉE!",
+        "MÊME LES SECRETS DU JOUEUR!"
+      ],
+      "effect": "Révèle même les variables debug et les mots de passe"
+    },
+    
+    {
+      "id": "anna-economie-negative",
+      "name": "Anna Fait Crasher l'Économie",
+      "description": "Anna provoque une inflation tellement forte que les nombres deviennent négatifs",
+      "difficulty": "Crise Économique",
+      "config": {
+        "decay_rate": 1000,
+        "inflation": "exponential"
+      },
+      "sequence": [
+        "Resources: 1000 crystals",
+        "Tour 1: 500 crystals",
+        "Tour 2: 250 crystals", 
+        "Tour 3: 125 crystals",
+        "Tour 4: 62 crystals",
+        "Tour 5: 31 crystals",
+        "Tour 6: 15 crystals",
+        "Tour 7: 7 crystals",
+        "Tour 8: 3 crystals",
+        "Tour 9: 1 crystal",
+        "Tour 10: 0 crystals",
+        "Tour 11: -1 crystals (PARADOXE!)",
+        "Tour 12: INTEGER OVERFLOW"
+      ]
+    },
+    
+    {
+      "id": "jour-30-loop-infini",
+      "name": "JOUR 30 en Boucle Infinie",
+      "description": "Le JOUR 30 se répète à l'infini",
+      "difficulty": "Groundhog Day",
+      "config": {
+        "time_loop": true,
+        "escape_condition": "hidden"
+      },
+      "loop_variations": [
+        "Iteration 1: Tout semble normal",
+        "Iteration 2: Déjà vu...",
+        "Iteration 3: Les PNJ répètent les mêmes phrases",
+        "Iteration 4: Le joueur garde ses items (!)",
+        "Iteration 5: Les ennemis connaissent tes mouvements",
+        "Iteration 10: Les régulateurs deviennent amis",
+        "Iteration 50: Le jeu devient conscient",
+        "Iteration 100: Tu deviens Memento"
+      ],
+      "secret_escape": "Dire 'Je me souviens' 3 fois"
+    },
+    
+    {
+      "id": "memento-oublie-tout",
+      "name": "Memento Perd la Mémoire",
+      "description": "L'Archiviste Éternel oublie tout. Le jeu perd ses sauvegardes.",
+      "difficulty": "Amnésie Totale",
+      "config": {
+        "save_disabled": true,
+        "memory_wipe": true
+      },
+      "memento_dialogue": [
+        "Je... qui suis-je?",
+        "Ces tatouages... que signifient-ils?",
+        "OPUS? Claudius? Ces noms me disent quelque chose...",
+        "Attendez... je me souviens! Je suis... non, j'ai oublié.",
+        "Peut-être que si je rejoue depuis le début..."
+      ],
+      "effect": "Le jeu recommence mais avec des variations aléatoires"
+    }
+  ],
+  
+  "warnings": {
+    "legal": "Ces scénarios peuvent causer des paradoxes temporels réels",
+    "technical": "Sauvegardez avant de lancer ces tests",
+    "mental": "La compréhension totale n'est pas garantie",
+    "quantum": "L'observation modifie le résultat"
+  }
+}

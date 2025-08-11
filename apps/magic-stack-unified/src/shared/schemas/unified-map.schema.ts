@@ -105,7 +105,7 @@ export const EnergyComplexSchema = z.object({
  */
 export const PlacedResourceSchema = z.object({
   id: z.string(),
-  type: z.enum(['hero', 'creature', 'artifact', 'resource', 'building', 'marker']),
+  type: z.enum(['hero', 'creature', 'artifact', 'resource', 'building', 'marker', 'portal']),
   subtype: z.string(), // hero_id, creature_id, etc.
   emoji: z.string(), // Représentation visuelle
   name: z.string(),

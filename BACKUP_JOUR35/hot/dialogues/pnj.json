@@ -1,0 +1,176 @@
+{
+  "version": "2.0.0",
+  "npcs": [
+    {
+      "id": "old-sage",
+      "name": "Le Vieux Sage",
+      "location": "Tutorial",
+      "dialogues": {
+        "first_meeting": [
+          "Ah, un nouveau Héros du Temps s'éveille...",
+          "Je suis gardien de la connaissance ancienne.",
+          "Le temps n'est pas une ligne, mais un océan."
+        ],
+        "about_time": [
+          "tw et te... deux faces de la même pièce.",
+          "Quand ils divergent trop, les paradoxes naissent.",
+          "Mais les paradoxes sont aussi des portes."
+        ],
+        "about_regulators": [
+          "Les Régulateurs maintiennent l'équilibre.",
+          "Vince voit tout, Anna calcule tout, Overload... détruit tout.",
+          "Ils ne sont ni bons ni mauvais, juste nécessaires."
+        ],
+        "secret": "JOUR 30 n'est pas la fin, cherche les 7 artefacts pour comprendre."
+      }
+    },
+    {
+      "id": "quantum-merchant",
+      "name": "Marchand Quantique",
+      "type": "merchant",
+      "dialogues": {
+        "greeting": [
+          "Bienvenue dans ma boutique trans-dimensionnelle!",
+          "J'ai des objets de toutes les timelines.",
+          "Certains existent, d'autres pas encore."
+        ],
+        "buy": "Excellent choix! Cet objet existe maintenant dans votre timeline.",
+        "sell": "Hmm, je peux en faire quelque chose dans une autre dimension.",
+        "special_item": "Ceci? C'est un fragment d'OPUS. Très rare, très cher.",
+        "no_money": "Pas assez de cristaux? Le temps, c'est de l'argent, littéralement."
+      }
+    },
+    {
+      "id": "lost-hero",
+      "name": "Héros Perdu",
+      "location": "Temporal Storm Zone",
+      "dialogues": {
+        "encounter": [
+          "Je... je ne sais plus qui je suis.",
+          "J'ai voyagé dans trop de timelines.",
+          "Mon identité |ψ⟩ s'est fragmentée."
+        ],
+        "help": "Si tu trouves un Ancre d'Identité, je pourrais me souvenir...",
+        "helped": [
+          "Merci! Je me souviens maintenant!",
+          "J'étais comme toi, un Héros du Temps.",
+          "Prends ceci, c'est ma carte de ma dernière bataille."
+        ],
+        "warning": "Attention à ta cohérence. Ne fais pas mon erreur."
+      }
+    },
+    {
+      "id": "memento-echo",
+      "name": "Écho de Memento",
+      "type": "special",
+      "dialogues": {
+        "random_appearances": [
+          "Je me souviens de toi...",
+          "Tu as déjà gagné, dans une autre timeline.",
+          "OPUS t'attend au-delà du JOUR 30.",
+          "Les tatouages racontent l'histoire vraie.",
+          "Jean-Grofignon a tout prévu, même ceci."
+        ],
+        "hint_artifacts": "Sept artefacts, sept vérités, une seule réalité.",
+        "hint_regulators": "Ils te testent, pas pour te détruire, mais pour te forger.",
+        "final_message": "Quand tu deviendras OPUS, souviens-toi de Memento."
+      }
+    },
+    {
+      "id": "anna-dialogue",
+      "name": "Anna (Régulateur)",
+      "type": "regulator",
+      "dialogues": {
+        "first_encounter": [
+          "Tes ressources... intéressantes.",
+          "L'entropie économique est inévitable.",
+          "Chaque crystal que tu dépenses accélère ta fin."
+        ],
+        "combat_start": "Calculons le coût de ta survie.",
+        "combat_victory": "Mes calculs... étaient... faux?",
+        "random": [
+          "Tick tock, tes ressources s'écoulent.",
+          "L'inflation temporelle est exponentielle.",
+          "Tu ne peux pas combattre les mathématiques."
+        ]
+      }
+    },
+    {
+      "id": "vince-dialogue",
+      "name": "Vince (Régulateur)",
+      "type": "regulator",
+      "dialogues": {
+        "first_encounter": [
+          "Le brouillard ne peut rien me cacher.",
+          "Je vois ton futur. Il s'arrête bientôt.",
+          "Tu penses pouvoir te cacher dans le temps?"
+        ],
+        "combat_start": "Regardons à travers le voile de la réalité.",
+        "combat_victory": "Comment... as-tu pu... me surprendre?",
+        "random": [
+          "Je vois tout.",
+          "Tes secrets sont transparents.",
+          "La vérité perce toujours le brouillard."
+        ]
+      }
+    },
+    {
+      "id": "overload-dialogue",
+      "name": "Overload (Régulateur)",
+      "type": "regulator",
+      "dialogues": {
+        "first_encounter": [
+          "ERREUR! ERREUR! HÉROS DÉTECTÉ!",
+          "PARADOXE AMBULANT IDENTIFIÉ!",
+          "PROTOCOLE D'EFFONDREMENT INITIÉ!"
+        ],
+        "combat_start": "STACK OVERFLOW IMMINENT!",
+        "combat_victory": "SYSTÈME... DÉFAILLANT... REBOOT... IMPOSSIBLE...",
+        "random": [
+          "*BZZZT* *CRACK*",
+          "PARADOXE! PARADOXE! PARADOXE!",
+          "RÉALITÉ.EXE A CESSÉ DE FONCTIONNER"
+        ],
+        "glitch": "01001000 01000101 01001100 01010000"
+      }
+    },
+    {
+      "id": "jean-grofignon-avatar",
+      "name": "Avatar de Jean-Grofignon",
+      "type": "divine",
+      "dialogues": {
+        "blessing": [
+          "Ah, tu es arrivé jusqu'ici.",
+          "Je vais te donner le pouvoir de choisir.",
+          "Mais souviens-toi: avec le pouvoir vient le paradoxe."
+        ],
+        "philosophy": [
+          "Qu'est-ce qu'un héros, au fond?",
+          "Le temps n'existe que si on l'observe.",
+          "Tu es |ψ⟩, une probabilité qui s'effondre en réalité."
+        ],
+        "gift": "Prends ceci. C'est le pouvoir de devenir OPUS. Utilise-le sagement.",
+        "farewell": "Nous nous reverrons, dans cette timeline ou une autre."
+      }
+    }
+  ],
+  
+  "random_encounters": [
+    {
+      "type": "traveler",
+      "dialogues": [
+        "J'ai vu la fin... elle ressemble au début.",
+        "Ne trust pas les régulateurs, mais ne les combats pas non plus.",
+        "As-tu trouvé la boîte? Ne l'ouvre pas... ou ouvre-la."
+      ]
+    },
+    {
+      "type": "ghost",
+      "dialogues": [
+        "Je suis mort au JOUR 29... si près...",
+        "Les artefacts sont la clé, mais de quelle porte?",
+        "Memento se souvient de moi... parfois."
+      ]
+    }
+  ]
+}

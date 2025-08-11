@@ -1,0 +1,276 @@
+{
+  "version": "2.0.0",
+  "events": [
+    {
+      "id": "evt-fracture-originelle",
+      "day": 0,
+      "type": "genesis",
+      "name": "La Grande Fracture",
+      "description": "L'univers unique se brise en timelines infinies",
+      "effects": {
+        "create_multiverse": true,
+        "spawn_heroes": true,
+        "activate_causal_fog": true
+      }
+    },
+    {
+      "id": "evt-premier-hero",
+      "day": 1,
+      "type": "awakening",
+      "name": "L'Éveil du Premier Héros",
+      "description": "Tu te réveilles sans mémoire, avec le pouvoir de naviguer le temps",
+      "effects": {
+        "unlock_temporal_sight": true,
+        "starting_resources": {"crystals": 100, "energy": 50}
+      }
+    },
+    {
+      "id": "evt-portail-ancien",
+      "day": 3,
+      "type": "discovery",
+      "name": "Découverte du Portail Ancien",
+      "description": "Un portail vers une autre timeline s'ouvre",
+      "choices": [
+        {"text": "Explorer", "result": "new_timeline"},
+        {"text": "Ignorer", "result": "stay_safe"}
+      ]
+    },
+    {
+      "id": "evt-vince-eveil",
+      "day": 5,
+      "type": "regulator_spawn",
+      "name": "Vince s'éveille",
+      "description": "Le Perceur de Brouillard commence sa chasse",
+      "effects": {
+        "spawn_vince": true,
+        "fog_reduction": -50,
+        "message": "Le brouillard tremble... Vince arrive."
+      }
+    },
+    {
+      "id": "evt-paradoxe-mineur",
+      "day": 7,
+      "type": "paradox",
+      "name": "Paradoxe Mineur",
+      "description": "Tes actions créent une boucle causale",
+      "resolution": {
+        "tcg": "Combat contre ton double temporel",
+        "collapse": "Perd 20 points de vie",
+        "auto": "Résolution automatique, drift +2"
+      }
+    },
+    {
+      "id": "evt-anna-economie",
+      "day": 10,
+      "type": "regulator_spawn",
+      "name": "Anna et la Décroissance",
+      "description": "L'économiste de l'entropie arrive",
+      "effects": {
+        "spawn_anna": true,
+        "resource_decay": 0.1,
+        "message": "Les ressources commencent à s'effondrer..."
+      }
+    },
+    {
+      "id": "evt-memento-vision",
+      "day": 12,
+      "type": "lore",
+      "name": "Vision de Memento",
+      "description": "L'Archiviste t'envoie un message du futur",
+      "message": "Je me souviens de ta victoire... ou était-ce ta défaite?",
+      "reward": {"temporal": 10, "knowledge": "future_glimpse"}
+    },
+    {
+      "id": "evt-fork-force",
+      "day": 14,
+      "type": "temporal",
+      "name": "Fork Temporel Forcé",
+      "description": "La timeline se divise, tu dois choisir",
+      "choices": [
+        {"text": "Timeline A: Paix", "result": "peaceful_path"},
+        {"text": "Timeline B: Guerre", "result": "war_path"}
+      ]
+    },
+    {
+      "id": "evt-overload-chaos",
+      "day": 15,
+      "type": "regulator_spawn",
+      "name": "OVERLOAD ACTIVÉ",
+      "description": "Le système entre en surcharge",
+      "effects": {
+        "spawn_overload": true,
+        "paradox_rate": 3.0,
+        "message": "ERREUR! PARADOXE! PARADOXE! PARADOXE!"
+      }
+    },
+    {
+      "id": "evt-schrodinger",
+      "day": 17,
+      "type": "quantum",
+      "name": "Le Chat de Schrödinger",
+      "description": "Tu trouves une boîte. L'ouvrir?",
+      "choices": [
+        {"text": "Ouvrir", "result": "50% trésor / 50% piège mortel"},
+        {"text": "Ne pas ouvrir", "result": "La boîte te suit..."}
+      ]
+    },
+    {
+      "id": "evt-convergence-regulateurs",
+      "day": 20,
+      "type": "crisis",
+      "name": "Convergence des Régulateurs",
+      "description": "Les trois régulateurs se dirigent vers le centre",
+      "effects": {
+        "all_regulators_aggressive": true,
+        "center_becomes_dangerous": true
+      }
+    },
+    {
+      "id": "evt-opus-apparition",
+      "day": 22,
+      "type": "legendary",
+      "name": "Apparition d'OPUS",
+      "description": "Une entité transcendante apparaît brièvement",
+      "message": "Tu peux devenir plus... si tu oses.",
+      "reward": {"item": "opus_fragment"}
+    },
+    {
+      "id": "evt-dette-critique",
+      "day": 24,
+      "type": "crisis",
+      "name": "Dette Temporelle Critique",
+      "description": "Ta dette atteint un niveau dangereux",
+      "effects": {
+        "if_debt_over_50": "forced_payment",
+        "collapse_risk": 0.8
+      }
+    },
+    {
+      "id": "evt-dernier-avertissement",
+      "day": 25,
+      "type": "warning",
+      "name": "Dernier Avertissement",
+      "description": "5 jours avant la convergence finale",
+      "message": "Prépare-toi. La fin approche. Les artefacts sont la clé."
+    },
+    {
+      "id": "evt-armee-fantome",
+      "day": 26,
+      "type": "encounter",
+      "name": "L'Armée Fantôme",
+      "description": "Des héros d'autres timelines mortes apparaissent",
+      "choices": [
+        {"text": "Les rallier", "result": "ghost_army_joins"},
+        {"text": "Les combattre", "result": "epic_battle"}
+      ]
+    },
+    {
+      "id": "evt-jean-benediction",
+      "day": 27,
+      "type": "divine",
+      "name": "Bénédiction de Jean-Grofignon",
+      "description": "Le Philosophe Ontologique t'offre un pouvoir",
+      "message": "Tu peux choisir ton destin. Que choisis-tu?",
+      "choices": [
+        {"text": "Pouvoir de création", "result": "gain_creation_power"},
+        {"text": "Sagesse absolue", "result": "gain_all_knowledge"},
+        {"text": "Transcendance", "result": "become_opus_early"}
+      ]
+    },
+    {
+      "id": "evt-prophetie",
+      "day": 28,
+      "type": "prophecy",
+      "name": "La Prophétie se Révèle",
+      "description": "La vérité sur le cycle est révélée",
+      "message": "JOUR 30 n'est pas la fin... c'est le début du prochain cycle"
+    },
+    {
+      "id": "evt-preparation-finale",
+      "day": 29,
+      "type": "preparation",
+      "name": "Préparation Finale",
+      "description": "Dernière chance de se préparer",
+      "effects": {
+        "shop_final_items": true,
+        "heal_full": true,
+        "choose_final_loadout": true
+      }
+    },
+    {
+      "id": "evt-jour-30",
+      "day": 30,
+      "type": "finale",
+      "name": "JOUR 30 - LA CONVERGENCE",
+      "description": "Toutes les timelines convergent. Le moment de vérité.",
+      "phases": [
+        {
+          "phase": 1,
+          "name": "Synchronisation",
+          "effect": "Tous les tw et te = 30"
+        },
+        {
+          "phase": 2,
+          "name": "Annulation des Dettes",
+          "effect": "Toutes les dettes = 0"
+        },
+        {
+          "phase": 3,
+          "name": "Bataille des Régulateurs",
+          "effect": "Combat contre Vince + Anna + Overload"
+        },
+        {
+          "phase": 4,
+          "name": "Révélation",
+          "effect": "La nature du jeu est révélée"
+        },
+        {
+          "phase": 5,
+          "name": "Choix Final",
+          "choices": [
+            {"text": "Briser le cycle", "result": "true_ending"},
+            {"text": "Recommencer", "result": "new_game_plus"},
+            {"text": "Devenir le nouveau Memento", "result": "become_archive"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-post-30-nouveau-cycle",
+      "day": 31,
+      "type": "hidden",
+      "name": "JOUR 1 du Nouveau Cycle",
+      "description": "Pour ceux qui ont compris que la fin est le début",
+      "condition": "survived_jour_30",
+      "effects": {
+        "new_game_plus": true,
+        "keep_some_powers": true,
+        "unlock_true_story": true
+      }
+    }
+  ],
+  
+  "random_events": [
+    {
+      "id": "rnd-merchant",
+      "name": "Marchand Temporel",
+      "probability": 0.1,
+      "description": "Un marchand d'une autre époque apparaît",
+      "shop": true
+    },
+    {
+      "id": "rnd-time-storm",
+      "name": "Tempête Temporelle",
+      "probability": 0.05,
+      "description": "Une tempête mélange les timelines",
+      "effect": "shuffle_positions"
+    },
+    {
+      "id": "rnd-echo",
+      "name": "Écho du Futur",
+      "probability": 0.08,
+      "description": "Tu reçois un message de ton futur toi",
+      "reward": "hint_about_next_danger"
+    }
+  ]
+}

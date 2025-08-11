@@ -1,0 +1,77 @@
+{
+  "$schema": "../../../../core/schemas/world.schema.json",
+  "id": "01BROKEN_CYBERPUNK_DRIFT",
+  "slug": "cyberpunk-2077-broken",
+  "name": "Night City Temporelle - Monde Brisé Cyberpunk",
+  "type": "BROKEN_WORLD",
+  "access_method": "EXTREME_DRIFT",
+  "required_drift": 18.0,
+  "description": "Night City 2077 où les implants cybernétiques interfèrent avec la magie temporelle.",
+  
+  "chronology": {
+    "timescale": 2.0,
+    "drift": {
+      "base": 3.0,
+      "variance": 5.0,
+      "direction": "chaotic"
+    },
+    "decay_profile": "glitch",
+    "braindance_compatible": true
+  },
+  
+  "physics_override": {
+    "gravity": "normal",
+    "space": "urban_vertical",
+    "neon_saturation": 200,
+    "chrome_reflection": true,
+    "netrunning_enabled": true
+  },
+  
+  "pool": {
+    "heroes_allowed": ["netrunner", "solo", "techie", "nomad", "corpo"],
+    "schools_allowed": ["quickhacking", "cyberware", "braindance", "techno_shamanism"],
+    "special_units": ["maelstrom", "tyger_claws", "trauma_team", "max_tac"]
+  },
+  
+  "special_mechanics": {
+    "cyberpsychosis": {
+      "threshold": 10,
+      "effects": "Augmente puissance mais perte de contrôle"
+    },
+    "quickhacks": {
+      "replaces": "spells",
+      "ram_cost": true,
+      "ice_protection": true
+    },
+    "street_cred": {
+      "currency": true,
+      "affects_prices": true,
+      "unlocks_content": true
+    }
+  },
+  
+  "entry_effects": [
+    "GRANT_IMPLANT(neural_link)",
+    "EQUIP(kiroshi_optics)",
+    "SET_CURRENCY(eddies, 5000)",
+    "PLAY_SOUND(cyberpunk_ambient)"
+  ],
+  
+  "ambient_events": [
+    {
+      "id": "gang_war",
+      "frequency": 0.15,
+      "effect": "Zone devient PvP pour 5 tours"
+    },
+    {
+      "id": "netwatch_raid",
+      "frequency": 0.08,
+      "effect": "Tous les quickhacks désactivés 2 tours"
+    },
+    {
+      "id": "relic_malfunction",
+      "frequency": 0.05,
+      "effect": "Personnalité alternative prend le contrôle"
+    }
+  ]
+}

@@ -1,0 +1,665 @@
+{
+  "id": "chasse-temporelle",
+  "version": "2.0.0",
+  "name": "La Chasse Temporelle",
+  "description": "Affrontez les régulateurs dans une course contre le temps à travers un monde de 6x6 écrans. Collectez les artefacts temporels avant le JOUR 30.",
+  "author": "MagicStack Team",
+  "created": "2025-08-11T10:00:00Z",
+  "updated": "2025-08-11T10:00:00Z",
+  "config": {
+    "mode": "adventure",
+    "difficulty": {
+      "easy": {
+        "drift_rate": 0.1,
+        "debt_threshold": 100,
+        "regulator_aggression": 0.2,
+        "paradox_frequency": 0.05,
+        "resource_multiplier": 1.5
+      },
+      "normal": {
+        "drift_rate": 0.3,
+        "debt_threshold": 50,
+        "regulator_aggression": 0.5,
+        "paradox_frequency": 0.15,
+        "resource_multiplier": 1.0
+      },
+      "hard": {
+        "drift_rate": 0.5,
+        "debt_threshold": 30,
+        "regulator_aggression": 0.8,
+        "paradox_frequency": 0.3,
+        "resource_multiplier": 0.7
+      },
+      "nightmare": {
+        "drift_rate": 1.0,
+        "debt_threshold": 10,
+        "regulator_aggression": 1.0,
+        "paradox_frequency": 0.5,
+        "resource_multiplier": 0.5
+      }
+    },
+    "time_limit": 30,
+    "map_size": {
+      "width": 120,
+      "height": 120,
+      "screens": 36
+    }
+  },
+  "initial_state": {
+    "temporal": {
+      "tw": 1,
+      "te": 1,
+      "drift": 0,
+      "hidden_days": 0
+    },
+    "hero": {
+      "position": {
+        "x": 60,
+        "y": 60
+      },
+      "energy_complex": {
+        "A": 100,
+        "phi": 1.0
+      },
+      "identity": {
+        "psi": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "coherence": 1.0
+      },
+      "debt": 0,
+      "resources": {
+        "crystals": 100,
+        "energy": 50,
+        "temporal": 20,
+        "quantum": 5
+      },
+      "inventory": []
+    }
+  },
+  "objectives": {
+    "primary": [
+      {
+        "id": "collect-artifacts",
+        "type": "collect",
+        "description": "Collecter les 7 Artefacts Temporels",
+        "targets": [
+          "artifact-chrono-crystal",
+          "artifact-quantum-lens",
+          "artifact-causal-compass",
+          "artifact-temporal-key",
+          "artifact-paradox-resolver",
+          "artifact-time-anchor",
+          "artifact-infinity-core"
+        ],
+        "required": 7
+      },
+      {
+        "id": "survive-j30",
+        "type": "survive",
+        "description": "Survivre jusqu'au JOUR 30",
+        "target_day": 30
+      }
+    ],
+    "secondary": [
+      {
+        "id": "defeat-regulators",
+        "type": "defeat",
+        "description": "Vaincre les 3 Régulateurs",
+        "targets": [
+          "vince",
+          "anna",
+          "overload"
+        ],
+        "optional": true,
+        "reward": {
+          "quantum": 50,
+          "achievement": "regulator-slayer"
+        }
+      },
+      {
+        "id": "zero-debt",
+        "type": "condition",
+        "description": "Terminer sans dette temporelle",
+        "condition": "debt == 0",
+        "optional": true,
+        "reward": {
+          "achievement": "perfect-timeline"
+        }
+      }
+    ]
+  },
+  "regulators": {
+    "vince": {
+      "active": true,
+      "spawn_day": 5,
+      "position": {
+        "x": 20,
+        "y": 20
+      },
+      "patrol_zone": {
+        "center": {
+          "x": 30,
+          "y": 30
+        },
+        "radius": 20
+      },
+      "behavior": "aggressive",
+      "abilities": [
+        "pierce_fog",
+        "temporal_sight",
+        "instant_strike"
+      ],
+      "dialogue": {
+        "encounter": "Le brouillard ne peut rien me cacher. Je vois ton futur... il s'arrête ici.",
+        "defeat": "Impossible... comment as-tu pu voir à travers mes propres visions?",
+        "idle": [
+          "Je surveille...",
+          "Tout est visible...",
+          "Le temps révèle tout..."
+        ]
+      }
+    },
+    "anna": {
+      "active": true,
+      "spawn_day": 10,
+      "position": {
+        "x": 100,
+        "y": 20
+      },
+      "patrol_zone": {
+        "center": {
+          "x": 90,
+          "y": 30
+        },
+        "radius": 25
+      },
+      "behavior": "economic",
+      "abilities": [
+        "resource_decay",
+        "entropy_field",
+        "debt_accumulator"
+      ],
+      "dialogue": {
+        "encounter": "Tout s'effondre, tout décline. Tes ressources ne sont que poussière.",
+        "defeat": "La décroissance... était... inévitable...",
+        "idle": [
+          "L'entropie gagne toujours...",
+          "Tic tac...",
+          "Tout a un coût..."
+        ]
+      }
+    },
+    "overload": {
+      "active": true,
+      "spawn_day": 15,
+      "position": {
+        "x": 60,
+        "y": 60
+      },
+      "patrol_zone": {
+        "center": {
+          "x": 60,
+          "y": 60
+        },
+        "radius": 30
+      },
+      "behavior": "chaotic",
+      "abilities": [
+        "stack_collapse",
+        "paradox_trigger",
+        "reality_break"
+      ],
+      "dialogue": {
+        "encounter": "ERREUR! PARADOXE DÉTECTÉ! RÉSOLUTION PAR EFFONDREMENT IMMINENT!",
+        "defeat": "SYSTÈME... EN... SURCHARGE... REBOOT_IMPOSSIBLE...",
+        "idle": [
+          "*BZZZT*",
+          "Stack overflow...",
+          "PARADOXE! PARADOXE! PARADOXE!"
+        ]
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "id": "artifact-chrono-crystal",
+      "position": {
+        "x": 10,
+        "y": 10
+      },
+      "guarded_by": "temporal-guardian",
+      "effects": {
+        "drift_reduction": 0.2,
+        "tw_bonus": 2
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-quantum-lens",
+      "position": {
+        "x": 110,
+        "y": 10
+      },
+      "guarded_by": "quantum-sphinx",
+      "effects": {
+        "coherence_boost": 0.1,
+        "phi_multiplier": 1.2
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-causal-compass",
+      "position": {
+        "x": 10,
+        "y": 110
+      },
+      "guarded_by": "causal-warden",
+      "effects": {
+        "fog_vision": 10,
+        "paradox_immunity": 0.5
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-temporal-key",
+      "position": {
+        "x": 110,
+        "y": 110
+      },
+      "guarded_by": "time-lock",
+      "effects": {
+        "portal_access": true,
+        "timeline_shift": true
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-paradox-resolver",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "guarded_by": "paradox-entity",
+      "effects": {
+        "auto_resolve": true,
+        "debt_reduction": 0.5
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-time-anchor",
+      "position": {
+        "x": 80,
+        "y": 60
+      },
+      "guarded_by": "temporal-kraken",
+      "effects": {
+        "no_drift": true,
+        "time_freeze": 3
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    },
+    {
+      "id": "artifact-infinity-core",
+      "position": {
+        "x": 60,
+        "y": 90
+      },
+      "guarded_by": "all_regulators",
+      "effects": {
+        "infinite_energy": true,
+        "master_of_time": true
+      },
+      "icon_id": "💎",
+      "fx_preset": "fade_in",
+      "sound_event": "artifact_pickup",
+      "theme_color": "#808080",
+      "output_modes": {
+        "literary": "The mysterious Unknown",
+        "runic": "ᚢᚾᚲᚾᛟᚹᚾ",
+        "iconic": "💎"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "jour-5-vince-awakens",
+      "trigger": {
+        "day": 5
+      },
+      "type": "regulator_spawn",
+      "data": {
+        "regulator": "vince",
+        "message": "Vince s'éveille... Le brouillard tremble."
+      }
+    },
+    {
+      "id": "jour-10-anna-arrives",
+      "trigger": {
+        "day": 10
+      },
+      "type": "regulator_spawn",
+      "data": {
+        "regulator": "anna",
+        "message": "Anna arrive... L'économie commence à s'effondrer."
+      }
+    },
+    {
+      "id": "jour-15-overload-chaos",
+      "trigger": {
+        "day": 15
+      },
+      "type": "regulator_spawn",
+      "data": {
+        "regulator": "overload",
+        "message": "OVERLOAD ACTIVÉ! ATTENTION: PARADOXES MULTIPLES DÉTECTÉS!"
+      }
+    },
+    {
+      "id": "jour-20-convergence",
+      "trigger": {
+        "day": 20
+      },
+      "type": "special",
+      "data": {
+        "effect": "all_regulators_aggressive",
+        "message": "Les régulateurs convergent vers le centre..."
+      }
+    },
+    {
+      "id": "jour-25-final-warning",
+      "trigger": {
+        "day": 25
+      },
+      "type": "warning",
+      "data": {
+        "message": "5 jours restants! Les paradoxes s'intensifient!"
+      }
+    },
+    {
+      "id": "jour-30-finale",
+      "trigger": {
+        "day": 30
+      },
+      "type": "finale",
+      "data": {
+        "message": "JOUR 30! Le moment de vérité est arrivé!",
+        "effects": {
+          "synchronize_all": true,
+          "debt_reset": true,
+          "final_battle": true
+        }
+      }
+    }
+  ],
+  "resources": {
+    "crystal_nodes": [
+      {
+        "position": {
+          "x": 30,
+          "y": 30
+        },
+        "amount": 50,
+        "respawn": 5
+      },
+      {
+        "position": {
+          "x": 90,
+          "y": 30
+        },
+        "amount": 50,
+        "respawn": 5
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 90
+        },
+        "amount": 50,
+        "respawn": 5
+      },
+      {
+        "position": {
+          "x": 90,
+          "y": 90
+        },
+        "amount": 50,
+        "respawn": 5
+      }
+    ],
+    "energy_wells": [
+      {
+        "position": {
+          "x": 60,
+          "y": 30
+        },
+        "amount": 25,
+        "respawn": 3
+      },
+      {
+        "position": {
+          "x": 30,
+          "y": 60
+        },
+        "amount": 25,
+        "respawn": 3
+      },
+      {
+        "position": {
+          "x": 90,
+          "y": 60
+        },
+        "amount": 25,
+        "respawn": 3
+      },
+      {
+        "position": {
+          "x": 60,
+          "y": 90
+        },
+        "amount": 25,
+        "respawn": 3
+      }
+    ],
+    "temporal_rifts": [
+      {
+        "position": {
+          "x": 45,
+          "y": 45
+        },
+        "amount": 10,
+        "respawn": 10
+      },
+      {
+        "position": {
+          "x": 75,
+          "y": 75
+        },
+        "amount": 10,
+        "respawn": 10
+      }
+    ],
+    "quantum_nexus": [
+      {
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "amount": 5,
+        "respawn": 15
+      }
+    ]
+  },
+  "portals": [
+    {
+      "from": {
+        "x": 5,
+        "y": 5
+      },
+      "to": {
+        "x": 115,
+        "y": 115
+      },
+      "bidirectional": true
+    },
+    {
+      "from": {
+        "x": 115,
+        "y": 5
+      },
+      "to": {
+        "x": 5,
+        "y": 115
+      },
+      "bidirectional": true
+    },
+    {
+      "from": {
+        "x": 60,
+        "y": 5
+      },
+      "to": {
+        "x": 60,
+        "y": 115
+      },
+      "bidirectional": false
+    },
+    {
+      "from": {
+        "x": 5,
+        "y": 60
+      },
+      "to": {
+        "x": 115,
+        "y": 60
+      },
+      "bidirectional": false
+    }
+  ],
+  "zones": [
+    {
+      "id": "central-nexus",
+      "area": {
+        "center": {
+          "x": 60,
+          "y": 60
+        },
+        "radius": 15
+      },
+      "type": "quantum",
+      "effects": {
+        "coherence_bonus": 0.2,
+        "paradox_rate": 2.0
+      }
+    },
+    {
+      "id": "temporal-storm",
+      "area": {
+        "center": {
+          "x": 30,
+          "y": 30
+        },
+        "radius": 10
+      },
+      "type": "hazard",
+      "effects": {
+        "drift_multiplier": 3.0,
+        "visibility": -5
+      }
+    },
+    {
+      "id": "safe-haven",
+      "area": {
+        "center": {
+          "x": 90,
+          "y": 90
+        },
+        "radius": 8
+      },
+      "type": "sanctuary",
+      "effects": {
+        "no_regulators": true,
+        "heal_rate": 5
+      }
+    }
+  ],
+  "victory_conditions": {
+    "standard": {
+      "artifacts_collected": 7,
+      "survived_to_day": 30
+    },
+    "perfect": {
+      "artifacts_collected": 7,
+      "survived_to_day": 30,
+      "debt": 0,
+      "regulators_defeated": 3
+    }
+  },
+  "metadata": {
+    "tags": [
+      "adventure",
+      "temporal",
+      "regulators",
+      "v2-engine"
+    ],
+    "estimated_playtime": "45-60 minutes",
+    "min_players": 1,
+    "max_players": 1,
+    "recommended_level": "intermediate",
+    "unlocks": [
+      "scenario-paradox-wars",
+      "regulator-mode"
+    ]
+  }
+}

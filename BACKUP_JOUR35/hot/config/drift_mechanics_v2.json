@@ -1,0 +1,185 @@
+{
+  "drift_system": {
+    "version": "2.0",
+    "description": "Système de drift temporel permettant l'accès aux mondes brisés",
+    
+    "calculation": {
+      "formula": "drift = |t_w - t_e| * complexity_factor",
+      "complexity_factor": {
+        "base": 1.0,
+        "modifiers": {
+          "quantum_interference": 0.2,
+          "timeline_count": 0.1,
+          "paradox_present": 0.5,
+          "regulator_influence": -0.3
+        }
+      },
+      "update_frequency": "every_tick",
+      "max_drift": 30.0
+    },
+    
+    "thresholds": {
+      "safe": {
+        "range": [0, 5],
+        "effects": [],
+        "visual": "none"
+      },
+      "mild": {
+        "range": [5, 10],
+        "effects": [
+          "vision_blur(0.1)",
+          "time_perception_shift(0.05)"
+        ],
+        "visual": "slight_chromatic_aberration"
+      },
+      "moderate": {
+        "range": [10, 15],
+        "effects": [
+          "vision_blur(0.3)",
+          "time_perception_shift(0.2)",
+          "reality_glitches(0.1)",
+          "parallel_world_bleedthrough(0.05)"
+        ],
+        "visual": "heavy_distortion",
+        "warning": "Attention: Approche du seuil de basculement"
+      },
+      "extreme": {
+        "range": [15, 30],
+        "effects": [
+          "world_shift_possible",
+          "reality_anchor_lost",
+          "timeline_fragmentation"
+        ],
+        "visual": "reality_breaking",
+        "trigger": "broken_world_teleport"
+      }
+    },
+    
+    "world_shift_mechanics": {
+      "trigger_conditions": [
+        "drift >= 15.0",
+        "sustained_duration >= 3_turns",
+        "no_anchor_present"
+      ],
+      "selection_algorithm": {
+        "type": "weighted_random",
+        "weights": {
+          "player_actions": 0.3,
+          "current_world_theme": 0.2,
+          "random": 0.3,
+          "narrative_relevance": 0.2
+        }
+      },
+      "transition": {
+        "duration": "2_seconds",
+        "effect": "reality_tear_animation",
+        "sound": "dimensional_rip.ogg",
+        "screen_effect": "shatter_and_rebuild"
+      }
+    },
+    
+    "broken_world_properties": {
+      "physics_altered": true,
+      "magic_rules_modified": true,
+      "time_flow_irregular": true,
+      "exit_requirements": {
+        "min_conditions": 1,
+        "possible_exits": [
+          "reduce_drift_below_10",
+          "find_temporal_anchor",
+          "complete_world_quest",
+          "survive_duration",
+          "sacrifice_quantum_energy"
+        ]
+      }
+    },
+    
+    "drift_reduction_methods": {
+      "temporal_anchor": {
+        "reduction": 5.0,
+        "cooldown": 10
+      },
+      "synchronization_ritual": {
+        "reduction": 3.0,
+        "cost": "50_quantum_energy"
+      },
+      "regulator_intervention": {
+        "reduction": 8.0,
+        "requires": "regulator_favor"
+      },
+      "paradox_resolution": {
+        "reduction": 10.0,
+        "difficulty": "extreme"
+      }
+    },
+    
+    "broken_worlds_pool": {
+      "star-trek": {
+        "weight": 1.0,
+        "min_drift": 20.0,
+        "theme": "sci-fi"
+      },
+      "cyberpunk-2077": {
+        "weight": 1.2,
+        "min_drift": 18.0,
+        "theme": "dystopian"
+      },
+      "matrix": {
+        "weight": 0.8,
+        "min_drift": 22.0,
+        "theme": "simulation"
+      },
+      "lord-rings": {
+        "weight": 1.5,
+        "min_drift": 16.0,
+        "theme": "high-fantasy"
+      },
+      "fallout": {
+        "weight": 1.1,
+        "min_drift": 17.0,
+        "theme": "post-apocalyptic"
+      },
+      "dark-souls": {
+        "weight": 0.6,
+        "min_drift": 23.0,
+        "theme": "death-loop"
+      },
+      "silent-hill": {
+        "weight": 0.4,
+        "min_drift": 24.0,
+        "theme": "psychological-horror"
+      },
+      "tetris": {
+        "weight": 0.2,
+        "min_drift": 25.5,
+        "theme": "abstract-reality"
+      }
+    },
+    
+    "ui_indicators": {
+      "drift_meter": {
+        "position": "top_right",
+        "style": "quantum_gauge",
+        "colors": {
+          "safe": "#00FF00",
+          "mild": "#FFFF00",
+          "moderate": "#FF8800",
+          "extreme": "#FF0000"
+        },
+        "animation": "pulse_on_increase"
+      },
+      "world_shift_warning": {
+        "threshold": 13.0,
+        "message": "ALERTE: Réalité instable - Drift critique!",
+        "visual": "screen_edge_distortion"
+      }
+    },
+    
+    "api_endpoints": {
+      "get_current_drift": "/api/v2/drift/current",
+      "get_nearby_worlds": "/api/v2/drift/nearby-worlds",
+      "force_world_shift": "/api/v2/drift/shift",
+      "anchor_reality": "/api/v2/drift/anchor"
+    }
+  }
+}

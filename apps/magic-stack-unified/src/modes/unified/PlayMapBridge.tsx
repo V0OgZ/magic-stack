@@ -13,12 +13,13 @@ import { AssetsService } from '../../services/AssetsService';
 
 interface GameEntity {
   id: string;
-  type: 'hero' | 'creature' | 'artifact' | 'building';
+  type: 'hero' | 'creature' | 'artifact' | 'building' | 'portal';
   position: { x: number; y: number; z: number };
   icon: string;
   name: string;
   owner: number; // ID du joueur
   stats?: any;
+  destination?: string; // Pour les portails
 }
 
 interface GameState {
