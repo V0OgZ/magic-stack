@@ -8,7 +8,7 @@ class V2Adapter {
         this.endpoints = {
             rust: config.rustUrl || 'http://localhost:3001',
             java: config.javaUrl || 'http://localhost:8080',
-            python: config.pythonUrl || 'http://localhost:5001'
+            python: config.pythonUrl || 'http://localhost:7500'
         };
         
         this.cache = new Map();

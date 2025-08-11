@@ -13,7 +13,7 @@ export interface V2Config {
 const DEFAULT_CONFIG: V2Config = {
     rustBackend: 'http://localhost:3001',
     javaBackend: 'http://localhost:8080',
-    pythonBackend: 'http://localhost:5001',
+    pythonBackend: 'http://localhost:7500',
     wsEndpoint: 'ws://localhost:8001'
 };
 
