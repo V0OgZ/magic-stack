@@ -7,9 +7,9 @@
 | **Frontend React** | 5175 | ✅ ONLINE | App React unifiée (1 seule!) |
 | **Backend Rust** | 3001 | ✅ ONLINE | Calculs 6D, Q*, GraphCD |
 | **Backend Java** | 8082 | ✅ ONLINE | CRUD, APIs, Resources |
-| **Backend Python** | 5001 | ⚪ OPTIONNEL | Vector DB Search |
-| **LLM Clippy** | 7501 | ⚪ OPTIONNEL | Service IA |
-| **Vector DB** | 7500 | ⚪ OPTIONNEL | Base vectorielle |
+| **Vector DB Service** | 7500 | ✅ ONLINE | Recherche sémantique, mémoire du jeu |
+| **LLM Clippy** | 7501 | ✅ ONLINE | IA qui parle, utilise Vector DB |
+| ~~Backend Python~~ | ~~5001~~ | ❌ NON UTILISÉ | Remplacé par services 7500/7501 |
 
 ## 📂 STRUCTURE
 
@@ -108,12 +108,21 @@ tail -f ../../logs/java.log
 - `/api/creatures/*` - CRUD Creatures (À FAIRE)
 - `/api/artifacts/*` - CRUD Artifacts (À FAIRE)
 
-## 🚨 PRIORITÉS
+## ✅ CE QUI MARCHE (11 août 2025)
+
+- ✅ Script `./go` unifié pour tout gérer
+- ✅ Tous les backends démarrent (Rust, Java)
+- ✅ Services IA fonctionnels (Vector DB, LLM Clippy)
+- ✅ API Explorer avec TOUS les endpoints
+- ✅ Frontend React unifié
+- ✅ Port Java corrigé (8082)
+
+## 🚨 PROCHAINES PRIORITÉS
 
 1. **Corriger TypeScript** - 75 erreurs bloquent le build prod
-2. **Implémenter CRUD APIs** - Heroes/Creatures/Artifacts  
-3. **Connecter l'éditeur** - Aux APIs V2
-4. **Tester l'intégration** - Vérifier que tout communique
+2. **Implémenter CRUD APIs** - Heroes/Creatures/Artifacts dans Java
+3. **Connecter l'éditeur unifié** - Aux APIs V2 pour persistence
+4. **Finir l'éditeur de map** - Pour ton cousin!
 
 ## 💾 LOGS
 

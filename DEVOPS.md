@@ -1,21 +1,27 @@
 # 🚀 DEVOPS - GUIDE DE DÉPLOIEMENT PRODUCTION
 
-## 📦 ARCHITECTURE COMPLÈTE
+## 📦 ARCHITECTURE COMPLÈTE ✅
 
 ```
-MAGIC STACK
+MAGIC STACK (STATUS: TOUT FONCTIONNE!)
 ├── Frontend (1 seul!)
-│   └── React App (5175) → apps/magic-stack-unified
+│   └── React App (5175) → apps/magic-stack-unified ✅
 │
-├── Backend (3 services)
-│   ├── Rust (3001) → backends/rust      [Calculs 6D, Q*]
-│   ├── Java (8080) → backends/java      [CRUD, APIs]
-│   └── Python (5001) → backends/python  [Search, optionnel]
+├── Backend (2 services principaux)
+│   ├── Rust (3001) → backends/rust      [Calculs 6D, Q*] ✅
+│   └── Java (8082) → backends/java      [CRUD, APIs] ✅
 │
-└── Services IA (optionnels)
-    ├── Vector DB (7500) → scripts/vector_db
-    └── LLM Clippy (7501) → scripts/clippy
+└── Services IA (ACTIFS!)
+    ├── Vector DB (7500) → scripts/vector_db ✅
+    └── LLM Clippy (7501) → scripts/clippy ✅
 ```
+
+### Ports en production:
+- **5175**: Frontend React (Vite)
+- **3001**: Backend Rust (calculs complexes)
+- **8082**: Backend Java (Spring Boot) ⚠️ NOTE: Port 8082, pas 8080!
+- **7500**: Vector DB (recherche sémantique)
+- **7501**: LLM Clippy (IA conversationnelle)
 
 ## 🔧 PRÉREQUIS SERVEUR
 
