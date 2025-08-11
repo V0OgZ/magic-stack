@@ -1,6 +1,6 @@
 # 🚀 INFRAPORTS - CONFIGURATION ACTUELLE
 
-## ✅ SERVICES ACTIFS - JOUR 35 (11 août 2025)
+## ✅ SERVICES ACTIFS - JOUR 36 (11 août 2025)
 
 | Service | Port | Status | Description |
 |---------|------|--------|-------------|
@@ -10,6 +10,7 @@
 | **Backend Java** | 8082 | ✅ ONLINE | CRUD, APIs, Resources |
 | **Vector DB Service** | 7500 | ✅ ONLINE | Recherche sémantique, mémoire du jeu |
 | **LLM Clippy** | 7501 | ✅ ONLINE | IA qui parle, utilise Vector DB |
+| **MCP Server** | 9000 | ✅ ONLINE | Bridge unifié, contexte enrichi (NOUVEAU!) |
 
 ## 📂 STRUCTURE
 
@@ -54,6 +55,8 @@
 ./go game       # http://localhost:5175/unified
 ./go admin      # http://localhost:5175/dashboard.html
 ./go api        # http://localhost:5175/html/API_EXPLORER_COMPLETE.html
+./go mcp        # http://localhost:9000/mcp/health (NOUVEAU!)
+./go html       # http://localhost:8000/HTML_INDEX.html
 ```
 
 ## 🔗 URLS PRINCIPALES

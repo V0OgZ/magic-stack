@@ -1,4 +1,4 @@
-# 🚀 DEVOPS - GUIDE DE DÉPLOIEMENT PRODUCTION
+# 🚀 DEVOPS - GUIDE DE DÉPLOIEMENT PRODUCTION - JOUR 36
 
 ## 📦 ARCHITECTURE COMPLÈTE ✅
 
@@ -11,9 +11,12 @@ MAGIC STACK (STATUS: TOUT FONCTIONNE!)
 │   ├── Rust (3001) → backends/rust      [Calculs 6D, Q*] ✅
 │   └── Java (8082) → backends/java      [CRUD, APIs] ✅
 │
-└── Services IA (ACTIFS!)
-    ├── Vector DB (7500) → scripts/vector_db ✅
-    └── LLM Clippy (7501) → scripts/clippy ✅
+├── Services IA (ACTIFS!)
+│   ├── Vector DB (7500) → scripts/vector_db ✅
+│   └── LLM Clippy (7501) → scripts/clippy ✅
+│
+└── Bridge (NOUVEAU!)
+    └── MCP Server (9000) → mcp_server.py [Unifie tout] ✅
 ```
 
 ### Ports en production:
@@ -22,6 +25,91 @@ MAGIC STACK (STATUS: TOUT FONCTIONNE!)
 - **8082**: Backend Java (Spring Boot) ⚠️ NOTE: Port 8082, pas 8080!
 - **7500**: Vector DB (recherche sémantique)
 - **7501**: LLM Clippy (IA conversationnelle)
+- **9000**: MCP Server (bridge unifié) NOUVEAU!
+- **8000**: HTML Server (anciens UIs)
+
+## 🤖 COMMENT FONCTIONNE LE LLM CLIPPY (DÉTAILS)
+
+### Stack Technique LLM Clippy
+```
+Port 7501: scripts/clippy/clippy_memento_server.py
+├── Framework: FastAPI (Python async moderne)
+├── Serveur: Uvicorn (ASGI haute performance)
+├── Modèle IA: 
+│   ├── Option 1: OpenAI API (gpt-3.5/gpt-4)
+│   ├── Option 2: Ollama local (llama2, mistral)
+│   └── Option 3: HuggingFace Transformers
+├── Mémoire: Session RAM + persistence Vector DB
+└── Embeddings: sentence-transformers
+```
+
+### Installation LLM Clippy
+```bash
+# Dépendances Python
+pip3 install fastapi uvicorn openai
+pip3 install sentence-transformers numpy
+pip3 install python-dotenv aiohttp
+
+# Si modèle local avec Ollama:
+curl https://ollama.ai/install.sh | sh
+ollama pull llama2
+```
+
+### Fonctionnement Détaillé
+1. **Démarrage**: 
+   ```bash
+   cd scripts/clippy
+   python3 clippy_memento_server.py
+   # Écoute sur http://localhost:7501
+   ```
+
+2. **Architecture Interne**:
+   ```python
+   # Pseudo-code simplifié
+   @app.post("/chat")
+   async def chat(message: str):
+       # 1. Enrichit avec contexte Vector DB
+       context = await vector_db.search(message)
+       
+       # 2. Appel LLM avec contexte
+       response = await llm.generate(
+           prompt=f"{context}\nUser: {message}"
+       )
+       
+       # 3. Sauvegarde en mémoire
+       session.add(message, response)
+       
+       return {"response": response}
+   ```
+
+3. **Endpoints Disponibles**:
+   - `POST /chat` - Conversation normale
+   - `POST /character/speak` - Fait parler un personnage
+   - `POST /dialogue` - Dialogue entre personnages
+   - `POST /ai/think` - Génère stratégie IA
+   - `GET /memory` - Récupère historique session
+   - `POST /embed` - Convertit texte en vecteur
+
+### Vector DB (Port 7500)
+```
+Port 7500: scripts/vector_db/vector_server.py
+├── Framework: FastAPI aussi
+├── Base de données: ChromaDB ou FAISS
+├── Index: ~10000 documents du jeu
+├── Embeddings: all-MiniLM-L6-v2
+└── Recherche: Similarité cosinus, top-k=5
+```
+
+### Comment ils communiquent:
+```
+User → Frontend (5175) → LLM Clippy (7501)
+                              ↓
+                         Vector DB (7500)
+                              ↓
+                         Contexte enrichi
+                              ↓
+                         Réponse LLM
+```
 
 ## 🔧 PRÉREQUIS SERVEUR
 
