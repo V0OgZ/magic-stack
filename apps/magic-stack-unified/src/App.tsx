@@ -14,6 +14,7 @@ import { MultiplayerMode } from './modes/multiplayer/MultiplayerMode';
 import { AIBattleAutoplay } from './modes/ai-battle/AIBattleAutoplay';
 import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
 import { HeroBackstoryEditor } from './modes/editor/HeroBackstoryEditor';
+import { UnifiedMapSystem } from './modes/unified/UnifiedMapSystem';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,9 @@ export function App(): React.ReactElement {
             <Route path="/ai-battle" element={<AIBattleAutoplay />} />
             <Route path="/spectator" element={<SpectatorGodMode />} />
             <Route path="/backstory-editor" element={<HeroBackstoryEditor />} />
+            
+            {/* 🎮 UNIFIED MAP SYSTEM - L'ÉDITEUR EST LE JEU ! */}
+            <Route path="/unified" element={<UnifiedMapSystem />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />

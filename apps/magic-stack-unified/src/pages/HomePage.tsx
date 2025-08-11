@@ -98,6 +98,15 @@ export function HomePage(): React.ReactElement {
           description="Personnalisez les histoires et personnalités des héros IA"
           color="#f6e05e"
         />
+        
+        <ModeCard
+          to="/unified"
+          icon="🎮"
+          title="✨ Unified Map System"
+          description="L'ÉDITEUR EST LE JEU ! Structure, Resources, Timeline - tout unifié"
+          color="#FF1493"
+          featured={true}
+        />
       </div>
       
       <div style={{
@@ -114,12 +123,13 @@ export function HomePage(): React.ReactElement {
 }
 
 // Carte de mode
-function ModeCard({ to, icon, title, description, color }: {
+function ModeCard({ to, icon, title, description, color, featured }: {
   to: string;
   icon: string;
   title: string;
   description: string;
   color: string;
+  featured?: boolean;
 }): React.ReactElement {
   return (
     <Link
@@ -128,13 +138,17 @@ function ModeCard({ to, icon, title, description, color }: {
         display: 'flex',
         flexDirection: 'column',
         padding: 24,
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: `1px solid ${color}40`,
+        background: featured 
+          ? `linear-gradient(135deg, ${color}20, ${color}10)`
+          : 'rgba(255, 255, 255, 0.05)',
+        border: featured ? `2px solid ${color}` : `1px solid ${color}40`,
         borderRadius: 12,
         textDecoration: 'none',
         color: 'inherit',
         transition: 'all 0.3s',
         cursor: 'pointer',
+        boxShadow: featured ? `0 0 20px ${color}40` : 'none',
+        animation: featured ? 'pulse 2s infinite' : 'none',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
