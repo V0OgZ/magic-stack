@@ -80,13 +80,9 @@ show_status() {
     echo "========================"
     echo ""
     
-    # Frontend
+    # Frontend (1 SEULE APP!)
     echo -e "${CYAN}Frontend:${NC}"
-    check_port 5173 && echo -e "  ${GREEN}✅${NC} Dev Server (5173)" || echo -e "  ${RED}❌${NC} Dev Server (5173)"
-    check_port 5174 && echo -e "  ${GREEN}✅${NC} Dev Server (5174)" || echo -e "  ${RED}❌${NC} Dev Server (5174)"
-    check_port 5175 && echo -e "  ${GREEN}✅${NC} Dev Server (5175)" || echo -e "  ${RED}❌${NC} Dev Server (5175)"
-    check_port 5176 && echo -e "  ${GREEN}✅${NC} Dev Server (5176)" || echo -e "  ${RED}❌${NC} Dev Server (5176)"
-    check_port 5005 && echo -e "  ${GREEN}✅${NC} World Editor (5005)" || echo -e "  ${RED}❌${NC} World Editor (5005)"
+    check_port 5175 && echo -e "  ${GREEN}✅${NC} Magic Stack Unified (5175)" || echo -e "  ${RED}❌${NC} Magic Stack Unified (5175)"
     
     echo ""
     echo -e "${CYAN}Backend:${NC}"
@@ -182,10 +178,16 @@ case "$COMMAND" in
             echo -e "${BLUE}Le backend Rust n'est pas lancé. Démarrage...${NC}"
             launch_backends
         fi
-        # Lancer l'app unified et ouvrir sur combat
-        cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
-        npm run dev &
-        sleep 3
+        # Vérifier si l'app est déjà lancée
+        if ! check_port 5175; then
+            echo -e "${BLUE}Lancement de l'app unified...${NC}"
+            cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
+            npm run dev &
+            sleep 3
+        else
+            echo -e "${GREEN}✅ App déjà lancée sur port 5175${NC}"
+        fi
+        # Ouvrir la page
         if [[ "$OSTYPE" == "darwin"* ]]; then
             open "http://localhost:5175/combat"
         fi
@@ -199,10 +201,16 @@ case "$COMMAND" in
             echo -e "${BLUE}Le backend Rust n'est pas lancé. Démarrage...${NC}"
             launch_backends
         fi
-        # Lancer l'app unified et ouvrir sur chasse-mega
-        cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
-        npm run dev &
-        sleep 3
+        # Vérifier si l'app est déjà lancée
+        if ! check_port 5175; then
+            echo -e "${BLUE}Lancement de l'app unified...${NC}"
+            cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
+            npm run dev &
+            sleep 3
+        else
+            echo -e "${GREEN}✅ App déjà lancée sur port 5175${NC}"
+        fi
+        # Ouvrir la page
         if [[ "$OSTYPE" == "darwin"* ]]; then
             open "http://localhost:5175/chasse-mega"
         fi
