@@ -15,6 +15,7 @@ import { AIBattleAutoplay } from './modes/ai-battle/AIBattleAutoplay';
 import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
 import { HeroBackstoryEditor } from './modes/editor/HeroBackstoryEditor';
 import { UnifiedMapSystem } from './modes/unified/UnifiedMapSystem';
+import AIBattleWrapper from './modes/combat/AIBattleWrapper';
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,9 @@ export function App(): React.ReactElement {
             
             {/* 🎮 UNIFIED MAP SYSTEM - L'ÉDITEUR EST LE JEU ! */}
             <Route path="/unified" element={<UnifiedMapSystem />} />
+            
+            {/* 🤖 COMBAT IA vs IA avec connexion V2 */}
+            <Route path="/combat" element={<AIBattleWrapper />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />

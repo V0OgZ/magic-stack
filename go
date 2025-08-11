@@ -40,6 +40,7 @@ show_help() {
     echo ""
     echo -e "${GREEN}  game${NC}        - Lance le Unified Map System (éditeur + jeu)"
     echo -e "${GREEN}  admin${NC}       - Ouvre toutes les consoles d'administration"
+    echo -e "${GREEN}  combat${NC}      - Lance le mode Combat IA vs IA (avec connexion V2)"
     echo -e "${GREEN}  stop${NC}        - Arrête tous les services"
     echo -e "${GREEN}  status${NC}      - Affiche le statut des services"
     echo -e "${GREEN}  backend${NC}     - Lance seulement les backends"
@@ -170,6 +171,23 @@ case "$COMMAND" in
     "admin"|"a")
         echo -e "${MAGENTA}🎛️ Ouverture du panneau admin...${NC}"
         ./ADMIN_PANEL.sh
+        ;;
+        
+    "combat"|"cb")
+        echo -e "${YELLOW}⚔️ Lancement du mode Combat IA vs IA...${NC}"
+        echo ""
+        # Vérifier les backends
+        if ! check_port 3001; then
+            echo -e "${BLUE}Le backend Rust n'est pas lancé. Démarrage...${NC}"
+            launch_backends
+        fi
+        # Lancer l'app unified et ouvrir sur combat
+        cd /Volumes/HOT_DEV/Magic/magic-stack/apps/magic-stack-unified 2>/dev/null
+        npm run dev &
+        sleep 3
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open "http://localhost:5175/combat"
+        fi
         ;;
         
     "stop"|"s")
