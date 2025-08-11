@@ -145,16 +145,77 @@ start_frontend() {
     fi
 }
 
+start_python() {
+    if ! check_port 5001; then
+        echo -e "${CYAN}Démarrage Python Vector DB (optionnel)...${NC}"
+        cd "$MAGIC_DIR/backends/python"
+        if [ -f "app.py" ]; then
+            python3 app.py > "$MAGIC_DIR/logs/python.log" 2>&1 &
+            sleep 2
+        else
+            echo -e "${YELLOW}  Python backend non trouvé (optionnel)${NC}"
+        fi
+    fi
+}
+
+# === LLM CLIPPY ===
+start_llm() {
+    echo -e "${CYAN}🤖 Démarrage services IA...${NC}"
+    
+    # Clippy LLM (7501)
+    if ! check_port 7501; then
+        if [ -d "$MAGIC_DIR/scripts/clippy" ]; then
+            cd "$MAGIC_DIR/scripts/clippy"
+            python3 clippy_memento_server.py > "$MAGIC_DIR/logs/clippy.log" 2>&1 &
+            sleep 2
+            echo -e "  ${GREEN}✓${NC} Clippy LLM lancé (7501)"
+        else
+            echo -e "  ${YELLOW}⚪${NC} Clippy LLM non trouvé (optionnel)"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} Clippy LLM déjà actif (7501)"
+    fi
+    
+    # Vector DB (7500)
+    if ! check_port 7500; then
+        if [ -d "$MAGIC_DIR/scripts/vector_db" ]; then
+            cd "$MAGIC_DIR/scripts/vector_db"
+            python3 vector_server.py > "$MAGIC_DIR/logs/vector.log" 2>&1 &
+            sleep 2
+            echo -e "  ${GREEN}✓${NC} Vector DB lancé (7500)"
+        else
+            echo -e "  ${YELLOW}⚪${NC} Vector DB non trouvé (optionnel)"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} Vector DB déjà actif (7500)"
+    fi
+}
+
 start_all() {
     echo -e "${BLUE}🚀 Démarrage de tous les services...${NC}"
+    echo ""
     mkdir -p "$MAGIC_DIR/logs"
     
+    echo -e "${CYAN}Backends principaux:${NC}"
     start_rust
     start_java
+    start_python
+    
+    echo ""
+    echo -e "${CYAN}Services IA (optionnels):${NC}"
+    start_llm
+    
+    echo ""
+    echo -e "${CYAN}Frontend:${NC}"
     start_frontend
     
-    sleep 2
+    echo ""
+    echo -e "${GREEN}⏳ Attente du démarrage...${NC}"
+    sleep 3
+    
+    echo ""
     show_status
+    echo -e "${GREEN}✨ Prêt! Utilisez './go api' pour tester les APIs${NC}"
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -216,13 +277,19 @@ show_status() {
     echo -e "${BLUE}═══════════════════════════════════${NC}"
     echo ""
     
-    echo -e "${CYAN}Frontend:${NC}"
-    check_port 5175 && echo -e "  ${GREEN}✅${NC} React (5175)" || echo -e "  ${RED}❌${NC} React (5175)"
+    echo -e "${CYAN}🎨 Frontend:${NC}"
+    check_port 5175 && echo -e "  ${GREEN}✅${NC} React App (5175)" || echo -e "  ${RED}❌${NC} React App (5175)"
     
     echo ""
-    echo -e "${CYAN}Backend:${NC}"
-    check_port 3001 && echo -e "  ${GREEN}✅${NC} Rust (3001)" || echo -e "  ${RED}❌${NC} Rust (3001)"
-    check_port 8082 && echo -e "  ${GREEN}✅${NC} Java (8082)" || echo -e "  ${RED}❌${NC} Java (8082)"
+    echo -e "${CYAN}⚙️ Backend:${NC}"
+    check_port 3001 && echo -e "  ${GREEN}✅${NC} Rust (3001) - Calculs 6D" || echo -e "  ${RED}❌${NC} Rust (3001)"
+    check_port 8082 && echo -e "  ${GREEN}✅${NC} Java (8082) - CRUD & APIs" || echo -e "  ${RED}❌${NC} Java (8082)"
+    check_port 5001 && echo -e "  ${GREEN}✅${NC} Python (5001) - Vector DB" || echo -e "  ${YELLOW}⚪${NC} Python (5001) - Optionnel"
+    
+    echo ""
+    echo -e "${CYAN}🤖 Services IA:${NC}"
+    check_port 7501 && echo -e "  ${GREEN}✅${NC} LLM Clippy (7501)" || echo -e "  ${YELLOW}⚪${NC} LLM Clippy (7501) - Optionnel"
+    check_port 7500 && echo -e "  ${GREEN}✅${NC} Vector DB (7500)" || echo -e "  ${YELLOW}⚪${NC} Vector DB (7500) - Optionnel"
     
     echo ""
 }
@@ -267,7 +334,7 @@ case "$1" in
         ;;
     
     # START/STOP
-    "start"|"")
+    "start")
         start_all
         ;;
     
@@ -299,36 +366,39 @@ case "$1" in
         open_api
         ;;
     
-    # HELP
-    "help"|"h")
+    # HELP (et cas par défaut)
+    "help"|"h"|"")
         echo -e "${CYAN}═══════════════════════════════════${NC}"
         echo -e "${CYAN}    🎮 MAGIC STACK DEVOPS${NC}"
         echo -e "${CYAN}═══════════════════════════════════${NC}"
         echo ""
-        echo -e "${GREEN}Build & Deploy:${NC}"
-        echo "  ./go compile  - Compile tout (Rust + Java + Frontend)"
-        echo "  ./go test     - Lance tous les tests"
-        echo "  ./go deploy   - Crée tous les artifacts production"
+        echo -e "${GREEN}🚀 Commandes principales:${NC}"
+        echo "  ${BLUE}./go start${NC}    - Démarre TOUS les services"
+        echo "  ${BLUE}./go stop${NC}     - Arrête tout"
+        echo "  ${BLUE}./go status${NC}   - Voir l'état des services"
         echo ""
-        echo -e "${GREEN}Services:${NC}"
-        echo "  ./go [start]  - Démarre tous les services"
-        echo "  ./go stop     - Arrête tout"
-        echo "  ./go restart  - Redémarre tout"
-        echo "  ./go status   - Voir l'état"
+        echo -e "${GREEN}🔨 Build & Deploy:${NC}"
+        echo "  ${BLUE}./go compile${NC}  - Compile tout (Rust + Java + Frontend)"
+        echo "  ${BLUE}./go test${NC}     - Lance tous les tests"
+        echo "  ${BLUE}./go deploy${NC}   - Crée les artifacts production"
         echo ""
-        echo -e "${GREEN}Accès rapide:${NC}"
-        echo "  ./go game     - Ouvre l'éditeur"
-        echo "  ./go admin    - Ouvre le dashboard"
-        echo "  ./go api      - Ouvre l'API Explorer"
+        echo -e "${GREEN}🎯 Accès rapide:${NC}"
+        echo "  ${BLUE}./go game${NC}     - Ouvre l'éditeur de map"
+        echo "  ${BLUE}./go admin${NC}    - Ouvre le dashboard admin"
+        echo "  ${BLUE}./go api${NC}      - Ouvre l'API Explorer"
+        echo "  ${BLUE}./go combat${NC}   - Ouvre le combat IA vs IA"
         echo ""
-        echo -e "${YELLOW}Architecture:${NC}"
-        echo "  Frontend React : 5175"
-        echo "  Backend Rust   : 3001 (calculs 6D)"
-        echo "  Backend Java   : 8080 (CRUD, APIs)"
+        echo -e "${YELLOW}📍 Ports utilisés:${NC}"
+        echo "  5175 - Frontend React"
+        echo "  3001 - Backend Rust (calculs 6D)"
+        echo "  8082 - Backend Java (CRUD, APIs)"
+        echo "  5001 - Python Vector DB (optionnel)"
+        echo "  7501 - LLM Clippy (optionnel)"
         ;;
     
     *)
-        echo -e "${RED}Commande inconnue: $1${NC}"
-        echo "Tapez: ./go help"
+        echo -e "${RED}❌ Commande inconnue: $1${NC}"
+        echo ""
+        $0 help
         ;;
 esac

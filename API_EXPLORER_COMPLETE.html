@@ -743,6 +743,85 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- CLIPPY LLM SERVICE -->
+            <div class="backend" data-backend="clippy">
+                <div class="backend-header">
+                    <span class="backend-title">🤖 Clippy LLM Service (Port 7501)</span>
+                    <span class="backend-status" id="clippy-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">💬 Chat LLM</div>
+                    <div class="endpoint" data-method="GET" data-path="/health">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/health</span>
+                        <span class="endpoint-desc">Health check</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/chat">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/chat</span>
+                        <span class="endpoint-desc">Chat avec Clippy LLM</span>
+                        <span class="new-badge">LLM</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/memory">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/memory</span>
+                        <span class="endpoint-desc">Get session memory</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/embed">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/embed</span>
+                        <span class="endpoint-desc">Encode text to vector</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🎭 Personnages IA</div>
+                    <div class="endpoint" data-method="POST" data-path="/character/speak">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/character/speak</span>
+                        <span class="endpoint-desc">Fait parler un personnage</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/dialogue">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/dialogue</span>
+                        <span class="endpoint-desc">Dialogue entre personnages</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/ai/think">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/ai/think</span>
+                        <span class="endpoint-desc">IA pense sa stratégie</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VECTOR DB SERVICE -->
+            <div class="backend" data-backend="vectordb">
+                <div class="backend-header">
+                    <span class="backend-title">🔍 Vector DB (Port 7500)</span>
+                    <span class="backend-status" id="vectordb-status">Checking...</span>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="group-title">🔍 Recherche Vectorielle</div>
+                    <div class="endpoint" data-method="POST" data-path="/search">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/search</span>
+                        <span class="endpoint-desc">Recherche semantique</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/index">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/index</span>
+                        <span class="endpoint-desc">Index new document</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/stats">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/stats</span>
+                        <span class="endpoint-desc">Database stats</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="stats">
@@ -793,7 +872,9 @@
         const BACKENDS = {
             rust: 'http://localhost:3001',
             java: 'http://localhost:8082',
-            python: 'http://localhost:5001'
+            python: 'http://localhost:5001',
+            clippy: 'http://localhost:7501',
+            vectordb: 'http://localhost:7500'
         };
 
         // Check backend status
