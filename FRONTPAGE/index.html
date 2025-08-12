@@ -215,19 +215,15 @@
         .hero-dual .hero-image { display: block; width: 100%; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         .hero-dual .top { position: absolute; inset: 0; pointer-events: none; }
         /* Fire-like reveal using mask sweep + turbulence distortion */
-        .hero-dual.fire .top {
-            -webkit-mask-image: linear-gradient(90deg, transparent 0 45%, #000 55% 100%);
-            mask-image: linear-gradient(90deg, transparent 0 45%, #000 55% 100%);
-            -webkit-mask-size: 220% 100%;
-            mask-size: 220% 100%;
-            -webkit-mask-position: 100% 0;
-            mask-position: 100% 0;
-            transition: -webkit-mask-position 1s ease-in, mask-position 1s ease-in;
-            filter: url(#flameDistort);
-        }
-        .hero-dual.fire.reveal .top, .hero-dual.fire:hover .top {
-            -webkit-mask-position: 0 0;
-            mask-position: 0 0;
+        .hero-dual.fire .top { /* thresholded fractal noise */
+            -webkit-mask-image: none;
+            mask-image: none;
+            -webkit-mask-size: initial;
+            mask-size: initial;
+            -webkit-mask-position: initial;
+            mask-position: initial;
+            transition: none;
+            filter: url(#burnCut);
         }
         .ripple-ov { position:absolute; inset:0; border-radius:10px; pointer-events:none;
             background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 70%);
@@ -238,6 +234,46 @@
             50% { transform: skewX(1.2deg) translateY(-1px); filter: contrast(1.08) saturate(1.08) brightness(1.03); }
             100% { transform:none; filter:none; } }
         .wave-return { animation: waveReturn 600ms ease-out; }
+        
+        /* Effet ondulatoire pour Anna - Marteau temporel */
+        @keyframes hammerWave {
+            0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+            10% { transform: scale(1.08) rotate(-1deg); box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+            20% { transform: scale(0.97) rotate(1deg); box-shadow: 0 0 40px rgba(212, 175, 55, 0.3); }
+            30% { transform: scale(1.05) rotate(-0.5deg); box-shadow: 0 0 60px rgba(212, 175, 55, 0.2); }
+            40% { transform: scale(0.98) rotate(0.5deg); }
+            50% { transform: scale(1.03) rotate(-0.3deg); }
+            60% { transform: scale(0.99) rotate(0.2deg); }
+            70% { transform: scale(1.01) rotate(-0.1deg); }
+            80% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+        }
+        .hammer-impact { 
+            animation: hammerWave 0.8s ease-out;
+            position: relative;
+        }
+        
+        /* Onde radiale additionnelle */
+        @keyframes shockwave {
+            0% { 
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 200%;
+                height: 200%;
+                opacity: 0;
+            }
+        }
+        .shockwave {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid rgba(212, 175, 55, 0.6);
+            animation: shockwave 0.6s ease-out;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
         
         .worlds-list {
             display: flex;
@@ -310,6 +346,25 @@
     <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed="2" result="n"/>
     <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
   </filter>
+
+  <!-- BurnCut: effet feu organique avec propagation fractale -->
+  <filter id="burnCut" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence id="burnNoise" type="fractalNoise" baseFrequency="0.02 0.015" numOctaves="3" seed="13" result="turbulence"/>
+    <feColorMatrix in="turbulence" type="saturate" values="0" result="grayscale"/>
+    <!-- Threshold dynamique pour créer l'effet de propagation organique -->
+    <feComponentTransfer in="grayscale" result="alpha" color-interpolation-filters="sRGB">
+      <feFuncA id="burnCurve" type="table" tableValues="0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1"/>
+    </feComponentTransfer>
+    <!-- Applique le masque à l'image source -->
+    <feComposite in="SourceGraphic" in2="alpha" operator="out"/>
+  </filter>
+  <!-- Hammer: effet onde spatio-temporelle pour Anna -->
+  <filter id="hammerWave" x="-50%" y="-50%" width="200%" height="200%">
+    <feTurbulence id="hammerTurbulence" type="turbulence" baseFrequency="0.01" numOctaves="1" seed="42" result="turbulence"/>
+    <feDisplacementMap id="hammerDisplace" in="SourceGraphic" in2="turbulence" scale="0" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+    <!-- Composite pour garder l'image originale avec distorsion -->
+    <feComposite in="displaced" in2="SourceGraphic" operator="over"/>
+  </filter>
 </svg>
 </head>
 <body>
@@ -327,6 +382,41 @@
             <span style="color: var(--gold); font-size: 1.1rem; font-weight: bold;">🌟 Sortie prévue en 2026 🌟</span>
         </p>
         <img src="assets/assets/HD/ExKAlibur.png" alt="Excalibur" class="hero-image" style="max-width: 800px; margin-top: 0.5rem;" onerror="this.onerror=null; this.src='assets/HD/ExKAlibur.png'">
+        
+        <!-- TIME JUDGE - Le Héros Suprême -->
+        <div class="hero-section" style="background: linear-gradient(135deg, rgba(139,0,139,0.1), rgba(212,175,55,0.1)); border: 3px solid var(--gold); margin: 3rem auto; max-width: 900px;">
+            <div class="hero-header">
+                <h2 style="color: var(--gold); font-size: 2rem;">⚖️ TIME JUDGE</h2>
+                <span class="hero-class" style="font-size: 1.2rem;">Juge Temporel Suprême — Arbitre de la Causalité</span>
+            </div>
+            <p style="color: #d4af37; font-size: 1.1rem; font-style: italic; margin: 1rem 0;">
+                "Le temps n'est pas une ligne. C'est un tribunal, et je suis le verdict."
+            </p>
+            <div style="position: relative; margin: 1.5rem auto;">
+                <img src="assets/new0812/portraits/Judge of Time and Space Convergence.png" alt="Time Judge" 
+                     class="hero-image" style="max-width: 500px; border: 3px solid rgba(212,175,55,0.5); box-shadow: 0 0 30px rgba(212,175,55,0.4);">
+                <div class="time-aura" style="position: absolute; inset: -20px; border-radius: 15px; 
+                     background: radial-gradient(circle, transparent 30%, rgba(212,175,55,0.2) 70%, transparent 100%);
+                     animation: pulse 3s infinite; pointer-events: none;"></div>
+            </div>
+            <ul class="abilities" style="font-size: 1.15rem; color: var(--gold);">
+                <li title="Temporal Mastery - Controls all timelines">⏰ Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)</li>
+                <li title="Causal Override - Judges and rewrites causality">⚖️ C(t₁→t₂) = ∫P(ξ)dξ × Θ(t₂-t₁)</li>
+                <li title="Reality Collapse - Chooses which timeline survives">🌌 |Ψ⟩ = Σ(α_i|i⟩) → |n⟩</li>
+            </ul>
+            <div class="formula" style="font-size: 1.2rem;">
+                <strong>Formule Maîtresse:</strong> 
+                <code style="font-size: 1.3rem;">TEMPORAL_SUPREMACY</code> — 
+                <em style="font-size: 1.1rem;">D⁶ = X³ × T × C × Ψ</em>
+            </div>
+        </div>
+        
+        <style>
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 0.6; }
+                50% { transform: scale(1.05); opacity: 0.9; }
+            }
+        </style>
         
         <div style="background: rgba(0,0,0,0.1); padding: 2rem; margin: 2rem auto; max-width: 900px; border-radius: 15px; border: 1px solid var(--gold);">
             <p style="font-size: 1.1rem; line-height: 1.8; text-align: justify;">
@@ -378,9 +468,9 @@
                 </div>
                 <p><strong>Pouvoir :</strong> Excalibur tranche les lignes temporelles</p>
                 <ul class="abilities">
-                    <li>⚔️ Frappe Temporelle</li>
-                    <li>🛡️ Bouclier Causal</li>
-                    <li>👑 Commandement Éternel</li>
+                    <li title="Temporal Strike - Cuts through timelines">⚔️ Ψ(t) = Ψ₀ × e^(iωt) × R(Δt)</li>
+                    <li title="Causal Shield - Protects from paradoxes">🛡️ L(t) = δ(t - t₀) × Ψ(t₀)</li>
+                    <li title="Eternal Command - Rules across time">👑 C(t₁→t₂) = ∫P(ξ)dξ × Θ(t₂-t₁)</li>
                 </ul>
                 <div class="formula"><strong>Formule:</strong> <code>CHRONO_LOCK</code> — <em>L(t) = δ(t - t₀) × Ψ(t₀)</em></div>
             </div>
@@ -395,9 +485,9 @@
                 </div>
                 <p><strong>Pouvoir :</strong> Voit toutes les timelines</p>
                 <ul class="abilities">
-                    <li>🌀 Portail Temporel</li>
-                    <li>📖 Prophétie Quantique</li>
-                    <li>⚡ Paradoxe Offensif</li>
+                    <li title="Temporal Portal - Opens dimensional gates">🌀 D⁶ = X³ × T × C × Ψ</li>
+                    <li title="Quantum Prophecy - Sees all possible futures">📖 |Ψ⟩ = Σ(α_i|i⟩) → |n⟩</li>
+                    <li title="Offensive Paradox - Creates causal loops">⚡ Δt' = Δt × √(1 - v²/c²)</li>
                 </ul>
                 <div class="formula"><strong>Formule:</strong> <code>DIMENSION_FOLD</code> — <em>D⁶ = X³ × T × C × Ψ</em></div>
             </div>
@@ -412,9 +502,9 @@
                 </div>
                 <p><strong>Pouvoir :</strong> Vision 6D</p>
                 <ul class="abilities">
-                    <li>👁️ Vision Panoptique</li>
-                    <li>💪 Force Brute</li>
-                    <li>🌀 Grondement Causal</li>
+                    <li title="Panoptic Vision - Sees all 6 dimensions">👁️ R = Σᵢⱼ (Mᵢⱼ × Ψᵢ × Ψⱼ*)</li>
+                    <li title="Brute Force - Reality-bending strength">💪 E = A × e^(iΦ) + ∇²Ψ</li>
+                    <li title="Causal Rumble - Shakes spacetime">🌀 D⁶ = X³ × T × C × Ψ</li>
                 </ul>
                 <div class="formula"><strong>Formule:</strong> <code>REALITY_WEAVE</code> — <em>R = Σᵢⱼ (Mᵢⱼ × Ψᵢ × Ψⱼ*)</em></div>
             </div>
@@ -568,9 +658,9 @@
             <p style="color: #d4af37; font-style: italic;">"Je traverse les dimensions pour éliminer les anomalies."</p>
             <img src="assets/new0812/portraits/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_1.webp" alt="Vince Vega" class="hero-image">
             <ul class="abilities">
-                <li>⚡ Power Wormhole — Trou de ver ciblé</li>
-                <li>🕳️ Reality Tear — Fissure dimensionnelle</li>
-                <li>🛰️ Phase Shift — Décalage de phase</li>
+                <li title="Power Wormhole - Targeted spacetime tunnel">⚡ P = lim_{n→∞} (1 + z/n)ⁿ</li>
+                <li title="Reality Tear - Dimensional fissure">🕳️ |Ψ⟩ = Σ(α_i|i⟩) → |n⟩</li>
+                <li title="Phase Shift - Quantum phase displacement">🛰️ Ψ(x,t) = A × sin(kx - ωt + φ)</li>
             </ul>
             <div class="formula"><strong>Formule:</strong> <code>INTERSTICE_PORTAL</code> — <em>P = lim<sub>n→∞</sub> (1 + z/n)ⁿ</em></div>
             <div style="margin-top:1rem; text-align:center;">
@@ -591,9 +681,9 @@
                 <img src="assets/new0812/cards/Sorceress of Time and Power.png" alt="Anna Martel — Sorceress of Time and Power" class="hero-image top" id="anna-top">
             </div>
             <ul class="abilities">
-                <li>⏳ Temporal Decay</li>
-                <li>🧭 Entropy Field</li>
-                <li>🜂 Time Fracture</li>
+                <li title="Temporal Decay - Accelerates entropy">⏳ Δt' = Δt × √(1 - v²/c²)</li>
+                <li title="Entropy Field - Creates chaos zones">🧭 E = A × e^(iΦ) + ∇²Ψ</li>
+                <li title="Time Fracture - Splits timelines">🜂 C(t₁→t₂) = ∫P(ξ)dξ × Θ(t₂-t₁)</li>
             </ul>
         </div>
 
@@ -678,17 +768,24 @@
             <small style="opacity:0.8;">Alliés et sorts dimensionnels — géométries non-euclidiennes</small>
         </div>
 
-        <!-- Christian personas and shared spells (preview-ready) -->
+        <!-- Christian: Agent Double McKinsey/Guitariste -->
         <div class="hero-section" id="christian" style="background: rgba(0,0,0,0.05);">
             <div class="hero-header">
-                <h3>🧳 Christian</h3>
-                <span class="hero-class">Double identité</span>
+                <h3>🎸 Christian — CHR-SINE</h3>
+                <span class="hero-class">Stratège Amplifié / Agent Double</span>
             </div>
+            <p style="color: #d4af37; font-style: italic;">"ψ_total = α|consultant⟩ + β|musicien⟩ + γ|agent_double⟩"</p>
             <div class="hero-dual fire" id="christian-hero">
                 <img src="assets/new0812/portraits/Guitarist of the Enchanted Winds.png" alt="Christian (Guitarist)" class="hero-image base">
                 <img src="assets/new0812/cards/Urban Sorcery and Technology Merge.png" alt="Christian (Consultant)" class="hero-image top" id="christian-top">
                 <div class="ripple-ov" id="christian-ripple"></div>
             </div>
+            <ul class="abilities">
+                <li title="Wall of Sound - Sonic barrier absorbs 60% damage">🔊 Wall of Sound → Barrière 60%</li>
+                <li title="Full Distortion Breakdown - Causal reset via sonic saturation">🎸 Ω_breakdown → Reset Causal</li>
+                <li title="Double Identity - Switch between Consultant and Guitarist">🧳 α|consultant⟩ + β|musicien⟩</li>
+            </ul>
+            <div class="formula"><strong>Formule:</strong> <code>SONIC_WAVE</code> — <em>Ψ(x,t) = A × sin(kx - ωt + φ)</em></div>
             <div class="spells-row" id="christian-spells">
                 <img src="assets/new0812/spells/Dimensional Gateway to the Future.png" alt="Dimensional Gateway">
                 <img src="assets/new0812/spells/Golden Warrior of the Rift.png" alt="Golden Warrior of the Rift">
@@ -797,7 +894,7 @@
     annaImg.addEventListener('mouseleave', hide);
     annaImg.addEventListener('click', hide);
   })();
-  // Christian personas: switch rune style on hover (2s preview-ready)
+  // Christian: effet feu organique avec propagation fractale
   (function(){
     const container = document.getElementById('christian');
     if(!container) return;
@@ -805,41 +902,255 @@
     const dual = document.getElementById('christian-hero');
     const top = document.getElementById('christian-top');
     const ripple = document.getElementById('christian-ripple');
-    if(!dual || !top || !spells || !ripple) return;
-    let burning = false;
-    function revealFire(){ dual.classList.add('reveal'); setTimeout(()=>dual.classList.remove('reveal'), 1000); }
-    function coverWave(){ ripple.classList.add('show'); setTimeout(()=>ripple.classList.remove('show'), 920); }
-    dual.addEventListener('mouseenter', revealFire);
-    dual.addEventListener('mouseleave', coverWave);
-    dual.addEventListener('click', ()=>{ dual.classList.toggle('reveal'); });
+    const burnCurve = document.getElementById('burnCurve');
+    if(!dual || !top || !spells || !ripple || !burnCurve) return;
+    
+    const BURN_MS = 2400; // Durée de l'effet feu (plus lent, plus organique)
+    const RESTORE_MS = 1200; // Durée du retour
+    let anim = null, t0 = 0, dir = 0;
+    
+    // Génère une courbe de propagation organique (16 steps pour tableValues)
+    function generateOrganicCurve(progress) {
+      const steps = 16;
+      let curve = [];
+      for(let i = 0; i < steps; i++) {
+        const x = i / (steps - 1);
+        // Propagation plus lente et irrégulière (effet papier qui brûle)
+        // Utilise une courbe en S (sigmoïde) pour progression non-linéaire
+        const easedProgress = progress * progress * (3.0 - 2.0 * progress); // smoothstep
+        const threshold = easedProgress * 1.4 - 0.2;
+        // Plus de variation pour effet feu papier
+        const noise1 = Math.sin(x * 5 + progress * 3) * 0.12;
+        const noise2 = Math.sin(x * 13 + progress * 7) * 0.06;
+        const noise3 = Math.cos(x * 23) * 0.03;
+        const totalNoise = noise1 + noise2 + noise3;
+        const value = x < (threshold + totalNoise) ? 0 : 1;
+        curve.push(value.toFixed(2));
+      }
+      return curve.join(' ');
+    }
+    
+    function frame() {
+      if(!t0) t0 = performance.now();
+      const dur = (dir > 0) ? BURN_MS : RESTORE_MS;
+      const p = Math.min(1, (performance.now() - t0) / dur);
+      const progress = (dir > 0) ? p : (1 - p);
+      
+      // Animation organique du masque fractal
+      const tableValues = generateOrganicCurve(progress);
+      burnCurve.setAttribute('tableValues', tableValues);
+      
+      if(p < 1) {
+        anim = requestAnimationFrame(frame);
+      } else {
+        anim = null;
+        t0 = 0;
+      }
+    }
+    
+    dual.addEventListener('mouseenter', () => {
+      if(anim) cancelAnimationFrame(anim);
+      dir = 1;
+      t0 = 0;
+      anim = requestAnimationFrame(frame);
+    });
+    
+    dual.addEventListener('mouseleave', () => {
+      // Effet ripple au retour (onde guitare)
+      ripple.classList.add('show');
+      setTimeout(() => ripple.classList.remove('show'), 920);
+      
+      if(anim) cancelAnimationFrame(anim);
+      dir = -1;
+      t0 = 0;
+      anim = requestAnimationFrame(frame);
+    });
   })();
-  // Anna: hover/tap reveal of Sorceress card with the same mask effect
+  // Anna: onde spatio-temporelle au clic (effet marteau temporel)
   (function(){
     const dual = document.getElementById('anna-hero');
     const top = document.getElementById('anna-top');
     if(!dual || !top) return;
-    function setMask(x, y, r){
-      const px = (x/dual.clientWidth*100).toFixed(2)+'%';
-      const py = (y/dual.clientHeight*100).toFixed(2)+'%';
-      const rr = Math.max(40, r).toFixed(1)+'px';
-      top.style.webkitMaskImage = `radial-gradient(circle at ${px} ${py}, transparent ${rr}, #000 ${parseFloat(rr)+1}px)`;
-      top.style.maskImage = top.style.webkitMaskImage;
-    }
-    function fullReveal(){ top.style.webkitMaskImage='none'; top.style.maskImage='none'; }
-    function fullCover(){
-      top.style.webkitMaskImage = 'radial-gradient(circle at 50% 50%, #000 0px, transparent 1px)';
-      top.style.maskImage = top.style.webkitMaskImage;
-      dual.classList.add('wave-return'); setTimeout(()=>dual.classList.remove('wave-return'), 650);
-    }
-    dual.addEventListener('mousemove',(e)=>{
+    
+    let animating = false;
+    let isRevealed = false;
+    
+    // État initial: image du dessus visible
+    top.style.opacity = '1';
+    top.style.transition = 'opacity 0.2s ease-out';
+    top.style.pointerEvents = 'none'; // Pour éviter les interférences
+    dual.style.position = 'relative'; // Pour les ondes
+    
+    // Effet marteau temporel au clic
+    dual.addEventListener('click', (e) => {
+      if(animating) return;
+      animating = true;
+      
+      // Toggle entre les deux états
+      if(!isRevealed) {
+        // IMPACT! L'image du dessus disparaît COMPLÈTEMENT
+        top.style.opacity = '0';
+        isRevealed = true;
+        
+        // Applique l'effet ondulatoire du marteau
+        dual.classList.add('hammer-impact');
+        
+        // Créer des ondes concentriques visibles
+        const rect = dual.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Effet de distorsion temporelle centré sur le clic
+        dual.style.transformOrigin = `${x}px ${y}px`;
+        
+        // Créer une onde visuelle au point d'impact
+        const wave = document.createElement('div');
+        wave.className = 'shockwave';
+        wave.style.left = x + 'px';
+        wave.style.top = y + 'px';
+        dual.appendChild(wave);
+        
+        // Retirer l'onde après l'animation
+        setTimeout(() => {
+          wave.remove();
+        }, 600);
+        
+        // Retirer la classe après l'animation
+        setTimeout(() => {
+          dual.classList.remove('hammer-impact');
+          animating = false;
+        }, 800);
+        
+      } else {
+        // Retour temporel - l'image revient avec une onde inverse
+        dual.classList.add('hammer-impact');
+        
+        // Délai pour voir l'onde avant le retour de l'image
+        setTimeout(() => {
+          top.style.opacity = '1';
+          isRevealed = false;
+        }, 200);
+        
+        setTimeout(() => {
+          dual.classList.remove('hammer-impact');
+          animating = false;
+        }, 800);
+      }
+    });
+    
+    // Support tactile (mobile)
+    dual.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
       const rect = dual.getBoundingClientRect();
-      setMask(e.clientX-rect.left, e.clientY-rect.top, 80);
+      
+      // Simule un clic au point de contact
+      const clickEvent = new MouseEvent('click', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      dual.dispatchEvent(clickEvent);
     });
-    dual.addEventListener('mouseleave',()=>fullCover());
-    dual.addEventListener('click',()=>{
-      if(top.style.webkitMaskImage==='none') fullCover(); else fullReveal();
+    
+    // Effet hover subtil - preview de l'onde
+    dual.addEventListener('mouseenter', () => {
+      dual.style.cursor = 'pointer';
+      // Petit indice que quelque chose va se passer
+      if(!isRevealed) {
+        top.style.opacity = '0.85';
+      }
     });
-    fullCover();
+    
+    dual.addEventListener('mouseleave', () => {
+      if(!isRevealed) {
+        top.style.opacity = '1';
+      }
+    });
+  })();
+  
+  // PARTICULES TEMPORELLES INTERACTIVES - Effet cool!
+  (function(){
+    const canvas = document.createElement('canvas');
+    canvas.id = 'temporal-particles';
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;opacity:0.6;mix-blend-mode:screen;';
+    document.body.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let mouseX = 0, mouseY = 0;
+    const MAX_PARTICLES = 50;
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.005;
+        this.size = Math.random() * 3 + 1;
+        this.hue = Math.random() * 60 + 30; // Gold range
+      }
+      
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+        
+        // Attraction vers souris
+        const dx = mouseX - this.x;
+        const dy = mouseY - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < 150) {
+          this.vx += dx * 0.0001;
+          this.vy += dy * 0.0001;
+        }
+      }
+      
+      draw(ctx) {
+        ctx.globalAlpha = this.life * 0.8;
+        ctx.fillStyle = `hsl(${this.hue}, 100%, 50%)`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `hsl(${this.hue}, 100%, 50%)`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      // Spawn particles on mouse move
+      if(particles.length < MAX_PARTICLES && Math.random() > 0.7) {
+        particles.push(new Particle(mouseX, mouseY));
+      }
+    });
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Update and draw particles
+      particles = particles.filter(p => {
+        p.update();
+        if(p.life > 0) {
+          p.draw(ctx);
+          return true;
+        }
+        return false;
+      });
+      
+      requestAnimationFrame(animate);
+    }
+    animate();
   })();
 </script>
+</body>
 </html>
