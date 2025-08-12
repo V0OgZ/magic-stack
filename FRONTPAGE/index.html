@@ -209,6 +209,35 @@
 
         .spells-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 0.5rem; }
         .spells-row img { width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        /* Dual-image reveal (Christian) */
+        .hero-dual { position: relative; max-width: 600px; margin: 0.75rem auto; }
+        .hero-dual .hero-image { display: block; width: 100%; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .hero-dual .top { position: absolute; inset: 0; pointer-events: none; }
+        /* Fire-like reveal using mask sweep + turbulence distortion */
+        .hero-dual.fire .top {
+            -webkit-mask-image: linear-gradient(90deg, transparent 0 45%, #000 55% 100%);
+            mask-image: linear-gradient(90deg, transparent 0 45%, #000 55% 100%);
+            -webkit-mask-size: 220% 100%;
+            mask-size: 220% 100%;
+            -webkit-mask-position: 100% 0;
+            mask-position: 100% 0;
+            transition: -webkit-mask-position 1s ease-in, mask-position 1s ease-in;
+            filter: url(#flameDistort);
+        }
+        .hero-dual.fire.reveal .top, .hero-dual.fire:hover .top {
+            -webkit-mask-position: 0 0;
+            mask-position: 0 0;
+        }
+        .ripple-ov { position:absolute; inset:0; border-radius:10px; pointer-events:none;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 70%);
+            opacity:0; }
+        @keyframes rippleOut { 0% { opacity:.55; transform: scale(0.98);} 100% { opacity:0; transform: scale(1.08);} }
+        .ripple-ov.show { animation: rippleOut 0.9s ease-out; }
+        @keyframes waveReturn { 0% { transform:none; filter:none; }
+            50% { transform: skewX(1.2deg) translateY(-1px); filter: contrast(1.08) saturate(1.08) brightness(1.03); }
+            100% { transform:none; filter:none; } }
+        .wave-return { animation: waveReturn 600ms ease-out; }
         
         .worlds-list {
             display: flex;
@@ -271,7 +300,17 @@
             .hero-image { max-width: 100%; margin: 0.5rem auto; }
             .abilities { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
         }
-    </style>
+</style>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="flameDistort">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="waveDistort">
+    <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed="2" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
+  </filter>
+</svg>
 </head>
 <body>
     <div class="parchment-container">
@@ -540,18 +579,22 @@
             </div>
         </div>
 
-        <div class="hero-section" style="background: rgba(74,158,255,0.1); border: 2px solid rgba(74,158,255,0.3);">
+        <div class="hero-section" style="background: rgba(0,0,139,0.1); border: 2px solid rgba(0,0,255,0.3);">
             <div class="hero-header">
-                <h3>🌀 Nexus</h3>
-                <span class="hero-class">Gardien de l’Interstice</span>
+                <h3>⏳ Anna Martel</h3>
+                <span class="hero-class">Architecte de la Décroissance</span>
             </div>
-            <p><strong>Rôle :</strong> Médiateur entre joueurs/IA et l’Orchestrateur</p>
+            <p><strong>Pouvoir :</strong> Si vous êtes trop lent, tout s'effrite autour de vous</p>
+            <p style="color: #d4af37; font-style: italic;">"Le temps n'attend personne. L'entropie gagne toujours."</p>
+            <div class="hero-dual" id="anna-hero">
+                <img src="assets/new0812/portraits/Blonde Warrior with Warhammer in Stormy Sky.png" alt="Anna Martel" class="hero-image base">
+                <img src="assets/new0812/cards/Sorceress of Time and Power.png" alt="Anna Martel — Sorceress of Time and Power" class="hero-image top" id="anna-top">
+            </div>
             <ul class="abilities">
-                <li>🔎 Révélation du brouillard de causalité</li>
-                <li>⛓️ Ancrage temporel (réduit |tw−te|)</li>
-                <li>🃏 Déclencheur de résolution TCG</li>
+                <li>⏳ Temporal Decay</li>
+                <li>🧭 Entropy Field</li>
+                <li>🜂 Time Fracture</li>
             </ul>
-            <img src="assets/new0812/portraits/Aethyr.png" alt="Nexus - Gardien de l’Interstice" class="hero-image">
         </div>
 
         
@@ -583,20 +626,7 @@
             <img src="assets/new0812/portraits/Ancient Warrior of Fiery Runes.png" alt="Ancient Warrior of Fiery Runes" class="hero-image">
         </div>
         
-        <div class="hero-section" style="background: rgba(0,0,139,0.1); border: 2px solid rgba(0,0,255,0.3);">
-            <div class="hero-header">
-                <h3>⏳ Anna Martel</h3>
-                <span class="hero-class">Architecte de la Décroissance</span>
-            </div>
-            <p><strong>Pouvoir :</strong> Si vous êtes trop lent, tout s'effrite autour de vous</p>
-            <p style="color: #d4af37; font-style: italic;">"Le temps n'attend personne. L'entropie gagne toujours."</p>
-            <img src="assets/new0812/portraits/Blonde Warrior with Warhammer in Stormy Sky.png" alt="Anna Martel" class="hero-image">
-            <ul class="abilities">
-                <li>⏳ Temporal Decay</li>
-                <li>🧭 Entropy Field</li>
-                <li>🜂 Time Fracture</li>
-            </ul>
-        </div>
+        
         
         <h2>📜 L'Histoire des Héros</h2>
         <div class="cta-section" style="background: rgba(139,115,85,0.2); margin-bottom: 2rem;">
@@ -654,15 +684,10 @@
                 <h3>🧳 Christian</h3>
                 <span class="hero-class">Double identité</span>
             </div>
-            <div class="personas">
-                <div class="persona active" data-style="corporate" title="Consultant du Bureau">
-                    <img src="assets/new0812/portraits/Urban Sorcery and Technology Merge.png" onerror="this.style.visibility='hidden'">
-                    <span>Consultant</span>
-                </div>
-                <div class="persona" data-style="sonic" title="Guitarist of the Enchanted Winds">
-                    <img src="assets/new0812/portraits/Guitarist of the Enchanted Winds.png">
-                    <span>Guitariste</span>
-                </div>
+            <div class="hero-dual fire" id="christian-hero">
+                <img src="assets/new0812/portraits/Guitarist of the Enchanted Winds.png" alt="Christian (Guitarist)" class="hero-image base">
+                <img src="assets/new0812/cards/Urban Sorcery and Technology Merge.png" alt="Christian (Consultant)" class="hero-image top" id="christian-top">
+                <div class="ripple-ov" id="christian-ripple"></div>
             </div>
             <div class="spells-row" id="christian-spells">
                 <img src="assets/new0812/spells/Dimensional Gateway to the Future.png" alt="Dimensional Gateway">
@@ -777,25 +802,44 @@
     const container = document.getElementById('christian');
     if(!container) return;
     const spells = document.getElementById('christian-spells');
-    const personas = container.querySelectorAll('.persona');
-    let timer; let current='corporate';
-    function setStyle(style){
-      spells.classList.remove('runes-corporate','runes-sonic');
-      if(style==='sonic') spells.classList.add('runes-sonic');
-      else spells.classList.add('runes-corporate');
+    const dual = document.getElementById('christian-hero');
+    const top = document.getElementById('christian-top');
+    const ripple = document.getElementById('christian-ripple');
+    if(!dual || !top || !spells || !ripple) return;
+    let burning = false;
+    function revealFire(){ dual.classList.add('reveal'); setTimeout(()=>dual.classList.remove('reveal'), 1000); }
+    function coverWave(){ ripple.classList.add('show'); setTimeout(()=>ripple.classList.remove('show'), 920); }
+    dual.addEventListener('mouseenter', revealFire);
+    dual.addEventListener('mouseleave', coverWave);
+    dual.addEventListener('click', ()=>{ dual.classList.toggle('reveal'); });
+  })();
+  // Anna: hover/tap reveal of Sorceress card with the same mask effect
+  (function(){
+    const dual = document.getElementById('anna-hero');
+    const top = document.getElementById('anna-top');
+    if(!dual || !top) return;
+    function setMask(x, y, r){
+      const px = (x/dual.clientWidth*100).toFixed(2)+'%';
+      const py = (y/dual.clientHeight*100).toFixed(2)+'%';
+      const rr = Math.max(40, r).toFixed(1)+'px';
+      top.style.webkitMaskImage = `radial-gradient(circle at ${px} ${py}, transparent ${rr}, #000 ${parseFloat(rr)+1}px)`;
+      top.style.maskImage = top.style.webkitMaskImage;
     }
-    setStyle('corporate');
-    personas.forEach(p=>{
-      p.addEventListener('mouseenter',()=>{
-        timer=setTimeout(()=>{
-          personas.forEach(x=>x.classList.remove('active'));
-          p.classList.add('active');
-          current = p.dataset.style==='sonic' ? 'sonic' : 'corporate';
-          setStyle(current);
-        },2000);
-      });
-      p.addEventListener('mouseleave',()=>clearTimeout(timer));
+    function fullReveal(){ top.style.webkitMaskImage='none'; top.style.maskImage='none'; }
+    function fullCover(){
+      top.style.webkitMaskImage = 'radial-gradient(circle at 50% 50%, #000 0px, transparent 1px)';
+      top.style.maskImage = top.style.webkitMaskImage;
+      dual.classList.add('wave-return'); setTimeout(()=>dual.classList.remove('wave-return'), 650);
+    }
+    dual.addEventListener('mousemove',(e)=>{
+      const rect = dual.getBoundingClientRect();
+      setMask(e.clientX-rect.left, e.clientY-rect.top, 80);
     });
+    dual.addEventListener('mouseleave',()=>fullCover());
+    dual.addEventListener('click',()=>{
+      if(top.style.webkitMaskImage==='none') fullCover(); else fullReveal();
+    });
+    fullCover();
   })();
 </script>
 </html>
