@@ -33,17 +33,17 @@ export function StatusBar(): React.ReactElement {
   useEffect(() => {
     const checkBackends = async () => {
       // Rust backend
-      fetch('http://localhost:3001/health')
+      fetch('/engine/health')
         .then(res => setBackends(b => ({ ...b, rust: res.ok ? 'online' : 'offline' })))
         .catch(() => setBackends(b => ({ ...b, rust: 'offline' })));
       
       // Java backend
-      fetch('http://localhost:8080/api/health')
+      fetch('/api/health')
         .then(res => setBackends(b => ({ ...b, java: res.ok ? 'online' : 'offline' })))
         .catch(() => setBackends(b => ({ ...b, java: 'offline' })));
       
       // Vector DB
-      fetch('http://localhost:5001/health')
+      fetch('/vector/health')
         .then(res => setBackends(b => ({ ...b, vector: res.ok ? 'online' : 'offline' })))
         .catch(() => setBackends(b => ({ ...b, vector: 'offline' })));
       

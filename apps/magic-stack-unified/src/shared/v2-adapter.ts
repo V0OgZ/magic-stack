@@ -11,9 +11,10 @@ export interface V2Config {
 }
 
 const DEFAULT_CONFIG: V2Config = {
-    rustBackend: 'http://localhost:3001',
-    javaBackend: 'http://localhost:8080',
-    pythonBackend: 'http://localhost:7500',
+    // Use proxied paths in production; fall back to localhost in dev via VITE_* envs elsewhere
+    rustBackend: '/engine',
+    javaBackend: '/api',
+    pythonBackend: '/vector',
     wsEndpoint: 'ws://localhost:8001'
 };
 
