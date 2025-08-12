@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+#![allow(dead_code)]
 //! Magic Stack Rust Server - High-Performance Critical Components
 //! 
 //! This server provides ultra-fast implementations of critical Magic Stack operations:
@@ -1659,7 +1661,7 @@ enum OrcIntentInner {
 struct OrcIntentReq { sessionId: String, intent: OrcIntentInner }
 
 #[derive(Serialize, Clone)]
-struct OrcIntentResp { accepted: bool, willApplyAtTick: u64, seq: u64 }
+struct OrcIntentResp { accepted: bool, #[serde(rename = "willApplyAtTick")] will_apply_at_tick: u64, seq: u64 }
 
 async fn orc_session(State(state): State<AppState>, Json(_req): Json<OrcSessionReq>) -> Json<OrcSessionResp> {
     let session_id = format!("sess_{}", Uuid::new_v4());
@@ -1680,7 +1682,7 @@ async fn orc_intent(State(state): State<AppState>, headers: axum::http::HeaderMa
         let set = map.entry(req.sessionId.clone()).or_insert_with(HashSet::new);
         if set.contains(&idempotency_key) {
             let tick = { *state.orchestrator_tick.read().await } + 1;
-            return Json(OrcIntentResp { accepted: true, willApplyAtTick: tick, seq: 0 });
+            return Json(OrcIntentResp { accepted: true, will_apply_at_tick: tick, seq: 0 });
         }
         set.insert(idempotency_key);
     }
@@ -1711,14 +1713,14 @@ async fn orc_intent(State(state): State<AppState>, headers: axum::http::HeaderMa
         }
     }
 
-    Json(OrcIntentResp { accepted: true, willApplyAtTick: will_tick, seq: will_tick })
+    Json(OrcIntentResp { accepted: true, will_apply_at_tick: will_tick, seq: will_tick })
 }
 
 #[derive(Serialize, Clone)]
-struct OrcPolicy { tauPsi: f64, tauLow: f64, tauHigh: f64, tauObs: u32, pvpEnabled: bool, escapeHorizonTicks: u64 }
+struct OrcPolicy { #[serde(rename = "tauPsi")] tau_psi: f64, #[serde(rename = "tauLow")] tau_low: f64, #[serde(rename = "tauHigh")] tau_high: f64, #[serde(rename = "tauObs")] tau_obs: u32, #[serde(rename = "pvpEnabled")] pvp_enabled: bool, #[serde(rename = "escapeHorizonTicks")] escape_horizon_ticks: u64 }
 
 async fn orc_policy() -> Json<OrcPolicy> {
-    Json(OrcPolicy { tauPsi: 0.65, tauLow: 0.35, tauHigh: 0.8, tauObs: 3, pvpEnabled: true, escapeHorizonTicks: 40 })
+    Json(OrcPolicy { tau_psi: 0.65, tau_low: 0.35, tau_high: 0.8, tau_obs: 3, pvp_enabled: true, escape_horizon_ticks: 40 })
 }
 
 #[derive(Serialize, Clone)]

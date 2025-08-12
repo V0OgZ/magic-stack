@@ -1,4 +1,7 @@
 # 🔮✨ HEROES OF TIME - LE MULTIVERS VOUS ATTEND ✨🔮
+
+Avancement global: 64%
+█████████████░░░░░░░░░
 ## 🎮 Jeu Narratif Stratégique Asynchrone • Mécaniques Temporelles Réelles
 
 **Heroes of Time** est un jeu innovant combinant stratégie, narration temporelle et mécaniques de causalité dans un multivers où chaque choix façonne la réalité.

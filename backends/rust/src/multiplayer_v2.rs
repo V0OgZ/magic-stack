@@ -173,7 +173,7 @@ impl MultiplayerOfficialController {
         
         // 3. Appliquer drift & énergie
         let mut entities = self.entities_v2.write().await;
-        for (id, entity) in entities.iter_mut() {
+        for (_id, entity) in entities.iter_mut() {
             self.apply_drift(entity, dt_ms);
             self.update_energy(entity, dt_ms);
             if self.config.phi_enabled {

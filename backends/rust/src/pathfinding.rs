@@ -248,13 +248,13 @@ pub fn a_star_path_weighted(
     open_set.push(Node { cell: start, g_score: 0, f_score: h0 });
 
     // Helper to fetch terrain and causal values
-    let mut get_terrain = |c: Cell| -> f64 {
+    let get_terrain = |c: Cell| -> f64 {
         terrain_costs
             .and_then(|t| t.get(c.y as usize).and_then(|row| row.get(c.x as usize)))
             .copied()
             .unwrap_or(0.0)
     };
-    let mut get_c = |c: Cell| -> f64 {
+    let get_c = |c: Cell| -> f64 {
         causal_c
             .and_then(|cc| cc.get(c.y as usize).and_then(|row| row.get(c.x as usize)))
             .copied()

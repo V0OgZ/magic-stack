@@ -380,9 +380,8 @@ impl WorldStateGraph {
         new_position: Position6D,
     ) -> MagicResult<StateNode> {
         let timestamp = current_timestamp();
-        let mut created_node_opt = None;
 
-        {
+        let created_node = {
             let mut nodes = self.nodes.write().unwrap();
             let from_node = nodes.get(from_node_id)
                 .ok_or_else(|| MagicError::WorldStateUpdateFailed(format!("Node {} not found", from_node_id)))?;
@@ -402,8 +401,8 @@ impl WorldStateGraph {
             };
 
             nodes.insert(new_node_id.to_string(), new_node.clone());
-            created_node_opt = Some(new_node);
-        }
+            new_node
+        };
 
         // Record change
         self.record_change(StateChange {
@@ -419,7 +418,7 @@ impl WorldStateGraph {
             causal_chain: vec![from_node_id.to_string(), new_node_id.to_string()],
         })?;
 
-        Ok(created_node_opt.unwrap())
+        Ok(created_node)
     }
 
     /// Merge two identity instances. Keeps `into_node_id`, removes `merged_node_id`.

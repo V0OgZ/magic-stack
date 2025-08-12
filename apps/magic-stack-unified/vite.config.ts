@@ -20,9 +20,11 @@ export default defineConfig({
     open: true,
     cors: true,
   },
+  publicDir: false,
   build: {
     outDir: 'dist',
     sourcemap: true,
+    copyPublicDir: true,
     rollupOptions: {
       output: {
         manualChunks: {
