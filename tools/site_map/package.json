@@ -1,0 +1,21 @@
+{
+  "name": "hot-site-map-tools",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "cheerio": "^1.0.0",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.0"
+  },
+  "scripts": {
+    "graph": "tsx src/generate_graph.ts",
+    "check": "tsx src/check_links.ts",
+    "gen-tests": "tsx src/gen_playwright.ts",
+    "all": "npm run graph && npm run check && npm run gen-tests"
+  }
+}
+
+
