@@ -18,9 +18,18 @@ DOCS_SHARED = BASE_DIR / 'docs_shared'  # symlink déjà présent à la racine
 VEC_CONTENT = BASE_DIR / 'vector_content'
 
 INDEX = []
+INDEX_JSONL = BASE_DIR / 'vector_local' / 'embeddings' / 'index.jsonl'
 
 def load_documents():
     INDEX.clear()
+    # 0) JSONL prebuilt index
+    if INDEX_JSONL.exists():
+        try:
+            for line in INDEX_JSONL.read_text(encoding='utf-8').splitlines():
+                rec = json.loads(line)
+                INDEX.append({ 'file': rec.get('path'), 'content': rec.get('content') })
+        except Exception:
+            pass
     # 1) Docs partagés
     if DOCS_SHARED.exists():
         for ext in ("*.md", "*.txt", "*.json"):  # léger mais suffisant
