@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA EDITOR - Unified</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: monospace; 
+            background: #000; 
+            color: #fff; 
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* TABS */
+        .tabs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #222;
+            display: flex;
+            z-index: 1000;
+        }
+        .tab {
+            padding: 15px 30px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            border: 1px solid #555;
+        }
+        .tab.active {
+            background: #555;
+            color: #ffd700;
+        }
+        
+        /* VIEWS */
+        .view {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .view.active { display: block; }
+        
+        /* HEX GRID */
+        #hexCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        /* ICON PALETTE */
+        .icon-palette {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .icon-item {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            background: #333;
+            border: 1px solid #666;
+            cursor: grab;
+            text-align: center;
+            line-height: 50px;
+            font-size: 24px;
+        }
+        .icon-item:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+        
+        /* MAP CONTAINER */
+        .map-container {
+            position: absolute;
+            left: 300px;
+            right: 300px;
+            top: 0;
+            bottom: 0;
+            background: #111;
+            overflow: hidden;
+        }
+        .placed-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            font-size: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .placed-icon:hover {
+            transform: scale(1.2);
+            z-index: 100;
+        }
+        
+        /* TIMELINE */
+        .timeline {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+        }
+        .day-selector {
+            margin: 10px 0;
+        }
+        .day-selector input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+        }
+        
+        /* CONTROLS */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchView('structure')">🗺️ Structure (Hex)</div>
+        <div class="tab" onclick="switchView('instance')">📍 Instance (Icons)</div>
+        <div class="tab" onclick="switchView('game')">🎮 Game (Play)</div>
+    </div>
+    
+    <!-- VIEW 1: STRUCTURE (HEX) -->
+    <div id="structure-view" class="view active">
+        <canvas id="hexCanvas"></canvas>
+        <div class="controls">
+            <button class="btn" onclick="setTerrain('grass')">🌿 Grass</button>
+            <button class="btn" onclick="setTerrain('water')">💧 Water</button>
+            <button class="btn" onclick="setTerrain('mountain')">⛰️ Mountain</button>
+            <button class="btn" onclick="setTerrain('desert')">🏜️ Desert</button>
+            <button class="btn" onclick="exportStructure()">💾 Export Structure</button>
+        </div>
+    </div>
+    
+    <!-- VIEW 2: INSTANCE (ICONS) -->
+    <div id="instance-view" class="view">
+        <div class="icon-palette">
+            <h3>Icons</h3>
+            <div class="icon-item" draggable="true">🏰</div>
+            <div class="icon-item" draggable="true">⚔️</div>
+            <div class="icon-item" draggable="true">🛡️</div>
+            <div class="icon-item" draggable="true">💎</div>
+            <div class="icon-item" draggable="true">🔮</div>
+            <div class="icon-item" draggable="true">🗿</div>
+            <div class="icon-item" draggable="true">🏛️</div>
+            <div class="icon-item" draggable="true">🎪</div>
+            <div class="icon-item" draggable="true">🌳</div>
+            <div class="icon-item" draggable="true">🔥</div>
+            <div class="icon-item" draggable="true">❄️</div>
+            <div class="icon-item" draggable="true">⚡</div>
+            <div class="icon-item" draggable="true">🌟</div>
+            <div class="icon-item" draggable="true">🦅</div>
+            <div class="icon-item" draggable="true">🐉</div>
+            <div class="icon-item" draggable="true">👑</div>
+        </div>
+        <div class="map-container" id="mapContainer"></div>
+        <div class="timeline">
+            <h3>Timeline</h3>
+            <div class="day-selector">
+                <label>Day: <input type="number" id="dayInput" value="1" min="1" max="100"></label>
+            </div>
+            <div class="day-selector">
+                <label>t_w: <input type="number" id="twInput" value="0" min="0"></label>
+            </div>
+            <div class="day-selector">
+                <label>t_e: <input type="number" id="teInput" value="0" min="0"></label>
+            </div>
+            <button class="btn" onclick="exportInstance()">💾 Export Instance</button>
+        </div>
+    </div>
+    
+    <!-- VIEW 3: GAME (PLAY) -->
+    <div id="game-view" class="view">
+        <canvas id="gameCanvas"></canvas>
+        <div class="controls">
+            <button class="btn" onclick="connectBackend()">🔌 Connect Backend</button>
+            <button class="btn" onclick="startGame()">▶️ Start Game</button>
+            <button class="btn" onclick="testAI()">🤖 Test vs AI</button>
+        </div>
+    </div>
+    
+    <script>
+        // ============= GLOBAL STATE =============
+        const state = {
+            currentView: 'structure',
+            currentTerrain: 'grass',
+            hexGrid: [],
+            placedIcons: [],
+            currentDay: 1,
+            tw: 0,
+            te: 0,
+            draggedIcon: null
+        };
+        
+        // ============= VIEW SWITCHING =============
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(viewName + '-view').classList.add('active');
+            event.target.classList.add('active');
+            state.currentView = viewName;
+            
+            if (viewName === 'structure') initHexGrid();
+            if (viewName === 'game') initGameView();
+        }
+        
+        // ============= HEX GRID (STRUCTURE) =============
+        const hexCanvas = document.getElementById('hexCanvas');
+        const ctx = hexCanvas.getContext('2d');
+        const HEX_SIZE = 30;
+        const COLS = 60;
+        const ROWS = 60;
+        
+        function initHexGrid() {
+            hexCanvas.width = window.innerWidth;
+            hexCanvas.height = window.innerHeight - 50;
+            
+            // Initialize grid data
+            if (state.hexGrid.length === 0) {
+                for (let r = 0; r < ROWS; r++) {
+                    state.hexGrid[r] = [];
+                    for (let q = 0; q < COLS; q++) {
+                        state.hexGrid[r][q] = 'grass';
+                    }
+                }
+            }
+            
+            drawHexGrid();
+        }
+        
+        function drawHexGrid() {
+            ctx.clearRect(0, 0, hexCanvas.width, hexCanvas.height);
+            
+            for (let r = 0; r < ROWS; r++) {
+                for (let q = 0; q < COLS; q++) {
+                    const x = HEX_SIZE * Math.sqrt(3) * (q + r/2);
+                    const y = HEX_SIZE * 3/2 * r;
+                    drawHex(x + 100, y + 100, state.hexGrid[r][q]);
+                }
+            }
+        }
+        
+        function drawHex(x, y, terrain) {
+            const colors = {
+                grass: '#4ade80',
+                water: '#3b82f6',
+                mountain: '#a8a29e',
+                desert: '#fbbf24'
+            };
+            
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i;
+                const hx = x + HEX_SIZE * Math.cos(angle);
+                const hy = y + HEX_SIZE * Math.sin(angle);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.fillStyle = colors[terrain] || '#4ade80';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        function setTerrain(terrain) {
+            state.currentTerrain = terrain;
+        }
+        
+        hexCanvas.addEventListener('click', (e) => {
+            const rect = hexCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - 100;
+            const y = e.clientY - rect.top - 100;
+            
+            // Convert to hex coordinates
+            const q = (x * Math.sqrt(3)/3 - y/3) / HEX_SIZE;
+            const r = y * 2/3 / HEX_SIZE;
+            const rq = Math.round(q);
+            const rr = Math.round(r);
+            
+            if (rr >= 0 && rr < ROWS && rq >= 0 && rq < COLS) {
+                state.hexGrid[rr][rq] = state.currentTerrain;
+                drawHexGrid();
+            }
+        });
+        
+        // ============= ICON PLACEMENT (INSTANCE) =============
+        const mapContainer = document.getElementById('mapContainer');
+        
+        // Drag & Drop
+        document.querySelectorAll('.icon-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                state.draggedIcon = e.target.textContent;
+            });
+        });
+        
+        mapContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        mapContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!state.draggedIcon) return;
+            
+            const rect = mapContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const icon = document.createElement('div');
+            icon.className = 'placed-icon';
+            icon.style.left = (x - 30) + 'px';
+            icon.style.top = (y - 30) + 'px';
+            icon.textContent = state.draggedIcon;
+            icon.onclick = () => icon.remove();
+            
+            mapContainer.appendChild(icon);
+            
+            // Save with temporal coordinates
+            state.placedIcons.push({
+                emoji: state.draggedIcon,
+                x: x,
+                y: y,
+                day: parseInt(document.getElementById('dayInput').value),
+                tw: parseInt(document.getElementById('twInput').value),
+                te: parseInt(document.getElementById('teInput').value)
+            });
+            
+            state.draggedIcon = null;
+        });
+        
+        // ============= GAME VIEW =============
+        function initGameView() {
+            const gameCanvas = document.getElementById('gameCanvas');
+            gameCanvas.width = window.innerWidth;
+            gameCanvas.height = window.innerHeight - 50;
+            const gctx = gameCanvas.getContext('2d');
+            
+            gctx.fillStyle = '#1a1a2e';
+            gctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            gctx.fillStyle = '#fff';
+            gctx.font = '48px monospace';
+            gctx.textAlign = 'center';
+            gctx.fillText('🎮 GAME MODE', gameCanvas.width/2, gameCanvas.height/2);
+            gctx.font = '24px monospace';
+            gctx.fillText('Connect backend to start', gameCanvas.width/2, gameCanvas.height/2 + 50);
+        }
+        
+        // ============= BACKEND CONNECTION =============
+        async function connectBackend() {
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                if (response.ok) {
+                    alert('✅ Backend connected!');
+                } else {
+                    alert('❌ Backend not responding');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to backend: ' + error.message);
+            }
+        }
+        
+        async function exportStructure() {
+            const data = {
+                version: "2.0",
+                type: "structure",
+                hexGrid: state.hexGrid,
+                dimensions: { cols: COLS, rows: ROWS }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'world_structure.json';
+            a.click();
+        }
+        
+        async function exportInstance() {
+            const data = {
+                version: "2.0",
+                type: "instance",
+                icons: state.placedIcons,
+                initial_state: {
+                    day: parseInt(document.getElementById('dayInput').value),
+                    tw: parseInt(document.getElementById('twInput').value),
+                    te: parseInt(document.getElementById('teInput').value)
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'map_instance.json';
+            a.click();
+        }
+        
+        function startGame() {
+            alert('🎮 Starting game with current map...');
+        }
+        
+        function testAI() {
+            alert('🤖 Launching AI test mode...');
+        }
+        
+        // Initialize
+        initHexGrid();
+    </script>
+</body>
+</html>
