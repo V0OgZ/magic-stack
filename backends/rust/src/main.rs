@@ -1623,17 +1623,17 @@ fn json_obj_to_hashmap(v: serde_json::Value) -> HashMap<String, serde_json::Valu
 
 // ===== Hero XP/Perks (MVP local) =====
 #[derive(Clone, Serialize, Deserialize)]
-struct HeroStatus { level: u32, xp: u32, xpNext: u32, perks: Vec<String> }
+struct HeroStatus { level: u32, xp: u32, #[serde(rename = "xpNext")] xp_next: u32, perks: Vec<String> }
 
-fn default_hero() -> HeroStatus { HeroStatus { level: 1, xp: 0, xpNext: 100, perks: vec![] } }
+fn default_hero() -> HeroStatus { HeroStatus { level: 1, xp: 0, xp_next: 100, perks: vec![] } }
 
 fn add_xp_to_hero(hero: &mut HeroStatus, amount: u32) -> bool {
     hero.xp = hero.xp.saturating_add(amount);
     let mut leveled = false;
-    while hero.xp >= hero.xpNext {
-        hero.xp -= hero.xpNext;
+    while hero.xp >= hero.xp_next {
+        hero.xp -= hero.xp_next;
         hero.level += 1;
-        hero.xpNext = hero.xpNext + 50; // progression simple
+        hero.xp_next = hero.xp_next + 50; // progression simple
         leveled = true;
     }
     leveled
@@ -1722,13 +1722,13 @@ async fn orc_policy() -> Json<OrcPolicy> {
 }
 
 #[derive(Serialize, Clone)]
-struct OrcSnapshot { tick: u64, fullOrDelta: String }
+struct OrcSnapshot { tick: u64, #[serde(rename = "fullOrDelta")] full_or_delta: String }
 
 async fn orc_snapshot(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>) -> Json<OrcSnapshot> {
     let since = q.get("sinceTick").and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
     let t = { *state.orchestrator_tick.read().await };
     let kind = if since == 0 { "full" } else { "delta" };
-    Json(OrcSnapshot { tick: t, fullOrDelta: kind.to_string() })
+    Json(OrcSnapshot { tick: t, full_or_delta: kind.to_string() })
 }
 async fn award_hero_xp(state: &AppState, hero_id: &str, amount: u32) {
     let mut heroes = state.heroes.write().await;
@@ -1824,26 +1824,26 @@ async fn hero_status(State(state): State<AppState>, Query(q): Query<HashMap<Stri
 }
 
 #[derive(Deserialize)]
-struct HeroAddXpReq { heroId: String, amount: u32, source: Option<String> }
+struct HeroAddXpReq { #[serde(rename = "heroId")] hero_id: String, amount: u32, source: Option<String> }
 
 #[derive(Serialize)]
-struct HeroAddXpResp { level: u32, xp: u32, xpNext: u32, levelUp: bool }
+struct HeroAddXpResp { level: u32, xp: u32, #[serde(rename = "xpNext")] xp_next: u32, #[serde(rename = "levelUp")] level_up: bool }
 
 async fn hero_add_xp(State(state): State<AppState>, Json(req): Json<HeroAddXpReq>) -> Json<HeroAddXpResp> {
     let mut heroes = state.heroes.write().await;
-    let entry = heroes.entry(req.heroId).or_insert_with(default_hero);
+    let entry = heroes.entry(req.hero_id).or_insert_with(default_hero);
     let leveled = add_xp_to_hero(entry, req.amount);
-    Json(HeroAddXpResp { level: entry.level, xp: entry.xp, xpNext: entry.xpNext, levelUp: leveled })
+    Json(HeroAddXpResp { level: entry.level, xp: entry.xp, xp_next: entry.xp_next, level_up: leveled })
 }
 
 #[derive(Deserialize)]
-struct HeroPerkReq { heroId: String, perkId: String }
+struct HeroPerkReq { #[serde(rename = "heroId")] hero_id: String, #[serde(rename = "perkId")] perk_id: String }
 
 async fn hero_apply_perk(State(state): State<AppState>, Json(req): Json<HeroPerkReq>) -> Json<serde_json::Value> {
     let mut heroes = state.heroes.write().await;
-    let entry = heroes.entry(req.heroId).or_insert_with(default_hero);
-    if !entry.perks.iter().any(|p| p == &req.perkId) {
-        entry.perks.push(req.perkId);
+    let entry = heroes.entry(req.hero_id).or_insert_with(default_hero);
+    if !entry.perks.iter().any(|p| p == &req.perk_id) {
+        entry.perks.push(req.perk_id);
     }
     Json(serde_json::json!({"ok": true, "perks": entry.perks}))
 }
