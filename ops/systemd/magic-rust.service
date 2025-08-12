@@ -1,0 +1,16 @@
+[Unit]
+Description=Magic Stack Rust Engine
+After=network.target
+
+[Service]
+Type=simple
+Environment=RUST_PORT=3001
+WorkingDirectory=/opt/hot/app
+ExecStart=/opt/hot/app/backends/rust/target/release/magic-stack-server
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+

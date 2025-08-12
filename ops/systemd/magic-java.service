@@ -1,0 +1,15 @@
+[Unit]
+Description=Magic Stack Java Backend (Spring Boot)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/hot/app/backends/java
+ExecStart=/usr/bin/java -jar /opt/hot/app/backends/java/target/magic-stack-backend-1.0.0-APOLLO.jar
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
+

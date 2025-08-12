@@ -1,0 +1,16 @@
+[Unit]
+Description=Magic Stack Clippy/Memento (Flask)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/hot/app
+ExecStart=/opt/hot/venv-clippy/bin/python /opt/hot/app/scripts/clippy/clippy_memento_server.py
+Restart=always
+RestartSec=2
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
+

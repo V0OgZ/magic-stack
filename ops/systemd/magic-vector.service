@@ -1,0 +1,15 @@
+[Unit]
+Description=Magic Stack Vector DB (Flask)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/hot/app
+ExecStart=/opt/hot/venv-vector/bin/python /opt/hot/app/scripts/vector_db/vector_server.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+
