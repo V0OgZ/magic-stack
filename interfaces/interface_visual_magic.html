@@ -362,8 +362,8 @@
             }
         }
 
-        // Simuler le lancement de sort (version demo, sans backend)
-        function castSpell() {
+        // Lancer le sort via API (V2 ready!)
+        async function castSpell() {
             const heroName = document.getElementById('heroName').value;
             const heroClass = document.getElementById('heroClass').value;
             const spellName = document.getElementById('spellName').value;
@@ -378,11 +378,75 @@
             `;
             resultDiv.className = 'result';
 
-            // Simuler délai de cast
-            setTimeout(() => {
-                const result = simulateSpellCast(heroName, heroClass, spellName);
+            try {
+                // APPEL API RÉEL - Backend Java (8082)
+                const translationMode = getTranslationMode(heroClass);
+                
+                // 1. D'abord traduire la formule
+                const translateResponse = await fetch('http://localhost:8082/api/magic/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: spellName,
+                        mode: translationMode, // "literary", "runic", "iconic"
+                        heroClass: heroClass
+                    })
+                });
+                
+                if (!translateResponse.ok) {
+                    throw new Error('Translation failed');
+                }
+                
+                const translation = await translateResponse.json();
+                
+                // 2. Puis lancer le sort
+                const castResponse = await fetch('http://localhost:8082/api/magic/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: spellName,
+                        heroName: heroName,
+                        heroClass: heroClass,
+                        power: 50,
+                        targetX: 0,
+                        targetY: 0,
+                        targetZ: 0,
+                        targetT: Date.now(),
+                        targetC: 1,
+                        targetP: 0
+                    })
+                });
+                
+                if (!castResponse.ok) {
+                    throw new Error('Cast failed');
+                }
+                
+                const castResult = await castResponse.json();
+                
+                // Combiner les résultats
+                const result = {
+                    ...castResult,
+                    translation: translation,
+                    mode: translationMode
+                };
+                
                 displayResult(result);
-            }, 1500);
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: #ff6666;">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        function getTranslationMode(heroClass) {
+            const modes = {
+                'tank_guardian': 'icons',
+                'Dragon Slayer': 'icons',
+                'Reality Forger': 'runes',
+                'World Weaver': 'runes',
+                'TIME_KEEPER': 'runes',
+                'Nexus Guardian': 'literary',
+                'Paladin': 'literary'
+            };
+            return modes[heroClass] || 'runes';
         }
 
         // Simulation locale du cast (demo)
@@ -432,47 +496,77 @@
             };
         }
 
-        // Afficher le résultat
+        // Afficher le résultat (adapté au vrai format du backend)
         function displayResult(result) {
             const resultDiv = document.getElementById('result');
             
-            if (result.success) {
-                resultDiv.innerHTML = `
-                    <div class="spell-result">
-                        <h4>✅ Sort lancé avec succès !</h4>
-                        <p><strong>🧙 Héros:</strong> ${result.hero_name}</p>
-                        <p><strong>🏷️ Classe:</strong> ${result.hero_class}</p>
-                        <p><strong>🔮 Sort:</strong> ${result.spell_name}</p>
-                        
-                        <div class="mode-indicator ${result.mode_info.class}" style="margin: 15px 0;">
-                            ${result.mode_info.icon} ${result.mode_info.name}
-                        </div>
-
-                        <div class="visual-formula">
-                            <strong>📜 Formule originale:</strong><br>
-                            ${result.original_formula}
-                        </div>
-
-                        <div class="visual-formula">
-                            <strong>✨ Traduction visuelle:</strong><br>
-                            ${result.visual_formula}
-                        </div>
-
-                        <div class="groeken-message">
-                            <strong>💬 Groeken dit:</strong> "${result.groeken_message}"
-                        </div>
+            // Récupérer les infos du formulaire
+            const heroName = document.getElementById('heroName').value;
+            const heroClass = document.getElementById('heroClass').value;
+            const spellName = document.getElementById('spellName').value;
+            const mode = result.mode || getTranslationMode(heroClass);
+            
+            // Récupérer les traductions
+            const translations = result.translation?.translations || result.translations || {};
+            
+            const modeStyles = {
+                'icons': 'mode-icons',
+                'iconic': 'mode-icons',
+                'runic': 'mode-runes',
+                'runes': 'mode-runes', 
+                'literary': 'mode-literary'
+            };
+            
+            const modeNames = {
+                'icons': '🎨 Mode Icônes',
+                'iconic': '🎨 Mode Icônes',
+                'runic': '🪬 Mode Runique',
+                'runes': '🪬 Mode Runique',
+                'literary': '📖 Mode Littéraire'
+            };
+            
+            resultDiv.innerHTML = `
+                <div class="spell-result">
+                    <h4>✅ Sort lancé avec succès !</h4>
+                    <p><strong>🧙 Héros:</strong> ${heroName}</p>
+                    <p><strong>🏷️ Classe:</strong> ${heroClass}</p>
+                    <p><strong>🔮 Sort:</strong> ${result.formula || spellName}</p>
+                    
+                    ${mode && modeNames[mode] ? `
+                    <div class="mode-indicator ${modeStyles[mode]}" style="margin: 15px 0;">
+                        ${modeNames[mode]}
                     </div>
-                `;
-                resultDiv.className = 'result';
-            } else {
-                resultDiv.innerHTML = `
-                    <div class="spell-result">
-                        <h4>❌ Échec du sort</h4>
-                        <p>Erreur: ${result.error || 'Erreur inconnue'}</p>
+                    ` : ''}
+
+                    ${translations.literary ? `
+                    <div class="visual-formula">
+                        <strong>📖 Littéraire:</strong><br>
+                        ${translations.literary}
                     </div>
-                `;
-                resultDiv.className = 'result';
-            }
+                    ` : ''}
+
+                    ${translations.runic ? `
+                    <div class="visual-formula">
+                        <strong>🪬 Runique:</strong><br>
+                        ${translations.runic}
+                    </div>
+                    ` : ''}
+                    
+                    ${translations.iconic ? `
+                    <div class="visual-formula">
+                        <strong>🎨 Icônes:</strong><br>
+                        ${translations.iconic}
+                    </div>
+                    ` : ''}
+
+                    ${result.message ? `
+                    <div class="groeken-message">
+                        <strong>💬 Message:</strong> "${result.message}"
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            resultDiv.className = 'result';
         }
 
         // Initialiser les particules au chargement

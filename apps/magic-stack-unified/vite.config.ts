@@ -16,11 +16,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5175,
+    port: 5176,
+    strictPort: true,
     open: true,
     cors: true,
   },
-  publicDir: false,
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     sourcemap: true,

@@ -5,15 +5,26 @@
  * Unifie world-editor, MapIconPlacer et SpatioTemporalMapEditor
  */
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import V2Adapter from '../../shared/v2-adapter';
 import { MapFileService } from '../../services/MapFileService';
 import { useUnifiedMapStore } from '../../shared/store/unifiedMapStore';
 import type { EditorMode } from '../../shared/store/unifiedMapStore';
 
 // Import dynamique des éditeurs existants
-const MapIconPlacerV2 = lazy(() => import('../editor/MapIconPlacerV2').then(m => ({ default: m.default })));
-const SpatioTemporalMapEditor = lazy(() => import('../../shared/components/SpatioTemporalMapEditor').then(m => ({ default: m.SpatioTemporalMapEditor })));
+const MapIconPlacerV2 = lazy(async () => {
+  try {
+    const m = await import('../editor/MapIconPlacerV2');
+    // Ce module exporte une fonction nommée, pas default
+    return { default: m.MapIconPlacerV2 } as any;
+  } catch (e) {
+    console.error('Load MapIconPlacerV2 failed', e);
+    throw e;
+  }
+});
+const SpatioTemporalMapEditor = lazy(async () => {
+  try { const m = await import('../../shared/components/SpatioTemporalMapEditor'); return { default: m.SpatioTemporalMapEditor }; } catch (e) { console.error('Load SpatioTemporalMapEditor failed', e); throw e; }
+});
 
 // Pour world-editor, on va créer un wrapper plus tard
 import { StructureEditor } from './components/StructureEditor';
@@ -53,15 +64,17 @@ export function UnifiedMapSystem(): React.ReactElement {
   // Auto-create world/map si nécessaire
   useEffect(() => {
     if (!currentWorld) {
-      console.log('Creating default world...');
-      newWorld('Nouveau Monde', 20, 20); // Plus petit pour commencer
+      try {
+        newWorld('Nouveau Monde', 12, 12);
+      } catch (e) {
+        console.error('newWorld failed', e);
+      }
     }
   }, [currentWorld, newWorld]);
 
   useEffect(() => {
     if (currentWorld && !currentMap) {
-      console.log('Creating default map...');
-      newMap('Nouvelle Map');
+      try { newMap('Nouvelle Map'); } catch (e) { console.error('newMap failed', e); }
     }
   }, [currentWorld, currentMap, newMap]);
 
@@ -74,20 +87,8 @@ export function UnifiedMapSystem(): React.ReactElement {
       case 'resources':
         return (
           <Suspense fallback={<LoadingEditor />}>
-            <MapIconPlacerV2
-              onPlace={(res) => {
-                useUnifiedMapStore.getState().placeResource(res.position_6d.x, res.position_6d.y);
-              }}
-              onUpdate={(id, updates) => {
-                useUnifiedMapStore.getState().updateResource(id, updates as any);
-              }}
-              onDelete={(id) => {
-                useUnifiedMapStore.getState().deleteResource(id);
-              }}
-              onConnect={(from, to, type) => {
-                useUnifiedMapStore.getState().createConnection(from, to, type as any);
-              }}
-            />
+            {/* Utiliser le wrapper iframe qui pointe vers MAP_ICON_PLACER_ADVANCED.html */}
+            <MapIconPlacerWrapper />
           </Suspense>
         );
       

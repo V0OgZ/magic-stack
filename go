@@ -137,10 +137,24 @@ start_java() {
 }
 
 start_frontend() {
-    if ! check_port 5175; then
-        echo -e "${CYAN}Démarrage Frontend...${NC}"
+    # Compat: ancien alias, démarre UNIFIED sur 5176
+    start_unified
+}
+
+start_unified() {
+    if ! check_port 5176; then
+        echo -e "${CYAN}Démarrage React UNIFIED (5176)...${NC}"
         cd "$MAGIC_DIR/apps/magic-stack-unified"
-        npm run dev > "$MAGIC_DIR/logs/frontend.log" 2>&1 &
+        npm run dev > "$MAGIC_DIR/logs/frontend_unified.log" 2>&1 &
+        sleep 3
+    fi
+}
+
+start_world_editor() {
+    if ! check_port 5173; then
+        echo -e "${CYAN}Démarrage WorldEditor (5173)...${NC}"
+        cd "$MAGIC_DIR/apps/world-editor"
+        npm run dev > "$MAGIC_DIR/logs/world_editor.log" 2>&1 &
         sleep 3
     fi
 }
@@ -266,7 +280,8 @@ show_status() {
     echo ""
     
     echo -e "${CYAN}🎨 Frontend:${NC}"
-    check_port 5175 && echo -e "  ${GREEN}✅${NC} React App (5175)" || echo -e "  ${RED}❌${NC} React App (5175)"
+    check_port 5173 && echo -e "  ${GREEN}✅${NC} WorldEditor (5173)" || echo -e "  ${YELLOW}⚪${NC} WorldEditor (5173)"
+    check_port 5176 && echo -e "  ${GREEN}✅${NC} Unified App (5176)" || echo -e "  ${YELLOW}⚪${NC} Unified App (5176)"
     check_port 8000 && echo -e "  ${GREEN}✅${NC} HTML Server (8000)" || echo -e "  ${YELLOW}⚪${NC} HTML Server (8000)"
     
     echo ""
@@ -287,18 +302,19 @@ show_status() {
 # ═══════════════════════════════════════════════════════════════════
 
 open_game() {
-    start_frontend
-    open "http://localhost:5175/unified"
+    # Conserve l'alias pour UNIFIED
+    start_unified
+    open "http://localhost:5176/unified"
 }
 
 open_admin() {
     start_frontend
-    open "http://localhost:5175/dashboard.html"
+    open "http://localhost:5173/dashboard.html"
 }
 
 open_api() {
     start_all
-    open "http://localhost:5175/html/API_EXPLORER_COMPLETE.html"
+    open "http://localhost:5173/html/API_EXPLORER_COMPLETE.html"
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -354,6 +370,24 @@ case "$1" in
         open_api
         ;;
 
+    "react")
+        # Lance uniquement l'app UNIFIED (5176) et ouvre /unified
+        start_unified
+        open "http://localhost:5176/unified"
+        ;;
+
+    "we"|"world-editor")
+        # Lance l'éditeur hexagonal historique (5173)
+        start_world_editor
+        open "http://localhost:5173"
+        ;;
+
+    "unified")
+        # Lance l'app unifiée explicitement
+        start_unified
+        open "http://localhost:5176/unified"
+        ;;
+
     "front")
         # Ouvre la Frontpage via serveur HTML
         if ! check_port 8000; then
@@ -362,6 +396,13 @@ case "$1" in
             sleep 2
         fi
         open "http://localhost:8000/FRONTPAGE/index.html"
+        ;;
+    
+    "map"|"editor")
+        echo -e "${CYAN}🗺️ Lancement de l'éditeur de map avancé...${NC}"
+        open "$MAGIC_DIR/apps/magic-stack-unified/public/assets/MAP_ICON_PLACER_ADVANCED.html"
+        echo -e "${GREEN}✅ Éditeur de map ouvert!${NC}"
+        echo "📝 Ton cousin peut créer des maps avec ça!"
         ;;
     
     "html")
@@ -408,16 +449,22 @@ case "$1" in
         echo "  ./go deploy   - Crée les artifacts production"
         echo ""
         echo "🎯 Accès rapide:"
-        echo "  ./go game     - Ouvre l'éditeur de map"
+        echo "  ./go we       - WorldEditor hexagonal (5173)"
+        echo "  ./go unified  - App unifiée (5176)"
+        echo "  ./go game     - Alias pour 'unified'"
+        echo "  ./go map      - 🗺️ ÉDITEUR DE MAP AVANCÉ (pour ton cousin!)"
+        echo "  ./go editor   - Alias pour map editor"
         echo "  ./go admin    - Ouvre le dashboard admin"
         echo "  ./go api      - Ouvre l'API Explorer"
         echo "  ./go front    - Ouvre la Frontpage (FRONTPAGE/index.html)"
+        echo "  ./go react    - Lance UNIFIED (5176) et ouvre /unified"
         echo "  ./go combat   - Ouvre le combat IA vs IA"
         echo "  ./go chasse   - Ouvre la chasse temporelle"
         echo "  ./go html     - Ouvre TOUS les vieux HTML"
         echo ""
         echo "📍 Ports ACTUELS:"
-        echo "  5175 - Frontend React"
+        echo "  5173 - WorldEditor React (historique)"
+        echo "  5176 - Unified App (React)"
         echo "  3001 - Backend Rust (calculs 6D)"
         echo "  8082 - Backend Java (CRUD, APIs)"
         echo "  7500 - Vector DB (recherche)"

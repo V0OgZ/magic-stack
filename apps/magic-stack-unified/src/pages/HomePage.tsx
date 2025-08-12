@@ -115,8 +115,8 @@ export function HomePage(): React.ReactElement {
         marginTop: 32,
       }}>
         <StatusIndicator label="Rust" port={3001} />
-        <StatusIndicator label="Java" port={8080} />
-        <StatusIndicator label="Vector" port={5001} />
+        <StatusIndicator label="Java" port={8082} />
+        <StatusIndicator label="Vector" port={7500} />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GameView } from './modes/game/GameView';
+import { ErrorBoundary } from './shared/components/ErrorBoundary';
 import { EditorView } from './modes/editor/EditorView';
 import { ChasseView } from './modes/chasse/ChasseView';
 import { HomePage } from './pages/HomePage';
@@ -30,6 +31,7 @@ export function App(): React.ReactElement {
           background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1d3a 100%)',
           color: '#e8ecff',
         }}>
+          <ErrorBoundary>
           <Routes>
             {/* Page d'accueil */}
             <Route path="/" element={<HomePage />} />
@@ -59,6 +61,7 @@ export function App(): React.ReactElement {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/about" element={<AboutPage />} />
           </Routes>
+          </ErrorBoundary>
         </div>
       </BrowserRouter>
     </QueryClientProvider>
