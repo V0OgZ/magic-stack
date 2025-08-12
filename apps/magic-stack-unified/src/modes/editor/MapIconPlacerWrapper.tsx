@@ -14,15 +14,29 @@ export function MapIconPlacerWrapper() {
 
       switch(type) {
         case 'SAVE_MAP':
-          // Sauvegarder sur Java backend
+          // Sauvegarde vers Interstice (Java 8082)
           try {
-            const response = await fetch('http://localhost:8082/api/maps/save', {
+            const payload = {
+              type: 'unified_map',
+              name: `map_export_${Date.now()}`,
+              data,
+              metadata: {
+                totalIcons: Array.isArray(data?.icons) ? data.icons.length : undefined,
+                totalConnections: Array.isArray(data?.connections) ? data.connections.length : undefined,
+                created: data?.created,
+                version: data?.version,
+              },
+            };
+            const response = await fetch('http://localhost:8082/api/interstice/upload', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
+              body: JSON.stringify(payload),
             });
             if (response.ok) {
-              sendToIframe({ type: 'SAVE_SUCCESS', message: 'Map sauvegardée!' });
+              const json = await response.json().catch(() => ({}));
+              sendToIframe({ type: 'SAVE_SUCCESS', message: 'Map sauvegardée!', data: json });
+            } else {
+              sendToIframe({ type: 'SAVE_ERROR', message: `HTTP ${response.status}` });
             }
           } catch (error) {
             sendToIframe({ type: 'SAVE_ERROR', message: 'Erreur sauvegarde' });
@@ -30,12 +44,15 @@ export function MapIconPlacerWrapper() {
           break;
 
         case 'LOAD_MAP':
-          // Charger depuis Java backend
+          // Chargement depuis Interstice (Java 8082)
           try {
-            const response = await fetch(`http://localhost:8082/api/maps/${data.mapId}`);
+            const response = await fetch(`http://localhost:8082/api/interstice/${data.mapId}`);
             if (response.ok) {
-              const mapData = await response.json();
+              const mapWrapper = await response.json();
+              const mapData = mapWrapper?.data ?? mapWrapper;
               sendToIframe({ type: 'MAP_LOADED', data: mapData });
+            } else {
+              sendToIframe({ type: 'LOAD_ERROR', message: `HTTP ${response.status}` });
             }
           } catch (error) {
             sendToIframe({ type: 'LOAD_ERROR', message: 'Erreur chargement' });

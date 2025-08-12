@@ -3,39 +3,38 @@
 
 localhost:5175/
 │
-├── / (HomePage - Accueil principal)
-│   ├── [Bouton Game] → /game
-│   ├── [Bouton Editor] → /editor  
-│   ├── [Bouton Admin] → /admin
-│   └── [Bouton Unified] → /unified
+├── / (HomePage - Accueil)
+│   ├── [Game] → /game
+│   ├── [Editor] → /editor  
+│   ├── [Unified] → /unified
+│   ├── [Start TCG] → /start-tcg
+│   └── Accès rapides (Multiplayer, AI Battle, Spectator)
 │
-├── /game (GameView - Mode Jeu)
-│   ├── Combat TCG
+├── /game (GameView)
+│   ├── Combat TCG (via /start-tcg + /combat)
 │   ├── Exploration
 │   └── Brouillard de guerre
 │
-├── /editor (EditorView - Écran d'accueil éditeur)
+├── /editor (EditorView)
 │   │
-│   ├── [Mode Import] → Écran avec 3 boutons:
-│   │   ├── [Importer un Scénario] → Ouvre sélecteur fichier
-│   │   ├── [Éditeur de Map] → mode='icon-placer'
-│   │   └── [Tester un Scénario] → mode='test'
-│   │
-│   ├── mode='icon-placer' → MapIconPlacerV2 (React)
+│   ├── MapIconPlacerV2 (React)
 │   │   └── Éditeur Space-Time (grille carrée, 6D)
 │   │
-│   └── mode='test' → Mode test instantiation
-│       └── Test avec backends actifs
+│   └── Outils d'import/test
 │
-├── /unified (UnifiedMapSystem) 
-│   ├── HexGrid (Géographie fixe)
-│   ├── SquareGrid (Space-Time)
+├── /unified (UnifiedMapSystem)
+│   ├── HexGrid
+│   ├── SquareGrid
 │   └── Controls unifiés
 │
-└── /admin (AdminView - Outils admin)
-    ├── API Explorer → /html/API_EXPLORER_COMPLETE.html
-    ├── Vector DB Manager
-    └── System Status
+├── /multiplayer (MultiplayerMode)
+├── /ai-battle (AIBattleAutoplay)
+├── /spectator (SpectatorGodMode)
+├── /backstory-editor (HeroBackstoryEditor)
+├── /combat (AIBattleWrapper – hybride HTML + React)
+├── /start-tcg (écran de démarrage TCG)
+├── /chasse-mega (Chasse Temporelle 6×6)
+├── /settings, /about
 
 # AUTRES PAGES HTML (servies sur port 8000)
 # ==========================================

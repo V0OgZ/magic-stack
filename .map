@@ -27,7 +27,7 @@ apps/world-editor/
 ### 2. MAGIC-STACK-UNIFIED (React/TypeScript) ⭐⭐⭐⭐⭐
 **URL**: http://localhost:5175  
 **Tech**: React + TypeScript + Vite + React Query
-**Statut**: APP COMPLETE avec SpatioTemporalMapEditor!
+**Statut**: APP UNIFIÉE avec SpatioTemporalMapEditor; nouvelles routes: /start-tcg
 **Composants**:
 ```
 apps/magic-stack-unified/
@@ -50,6 +50,7 @@ apps/magic-stack-unified/
 │   │   └── SpectatorGodMode.tsx (NOUVEAU)
 │   └── combat/
 │       └── AIBattleWrapper.tsx (HYBRIDE HTML+React avec V2 API)
+├── pages/StartTCG.tsx (NOUVEAU – appelle Java /api/combat/start)
 └── shared/components/
     ├── SpatioTemporalMapEditor.tsx ⭐⭐⭐⭐⭐ (LE 6D!)
     ├── HexGrid.tsx
@@ -271,7 +272,7 @@ Accessible via: http://localhost:5175 → Editor
 - `/api/v2/migrate-entity` - Migrate to V2
 
 ### JAVA (Port 8082) ✅
-**Doc API**: http://localhost:8082/api
+**OpenAPI**: http://localhost:8082/openapi.json | Swagger UI: http://localhost:8082/docs
 - `/api/magic/health` - Vérifier magie active
 - `/api/magic/cast` - Lancer un sort
 - `/api/magic/translate` - Traduire formule
@@ -282,6 +283,11 @@ Accessible via: http://localhost:5175 → Editor
 - `/api/interstice/upload` - Sauvegarder entité 6D
 - `/api/interstice/download` - Récupérer entité
 - `/api/regulators/*` - Régulateurs Vince/Anna
+
+NOUVEAU (Combat minimal):
+- `POST /api/combat/start`
+- `POST /api/combat/play-card`
+- `GET  /api/combat/state/{gameId}`
 
 ### RESOURCES (À IMPLÉMENTER)
 - `/api/heroes` - Liste des héros

@@ -38,7 +38,7 @@ RUST (3001):
 - /agents/plan, /agents/fork, /agents/merge
 - /api/map/generate, /api/map/init
 
-JAVA (8080):
+JAVA (8082):
 - /api/magic/cast, /api/magic/formulas (869!)
 - /api/interstice/upload, /api/interstice/download
 - /api/regulators/*
@@ -56,6 +56,21 @@ INFRASTRUCTURE:
 - Script ./go unifié (pas de go2!)
 - Dashboard: http://localhost:5175/dashboard.html
 - Backend Rust lancé sur 3001
+
+=== MISES À JOUR 2025-08-12 ===
+JAVA (8082):
+- OpenAPI: /openapi.json (springdoc)
+- Swagger UI: /docs
+- Nouveau: endpoints Combat minimalistes
+  - POST /api/combat/start
+  - POST /api/combat/play-card
+  - GET  /api/combat/state/{gameId}
+
+FRONTEND (5175):
+- Nouvelle page: /start-tcg (sélection mode/deck, appelle /api/combat/start)
+
+OUTILS TESTS:
+- Playwright E2E en place (tests/e2e), plus générateurs de specs via tools/site_map
 
 PORTAILS AJOUTÉS:
 - 🌀 Avalon (dimensional)
