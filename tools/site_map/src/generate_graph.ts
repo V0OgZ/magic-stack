@@ -1,6 +1,7 @@
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { load } from 'cheerio';
 
 type NodeId = string;
@@ -43,7 +44,8 @@ function extractTsxRoutes(file: string, code: string): string[] {
 }
 
 async function main() {
-  const repoRoot = path.resolve(__dirname, '../../..');
+  const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
+  const repoRoot = path.resolve(DIRNAME, '../../..');
   const htmlFiles = await fg(['**/*.html'], { cwd: repoRoot, ignore: ['**/node_modules/**', '**/dist/**'] });
   const tsxFiles = await fg(['**/*.tsx', '**/*.jsx'], { cwd: repoRoot, ignore: ['**/node_modules/**', '**/dist/**'] });
 

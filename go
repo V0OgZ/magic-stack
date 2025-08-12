@@ -353,6 +353,16 @@ case "$1" in
     "api")
         open_api
         ;;
+
+    "front")
+        # Ouvre la Frontpage via serveur HTML
+        if ! check_port 8000; then
+            cd "$MAGIC_DIR"
+            python3 html_server.py > logs/html_server.log 2>&1 &
+            sleep 2
+        fi
+        open "http://localhost:8000/FRONTPAGE/index.html"
+        ;;
     
     "html")
         echo -e "${CYAN}🌐 Lancement serveur HTML (port 8000)...${NC}"
@@ -401,6 +411,7 @@ case "$1" in
         echo "  ./go game     - Ouvre l'éditeur de map"
         echo "  ./go admin    - Ouvre le dashboard admin"
         echo "  ./go api      - Ouvre l'API Explorer"
+        echo "  ./go front    - Ouvre la Frontpage (FRONTPAGE/index.html)"
         echo "  ./go combat   - Ouvre le combat IA vs IA"
         echo "  ./go chasse   - Ouvre la chasse temporelle"
         echo "  ./go html     - Ouvre TOUS les vieux HTML"

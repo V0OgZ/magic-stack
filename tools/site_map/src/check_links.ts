@@ -1,6 +1,7 @@
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { load } from 'cheerio';
 
 function collect(file: string, html: string): { hrefs: string[]; srcs: string[] } {
@@ -11,7 +12,8 @@ function collect(file: string, html: string): { hrefs: string[]; srcs: string[] 
 }
 
 async function main() {
-  const repoRoot = path.resolve(__dirname, '../../..');
+  const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
+  const repoRoot = path.resolve(DIRNAME, '../../..');
   const htmlFiles = await fg(['**/*.html'], { cwd: repoRoot, ignore: ['**/node_modules/**', '**/dist/**'] });
   const missing: Array<{ file: string; target: string }> = [];
 
