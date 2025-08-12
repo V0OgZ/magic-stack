@@ -87,19 +87,24 @@
         }
         
         .back-link {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             margin-top: 30px;
-            padding: 10px 20px;
-            background: #8b7355;
-            color: #f5ebd7;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0f08;
             text-decoration: none;
-            border-radius: 5px;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            border: 2px solid rgba(245,235,215,0.85);
+            box-shadow: 0 0 18px rgba(212,175,55,0.45);
+            transition: all 0.25s ease;
         }
         
         .back-link:hover {
-            background: #d4af37;
-            transform: translateY(-2px);
+            filter: brightness(1.05);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 26px rgba(212,175,55,0.65);
         }
         
         .emoji {
@@ -128,7 +133,7 @@
         <h1>🌿 Hey Dude, Check Out This Temporal Grammar Thing 🎳</h1>
         
         <div class="dude-intro">
-            <img src="assets/HD/Pixel Art Dude with Beer Mug.png" alt="The Dude" class="dude-img">
+            <img src="assets/assets/HD/Pixel Art Dude with Beer Mug.png" alt="The Dude" class="dude-img" onerror="this.onerror=null; this.src='assets/HD/Pixel Art Dude with Beer Mug.png'">
             <p><strong>By</strong>: The Dude (aka GROKÆN when I'm chill)<br>
             <strong>For</strong>: Everyone who just wants to understand without the math headache<br>
             <strong>Vibe</strong>: Maximum chill, zero stress</p>
@@ -328,7 +333,10 @@ Temporal Save: [SAVE TREE ∞] - All timelines!
         </p>
         
         <div style="text-align: center;">
-            <a href="index.html" class="back-link">← Retour à Heroes of Time</a>
+            <a href="index.html" class="back-link">
+                <img src="assets/new0812/cards/Mystical Tome of Light and Shadow.png" alt="Temporal Grammar" style="width:56px;height:auto;border-radius:6px;box-shadow:0 0 10px rgba(212,175,55,0.5)">
+                <span>← Retour à Heroes of Time</span>
+            </a>
         </div>
     </div>
 </body>

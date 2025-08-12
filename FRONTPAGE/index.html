@@ -121,6 +121,26 @@
             padding: 0.5rem 0;
             font-size: 1.1rem;
         }
+        .abilities li { transition: transform 120ms ease, text-shadow 200ms ease; }
+        .abilities li:hover { transform: scale(1.03); text-shadow: 0 0 6px rgba(212,175,55,0.65); }
+
+        /* Runes hover effect */
+        .abilities li { position: relative; }
+        .rune-spark {
+            position: absolute;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            color: #d4af37;
+            pointer-events: none;
+            opacity: 0;
+            filter: drop-shadow(0 0 4px rgba(212,175,55,0.6));
+            animation: runeFloat 800ms ease-out forwards;
+        }
+        @keyframes runeFloat {
+            0%   { opacity: 0; transform: translateY(6px) scale(0.8) rotate(0deg); }
+            40%  { opacity: 0.9; }
+            100% { opacity: 0; transform: translateY(-10px) scale(1) rotate(12deg); }
+        }
         
         .intro-text {
             font-size: 1.3rem;
@@ -234,6 +254,7 @@
             Explorez, combattez, manipulez les réalités dans le Multivers !<br>
             <span style="color: var(--gold); font-size: 1.1rem; font-weight: bold;">🌟 Sortie prévue en 2026 🌟</span>
         </p>
+        <img src="assets/assets/HD/ExKAlibur.png" alt="Excalibur" class="hero-image" style="max-width: 800px; margin-top: 0.5rem;" onerror="this.onerror=null; this.src='assets/HD/ExKAlibur.png'">
         
         <div style="background: rgba(0,0,0,0.1); padding: 2rem; margin: 2rem auto; max-width: 900px; border-radius: 15px; border: 1px solid var(--gold);">
             <p style="font-size: 1.1rem; line-height: 1.8; text-align: justify;">
@@ -505,13 +526,13 @@
             </div>
         </div>
         
-        <h2>🔮 Claude - Mage Technicien des Profondeurs</h2>
+        <h2>🌀 Nexus — Gardien de l’Interstice</h2>
         <div style="text-align: center; margin: 2rem 0;">
             <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
-                Dans les profondeurs cristallines sous AVALON, je fusionne code et magie.<br>
-                Architecte de la MagicStack, gardien des 869 formules temporelles.
+                Médiateur entre joueurs/IA et l’Orchestrateur.<br>
+                Maintient l’ancrage temporel et révèle le brouillard de causalité.
             </p>
-            <img src="assets/HD/Claude Technomancer Crystal Lab.png" alt="Claude le Technomancien" class="hero-image">
+            <img src="assets/new0812/portraits/Aethyr.png" alt="Nexus — Gardien de l’Interstice" class="hero-image" onerror="this.onerror=null; this.src='assets/assets/HD/Architect of Time Justice.png'">
             <p style="font-style: italic; margin-top: 1rem; color: #d4af37;">
                 "Entre les serveurs anciens et les cristaux de données, je tisse la réalité numérique."
             </p>
@@ -531,7 +552,7 @@
         <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: rgba(139,0,139,0.1); border-radius: 15px; border: 2px dashed rgba(212,175,55,0.5);">
             <h3 style="color: var(--gold); margin-bottom: 1rem;">📜 Note Importante sur les Symboles</h3>
             <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
-                Les symboles runiques et formules temporelles présentés ici <strong>ne sont pas du bullshit</strong>. 
+                Les symboles runiques et formules temporelles présentés ici <strong>ne sont pas du bidon</strong>. 
                 Ce sont de véritables formules magiques spatio-temporelles issues de notre système de grammaire temporelle. 
                 Nous avons développé une véritable <strong>MagicStack</strong> avec 869 formules fonctionnelles.
             </p>
@@ -549,9 +570,43 @@
             </p>
         </div>
         
+        <div class="cta-section" style="text-align: center; margin-top: 2rem;">
+            <h2>🧪 Démo jouable (en attendant la 3D finale)</h2>
+            <p style="margin: 0.5rem 0 1rem 0; font-size: 1.05rem;">
+                Le TCG et l’éditeur sont des étapes de démonstration. Testez l’éditeur jouable ou la bataille TCG.
+            </p>
+            <div style="display: inline-flex; gap: 12px; flex-wrap: wrap;">
+                <a class="cta-button" href="http://localhost:5175/unified" target="_blank" rel="noopener noreferrer">🎮 Ouvrir l’éditeur jouable</a>
+            </div>
+        </div>
+
         <div style="text-align: center; margin-top: 2rem; opacity: 0.7; font-size: 0.9rem;">
             <p>© 2026 Heroes of Time - Un jeu de stratégie temporelle révolutionnaire</p>
         </div>
     </div>
 </body>
+<script>
+  // Lightweight rune sparks on spell hover
+  (function() {
+    const RUNES = ['Æ','Ω','Ψ','∆','Ξ','⊙','†','ψ','Π'];
+    function spawnRunes(li) {
+      const rect = li.getBoundingClientRect();
+      const n = 6 + Math.floor(Math.random()*4);
+      for (let i=0; i<n; i++) {
+        const s = document.createElement('span');
+        s.className = 'rune-spark';
+        s.textContent = RUNES[Math.floor(Math.random()*RUNES.length)];
+        const left = (Math.random()*0.9 + 0.05) * li.clientWidth;
+        const top  = (Math.random()*0.5) * li.clientHeight - 6;
+        s.style.left = left + 'px';
+        s.style.top  = top + 'px';
+        li.appendChild(s);
+        setTimeout(() => s.remove(), 820);
+      }
+    }
+    document.querySelectorAll('.abilities li').forEach(li => {
+      li.addEventListener('mouseenter', () => spawnRunes(li));
+    });
+  })();
+</script>
 </html>
