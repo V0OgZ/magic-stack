@@ -234,6 +234,126 @@ PHRASES CALCULÉES:
 """,
             "weight": 10
         }
+        ,
+        "aethyr": {
+            "keywords": ["AETHYR", "GARDIEN", "INTERSTICE", "6D", "CAUSALITÉ", "ANCRAGE", "Ψ"],
+            "backstory": """
+AETHYR – LE GARDIEN DE L’INTERSTICE
+
+HISTOIRE COMPLÈTE:
+Aethyr veille sur l’Interstice, la bibliothèque‑vide entre les timelines.
+Ses sigils orbitent (Ψ, Δt, Q*) et stabilisent les mondes quand la dérive |tw−te| devient critique.
+Lorsqu’un nœud de réalité menace de s’effondrer, Aethyr crée un ANCRAGE TEMPOREL qui cale la causalité.
+Il peut déclencher des résolutions TCG lorsque l’entropie locale dépasse un seuil tolérable.
+
+RÔLE DANS LE JEU:
+- Balise d’ancrage temporel posée par l’éditeur (zone sûre)
+- Déclencheur de duel TCG (AI vs AI, PvAI, PvP) pour dissiper le chaos
+- Interface vivante vers les régulateurs (Vince/Anna/Overload)
+
+CAPACITÉS:
+- "Ancrage Interstitiel": réduit la dérive |tw−te| dans la zone
+- "Révélation du Brouillard": dévoile la topologie causale proche
+- "Duel d’Équilibre": lance un TCG pour absorber l’excès d’entropie
+
+RELATIONS:
+- Vince: complice pragmatique, réduit la dérive de manière agressive
+- Anna: partenaire analytique, optimise l’ancrage par calcul
+- Arthur/Merlin: piliers de stabilité dans les mondes d’Avalon
+
+PHRASES SIGNATURE:
+"Là où le temps vacille, j’ancre la réalité."
+"Ψ chante quand la causalité respire juste."
+"Le duel rétablit l’équilibre quand les mots échouent."
+"Δt doit redevenir supportable."
+""",
+            "weight": 10
+        }
+        ,
+        "aurion": {
+            "keywords": ["AURION", "ARCHIVISTE", "INTERSTICE", "GLYPHES", "FORME SAYAN", "AURA"],
+            "backstory": """
+AURION – LE VEILLEUR GLYPHIQUE
+
+HISTOIRE COMPLÈTE:
+Silhouette faite de glyphes flottants, Aurion garde les couloirs oubliés de l’Interstice.
+Il peut passer en Forme Sayan lorsque la pression causale atteint un certain seuil: ses glyphes s’embrasent,
+sa vitesse et sa puissance montent en flèche, puis il encaisse une fatigue après l’éveil.
+
+RÔLE DANS LE JEU:
+- Support/contrôle léger par défaut; burst et zone en Forme Sayan
+- Balise d’observation: révèle les motifs causaux et les faiblesses
+- Messager discret entre régulateurs et héros d’Avalon
+
+CAPACITÉS:
+- "Topologie Brumeuse": zone 3×3 qui ralentit et trouble la précision
+- "Lien de Mémoire": buff défensif et régénération conditionnelle
+- "Éveil Sayan": déclenché quand PV < 30% et lancement de sort
+
+PHRASES SIGNATURE:
+"L’Interstice… me traverse, et je le traverse."
+"Les glyphes se souviennent de toi avant même ta venue."
+"Le calme est un choix; la lumière, une conséquence."
+"Quand le seuil cède, je m’éveille."
+""",
+            "weight": 10
+        }
+        ,
+        "urzkom": {
+            "keywords": ["URZ-KÔM", "OURSE", "CHAMAN", "TOTEM", "ESPRIT", "TEMPORAL", "AURAS"],
+            "backstory": """
+URZ‑KÔM – L’OURS CHAMAN DES TROIS PLAINES
+
+HISTOIRE COMPLÈTE:
+URZ‑KÔM parle aux mémoires des forêts anciennes. Ses rituels enlacent trois plaine(s):
+la chair, le temps et l’esprit. Quand la nuit bascule, il appelle les ancêtres et
+réordonne la piste des événements pour que la tribu conserve sa voie.
+
+RÔLE DANS LE JEU:
+- Tank/soutien: totems d’absorption, régénération rituelle
+- Cassures temporelles locales: retarde ou accélère des ticks autour de lui
+- Synergies nature/rituel pour contrer la magie brute
+
+CAPACITÉS:
+- "Totem de Souffle Long": réduit les dégâts reçus, regen lente
+- "Cercle d’Ancêtres": ajoute des esprits alliés temporaires
+- "Marche Inversée": annule la dernière action ennemie dans une petite zone
+
+PHRASES SIGNATURE:
+"La forêt se souvient, et moi avec elle."
+"J’entends les pas d’hier fouler la mousse de demain."
+"Nos totems tiennent le monde debout."
+""",
+            "weight": 10
+        }
+        ,
+        "morgana": {
+            "keywords": ["MORGANA", "FEÉ", "SORCIÈRE", "AVALON", "ILLUSION", "PARADOXE", "CAUSALITÉ"],
+            "backstory": """
+MORGANA – L’ILLUSION QUI BRISE LES LIENS
+
+HISTOIRE COMPLÈTE:
+Sœur et rivale d’Arthur, Morgana tisse des illusions qui modifient la causalité perçue.
+Ses miroirs d’Avalon reflètent des futurs potentiels; elle choisit lequel te poursuivra.
+Elle aime la vérité cachée dans le doute et défend l’île quand le monde la trahit.
+
+RÔLE DANS LE JEU:
+- Contrôle/tempo: pièges illusoires, inversions d’initiative, mirages
+- Débuffs ciblés de précision/volonté; pièges à double lecture
+- Anti‑Excalibur: neutralise temporairement les effets de l’épée
+
+CAPACITÉS:
+- "Miroir d’Avalon": renvoie un effet hostile sur son émetteur
+- "Brume des Non‑Dits": -précision, -vision, confusion légère
+- "Nœud de Paradoxe": échange d’ordre d’action entre deux unités
+
+PHRASES SIGNATURE:
+"Crois‑tu vraiment voir ce qui est?"
+"Mes miroirs te montrent ce que tu crains d’être."
+"À Avalon, rien n’est jamais simple… ni toi."
+""",
+            "weight": 10
+        }
     }
     
     output_dir = Path("vector_content/backstories_boosted")
@@ -328,9 +448,15 @@ def main():
     output_dir = create_boosted_backstories()
     
     print("\n📊 Documents créés:")
-    print("- 3 documents par personnage (MAIN, KEYWORDS, DIALOGUES)")
-    print("- 1 MEGA document avec tous les personnages")
-    print("- Total: 19 documents BOOSTÉS")
+    try:
+        total_characters = len([name for name in os.listdir("vector_content/backstories_boosted") if name.endswith(("_MAIN_BACKSTORY.md",))])
+        # total_main_docs == number of characters; total files = characters*3 + 1 mega
+        print(f"- 3 documents par personnage (MAIN, KEYWORDS, DIALOGUES) × {total_characters}")
+        print("- 1 MEGA document avec tous les personnages")
+        print(f"- Total: {total_characters * 3 + 1} documents BOOSTÉS")
+    except Exception:
+        print("- 3 documents par personnage (MAIN, KEYWORDS, DIALOGUES)")
+        print("- 1 MEGA document avec tous les personnages")
     
     print("\n🎯 Pour indexer dans la Vector DB:")
     print(f"python3 tools/vector_build/build_local.py --mode story --root {output_dir}")
