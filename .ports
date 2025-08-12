@@ -1,10 +1,10 @@
-🚀 MAGIC STACK - PORTS & SERVICES - JOUR 36
+🚀 MAGIC STACK - PORTS & SERVICES - JOUR 37
 ===========================================
 
 FRONTEND
 --------
-5175  React App (magic-stack-unified)  ✅ ACTIF
-5173  World Editor (si lancé séparément)
+5175  React App (magic-stack-unified)  ❌ CASSÉ
+5173  World Editor React (hexagones)   ✅ ACTIF
 8000  HTML Server (vieux HTML)         ✅ ACTIF
 
 BACKENDS
@@ -28,16 +28,16 @@ OBSOLÈTE
 
 URLS PRINCIPALES
 ----------------
-http://localhost:5175/              → Home
-http://localhost:5175/editor        → MapIconPlacerV2 (ou EditorView)
-http://localhost:5175/unified       → Unified Map System  
-http://localhost:5175/game          → Mode Jeu
-http://localhost:5175/combat        → Combat IA vs IA
-http://localhost:5175/chasse-mega   → Chasse Temporelle
-http://localhost:5175/html/API_EXPLORER_COMPLETE.html → API Explorer
-
-http://localhost:5175/assets/MAP_ICON_PLACER_ADVANCED.html → HTML Original ⭐⭐⭐⭐⭐
+http://localhost:5173/              → World Editor React (FONCTIONNEL) ⭐⭐⭐⭐⭐
+http://localhost:8000/MEGA_EDITOR.html → MEGA EDITOR Unified (NOUVEAU) ⭐⭐⭐⭐⭐
+http://localhost:8000/CHASSE_TEMPORELLE_MEGA_MAP.html → Map Multiplayer
+http://localhost:8000/MAP_ICON_PLACER_ADVANCED.html → Icon Placer (via ./go map)
+http://localhost:8000/API_EXPLORER_COMPLETE.html → API Explorer
 http://localhost:8000/HTML_INDEX.html → Index tous les HTML
+
+http://localhost:5175/              → React Unified (CASSÉ ❌)
+http://localhost:5175/editor        → MapIconPlacerV2 (CASSÉ ❌)
+http://localhost:5175/unified       → Unified Map System (CASSÉ ❌)
 
 COMMANDES RAPIDES
 -----------------
@@ -46,5 +46,8 @@ COMMANDES RAPIDES
 ./go status   → État des services
 ./go api      → Ouvre API Explorer
 ./go mcp      → Lance MCP Server
+./go map      → Ouvre MAP_ICON_PLACER_ADVANCED ⭐
+./go editor   → Ouvre MAP_ICON_PLACER_ADVANCED (alias) ⭐
 ./go game     → Ouvre éditeur/jeu
 ./go html     → Lance serveur HTML
+./go front    → Lance serveur HTML (alias)
