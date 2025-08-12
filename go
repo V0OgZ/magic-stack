@@ -405,6 +405,13 @@ case "$1" in
         echo "📝 Ton cousin peut créer des maps avec ça!"
         ;;
     
+    "workflow"|"wf")
+        echo -e "${CYAN}📊 Lancement du Workflow Manager...${NC}"
+        open "http://localhost:8000/WORKFLOW_MANAGER.html"
+        echo -e "${GREEN}✅ Workflow Manager ouvert!${NC}"
+        echo "🔄 Passez automatiquement de Structure → Instances → Jeu!"
+        ;;
+    
     "html")
         echo -e "${CYAN}🌐 Lancement serveur HTML (port 8000)...${NC}"
         if ! check_port 8000; then

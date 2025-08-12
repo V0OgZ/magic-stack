@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Workflow Manager - Heroes of Time</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .workflow-container {
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h1 {
+            display: none;
+        }
+        
+        .steps {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 10px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .step {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 0 5px;
+            position: relative;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .step.active {
+            background: rgba(76, 175, 80, 0.3);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .step.completed {
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #764ba2;
+            border-radius: 50%;
+            line-height: 40px;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .step.active .step-number {
+            background: #4CAF50;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .step-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .step-description {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .arrow {
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            transform: translateY(-50%);
+            font-size: 2em;
+            opacity: 0.5;
+        }
+        
+        .iframe-container {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.5);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn.next {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            font-size: 1.3em;
+            padding: 20px 40px;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
+        }
+        
+        .status {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .data-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="workflow-container">
+        <h1>🎮 Workflow Manager - Heroes of Time</h1>
+        
+        <!-- Steps indicator -->
+        <div class="steps">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-title">🗺️ Structure</div>
+                <div class="step-description">Créer le terrain hexagonal</div>
+                <div class="arrow">→</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-title">📍 Instances</div>
+                <div class="step-description">Placer icônes & timeline</div>
+                <div class="arrow">→</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-title">🎮 Jouer</div>
+                <div class="step-description">Tester la map</div>
+            </div>
+        </div>
+        
+        <!-- Iframe container -->
+        <div class="iframe-container">
+            <div class="loading" id="loading">⏳</div>
+            <iframe id="editorFrame" class="hidden"></iframe>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn" onclick="previousStep()" id="prevBtn" disabled>← Précédent</button>
+            
+            <div class="status" id="status">
+                Chargement de WorldEditor...
+            </div>
+            
+            <button class="btn next" onclick="nextStep()" id="nextBtn">
+                NEXT →
+            </button>
+        </div>
+        
+        <!-- Data preview -->
+        <div class="data-preview hidden" id="dataPreview">
+            <h3>📦 Données exportées:</h3>
+            <pre id="dataContent"></pre>
+        </div>
+    </div>
+    
+    <script>
+        // Workflow state
+        const workflow = {
+            currentStep: 1,
+            data: {
+                structure: null,  // From WorldEditor
+                instances: null,  // From MAP_ICON_PLACER
+                combined: null    // Ready for game
+            },
+            urls: {
+                1: 'http://localhost:5173',  // WorldEditor (structure)
+                2: 'MAP_ICON_PLACER_ADVANCED.html',  // Icon Placer (on adapte pour 6D)
+                3: 'CHASSE_TEMPORELLE_MEGA_MAP.html'  // Game test
+            }
+        };
+        
+        // Initialize
+        window.onload = () => {
+            loadStep(1);
+        };
+        
+        function loadStep(step) {
+            // Update UI
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+            
+            // Update status
+            const statusMessages = {
+                1: "🗺️ Créez votre terrain hexagonal dans WorldEditor",
+                2: "📍 Placez vos icônes et définissez la timeline",
+                3: "🎮 Testez votre map en jeu!"
+            };
+            document.getElementById('status').textContent = statusMessages[step];
+            
+            // Load iframe
+            const iframe = document.getElementById('editorFrame');
+            const loading = document.getElementById('loading');
+            
+            iframe.classList.add('hidden');
+            loading.classList.remove('hidden');
+            
+            iframe.src = workflow.urls[step];
+            iframe.onload = () => {
+                loading.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                
+                // Setup message listener for data exchange
+                setupMessageListener(step);
+            };
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = (step === 1);
+            document.getElementById('nextBtn').disabled = false;
+            
+            if (step === 3) {
+                document.getElementById('nextBtn').textContent = '✅ Terminé';
+            } else {
+                document.getElementById('nextBtn').textContent = 'NEXT →';
+            }
+            
+            workflow.currentStep = step;
+        }
+        
+        function setupMessageListener(step) {
+            // Listen for data from iframes
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'export') {
+                    if (step === 1) {
+                        workflow.data.structure = event.data.content;
+                        showDataPreview('Structure exportée', workflow.data.structure);
+                    } else if (step === 2) {
+                        workflow.data.instances = event.data.content;
+                        showDataPreview('Instances exportées', workflow.data.instances);
+                    }
+                }
+            });
+        }
+        
+        function nextStep() {
+            if (workflow.currentStep === 3) {
+                // Final step - save everything
+                saveCompleteMap();
+                return;
+            }
+            
+            // Export current data before moving
+            exportCurrentData(() => {
+                workflow.currentStep++;
+                loadStep(workflow.currentStep);
+                
+                // Auto-import data in next step
+                setTimeout(() => importDataToStep(workflow.currentStep), 1000);
+            });
+        }
+        
+        function previousStep() {
+            if (workflow.currentStep > 1) {
+                workflow.currentStep--;
+                loadStep(workflow.currentStep);
+            }
+        }
+        
+        function exportCurrentData(callback) {
+            const iframe = document.getElementById('editorFrame');
+            
+            // Try to get data from iframe
+            if (workflow.currentStep === 1) {
+                // Simulate export from WorldEditor
+                workflow.data.structure = {
+                    version: "2.0",
+                    map: {
+                        size: { x: 60, y: 60 },
+                        hexGrid: generateDefaultTerrain()
+                    }
+                };
+                showDataPreview('Structure exportée', workflow.data.structure);
+            } else if (workflow.currentStep === 2) {
+                // Simulate export from Icon Placer
+                workflow.data.instances = {
+                    icons: [],
+                    temporal: { day: 1, tw: 0, te: 0 }
+                };
+                showDataPreview('Instances exportées', workflow.data.instances);
+            }
+            
+            if (callback) callback();
+        }
+        
+        function importDataToStep(step) {
+            const iframe = document.getElementById('editorFrame');
+            
+            if (step === 2 && workflow.data.structure) {
+                // Import structure to Icon Placer
+                iframe.contentWindow.postMessage({
+                    type: 'import',
+                    content: workflow.data.structure
+                }, '*');
+            } else if (step === 3) {
+                // Combine all data for game
+                workflow.data.combined = combineData();
+                iframe.contentWindow.postMessage({
+                    type: 'import',
+                    content: workflow.data.combined
+                }, '*');
+            }
+        }
+        
+        function combineData() {
+            // Merge structure and instances
+            return {
+                version: "2.0",
+                map: {
+                    ...workflow.data.structure?.map,
+                    objects: workflow.data.instances?.icons || []
+                },
+                temporal: workflow.data.instances?.temporal || { day: 1, tw: 0, te: 0 }
+            };
+        }
+        
+        function generateDefaultTerrain() {
+            const terrain = [];
+            for (let y = 0; y < 60; y++) {
+                terrain[y] = [];
+                for (let x = 0; x < 60; x++) {
+                    // Simple pattern
+                    const types = ['grass', 'water', 'mountain', 'desert'];
+                    terrain[y][x] = types[Math.floor(Math.random() * types.length)];
+                }
+            }
+            return terrain;
+        }
+        
+        function showDataPreview(title, data) {
+            const preview = document.getElementById('dataPreview');
+            const content = document.getElementById('dataContent');
+            
+            preview.classList.remove('hidden');
+            content.textContent = JSON.stringify(data, null, 2);
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                preview.classList.add('hidden');
+            }, 3000);
+        }
+        
+        function saveCompleteMap() {
+            const data = workflow.data.combined || combineData();
+            
+            // Download as JSON
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `map_complete_${Date.now()}.json`;
+            a.click();
+            
+            // Show success
+            document.getElementById('status').textContent = '✅ Map complète sauvegardée!';
+            document.getElementById('nextBtn').textContent = '🎉 Nouvelle Map';
+            document.getElementById('nextBtn').onclick = () => location.reload();
+        }
+    </script>
+</body>
+</html>
