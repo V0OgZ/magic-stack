@@ -354,6 +354,51 @@ PHRASES SIGNATURE:
 """,
             "weight": 10
         }
+        ,
+        "donna": {
+            "keywords": ["DONNA", "COO", "STRATÉGIE", "ORCHESTRATION", "AVALON", "EXEC"],
+            "backstory": """
+DONNA PAULSEN – LA STRATÈGE D’AVALON
+
+HISTOIRE COMPLÈTE:
+Donna coordonne les fronts d’Avalon comme un orchestre: budgets, équipes, priorités.
+Elle voit les dépendances invisibles et coupe court aux dérives. Sa parole ancre
+les décisions et protège les héros quand l’orage menace.
+
+RÔLE DANS LE JEU:
+- Orchestratrice: buffs d’équipe, réduction de coûts, anti‑chaos
+- Coupures propres: annule un effet négatif global 1× par combat
+- Synergie régulateurs: stabilise Vince/Anna pour maximiser l’impact
+
+PHRASES SIGNATURE:
+"On respire. On priorise. On gagne."
+"Tu veux de la magie? Je t’offre mieux: un plan."
+"On ne casse pas ce qui marche; on l’améliore." 
+""",
+            "weight": 9
+        }
+        ,
+        "nikita": {
+            "keywords": ["NIKITA", "NETTOYEUR", "PRÉCISION", "SILENCE", "OPÉRATIONS", "OMBRE"],
+            "backstory": """
+NIKITA – L’OMBRE PRÉCISE
+
+HISTOIRE COMPLÈTE:
+Intervient quand la timeline dérape: supprime la cause minimale qui évite l’effet
+catastrophe. Ne parle presque pas; agit. Connaît les seuils où un événement bascule.
+
+RÔLE DANS LE JEU:
+- Assassin/contrôle: élimination ciblée, réduction de menace
+- Mécaniques de seuil: bonus quand l’ennemi est proche d’un cap critique
+- Anti‑paradoxe: nettoie une boucle locale avant qu’elle n’enfle
+
+PHRASES SIGNATURE:
+"Ce sera propre."
+"On coupe ici, pas ailleurs."
+"Le minimum suffit quand c’est le bon point."
+""",
+            "weight": 9
+        }
     }
     
     output_dir = Path("vector_content/backstories_boosted")
