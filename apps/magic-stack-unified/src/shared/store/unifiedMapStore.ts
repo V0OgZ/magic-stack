@@ -98,6 +98,7 @@ interface UnifiedMapState {
   
   // ===== Actions - Resource Editing (Map) =====
   placeResource: (x: number, y: number) => void;
+  placeResourceWithIcon: (x: number, y: number, icon: { emoji: string; name: string; category: string }) => void;
   updateResource: (id: string, updates: Partial<PlacedResource>) => void;
   deleteResource: (id: string) => void;
   
@@ -370,6 +371,34 @@ export const useUnifiedMapStore = create<UnifiedMapState>()(
         },
         
         // ===== Resource Editing =====
+        placeResourceWithIcon: (x, y, iconInfo) => {
+          const { currentMap, temporal } = get();
+          if (!currentMap) return;
+          const categoryToType: Record<string, PlacedResource['type']> = {
+            '🐉 Créatures': 'creature',
+            '💎 Ressources': 'resource',
+            '🏗️ Bâtiments': 'building',
+            '📍 Marqueurs': 'marker',
+            '⏰ Temporel': 'marker',
+            '⚔️ Combats': 'artifact',
+            '🏞️ Terrains': 'marker'
+          };
+          const typ = categoryToType[iconInfo.category] || 'marker';
+          const newResource: PlacedResource = {
+            id: `resource_${Date.now()}`,
+            type: typ,
+            subtype: iconInfo.name,
+            emoji: iconInfo.emoji,
+            name: iconInfo.name,
+            position_6d: { x, y, z: 0, t: temporal.currentDay, c: 0, psi: 0 },
+            size: 40,
+            rotation: 0,
+            opacity: 1,
+          };
+          set({
+            currentMap: { ...currentMap, resources: [...currentMap.resources, newResource] },
+          });
+        },
         placeResource: (x, y) => {
           const { currentMap, selectedIcon, temporal } = get();
           if (!currentMap || !selectedIcon) return;

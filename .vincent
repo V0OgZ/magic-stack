@@ -1,0 +1,34 @@
+- Route appelée par “Sync to Engine”
+  - POST http://localhost:3001/api/v2/entity
+
+- Rôle
+  - Crée ou met à jour une entité V2 côté serveur (contrôleur multiplayer officiel). Mémoire serveur-authoritative, utilisée par le moteur/tick.
+
+- Format requis (un appel par ressource)
+```json
+{
+  "id": "resource_123",
+  "position": { "x": 120, "y": 340 },
+  "te": 0.0,
+  "energy_complex": { "A": 75, "phi": 1.57 }
+}
+```
+- Détails
+  - id: string unique
+  - position.x/y: entiers (pixels/coordonnées 2D)
+  - te: temps entité (float), optionnel
+  - energy_complex: amplitude/phase; alias acceptés: { "A" | "amplitude" }, { "phi" | "phase" }
+
+- Réponse (succès)
+```json
+{
+  "success": true,
+  "id": "resource_123",
+  "position": { "x": 120, "y": 340 },
+  "A": 75,
+  "phi": 1.57
+}
+```
+
+- Ce que fait le bouton “Sync to Engine”
+  - Parcourt toutes les ressources de la map en cours et envoie ce JSON (un POST par ressource) à /api/v2/entity.
