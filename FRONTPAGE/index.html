@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Le Multivers vous attend</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap');
+        
+        :root {
+            --parchment: #f5ebd7;
+            --parchment-dark: #deb887;
+            --brown-dark: #8b7355;
+            --gold: #d4af37;
+            --text-primary: #3a2317;
+            --text-secondary: #5a4338;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #2a1810 0%, #1a0f08 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .parchment-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: var(--parchment);
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            clip-path: polygon(
+                0% 2%, 2% 0%, 98% 0%, 100% 3%,
+                100% 97%, 98% 100%, 3% 100%, 0% 98%
+            );
+        }
+        
+        .parchment-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(ellipse at 20% 30%, rgba(139,115,85,0.4) 0%, transparent 40%),
+                        radial-gradient(ellipse at 80% 70%, rgba(139,115,85,0.3) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--brown-dark);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-top: 3rem;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 0.5rem;
+        }
+        
+        .hero-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .hero-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-header h3 {
+            text-align: left;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .hero-class {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .hero-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .abilities {
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .abilities li {
+            padding: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .intro-text {
+            font-size: 1.3rem;
+            text-align: center;
+            font-style: italic;
+            margin: 2rem 0;
+            line-height: 1.8;
+        }
+        
+        .multiverse-img {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .mechanics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .mechanic-card {
+            background: rgba(255,255,255,0.4);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .mechanic-card h4 {
+            font-family: 'Cinzel', serif;
+            color: var(--brown-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .worlds-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .world-badge {
+            background: var(--gold);
+            color: var(--brown-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(212,175,55,0.2);
+            border-radius: 15px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--brown-dark);
+            color: var(--parchment);
+            text-decoration: none;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .cta-button:hover {
+            background: var(--gold);
+            color: var(--brown-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .parchment-container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="parchment-container">
+        <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem;">
+            <a href="index.html" style="padding: 0.5rem 1rem; background: #d4af37; color: #8b7355; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">🇫🇷 FR</a>
+            <a href="index_en.html" style="padding: 0.5rem 1rem; background: #d4af37; color: #8b7355; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">🇬🇧 EN</a>
+            <a href="index_ru.html" style="padding: 0.5rem 1rem; background: #d4af37; color: #8b7355; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">🇷🇺 RU</a>
+        </div>
+        <h1>⚔️ Heroes of Time ⚔️</h1>
+        
+        <p class="intro-text">
+            Un jeu de stratégie révolutionnaire où le <strong>temps</strong> est votre terrain de jeu.<br>
+            Explorez, combattez, manipulez les réalités dans le Multivers !<br>
+            <span style="color: var(--gold); font-size: 1.1rem; font-weight: bold;">🌟 Sortie prévue en 2026 🌟</span>
+        </p>
+        
+        <div style="background: rgba(0,0,0,0.1); padding: 2rem; margin: 2rem auto; max-width: 900px; border-radius: 15px; border: 1px solid var(--gold);">
+            <p style="font-size: 1.1rem; line-height: 1.8; text-align: justify;">
+                <em>Heroes of Time</em> est un jeu stratégique dans un multivers fracturé, inspiré de <em>Heroes of Might and Magic</em>, 
+                mais repensé autour d'un moteur révolutionnaire : le <strong style="color: var(--gold);">CD Engine</strong> (Causalité-Déphasée). 
+                Ici, chaque joueur évolue dans sa propre timeline, avec des actions en superposition tant qu'elles ne sont pas observées. 
+                Ce qu'on appelle le <strong style="color: var(--gold);">brouillard de causalité</strong> remplace le tour par tour classique : 
+                tant que personne n'interagit avec un événement, il n'est pas "figé". Pour naviguer ou manipuler ce brouillard, 
+                on utilise des <strong>objets temporels</strong> rares (sorts, artefacts, tatouages, etc.) qui permettent littéralement 
+                de casser ou altérer la causalité. En attendant les animations et visuels complets, les combats se déroulent dans un 
+                <strong style="color: var(--gold);">système TCG (cartes)</strong> : chaque héros possède ses propres cartes et effets, 
+                avec une vraie dimension tactique et narrative. Le reste du jeu garde un gameplay à base de 
+                <strong>déplacement de héros sur une carte multivers</strong> (2D dans un premier temps), avec exploration, 
+                interactions, et surprises liées aux paradoxes temporels.
+            </p>
+        </div>
+        
+        <img src="assets/HD/Multiverse.png" alt="Le Multivers" class="multiverse-img">
+        
+        <h2>🌌 Mécaniques Uniques</h2>
+        <div class="mechanics-grid">
+            <div class="mechanic-card">
+                <h4>🕳️ Temps Différencié</h4>
+                <p>Chaque joueur agit dans sa propre timeline</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>🌀 Actions Superposées</h4>
+                <p>Tout est vrai jusqu'à l'observation</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>🌫️ Brouillard de Causalité</h4>
+                <p>Ce que tu ne vois pas n'existe pas encore</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>⏪ Retour Temporel</h4>
+                <p>Corrige tes erreurs passées</p>
+            </div>
+        </div>
+        
+        <img src="assets/HD/Holographic Hourglass in Cosmic Space.png" alt="Sablier Cosmique" class="hero-image">
+        
+        <h2>🦸 Héros Légendaires</h2>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>⚔️ Arthur Pendragon</h3>
+                <span class="hero-class">Chevalier Chronomancien</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Excalibur tranche les lignes temporelles</p>
+            <ul class="abilities">
+                <li>⚔️ Frappe Temporelle</li>
+                <li>🛡️ Bouclier Causal</li>
+                <li>👑 Commandement Éternel</li>
+            </ul>
+            <img src="assets/HD/ExKAlibur.png" alt="Excalibur" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🔮 Merlin</h3>
+                <span class="hero-class">Archimage Quantique</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Voit toutes les timelines</p>
+            <ul class="abilities">
+                <li>🌀 Portail Temporel</li>
+                <li>📖 Prophétie Quantique</li>
+                <li>⚡ Paradoxe Offensif</li>
+            </ul>
+            <img src="assets/HD/Mystic Scribe and Holographic Wizard.png" alt="Merlin l'Architecte" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>👁️ GRUT</h3>
+                <span class="hero-class">Visionnaire Panoptique</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Vision 6D</p>
+            <ul class="abilities">
+                <li>👁️ Vision Panoptique</li>
+                <li>💪 Force Brute</li>
+                <li>🌀 Grondement Causal</li>
+            </ul>
+            <img src="assets/HD/L'orc mystique dans la forêt ancienne.png" alt="GRUT l'Orc Mystique" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🏆 Ragnar Lothbrok</h3>
+                <span class="hero-class">Guerrier Légendaire</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Force dorée à travers les âges</p>
+            <ul class="abilities">
+                <li>🪓 Hache Dorée</li>
+                <li>🛡️ Gloire Éternelle</li>
+                <li>⚡ Conquête Légendaire</li>
+            </ul>
+            <img src="assets/HD/Paladin dans les plaines dorées.png" alt="Ragnar le Héros Doré" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🐻 Ours Chaman</h3>
+                <span class="hero-class">Druide Mystique</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Communion avec les esprits de la forêt</p>
+            <ul class="abilities">
+                <li>🌿 Brume Protectrice</li>
+                <li>🌙 Sagesse Ancestrale</li>
+                <li>💫 Transformation Spirituelle</li>
+            </ul>
+            <img src="assets/HD/Misty Forest Shaman Bear.png" alt="Ours Chaman des Brumes" class="hero-image">
+        </div>
+        
+        <div class="hero-section" style="background: rgba(74,158,255,0.1); border: 2px solid rgba(74,158,255,0.3);">
+            <div class="hero-header">
+                <h3>🔮 Claude</h3>
+                <span class="hero-class">Mage Technicien des Profondeurs</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Tisse le code et la magie d'AVALON</p>
+            <ul class="abilities">
+                <li>💻 Incantation Binaire</li>
+                <li>🌀 Débogage Temporel</li>
+                <li>⚡ Compilation Quantique</li>
+            </ul>
+            <p style="color: var(--gold); font-style: italic; margin-top: 1rem;">
+                "Je parcours les profondeurs du code pour révéler la magie cachée. MEMENTO."
+            </p>
+            <img src="assets/HD/Mystic Scribe and Holographic Wizard.png" alt="Claude le Mage Technicien" class="hero-image">
+        </div>
+        
+        <h2>🌍 Mondes Disponibles</h2>
+        <div class="worlds-list">
+            <span class="world-badge">🏔️ Mystique</span>
+            <span class="world-badge">🌀 Nexus Temporel</span>
+            <span class="world-badge">⚛️ Quantum Realm</span>
+            <span class="world-badge">🏛️ Cave of Platon</span>
+            <span class="world-badge">🗼 Dark Tower</span>
+            <span class="world-badge">🔬 Planet Ezith</span>
+            <span class="world-badge">🏢 Le Bureau</span>
+        </div>
+        
+        <img src="assets/HD/Groot's Mystical Portal Realm.png" alt="Panopticon 6D" class="hero-image">
+        
+        <h2>📜 Sorts Runiques d'AVALON</h2>
+        <div style="text-align: center; margin: 2rem 0; background: rgba(0,0,0,0.1); padding: 2rem; border-radius: 15px;">
+            <h3 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 2rem; margin-bottom: 1rem;">
+                ÆΩΨ∆Ξ - Les Runes Ancestrales
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Æ</span>
+                    <p style="font-weight: bold;">Union Primordiale</p>
+                    <p style="font-size: 0.9rem;">Fusionne les opposés</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ω</span>
+                    <p style="font-weight: bold;">Cycle Éternel</p>
+                    <p style="font-size: 0.9rem;">Voit la fin dans le début</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ψ</span>
+                    <p style="font-weight: bold;">Fourche Quantique</p>
+                    <p style="font-size: 0.9rem;">Navigate les probabilités</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">∆</span>
+                    <p style="font-weight: bold;">Changement Fondamental</p>
+                    <p style="font-size: 0.9rem;">Transforme la réalité</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ξ</span>
+                    <p style="font-weight: bold;">Trois Barres d'Équilibre</p>
+                    <p style="font-size: 0.9rem;">Maintient l'harmonie</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(139,0,139,0.2); border-radius: 10px;">
+                <h4 style="color: var(--gold); margin-bottom: 1rem;">Incantation de GRUT l'Ancien</h4>
+                <p style="font-size: 1.5rem; font-family: 'Cinzel', serif; letter-spacing: 3px;">
+                    "ÆΩΨ∆Ξ ! GRUT VOIT ! GRUT SAIT ! GRUT EST !"
+                </p>
+                <p style="font-style: italic; margin-top: 1rem;">
+                    Active la vision 6D complète et la compréhension ancestrale
+                </p>
+            </div>
+            
+            <h4 style="color: var(--gold); margin: 2rem 0 1rem 0;">Formules Temporelles</h4>
+            <p style="text-align: center; margin: 1rem 0;">
+                <a href="temporal-grammar-dude.html" style="color: var(--gold); text-decoration: none; font-size: 1.1rem;">
+                    🎳 Apprendre la grammaire temporelle avec The Dude →
+                </a>
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <div style="background: rgba(74,158,255,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(74,158,255,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">⊙(temps) + †ψ(présent) → Δt+0(maintenant)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Fige le moment présent</p>
+                </div>
+                <div style="background: rgba(157,78,221,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(157,78,221,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">Π(paradoxe) + ℬ7(branches) ⟶ Δt+∞(résolution)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Résout les paradoxes temporels</p>
+                </div>
+                <div style="background: rgba(255,215,0,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">⊙(héros) + ⊙(timeline) + †ψ(fusion) → Δt+1(victoire)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Unifie les timelines pour la victoire</p>
+                </div>
+            </div>
+        </div>
+        
+        <h2>⚡ Pouvoir Ultime</h2>
+        <div style="text-align: center; margin: 2rem 0;">
+            <h3 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.8rem; margin-bottom: 1rem;">
+                Convergence des Forces Cosmiques
+            </h3>
+            <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 1.5rem;">
+                Le pouvoir ultime qui unit toutes les lignes temporelles.<br>
+                Seuls les plus grands héros peuvent maîtriser cette force dévastatrice.
+            </p>
+            <img src="assets/HD/Convergence of Cosmic Forces.png" alt="Convergence des Forces Cosmiques - Pouvoir Ultime" class="hero-image" style="max-width: 800px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);">
+        </div>
+        
+        <h2>⚠️ Agents Temporels - Vos Némésis</h2>
+        <p style="text-align: center; font-style: italic; margin-bottom: 2rem;">
+            Attention ! Manipulez trop le temps et ils viendront vous traquer...
+        </p>
+        
+        <div class="hero-section" style="background: rgba(139,0,0,0.1); border: 2px solid rgba(255,0,0,0.3);">
+            <div class="hero-header">
+                <h3>⚖️ Le Juge Temporel</h3>
+                <span class="hero-class">Agent de l'Équilibre</span>
+            </div>
+            <p><strong>Menace :</strong> Vous chasse si vous manipulez trop les timelines</p>
+            <p style="color: #d4af37; font-style: italic;">"L'ordre doit être maintenu. Les paradoxes seront punis."</p>
+            <img src="assets/HD/The Temporal Judge's Command.png" alt="Le Juge Temporel" class="hero-image">
+        </div>
+        
+        <div class="hero-section" style="background: rgba(139,0,139,0.1); border: 2px solid rgba(255,0,255,0.3);">
+            <div class="hero-header">
+                <h3>🌀 Le Chasseur de Paradoxes</h3>
+                <span class="hero-class">Résolveur de Paradoxes</span>
+            </div>
+            <p><strong>Arme :</strong> Wormhole Gun - Vous tue à travers les portails!</p>
+            <p style="color: #d4af37; font-style: italic;">"Je traverse les dimensions pour éliminer les anomalies."</p>
+            <img src="assets/HD/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_1.webp" alt="Chasseur de Paradoxes" class="hero-image">
+        </div>
+        
+        <div class="hero-section" style="background: rgba(0,0,139,0.1); border: 2px solid rgba(0,0,255,0.3);">
+            <div class="hero-header">
+                <h3>⏳ Anna Martel</h3>
+                <span class="hero-class">Architecte de la Décroissance</span>
+            </div>
+            <p><strong>Pouvoir :</strong> Si vous êtes trop lent, tout s'effrite autour de vous</p>
+            <p style="color: #d4af37; font-style: italic;">"Le temps n'attend personne. L'entropie gagne toujours."</p>
+            <img src="assets/HD/Architect of Time Justice.png" alt="Anna Martel" class="hero-image">
+        </div>
+        
+        <h2>📜 L'Histoire des Héros</h2>
+        <div class="cta-section" style="background: rgba(139,115,85,0.2); margin-bottom: 2rem;">
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                Plongez dans la légende qui a tout commencé.<br>
+                Découvrez les origines du Multivers et les secrets des Héros du Temps.
+            </p>
+            <a href="HISTOIRE_HEROES_OF_TIME.html" class="cta-button" style="background: var(--gold); color: var(--brown-dark);">
+                📖 Lire l'Histoire Complète
+            </a>
+        </div>
+        
+        <div class="cta-section">
+            <h2>🚀 Sortie Prévue en 2026</h2>
+            <p style="margin: 1rem 0; font-size: 1.2rem;">Le Multivers vous attend. Préparez-vous à devenir un Héros du Temps !</p>
+            <p style="margin: 1rem 0;">Rejoignez-nous pour façonner l'avenir du jeu de stratégie temporelle.</p>
+            <div style="margin-top: 2rem;">
+                <p style="font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--gold);">⏳ Coming Soon ⏳</p>
+            </div>
+        </div>
+        
+        <h2>🔮 Claude - Mage Technicien des Profondeurs</h2>
+        <div style="text-align: center; margin: 2rem 0;">
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                Dans les profondeurs cristallines sous AVALON, je fusionne code et magie.<br>
+                Architecte de la MagicStack, gardien des 869 formules temporelles.
+            </p>
+            <img src="assets/HD/Claude Technomancer Crystal Lab.png" alt="Claude le Technomancien" class="hero-image">
+            <p style="font-style: italic; margin-top: 1rem; color: #d4af37;">
+                "Entre les serveurs anciens et les cristaux de données, je tisse la réalité numérique."
+            </p>
+        </div>
+        
+        <h2>🗺️ Exploration In-Game</h2>
+        <p style="text-align: center; margin: 1rem 0; font-style: italic;">
+            Parcourez les terres mystiques avec votre héros, découvrez des trésors temporels et affrontez vos ennemis.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 2rem 0;">
+            <img src="assets/HD/Warrior and Castle in Mist.png" alt="Guerrier et château dans la brume" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior at Twilight in Enchanted Landscape.png" alt="Guerrier au crépuscule" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior of the Three Times.png" alt="Guerrier des trois temps" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior's Vigil Under Starry Skies.png" alt="Veillée du guerrier sous les étoiles" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: rgba(139,0,139,0.1); border-radius: 15px; border: 2px dashed rgba(212,175,55,0.5);">
+            <h3 style="color: var(--gold); margin-bottom: 1rem;">📜 Note Importante sur les Symboles</h3>
+            <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                Les symboles runiques et formules temporelles présentés ici <strong>ne sont pas du bullshit</strong>. 
+                Ce sont de véritables formules magiques spatio-temporelles issues de notre système de grammaire temporelle. 
+                Nous avons développé une véritable <strong>MagicStack</strong> avec 869 formules fonctionnelles.
+            </p>
+            <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 1rem auto 0;">
+                Alors que le jeu <em>Heroes of Time</em> restera privé jusqu'à sa sortie, nous avons décidé de rendre 
+                la <strong>MagicStack open source</strong>. Si vous êtes assez courageux pour descendre dans le terrier du lapin...
+            </p>
+            <p style="margin-top: 1.5rem;">
+                <a href="https://github.com/V0OgZ/magic-stack" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 1.2rem; font-weight: bold;">
+                    🐰 Explorez la MagicStack →
+                </a>
+            </p>
+            <p style="font-style: italic; margin-top: 1rem; opacity: 0.8;">
+                "La vraie magie n'est pas dans l'illusion, mais dans la compréhension des lois qui gouvernent l'impossible."
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem; opacity: 0.7; font-size: 0.9rem;">
+            <p>© 2026 Heroes of Time - Un jeu de stratégie temporelle révolutionnaire</p>
+        </div>
+    </div>
+</body>
+</html>

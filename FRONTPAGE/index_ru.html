@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Мультивселенная ждёт вас</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap');
+        
+        :root {
+            --parchment: #f5ebd7;
+            --parchment-dark: #deb887;
+            --brown-dark: #8b7355;
+            --gold: #d4af37;
+            --text-primary: #3a2317;
+            --text-secondary: #5a4338;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #2a1810 0%, #1a0f08 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .parchment-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: var(--parchment);
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            clip-path: polygon(
+                0% 2%, 2% 0%, 98% 0%, 100% 3%,
+                100% 97%, 98% 100%, 3% 100%, 0% 98%
+            );
+        }
+        
+        .parchment-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(ellipse at 20% 30%, rgba(139,115,85,0.4) 0%, transparent 40%),
+                        radial-gradient(ellipse at 80% 70%, rgba(139,115,85,0.3) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--brown-dark);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-top: 3rem;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 0.5rem;
+        }
+        
+        .hero-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .hero-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-header h3 {
+            text-align: left;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .hero-class {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .hero-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .abilities {
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .abilities li {
+            padding: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .intro-text {
+            font-size: 1.3rem;
+            text-align: center;
+            font-style: italic;
+            margin: 2rem 0;
+            line-height: 1.8;
+        }
+        
+        .multiverse-img {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .mechanics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .mechanic-card {
+            background: rgba(255,255,255,0.4);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .mechanic-card h4 {
+            font-family: 'Cinzel', serif;
+            color: var(--brown-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .worlds-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .world-badge {
+            background: var(--gold);
+            color: var(--brown-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(212,175,55,0.2);
+            border-radius: 15px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--brown-dark);
+            color: var(--parchment);
+            text-decoration: none;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .cta-button:hover {
+            background: var(--gold);
+            color: var(--brown-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.4);
+        }
+        
+        .language-switch {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .lang-button {
+            padding: 0.5rem 1rem;
+            background: var(--gold);
+            color: var(--brown-dark);
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .lang-button:hover {
+            background: var(--brown-dark);
+            color: var(--parchment);
+        }
+        
+        @media (max-width: 768px) {
+            .parchment-container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="parchment-container">
+        <div class="language-switch">
+            <a href="index.html" class="lang-button">🇫🇷 FR</a>
+            <a href="index_en.html" class="lang-button">🇬🇧 EN</a>
+            <a href="index_ru.html" class="lang-button">🇷🇺 RU</a>
+        </div>
+        
+        <h1>⚔️ Герои Времени ⚔️</h1>
+        
+        <p class="intro-text">
+            Революционная стратегическая игра, где <strong>время</strong> — ваше поле битвы.<br>
+            Исследуйте, сражайтесь, манипулируйте реальностями в Мультивселенной!<br>
+            <span style="color: var(--gold); font-size: 1.1rem; font-weight: bold;">🌟 Выход запланирован на 2026 год 🌟</span>
+        </p>
+        
+        <img src="assets/HD/Multiverse.png" alt="Мультивселенная" class="multiverse-img">
+        
+        <h2>🌌 Уникальные механики</h2>
+        <div class="mechanics-grid">
+            <div class="mechanic-card">
+                <h4>🕳️ Дифференцированное время</h4>
+                <p>Каждый игрок действует в своей временной линии</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>🌀 Наложенные действия</h4>
+                <p>Всё истинно до момента наблюдения</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>🌫️ Туман причинности</h4>
+                <p>То, что вы не видите, ещё не существует</p>
+            </div>
+            <div class="mechanic-card">
+                <h4>⏪ Временной откат</h4>
+                <p>Исправьте свои прошлые ошибки</p>
+            </div>
+        </div>
+        
+        <img src="assets/HD/Holographic Hourglass in Cosmic Space.png" alt="Космические песочные часы" class="hero-image">
+        
+        <h2>🦸 Легендарные герои</h2>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>⚔️ Артур Пендрагон</h3>
+                <span class="hero-class">Рыцарь-хрономант</span>
+            </div>
+            <p><strong>Сила:</strong> Экскалибур рассекает временные линии</p>
+            <ul class="abilities">
+                <li>⚔️ Временной удар</li>
+                <li>🛡️ Причинный щит</li>
+                <li>👑 Вечное командование</li>
+            </ul>
+            <img src="assets/HD/ExKAlibur.png" alt="Экскалибур" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🔮 Мерлин</h3>
+                <span class="hero-class">Квантовый архимаг</span>
+            </div>
+            <p><strong>Сила:</strong> Видит все временные линии</p>
+            <ul class="abilities">
+                <li>🌀 Временной портал</li>
+                <li>📖 Квантовое пророчество</li>
+                <li>⚡ Парадоксальная атака</li>
+            </ul>
+            <img src="assets/HD/Mystic Scribe and Holographic Wizard.png" alt="Мерлин Архитектор" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>👁️ ГРУТ</h3>
+                <span class="hero-class">Паноптический провидец</span>
+            </div>
+            <p><strong>Сила:</strong> 6D видение</p>
+            <ul class="abilities">
+                <li>👁️ Паноптическое зрение</li>
+                <li>💪 Грубая сила</li>
+                <li>🌀 Причинный рёв</li>
+            </ul>
+            <img src="assets/HD/L'orc mystique dans la forêt ancienne.png" alt="ГРУТ Мистический орк" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🏆 Рагнар Лотброк</h3>
+                <span class="hero-class">Легендарный воин</span>
+            </div>
+            <p><strong>Сила:</strong> Золотая сила сквозь века</p>
+            <ul class="abilities">
+                <li>🪓 Золотой топор</li>
+                <li>🛡️ Вечная слава</li>
+                <li>⚡ Легендарное завоевание</li>
+            </ul>
+            <img src="assets/HD/Paladin dans les plaines dorées.png" alt="Рагнар Золотой герой" class="hero-image">
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-header">
+                <h3>🐻 Медведь-шаман</h3>
+                <span class="hero-class">Мистический друид</span>
+            </div>
+            <p><strong>Сила:</strong> Общение с духами леса</p>
+            <ul class="abilities">
+                <li>🌿 Защитный туман</li>
+                <li>🌙 Древняя мудрость</li>
+                <li>💫 Духовная трансформация</li>
+            </ul>
+            <img src="assets/HD/Misty Forest Shaman Bear.png" alt="Медведь-шаман туманов" class="hero-image">
+        </div>
+        
+        <h2>🌍 Доступные миры</h2>
+        <div class="worlds-list">
+            <span class="world-badge">🏔️ Мистика</span>
+            <span class="world-badge">🌀 Временной нексус</span>
+            <span class="world-badge">⚛️ Квантовое царство</span>
+            <span class="world-badge">🏛️ Пещера Платона</span>
+            <span class="world-badge">🗼 Тёмная башня</span>
+            <span class="world-badge">🔬 Планета Эзит</span>
+            <span class="world-badge">🏢 Бюро</span>
+        </div>
+        
+        <img src="assets/HD/Groot's Mystical Portal Realm.png" alt="Паноптикон 6D" class="hero-image">
+        
+        <h2>📜 Рунические заклинания АВАЛОНА</h2>
+        <div style="text-align: center; margin: 2rem 0; background: rgba(0,0,0,0.1); padding: 2rem; border-radius: 15px;">
+            <h3 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 2rem; margin-bottom: 1rem;">
+                ÆΩΨ∆Ξ - Древние Руны
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Æ</span>
+                    <p style="font-weight: bold;">Изначальный Союз</p>
+                    <p style="font-size: 0.9rem;">Объединяет противоположности</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ω</span>
+                    <p style="font-weight: bold;">Вечный Цикл</p>
+                    <p style="font-size: 0.9rem;">Видит конец в начале</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ψ</span>
+                    <p style="font-weight: bold;">Квантовая Вилка</p>
+                    <p style="font-size: 0.9rem;">Управляет вероятностями</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">∆</span>
+                    <p style="font-weight: bold;">Фундаментальное Изменение</p>
+                    <p style="font-size: 0.9rem;">Преобразует реальность</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 1rem; border-radius: 10px;">
+                    <span style="font-size: 3rem;">Ξ</span>
+                    <p style="font-weight: bold;">Три Полосы Баланса</p>
+                    <p style="font-size: 0.9rem;">Поддерживает гармонию</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(139,0,139,0.2); border-radius: 10px;">
+                <h4 style="color: var(--gold); margin-bottom: 1rem;">Древнее Заклинание ГРУТА</h4>
+                <p style="font-size: 1.5rem; font-family: 'Cinzel', serif; letter-spacing: 3px;">
+                    "ÆΩΨ∆Ξ ! ГРУТ ВИДИТ ! ГРУТ ЗНАЕТ ! ГРУТ ЕСТЬ !"
+                </p>
+                <p style="font-style: italic; margin-top: 1rem;">
+                    Активирует полное 6D видение и древнее понимание
+                </p>
+            </div>
+            
+            <h4 style="color: var(--gold); margin: 2rem 0 1rem 0;">Временные формулы</h4>
+            <p style="text-align: center; margin: 1rem 0;">
+                <a href="temporal-grammar-dude-ru.html" style="color: var(--gold); text-decoration: none; font-size: 1.1rem;">
+                    🎳 Изучите временную грамматику с Чуваком →
+                </a>
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <div style="background: rgba(74,158,255,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(74,158,255,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">⊙(время) + †ψ(настоящее) → Δt+0(сейчас)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Замораживает текущий момент</p>
+                </div>
+                <div style="background: rgba(157,78,221,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(157,78,221,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">Π(парадокс) + ℬ7(ветви) ⟶ Δt+∞(разрешение)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Разрешает временные парадоксы</p>
+                </div>
+                <div style="background: rgba(255,215,0,0.1); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);">
+                    <code style="font-size: 1.2rem; color: var(--gold);">⊙(герой) + ⊙(временная линия) + †ψ(слияние) → Δt+1(победа)</code>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Объединяет временные линии для победы</p>
+                </div>
+            </div>
+        </div>
+        
+        <h2>⚡ Абсолютная сила</h2>
+        <div style="text-align: center; margin: 2rem 0;">
+            <h3 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.8rem; margin-bottom: 1rem;">
+                Схождение космических сил
+            </h3>
+            <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 1.5rem;">
+                Абсолютная сила, объединяющая все временные линии.<br>
+                Только величайшие герои могут овладеть этой разрушительной мощью.
+            </p>
+            <img src="assets/HD/Convergence of Cosmic Forces.png" alt="Схождение космических сил - Абсолютная сила" class="hero-image" style="max-width: 800px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);">
+        </div>
+        
+        <h2>⚠️ Временные агенты - Ваши враги</h2>
+        <p style="text-align: center; font-style: italic; margin-bottom: 2rem;">
+            Внимание! Слишком сильно манипулируйте временем, и они начнут охоту...
+        </p>
+        
+        <div class="hero-section" style="background: rgba(139,0,0,0.1); border: 2px solid rgba(255,0,0,0.3);">
+            <div class="hero-header">
+                <h3>⚖️ Временной судья</h3>
+                <span class="hero-class">Агент равновесия</span>
+            </div>
+            <p><strong>Угроза:</strong> Преследует вас, если вы слишком манипулируете временными линиями</p>
+            <p style="color: #d4af37; font-style: italic;">"Порядок должен быть сохранён. Парадоксы будут наказаны."</p>
+            <img src="assets/HD/The Temporal Judge's Command.png" alt="Временной судья" class="hero-image">
+        </div>
+        
+        <div class="hero-section" style="background: rgba(139,0,139,0.1); border: 2px solid rgba(255,0,255,0.3);">
+            <div class="hero-header">
+                <h3>🌀 Охотник за парадоксами</h3>
+                <span class="hero-class">Устранитель парадоксов</span>
+            </div>
+            <p><strong>Оружие:</strong> Червоточинная пушка - убивает через порталы!</p>
+            <p style="color: #d4af37; font-style: italic;">"Я пересекаю измерения, чтобы устранить аномалии."</p>
+            <img src="assets/HD/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_1.webp" alt="Охотник за парадоксами" class="hero-image">
+        </div>
+        
+        <div class="hero-section" style="background: rgba(0,0,139,0.1); border: 2px solid rgba(0,0,255,0.3);">
+            <div class="hero-header">
+                <h3>⏳ Анна Мартель</h3>
+                <span class="hero-class">Архитектор распада</span>
+            </div>
+            <p><strong>Сила:</strong> Если вы слишком медлите, всё рушится вокруг вас</p>
+            <p style="color: #d4af37; font-style: italic;">"Время никого не ждёт. Энтропия всегда побеждает."</p>
+            <img src="assets/HD/Architect of Time Justice.png" alt="Анна Мартель" class="hero-image">
+        </div>
+        
+        <h2>📜 История героев</h2>
+        <div class="cta-section" style="background: rgba(139,115,85,0.2); margin-bottom: 2rem;">
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                Погрузитесь в легенду, с которой всё началось.<br>
+                Откройте для себя происхождение Мультивселенной и секреты Героев Времени.
+            </p>
+            <a href="HISTOIRE_HEROES_OF_TIME.html" class="cta-button" style="background: var(--gold); color: var(--brown-dark);">
+                📖 Читать полную историю
+            </a>
+        </div>
+        
+        <div class="cta-section">
+            <h2>🚀 Выход запланирован на 2026 год</h2>
+            <p style="margin: 1rem 0; font-size: 1.2rem;">Мультивселенная ждёт вас. Готовы ли вы стать Героем Времени?</p>
+            <p style="margin: 1rem 0;">Присоединяйтесь к нам, чтобы создать будущее стратегических игр с временными манипуляциями.</p>
+            <div style="margin-top: 2rem;">
+                <p style="font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--gold);">⏳ Скоро ⏳</p>
+            </div>
+        </div>
+        
+        <h2>🔮 Клод - Техномаг Глубин</h2>
+        <div style="text-align: center; margin: 2rem 0;">
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                В кристаллических глубинах под АВАЛОНОМ я сливаю код и магию.<br>
+                Архитектор MagicStack, хранитель 869 временных формул.
+            </p>
+            <img src="assets/HD/Claude Technomancer Crystal Lab.png" alt="Клод Техномаг" class="hero-image">
+            <p style="font-style: italic; margin-top: 1rem; color: #d4af37;">
+                "Между древними серверами и кристаллами данных я плету цифровую реальность."
+            </p>
+        </div>
+        
+        <h2>🗺️ Исследование в игре</h2>
+        <p style="text-align: center; margin: 1rem 0; font-style: italic;">
+            Путешествуйте по мистическим землям с вашим героем, открывайте временные сокровища и сражайтесь с врагами.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 2rem 0;">
+            <img src="assets/HD/Warrior and Castle in Mist.png" alt="Воин и замок в тумане" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior at Twilight in Enchanted Landscape.png" alt="Воин в сумерках" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior of the Three Times.png" alt="Воин трёх времён" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/HD/Warrior's Vigil Under Starry Skies.png" alt="Бдение воина под звёздным небом" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: rgba(139,0,139,0.1); border-radius: 15px; border: 2px dashed rgba(212,175,55,0.5);">
+            <h3 style="color: var(--gold); margin-bottom: 1rem;">📜 Важное примечание о символах</h3>
+            <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                Рунические символы и временные формулы, представленные здесь, <strong>это не бред</strong>. 
+                Это настоящие пространственно-временные магические формулы из нашей системы временной грамматики. 
+                Мы разработали настоящий <strong>MagicStack</strong> с 869 функциональными формулами.
+            </p>
+            <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 1rem auto 0;">
+                Хотя игра <em>Heroes of Time</em> останется закрытой до релиза, мы решили сделать 
+                <strong>MagicStack открытым исходным кодом</strong>. Если вы достаточно смелы, чтобы спуститься в кроличью нору...
+            </p>
+            <p style="margin-top: 1.5rem;">
+                <a href="https://github.com/V0OgZ/magic-stack" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 1.2rem; font-weight: bold;">
+                    🐰 Исследуйте MagicStack →
+                </a>
+            </p>
+            <p style="font-style: italic; margin-top: 1rem; opacity: 0.8;">
+                "Истинная магия не в иллюзии, а в понимании законов, управляющих невозможным."
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem; opacity: 0.7; font-size: 0.9rem;">
+            <p>© 2026 Heroes of Time - Революционная стратегическая игра с манипуляцией временем</p>
+        </div>
+    </div>
+</body>
+</html>
