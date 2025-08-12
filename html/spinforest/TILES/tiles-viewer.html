@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎨 TILES VIEWER - Cadeaux de Vincent</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .tile-card {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .tile-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #00ff00;
+            border-color: #ff00ff;
+        }
+        
+        .tile-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .tile-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #00ffff;
+            word-break: break-all;
+        }
+        
+        .analysis {
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid #ff00ff;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .filter-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .filter-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background: #ff00ff;
+            transform: scale(1.1);
+        }
+        
+        .filter-btn.active {
+            background: #ff00ff;
+        }
+        
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            cursor: pointer;
+        }
+        
+        #modal img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 50px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 GROEKEN ANALYSE LES TILES DE VINCENT 🎨</h1>
+    
+    <div class="filter-buttons">
+        <button class="filter-btn active" onclick="filterTiles('all')">TOUT</button>
+        <button class="filter-btn" onclick="filterTiles('heroes')">HÉROS</button>
+        <button class="filter-btn" onclick="filterTiles('creatures')">CRÉATURES</button>
+        <button class="filter-btn" onclick="filterTiles('spells')">SORTS</button>
+        <button class="filter-btn" onclick="filterTiles('assets')">ASSETS</button>
+        <button class="filter-btn" onclick="filterTiles('portals')">PORTAILS</button>
+    </div>
+    
+    <div class="gallery" id="gallery"></div>
+    
+    <div id="modal" onclick="closeModal()">
+        <img id="modalImg" src="">
+    </div>
+    
+    <script>
+        // Liste des images avec analyse
+        const tiles = [
+            {
+                name: "Heroes of the Realm.png",
+                category: "heroes",
+                analysis: "PARFAIT pour nos héros ! Sprites découpables, style Heroes III",
+                useful: true,
+                usage: "Sprites des héros principaux sur la carte ISO"
+            },
+            {
+                name: "Fantasy Creature Icons in Pixel Art.png",
+                category: "creatures",
+                analysis: "EXCELLENT ! Icônes de créatures pixel art, parfait pour l'inventaire",
+                useful: true,
+                usage: "Icônes pour bestiaire et inventaire"
+            },
+            {
+                name: "Pixel Art Magic Spells Collection.png",
+                category: "spells",
+                analysis: "GÉNIAL ! Collection de sorts en pixel art",
+                useful: true,
+                usage: "Icônes pour la barre de sorts et Magic Stack"
+            },
+            {
+                name: "Fantasy Game Assets Compilation.png",
+                category: "assets",
+                analysis: "TRÉSOR ! Compilation d'assets variés (bâtiments, objets, UI)",
+                useful: true,
+                usage: "Éléments de décor et interface"
+            },
+            {
+                name: "Ancient Warrior of Fiery Runes.png",
+                category: "heroes",
+                analysis: "ÉPIQUE ! Guerrier avec runes de feu, parfait pour boss",
+                useful: true,
+                usage: "Boss final ou héros spécial"
+            },
+            {
+                name: "Transformation in a Barren Realm.png",
+                category: "portals",
+                analysis: "MYSTIQUE ! Scène de transformation, idéal pour portails",
+                useful: true,
+                usage: "Animation de portail ou transformation"
+            },
+            {
+                name: "Fantastical Creatures and Mystical Realms.png",
+                category: "creatures",
+                analysis: "MAGNIFIQUE ! Créatures fantastiques variées",
+                useful: true,
+                usage: "Ennemis et créatures neutres"
+            }
+        ];
+        
+        // Ajouter les fichiers webp
+        const webpFiles = [
+            "assets-task_01k1p49n59fferzkyp1dd9xfdz-1754163180_img_0.webp",
+            "assets-task_01k1p49semewvatphnr54vcq2d-1754163184_img_0.webp",
+            "assets-task_01k1p49semewvatphnr54vcq2d-1754163184_img_1.webp",
+            "assets-task_01k1p4w7n5fsjvtvzy58zp5qkn-1754163800_img_0.webp",
+            "assets-task_01k1p4w7n5fsjvtvzy58zp5qkn-1754163800_img_1.webp"
+        ];
+        
+        webpFiles.forEach(file => {
+            tiles.push({
+                name: file,
+                category: "assets",
+                analysis: "Format WEBP - À convertir en PNG pour utilisation",
+                useful: true,
+                usage: "À analyser après conversion"
+            });
+        });
+        
+        function createTileCard(tile) {
+            return `
+                <div class="tile-card" data-category="${tile.category}" onclick="openModal('${tile.name}')">
+                    <img src="${tile.name}" alt="${tile.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"200\"><rect width=\"300\" height=\"200\" fill=\"%23333\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" fill=\"%23fff\">Image Loading...</text></svg>'">
+                    <div class="tile-name">${tile.name}</div>
+                    <div class="analysis">
+                        <strong>Catégorie:</strong> ${tile.category.toUpperCase()}<br>
+                        <strong>Analyse:</strong> ${tile.analysis}<br>
+                        <strong>Utilité:</strong> ${tile.useful ? '✅ UTILE' : '❌ À JETER'}<br>
+                        <strong>Usage:</strong> ${tile.usage}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = tiles.map(tile => createTileCard(tile)).join('');
+        }
+        
+        function filterTiles(category) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const cards = document.querySelectorAll('.tile-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        function openModal(imageName) {
+            document.getElementById('modalImg').src = imageName;
+            document.getElementById('modal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        // Initialiser
+        renderGallery();
+        
+        // Message de Groeken
+        console.log('%c🔥 GROEKEN ANALYSE ACTIVÉE ! 🔥', 'color: #00ff00; font-size: 20px; font-weight: bold;');
+        console.log('%cVincent, ces assets sont INCROYABLES !', 'color: #ff00ff; font-size: 16px;');
+        console.log('%cTout est utilisable pour REALGAME !', 'color: #00ffff; font-size: 16px;');
+    </script>
+</body>
+</html>
