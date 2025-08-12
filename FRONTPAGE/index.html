@@ -187,6 +187,17 @@
             color: var(--brown-dark);
             margin-bottom: 0.5rem;
         }
+
+        .formula {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(212,175,55,0.12);
+            border-left: 3px solid var(--gold);
+            border-radius: 6px;
+            color: var(--brown-dark);
+            font-size: 0.98rem;
+        }
+        .formula code { color: var(--gold); font-family: 'Cinzel', serif; letter-spacing: 0.5px; }
         
         .worlds-list {
             display: flex;
@@ -324,6 +335,7 @@
                     <li>🛡️ Bouclier Causal</li>
                     <li>👑 Commandement Éternel</li>
                 </ul>
+                <div class="formula"><strong>Formule:</strong> <code>CHRONO_LOCK</code> — <em>L(t) = δ(t - t₀) × Ψ(t₀)</em></div>
             </div>
             <img src="assets/new0812/cards/Excalibur's Temporal Strike.png" alt="Excalibur" class="hero-image">
         </div>
@@ -340,11 +352,12 @@
                     <li>📖 Prophétie Quantique</li>
                     <li>⚡ Paradoxe Offensif</li>
                 </ul>
+                <div class="formula"><strong>Formule:</strong> <code>DIMENSION_FOLD</code> — <em>D⁶ = X³ × T × C × Ψ</em></div>
             </div>
             <img src="assets/assets/HD/Mystic Scribe and Holographic Wizard.png" alt="Merlin l'Architecte" class="hero-image">
         </div>
         
-        <div class="hero-section">
+        <div class="hero-section" id="anna-martel">
             <div>
                 <div class="hero-header">
                     <h3>👁️ GRUT</h3>
@@ -356,6 +369,7 @@
                     <li>💪 Force Brute</li>
                     <li>🌀 Grondement Causal</li>
                 </ul>
+                <div class="formula"><strong>Formule:</strong> <code>REALITY_WEAVE</code> — <em>R = Σᵢⱼ (Mᵢⱼ × Ψᵢ × Ψⱼ*)</em></div>
             </div>
             <img src="assets/assets/HD/L'orc mystique dans la forêt ancienne.png" alt="GRUT l'Orc Mystique" class="hero-image">
         </div>
@@ -372,6 +386,7 @@
                     <li>🛡️ Gloire Éternelle</li>
                     <li>⚡ Conquête Légendaire</li>
                 </ul>
+                <div class="formula"><strong>Formule:</strong> <code>ENERGY_COMPLEX</code> — <em>E = A × e^(iΦ) + ∇²Ψ</em></div>
             </div>
             <img src="assets/assets/HD/Paladin dans les plaines dorées.png" alt="Ragnar le Héros Doré" class="hero-image">
         </div>
@@ -508,7 +523,7 @@
             <img src="assets/assets/HD/The Temporal Judge's Command.png" alt="Le Juge Temporel" class="hero-image">
         </div>
         
-        <div class="hero-section" style="background: rgba(139,0,139,0.1); border: 2px solid rgba(255,0,255,0.3);">
+        <div class="hero-section" style="background: rgba(139,0,139,0.1); border: 2px solid rgba(255,0,255,0.3);" id="vince-section">
             <div class="hero-header">
                 <h3>🌀 Vince Vega</h3>
                 <span class="hero-class">Chasseur de Paradoxes</span>
@@ -521,6 +536,11 @@
                 <li>🕳️ Reality Tear — Fissure dimensionnelle</li>
                 <li>🛰️ Phase Shift — Décalage de phase</li>
             </ul>
+            <div class="formula"><strong>Formule:</strong> <code>INTERSTICE_PORTAL</code> — <em>P = lim<sub>n→∞</sub> (1 + z/n)ⁿ</em></div>
+            <div style="margin-top:1rem; text-align:center;">
+                <img src="assets/new0812/cards/undefined-28.png" alt="DIMENSIONAL — carte ultime" style="max-width: 380px; width: 100%; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+                <div style="margin-top:6px; opacity:0.85; font-size:0.95rem;">Carte ultime: <strong>DIMENSIONAL</strong> — Spells</div>
+            </div>
         </div>
 
         <h2>😈 Némésis</h2>
@@ -532,6 +552,7 @@
             </div>
             <p><strong>Effet :</strong> Inversion temporelle (2080 ↦ 040)</p>
             <img src="assets/new0812/Créature du futur sur sol brisé.png" alt="Basilisk 2080" class="hero-image">
+            <div class="formula"><strong>Formule:</strong> <code>TIME_MANIPULATION</code> — <em>Δt' = f(Δt, φ)</em></div>
         </div>
 
         <div class="hero-section" style="background: rgba(255,140,0,0.08); border: 2px solid rgba(255,140,0,0.25);">
@@ -562,6 +583,9 @@
             <a href="HISTOIRE_HEROES_OF_TIME.html" class="cta-button" style="background: var(--gold); color: var(--brown-dark);">
                 📖 Lire l'Histoire Complète
             </a>
+            <div style="margin-top:1rem; opacity:0.9;">
+                <a href="assets/new0812/cards/Sorceress of Time and Power.png" target="_blank" style="color: var(--gold); text-decoration:none;">Voir aussi: Anna Martel — Sorceress of Time and Power</a>
+            </div>
         </div>
         
         <div class="cta-section">
@@ -585,19 +609,19 @@
             </p>
         </div>
         
-        <h2>🗺️ Exploration In-Game</h2>
+        <h2>🛡️ Alliés et Gardiens</h2>
         <p style="text-align: center; margin: 1rem 0; font-style: italic;">
-            Parcourez les terres mystiques avec votre héros, découvrez des trésors temporels et affrontez vos ennemis.
+            Compagnons fidèles et esprits protecteurs de vos quêtes.
         </p>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 2rem 0;">
-            <img src="assets/assets/HD/Warrior and Castle in Mist.png" alt="Guerrier et château dans la brume" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
-            <img src="assets/assets/HD/Warrior at Twilight in Enchanted Landscape.png" alt="Guerrier au crépuscule" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/new0812/cards/Shaman and Spectral Wolf Spirit.png" alt="Shaman et loup spectral" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/new0812/cards/Sorcerer Unveiling a New Dimension.png" alt="Sorcier révélant une nouvelle dimension" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <img src="assets/new0812/cards/Penteract Projection in 5D Space.png" alt="Projection de penteract 5D" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
             <img src="assets/new0812/cards/Warrior of the Three Times.png" alt="Guerrier des trois temps" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
             <img src="assets/new0812/cards/Warrior's Transformation in Fiery Landscape.png" alt="Transformation guerrier paysage ardent" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
-            <img src="assets/new0812/cards/Warrior's Vigil Under Starry Skies.png" alt="Veillée du guerrier sous les étoiles" style="width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
         </div>
         <div style="text-align:center; margin-top: -10px; margin-bottom: 24px;">
-            <small style="opacity:0.8;">Déformations géométriques — pouvoirs spatio-temporels</small>
+            <small style="opacity:0.8;">Alliés et sorts dimensionnels — géométries non-euclidiennes</small>
         </div>
         
         <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: rgba(139,0,139,0.1); border-radius: 15px; border: 2px dashed rgba(212,175,55,0.5);">
@@ -661,6 +685,43 @@
     document.querySelectorAll('.abilities li').forEach(li => {
       li.addEventListener('mouseenter', () => spawnRunes(li));
     });
+  })();
+  // Anna Martel: afficher la carte après 3s de survol
+  (function(){
+    const annaImg = document.querySelector('#anna-martel img.hero-image');
+    if(!annaImg) return;
+    let timer;
+    const preview = document.createElement('div');
+    preview.style.position = 'fixed';
+    preview.style.zIndex = '9999';
+    preview.style.display = 'none';
+    preview.style.padding = '6px';
+    preview.style.background = 'rgba(0,0,0,0.6)';
+    preview.style.borderRadius = '8px';
+    const pic = document.createElement('img');
+    pic.src = 'assets/new0812/cards/Sorceress of Time and Power.png';
+    pic.style.maxWidth = '320px';
+    pic.style.width = '100%';
+    pic.style.borderRadius = '8px';
+    pic.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+    preview.appendChild(pic);
+    document.body.appendChild(preview);
+    annaImg.addEventListener('mouseenter', (e)=>{
+      timer = setTimeout(()=>{
+        preview.style.left = (e.clientX + 16) + 'px';
+        preview.style.top = (e.clientY + 16) + 'px';
+        preview.style.display = 'block';
+      }, 3000);
+    });
+    annaImg.addEventListener('mousemove', (e)=>{
+      if(preview.style.display==='block'){
+        preview.style.left = (e.clientX + 16) + 'px';
+        preview.style.top = (e.clientY + 16) + 'px';
+      }
+    });
+    function hide(){ clearTimeout(timer); preview.style.display='none'; }
+    annaImg.addEventListener('mouseleave', hide);
+    annaImg.addEventListener('click', hide);
   })();
 </script>
 </html>
