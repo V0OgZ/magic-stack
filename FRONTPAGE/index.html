@@ -81,10 +81,7 @@
             background: rgba(255,255,255,0.3);
             border-radius: 10px;
             position: relative;
-            display: grid;
-            grid-template-columns: 1fr minmax(260px, 520px);
-            gap: 1.25rem;
-            align-items: start;
+            display: block;
         }
         
         .hero-header {
@@ -108,9 +105,9 @@
         
         .hero-image {
             width: 100%;
-            max-width: 520px;
+            max-width: 600px;
             height: auto;
-            margin: 0.5rem auto 0.5rem 0;
+            margin: 0.75rem auto;
             display: block;
             border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
@@ -198,6 +195,20 @@
             font-size: 0.98rem;
         }
         .formula code { color: var(--gold); font-family: 'Cinzel', serif; letter-spacing: 0.5px; }
+
+        /* Personas (Christian) */
+        .personas { display: flex; gap: 10px; align-items: center; margin: 0.5rem 0 0.75rem 0; }
+        .persona { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 18px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); }
+        .persona img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .persona span { font-size: 0.9rem; color: var(--text-secondary); }
+        .persona.active { outline: 2px solid var(--gold); background: rgba(212,175,55,0.15); }
+
+        /* Runes styles per persona */
+        .runes-corporate .rune-spark { color: #d4af37; filter: drop-shadow(0 0 4px rgba(212,175,55,0.6)); }
+        .runes-sonic .rune-spark { color: #4a9eff; filter: drop-shadow(0 0 6px rgba(74,158,255,0.7)); }
+
+        .spells-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 0.5rem; }
+        .spells-row img { width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
         .worlds-list {
             display: flex;
@@ -256,9 +267,6 @@
             
             h2 {
                 font-size: 1.5rem;
-            }
-            .hero-section {
-                grid-template-columns: 1fr;
             }
             .hero-image { max-width: 100%; margin: 0.5rem auto; }
             .abilities { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
@@ -405,19 +413,8 @@
             <img src="assets/new0812/portraits/Cosmic Bear Shaman in Starlit Expanse.png" alt="URZ‑KÔM mystique" class="hero-image" onerror="this.onerror=null; this.src='assets/assets/HD/Moonlit Bear Shaman in Forest Clearing-2.png'">
         </div>
         
-        <div class="hero-section" style="background: rgba(74,158,255,0.1); border: 2px solid rgba(74,158,255,0.3);">
-            <div class="hero-header">
-                <h3>🌀 Nexus</h3>
-                <span class="hero-class">Gardien de l’Interstice</span>
-            </div>
-            <p><strong>Rôle :</strong> Médiateur entre joueurs/IA et l’Orchestrateur</p>
-            <ul class="abilities">
-                <li>🔎 Révélation du brouillard de causalité</li>
-                <li>⛓️ Ancrage temporel (réduit |tw−te|)</li>
-                <li>🃏 Déclencheur de résolution TCG</li>
-            </ul>
-            <img src="assets/new0812/portraits/Aethyr.png" alt="Nexus - Gardien de l’Interstice" class="hero-image">
-        </div>
+        <!-- Après Vince: Nexus, puis Anna -->
+        
         
         <h2>🌍 Mondes Disponibles</h2>
         <div class="worlds-list">
@@ -543,6 +540,28 @@
             </div>
         </div>
 
+        <div class="hero-section" style="background: rgba(74,158,255,0.1); border: 2px solid rgba(74,158,255,0.3);">
+            <div class="hero-header">
+                <h3>🌀 Nexus</h3>
+                <span class="hero-class">Gardien de l’Interstice</span>
+            </div>
+            <p><strong>Rôle :</strong> Médiateur entre joueurs/IA et l’Orchestrateur</p>
+            <ul class="abilities">
+                <li>🔎 Révélation du brouillard de causalité</li>
+                <li>⛓️ Ancrage temporel (réduit |tw−te|)</li>
+                <li>🃏 Déclencheur de résolution TCG</li>
+            </ul>
+            <img src="assets/new0812/portraits/Aethyr.png" alt="Nexus - Gardien de l’Interstice" class="hero-image">
+        </div>
+
+        
+
+        <!-- The Dude: ligne compacte, image non agrandie -->
+        <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin:1rem 0 0.5rem 0;">
+            <img src="assets/assets/HD/Pixel Art Dude with Beer Mug.png" alt="Temporal Grammar Dude" style="height:56px; width:auto; border-radius:6px; box-shadow: 0 3px 10px rgba(0,0,0,0.25);">
+            <a href="temporal-grammar-dude.html" target="_blank" style="color: var(--gold); text-decoration: none; font-family:'Cinzel', serif;">🎳 Apprendre la grammaire temporelle avec The Dude →</a>
+        </div>
+
         <h2>😈 Némésis</h2>
         <p style="text-align: center; font-style: italic; margin-bottom: 1rem;">Les véritables ennemis du Multivers.</p>
         <div class="hero-section" style="background: rgba(139,0,0,0.08); border: 2px solid rgba(255,0,0,0.25);">
@@ -572,6 +591,11 @@
             <p><strong>Pouvoir :</strong> Si vous êtes trop lent, tout s'effrite autour de vous</p>
             <p style="color: #d4af37; font-style: italic;">"Le temps n'attend personne. L'entropie gagne toujours."</p>
             <img src="assets/new0812/portraits/Blonde Warrior with Warhammer in Stormy Sky.png" alt="Anna Martel" class="hero-image">
+            <ul class="abilities">
+                <li>⏳ Temporal Decay</li>
+                <li>🧭 Entropy Field</li>
+                <li>🜂 Time Fracture</li>
+            </ul>
         </div>
         
         <h2>📜 L'Histoire des Héros</h2>
@@ -622,6 +646,31 @@
         </div>
         <div style="text-align:center; margin-top: -10px; margin-bottom: 24px;">
             <small style="opacity:0.8;">Alliés et sorts dimensionnels — géométries non-euclidiennes</small>
+        </div>
+
+        <!-- Christian personas and shared spells (preview-ready) -->
+        <div class="hero-section" id="christian" style="background: rgba(0,0,0,0.05);">
+            <div class="hero-header">
+                <h3>🧳 Christian</h3>
+                <span class="hero-class">Double identité</span>
+            </div>
+            <div class="personas">
+                <div class="persona active" data-style="corporate" title="Consultant du Bureau">
+                    <img src="assets/new0812/portraits/Urban Sorcery and Technology Merge.png" onerror="this.style.visibility='hidden'">
+                    <span>Consultant</span>
+                </div>
+                <div class="persona" data-style="sonic" title="Guitarist of the Enchanted Winds">
+                    <img src="assets/new0812/portraits/Guitarist of the Enchanted Winds.png">
+                    <span>Guitariste</span>
+                </div>
+            </div>
+            <div class="spells-row" id="christian-spells">
+                <img src="assets/new0812/spells/Dimensional Gateway to the Future.png" alt="Dimensional Gateway">
+                <img src="assets/new0812/spells/Golden Warrior of the Rift.png" alt="Golden Warrior of the Rift">
+                <img src="assets/new0812/spells/Temporal Charge of the Warrior.png" alt="Temporal Charge">
+                <img src="assets/new0812/spells/Warrior in Radiant Shield Barrier.png" alt="Radiant Shield">
+                <img src="assets/new0812/spells/Warrior's Stand in Frozen Time.png" alt="Frozen Time">
+            </div>
         </div>
         
         <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: rgba(139,0,139,0.1); border-radius: 15px; border: 2px dashed rgba(212,175,55,0.5);">
@@ -722,6 +771,31 @@
     function hide(){ clearTimeout(timer); preview.style.display='none'; }
     annaImg.addEventListener('mouseleave', hide);
     annaImg.addEventListener('click', hide);
+  })();
+  // Christian personas: switch rune style on hover (2s preview-ready)
+  (function(){
+    const container = document.getElementById('christian');
+    if(!container) return;
+    const spells = document.getElementById('christian-spells');
+    const personas = container.querySelectorAll('.persona');
+    let timer; let current='corporate';
+    function setStyle(style){
+      spells.classList.remove('runes-corporate','runes-sonic');
+      if(style==='sonic') spells.classList.add('runes-sonic');
+      else spells.classList.add('runes-corporate');
+    }
+    setStyle('corporate');
+    personas.forEach(p=>{
+      p.addEventListener('mouseenter',()=>{
+        timer=setTimeout(()=>{
+          personas.forEach(x=>x.classList.remove('active'));
+          p.classList.add('active');
+          current = p.dataset.style==='sonic' ? 'sonic' : 'corporate';
+          setStyle(current);
+        },2000);
+      });
+      p.addEventListener('mouseleave',()=>clearTimeout(timer));
+    });
   })();
 </script>
 </html>

@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "version": "2025-08-12",
+    "note": "Mapping frontpage → portraits, cards, spells, UI rules"
+  },
+  "paths": {
+    "base": "FRONTPAGE/assets/new0812",
+    "portraits": "FRONTPAGE/assets/new0812/portraits",
+    "cards": "FRONTPAGE/assets/new0812/cards",
+    "spells": "FRONTPAGE/assets/new0812/spells"
+  },
+  "heroes": [
+    {
+      "id": "arthur_pendragon",
+      "name": "Arthur Pendragon",
+      "role": "Chevalier Chronomancien",
+      "portrait": null,
+      "cards": [
+        { "name": "Excalibur's Temporal Strike", "path": "FRONTPAGE/assets/new0812/cards/Excalibur's Temporal Strike.png", "category": "temporal" }
+      ],
+      "formula": { "code": "CHRONO_LOCK", "expr": "L(t) = δ(t - t₀) × Ψ(t₀)", "domain": "temporal" }
+    },
+    {
+      "id": "merlin",
+      "name": "Merlin",
+      "role": "Archimage Quantique",
+      "portrait": "FRONTPAGE/assets/assets/HD/Mystic Scribe and Holographic Wizard.png",
+      "cards": [
+        { "name": "Sorcerer Unveiling a New Dimension", "path": "FRONTPAGE/assets/new0812/cards/Sorcerer Unveiling a New Dimension.png", "category": "dimensional" },
+        { "name": "Penteract Projection in 5D Space", "path": "FRONTPAGE/assets/new0812/cards/Penteract Projection in 5D Space.png", "category": "dimensional" }
+      ],
+      "formula": { "code": "DIMENSION_FOLD", "expr": "D⁶ = X³ × T × C × Ψ", "domain": "dimensional" }
+    },
+    {
+      "id": "grut",
+      "name": "GRUT",
+      "role": "Visionnaire Panoptique",
+      "portrait": "FRONTPAGE/assets/assets/HD/L'orc mystique dans la forêt ancienne.png",
+      "cards": [],
+      "formula": { "code": "REALITY_WEAVE", "expr": "R = Σᵢⱼ (Mᵢⱼ × Ψᵢ × Ψⱼ*)", "domain": "energy" }
+    },
+    {
+      "id": "ragnar",
+      "name": "Ragnar Lothbrok",
+      "role": "Guerrier Légendaire",
+      "portrait": "FRONTPAGE/assets/assets/HD/Paladin dans les plaines dorées.png",
+      "cards": [],
+      "formula": { "code": "ENERGY_COMPLEX", "expr": "E = A × e^(iΦ) + ∇²Ψ", "domain": "energy" }
+    },
+    {
+      "id": "urz_kom",
+      "name": "URZ‑KÔM",
+      "role": "Chaman Ourse — Gardien des Forêts",
+      "portrait": "FRONTPAGE/assets/new0812/portraits/Cosmic Bear Shaman in Starlit Expanse.png",
+      "cards": []
+    },
+    {
+      "id": "nexus",
+      "name": "Nexus",
+      "role": "Gardien de l’Interstice",
+      "portrait": "FRONTPAGE/assets/new0812/portraits/Aethyr.png",
+      "cards": []
+    },
+    {
+      "id": "anna_martel",
+      "name": "Anna Martel",
+      "role": "Architecte du Temps",
+      "portrait": "FRONTPAGE/assets/new0812/portraits/Blonde Warrior with Warhammer in Stormy Sky.png",
+      "cards": [
+        { "name": "Sorceress of Time and Power", "path": "FRONTPAGE/assets/new0812/cards/Sorceress of Time and Power.png", "category": "temporal" }
+      ],
+      "formula": { "code": "TEMPORAL_POWER_NEXUS", "expr": null, "domain": "temporal" },
+      "ui": { "hoverPreviewMs": 3000 }
+    },
+    {
+      "id": "vince_vega",
+      "name": "Vince Vega",
+      "role": "Chasseur de Paradoxes (Régulateur)",
+      "portrait": "FRONTPAGE/assets/new0812/portraits/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_1.webp",
+      "cards": [
+        { "name": "DIMENSIONAL — Spells", "path": "FRONTPAGE/assets/new0812/cards/undefined-28.png", "category": "dimensional" }
+      ],
+      "formula": { "code": "INTERSTICE_PORTAL", "expr": "P = lim_{n→∞} (1 + z/n)ⁿ", "domain": "dimensional" }
+    },
+    {
+      "id": "temporal_judge",
+      "name": "Le Juge Temporel",
+      "role": "Agent de l'Équilibre (Régulateur)",
+      "portrait": "FRONTPAGE/assets/assets/HD/The Temporal Judge's Command.png",
+      "cards": []
+    },
+    {
+      "id": "basilisk_2080",
+      "name": "Basilisk 2080",
+      "role": "Super Boss — Remonte le temps",
+      "portrait": "FRONTPAGE/assets/new0812/Créature du futur sur sol brisé.png",
+      "formula": { "code": "TIME_MANIPULATION", "expr": "Δt' = f(Δt, φ)", "domain": "temporal" }
+    },
+    {
+      "id": "ancient_warrior_runes",
+      "name": "Ancien Guerrier aux Runes Ardentes",
+      "role": "Allié… ou Ennemi ?",
+      "portrait": "FRONTPAGE/assets/new0812/portraits/Ancient Warrior of Fiery Runes.png",
+      "allegiance": "unknown"
+    },
+    {
+      "id": "christian",
+      "name": "Christian",
+      "role": "Double identité",
+      "personas": [
+        {
+          "id": "consultant",
+          "title": "Consultant du Bureau",
+          "portrait": "FRONTPAGE/assets/new0812/portraits/Urban Sorcery and Technology Merge.png",
+          "ui": { "hoverPreviewMs": 2000, "runesStyle": "corporate_gold" }
+        },
+        {
+          "id": "guitarist",
+          "title": "Guitarist of the Enchanted Winds",
+          "portrait": "FRONTPAGE/assets/new0812/portraits/Guitarist of the Enchanted Winds.png",
+          "ui": { "hoverPreviewMs": 2000, "runesStyle": "sonic_blue" }
+        }
+      ],
+      "spellsShared": [
+        { "name": "Dimensional Gateway to the Future", "path": "FRONTPAGE/assets/new0812/spells/Dimensional Gateway to the Future.png", "category": "dimensional" },
+        { "name": "Golden Warrior of the Rift", "path": "FRONTPAGE/assets/new0812/spells/Golden Warrior of the Rift.png", "category": "temporal" },
+        { "name": "Temporal Charge of the Warrior", "path": "FRONTPAGE/assets/new0812/spells/Temporal Charge of the Warrior.png", "category": "temporal" },
+        { "name": "Warrior in Radiant Shield Barrier", "path": "FRONTPAGE/assets/new0812/spells/Warrior in Radiant Shield Barrier.png", "category": "causality" },
+        { "name": "Warrior's Stand in Frozen Time", "path": "FRONTPAGE/assets/new0812/spells/Warrior's Stand in Frozen Time.png", "category": "multiverse" }
+      ]
+    }
+  ],
+  "gallery_allies_row": [
+    "FRONTPAGE/assets/new0812/cards/Shaman and Spectral Wolf Spirit.png",
+    "FRONTPAGE/assets/new0812/cards/Sorcerer Unveiling a New Dimension.png",
+    "FRONTPAGE/assets/new0812/cards/Penteract Projection in 5D Space.png",
+    "FRONTPAGE/assets/new0812/cards/Warrior of the Three Times.png",
+    "FRONTPAGE/assets/new0812/cards/Warrior's Transformation in Fiery Landscape.png"
+  ],
+  "spell_categories": ["temporal", "dimensional", "causality", "multiverse", "energy"],
+  "ui_rules": {
+    "hoverPreviews": {
+      "anna_martel": 3000,
+      "christian.consultant": 2000,
+      "christian.guitarist": 2000
+    },
+    "runesStyles": {
+      "corporate_gold": { "color": "#d4af37", "motif": "triangles" },
+      "sonic_blue": { "color": "#4a9eff", "motif": "waves" }
+    }
+  }
+}
+
