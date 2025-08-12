@@ -10,6 +10,7 @@ import { GameView } from './modes/game/GameView';
 import { EditorView } from './modes/editor/EditorView';
 import { ChasseView } from './modes/chasse/ChasseView';
 import { HomePage } from './pages/HomePage';
+import { StartTCG } from './pages/StartTCG';
 import { MultiplayerMode } from './modes/multiplayer/MultiplayerMode';
 import { AIBattleAutoplay } from './modes/ai-battle/AIBattleAutoplay';
 import { SpectatorGodMode } from './modes/spectator/SpectatorGodMode';
@@ -49,6 +50,7 @@ export function App(): React.ReactElement {
             
             {/* 🤖 COMBAT IA vs IA avec connexion V2 */}
             <Route path="/combat" element={<AIBattleWrapper />} />
+            <Route path="/start-tcg" element={<StartTCG />} />
             
             {/* ⚔️ CHASSE TEMPORELLE MEGA MAP 6x6 */}
             <Route path="/chasse-mega" element={<ChasseMegaMapWrapper />} />
