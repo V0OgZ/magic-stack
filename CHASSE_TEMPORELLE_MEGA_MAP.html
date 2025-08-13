@@ -102,8 +102,8 @@
 
         .hex {
             position: absolute;
-            width: 40px;
-            height: 46px;
+            width: 50px;
+            height: 58px;
             transition: all 0.2s ease;
             cursor: pointer;
             opacity: 0.9;
@@ -121,7 +121,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 28px;
             position: relative;
         }
 
@@ -601,7 +601,7 @@
         const GAME = {
             mapWidth: 120,  // 6 screens × 20 hexes
             mapHeight: 120,
-            hexSize: 40,
+            hexSize: 50,
             viewportWidth: 0,
             viewportHeight: 0,
             cameraX: 0,
@@ -1005,8 +1005,8 @@
                 // Import resources format 6D
                 if (data.map && data.map.resources) {
                     data.map.resources.forEach(res => {
-                        const x = Math.floor(res.position_6d.x / 40);
-                        const y = Math.floor(res.position_6d.y / 40);
+                        const x = Math.floor(res.position_6d.x / GAME.hexSize);
+                        const y = Math.floor(res.position_6d.y / GAME.hexSize);
                         
                         if (res.category === 'building' || res.emoji === '🏰') {
                             GAME.vendors.push({ x, y });
