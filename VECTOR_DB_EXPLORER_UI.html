@@ -811,7 +811,7 @@
         // Connection au Vector DB (simulée pour l'instant)
         async function connectToVectorDB() {
             try {
-                const response = await fetch('http://localhost:5001/health');
+                const response = await fetch('/vector/health');
                 if (response.ok) {
                     console.log('✅ Vector DB connecté');
                     updateMemento('Vector DB connecté sur port 5001');
@@ -824,7 +824,7 @@
         // Recherche dans le Vector DB
         async function searchVectorDB(query) {
             try {
-                const response = await fetch('http://localhost:5001/search', {
+                const response = await fetch('/vector/search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query, limit: 10 })
