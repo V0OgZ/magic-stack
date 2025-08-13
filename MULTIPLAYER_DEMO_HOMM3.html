@@ -1202,11 +1202,11 @@ Statut: ${this.objectives.nexus.claimed ? '✅ Nexus conquis!' : '❌ Nexus libr
             }
             
             syncWithBackend() {
-                // Would connect to ws://localhost:8080/ws or similar
+                // Would connect to ws via proxy: wss://heroesoftime.online/api/ws or similar (prod)
                 // For demo, we just update every second
                 setInterval(() => {
                     // Check backend status
-                    fetch('http://localhost:3001/health')
+                    fetch('/engine/health')
                         .then(r => r.json())
                         .then(data => {
                             if (data.status === 'OK') {
