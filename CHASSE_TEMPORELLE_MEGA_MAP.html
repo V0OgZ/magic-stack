@@ -1040,7 +1040,7 @@
             
             // ⚡ APPEL BACKEND V2 - TICK
             try {
-                const tickResponse = await fetch('http://localhost:3001/api/v2/tick', {
+                const tickResponse = await fetch('/engine/api/v2/tick', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1069,7 +1069,7 @@
             
             // ☕ APPEL JAVA - Enemy AI Turn
             try {
-                const enemyTurnResponse = await fetch('http://localhost:8080/api/combat/enemy-turn', {
+                const enemyTurnResponse = await fetch('/api/combat/enemy-turn', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1094,7 +1094,7 @@
             
             // 🐍 APPEL PYTHON - Vector DB pour analyse
             try {
-                const searchResponse = await fetch('http://localhost:5001/search', {
+                const searchResponse = await fetch('/vector/search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1164,7 +1164,7 @@
         // Record victory in backend
         async function recordVictory() {
             try {
-                await fetch('http://localhost:3001/api/game/victory', {
+                await fetch('/engine/api/game/victory', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
