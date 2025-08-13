@@ -11,6 +11,7 @@ import { HexGrid } from '../../shared/components/HexGrid';
 import { ResourceBar } from '../../shared/components/ResourceBar';
 import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { AssetsService } from '../../services/AssetsService';
+import { audioManager } from '../../services/AudioManager';
 
 interface GameEntity {
   id: string;
@@ -185,14 +186,132 @@ export function PlayMapBridge(): React.ReactElement {
 
   // Déplacer une entité
   const moveEntity = (entityId: string, newX: number, newY: number) => {
-    setGameState(prev => ({
-      ...prev,
-      entities: prev.entities.map(e =>
+    setGameState(prev => {
+      // Déplacer l'entité
+      const movedEntities = prev.entities.map(e =>
         e.id === entityId
           ? { ...e, position: { ...e.position, x: newX, y: newY }}
           : e
-      ),
-    }));
+      );
+
+      // Auto-pickup des artefacts/ressources proches
+      const pickupRadius = 40; // px
+      const isNear = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+        Math.hypot(a.x - b.x, a.y - b.y) <= pickupRadius;
+
+      const moved = movedEntities.find(e => e.id === entityId);
+      if (!moved) {
+        return { ...prev, entities: movedEntities };
+      }
+
+      const pickups = movedEntities.filter(e =>
+        (e.type === 'artifact' || e.type === 'resource') && e.id !== entityId && isNear(e.position, { x: newX, y: newY })
+      );
+
+      if (pickups.length === 0) {
+        return { ...prev, entities: movedEntities };
+      }
+
+      // Appliquer les effets de ramassage
+      let goldDelta = 0;
+      let crystalsDelta = 0;
+      let energyDelta = 0;
+      let temporalDelta = 0;
+      // Dr. Stone style
+      let woodDelta = 0;
+      let stoneDelta = 0;
+      let herbsDelta = 0;
+      let flowersDelta = 0;
+
+      const resourceName = (name?: string) => (name || '').toLowerCase();
+
+      for (const p of pickups) {
+        const n = resourceName(p.name);
+        if (p.type === 'resource') {
+          if (n.includes('gold') || n.includes('coin') || n.includes('🪙')) goldDelta += 100;
+          else if (n.includes('crystal') || n.includes('🔮') || n.includes('gem')) crystalsDelta += 5;
+          else if (n.includes('potion') || n.includes('energy')) energyDelta += 10;
+          else temporalDelta += 1;
+          // Classer herbes/fleurs
+          if (n.includes('herb') || n.includes('mushroom')) herbsDelta += 1;
+          if (n.includes('flower') || n.includes('🌸')) flowersDelta += 1;
+        } else if (p.type === 'artifact') {
+          // Bonus léger par défaut
+          crystalsDelta += 3;
+          energyDelta += 5;
+        }
+      }
+
+      const remaining = movedEntities.filter(e => !pickups.some(p => p.id === e.id));
+
+      const updatedResources = {
+        ...prev.resources,
+        gold: (prev.resources as any).gold !== undefined ? (prev.resources as any).gold + goldDelta : goldDelta,
+        crystals: prev.resources.crystals + crystalsDelta,
+        energy: Math.min(100, prev.resources.energy + energyDelta),
+        temporal: prev.resources.temporal + temporalDelta,
+      } as typeof prev.resources;
+
+      // Log simple
+      if (pickups.length > 0) {
+        console.log(`🎁 Pickup x${pickups.length} → +${goldDelta} gold, +${crystalsDelta} crystals, +${energyDelta} energy, +${temporalDelta} temporal`);
+      }
+
+      // Effets: son + bulles
+      try { audioManager.play('pickup_item'); } catch {}
+      const mkBubble = (text: string, color: string) => {
+        try {
+          const el = document.createElement('div');
+          el.textContent = text;
+          el.style.cssText = `
+            position: fixed; left: ${newX}px; top: ${newY - 10}px;
+            color: ${color}; font-weight: bold; font-size: 14px;
+            text-shadow: 0 0 6px rgba(0,0,0,0.6);
+            transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 10000; opacity: 0.95;
+            transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+          `;
+          document.body.appendChild(el);
+          requestAnimationFrame(() => {
+            el.style.transform = 'translate(-50%, -90%)';
+            el.style.opacity = '0';
+          });
+          setTimeout(() => el.remove(), 650);
+        } catch {}
+      };
+      if (goldDelta) mkBubble(`+${goldDelta} gold`, '#ffd700');
+      if (crystalsDelta) mkBubble(`+${crystalsDelta} crystals`, '#7dd3fc');
+      if (energyDelta) mkBubble(`+${energyDelta} energy`, '#34d399');
+      if (temporalDelta) mkBubble(`+${temporalDelta} time`, '#a78bfa');
+      if (herbsDelta) mkBubble(`+${herbsDelta} herbs`, '#86efac');
+      if (flowersDelta) mkBubble(`+${flowersDelta} flowers`, '#f9a8d4');
+
+      // Push backend (Java) pour inventaire Dr Stone + économie
+      try {
+        const base = window.location.hostname === 'localhost' ? 'http://127.0.0.1:8082' : '';
+        fetch(`${base}/api/game/resources/pickup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerId: 'local',
+            woodDelta,
+            stoneDelta,
+            herbsDelta,
+            flowersDelta,
+            goldDelta,
+            crystalsDelta,
+            energyDelta,
+            temporalDelta,
+          }),
+        }).catch(() => {});
+      } catch {}
+
+      return {
+        ...prev,
+        entities: remaining,
+        resources: updatedResources,
+      };
+    });
   };
 
   if (!currentWorld || !currentMap) {

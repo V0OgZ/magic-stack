@@ -6,7 +6,7 @@
  * Unifie world-editor, MapIconPlacer et SpatioTemporalMapEditor
  */
 
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense, useRef } from 'react';
 import V2Adapter from '../../shared/v2-adapter';
 import { MapFileService } from '../../services/MapFileService';
 import { useUnifiedMapStore } from '../../shared/store/unifiedMapStore';
@@ -319,12 +319,51 @@ export function UnifiedMapSystem(): React.ReactElement {
 function MapIconPlacerWrapper(): React.ReactElement {
   // Adapter MapIconPlacerV2 pour utiliser le store unifié
   const store = useUnifiedMapStore();
+  const idMapRef = useRef(new Map<string, string>());
   
   // MapIconPlacerV2 a sa propre logique, on le wrap
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <MapIconPlacerV2 />
-      {/* TODO: Synchroniser avec le store unifié */}
+      <MapIconPlacerV2
+        onPlace={(res) => {
+          // Placer dans le store unifié et mapper l'ID interne → store ID
+          const stateBefore = useUnifiedMapStore.getState();
+          const beforeIds = new Set((stateBefore.currentMap?.resources || []).map(r => r.id));
+          store.placeResourceWithIcon(res.position_6d.x, res.position_6d.y, {
+            emoji: res.emoji,
+            name: res.name,
+            category: res.category,
+          });
+          // Récupérer l'ID ajouté
+          setTimeout(() => {
+            const latest = useUnifiedMapStore.getState().currentMap?.resources || [];
+            const added = latest.find(r => !beforeIds.has(r.id) && r.name === res.name && r.position_6d.x === res.position_6d.x && r.position_6d.y === res.position_6d.y);
+            if (added) {
+              idMapRef.current.set(res.id, added.id);
+            }
+          }, 0);
+        }}
+        onUpdate={(extId, updates) => {
+          const storeId = idMapRef.current.get(extId);
+          const currentMap = useUnifiedMapStore.getState().currentMap;
+          const fallback = currentMap?.resources.find(r => r.name === updates?.name) || null;
+          const targetId = storeId || fallback?.id;
+          if (!targetId) return;
+          store.updateResource(targetId, updates as any);
+        }}
+        onDelete={(extId) => {
+          const storeId = idMapRef.current.get(extId);
+          if (!storeId) return;
+          store.deleteResource(storeId);
+          idMapRef.current.delete(extId);
+        }}
+        onConnect={(fromExt, toExt, type) => {
+          const fromId = idMapRef.current.get(fromExt);
+          const toId = idMapRef.current.get(toExt);
+          if (!fromId || !toId) return;
+          store.createConnection(fromId, toId, type as any);
+        }}
+      />
     </div>
   );
 }

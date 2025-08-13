@@ -89,7 +89,8 @@ class AudioManager {
     // Trouver l'événement sonore
     const event = soundEvents.events.find(e => e.id === soundId);
     if (!event) {
-      console.warn(`Sound event not found: ${soundId}`);
+      // Fallback: beep court si l'asset n'existe pas
+      this.playBeep(880, 0.08);
       return;
     }
     
@@ -131,6 +132,27 @@ class AudioManager {
     // Log pour debug
     if (soundEvents.metadata.debug) {
       console.log(`🔊 Playing: ${soundId} (${event.category})`);
+    }
+  }
+
+  /**
+   * Beep de secours avec WebAudio quand aucun asset n'est disponible
+   */
+  private playBeep(frequency: number = 440, durationSeconds: number = 0.1) {
+    try {
+      if (!this.audioContext) return;
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = 0.06 * this.volume;
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      const now = this.audioContext.currentTime;
+      oscillator.start(now);
+      oscillator.stop(now + durationSeconds);
+    } catch (e) {
+      // ignore
     }
   }
   
