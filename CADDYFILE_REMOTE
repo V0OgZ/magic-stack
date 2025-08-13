@@ -10,7 +10,7 @@ heroesoftime.online {
 	}
 
 	# Backends
-	handle_path /api/* {
+	handle /api/* {
 		reverse_proxy http://127.0.0.1:8082
 	}
 	handle_path /engine/* {
