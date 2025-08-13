@@ -60,6 +60,12 @@ heroesoftime.online {
 		file_server
 	}
 
+	# Serve /docs/* statically
+	handle /docs/* {
+		root * /opt/hot/app
+		file_server
+	}
+
 	# HTML utilities (catch-all + fallback)
 	handle /api-explorer {
 		root * /opt/hot/app
