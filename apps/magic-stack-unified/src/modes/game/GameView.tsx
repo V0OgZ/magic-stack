@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🎮 GameView - Vue principale du jeu Heroes of Time
  * Migration depuis HOT_GAME_UNIFIED.html

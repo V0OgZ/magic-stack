@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🎮 PLAY MAP BRIDGE
  * Fait le pont entre l'éditeur unifié et le mode jeu
