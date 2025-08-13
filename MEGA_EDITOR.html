@@ -395,7 +395,7 @@
         // ============= BACKEND CONNECTION =============
         async function connectBackend() {
             try {
-                const response = await fetch('http://localhost:3001/health');
+                const response = await fetch('/engine/health');
                 if (response.ok) {
                     alert('✅ Backend connected!');
                 } else {
