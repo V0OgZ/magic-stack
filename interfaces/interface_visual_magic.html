@@ -383,7 +383,7 @@
                 const translationMode = getTranslationMode(heroClass);
                 
                 // 1. D'abord traduire la formule
-                const translateResponse = await fetch('http://localhost:8082/api/magic/translate', {
+                const translateResponse = await fetch('/api/magic/translate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -400,7 +400,7 @@
                 const translation = await translateResponse.json();
                 
                 // 2. Puis lancer le sort
-                const castResponse = await fetch('http://localhost:8082/api/magic/cast', {
+                const castResponse = await fetch('/api/magic/cast', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
