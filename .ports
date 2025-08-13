@@ -1,53 +1,41 @@
-🚀 MAGIC STACK - PORTS & SERVICES - JOUR 37
-===========================================
+🚀 MAGIC STACK - PORTS & SERVICES - VPS (2025-08-13)
+==================================================
 
-FRONTEND
---------
-5175  React App (magic-stack-unified)  ❌ CASSÉ
-5173  World Editor React (hexagones)   ✅ ACTIF
-8000  HTML Server (vieux HTML)         ✅ ACTIF
+FRONTEND (VPS via Caddy)
+------------------------
+- /FRONTPAGE/                    → Landing (index.html)
+- /world-editor/                 → World Editor React (build)
+- /html/*                        → Anciennes UIs HTML (spinforest, etc.)
+- /HTML_INDEX.html               → Dashboard UIs
 
-BACKENDS
---------
-3001  Rust Backend (calculs 6D, Q*)    ✅ ACTIF
-8082  Java Backend (CRUD, APIs)        ✅ ACTIF (OpenAPI: /openapi.json, Swagger: /docs)
-
-SERVICES IA
------------
-7500  Vector DB (recherche sémantique) ✅ ACTIF
-7501  LLM Clippy (IA conversationnelle) ✅ ACTIF
-9000  MCP Server (bridge unifié)       ✅ ACTIF
+BACKENDS (systemd locaux, proxy Caddy)
+--------------------------------------
+- 3001  Rust Engine          → /engine/*
+- 8082  Java Backend         → /api/* (Swagger: /api/docs)
+- 7500  Vector DB            → /vector/*
+- 7501  Clippy LLM           → /clippy/*
+- 9000  MCP Server           → /mcp/*
 
 WEBSOCKET
 ---------
-8001  Orchestrateur WebSocket
+- Utiliser wss via reverse proxy sous /api/* (pas de ws://localhost)
 
 OBSOLÈTE
 --------
-5001  Python Backend (remplacé par 7500/7501) ❌
+- 5001  Python Vector (remplacé par 7500) ❌
 
-URLS PRINCIPALES
-----------------
-http://localhost:5173/              → World Editor React (FONCTIONNEL) ⭐⭐⭐⭐⭐
-http://localhost:8000/MEGA_EDITOR.html → MEGA EDITOR Unified (NOUVEAU) ⭐⭐⭐⭐⭐
-http://localhost:8000/CHASSE_TEMPORELLE_MEGA_MAP.html → Map Multiplayer
-http://localhost:8000/MAP_ICON_PLACER_ADVANCED.html → Icon Placer (via ./go map)
-http://localhost:8000/API_EXPLORER_COMPLETE.html → API Explorer
-http://localhost:8000/HTML_INDEX.html → Index tous les HTML
+URLS PRINCIPALES (VPS)
+----------------------
+https://heroesoftime.online/                      → Frontpage
+https://heroesoftime.online/HTML_INDEX.html       → Dashboard
+https://heroesoftime.online/world-editor/         → World Editor React
+https://heroesoftime.online/CHASSE_TEMPORELLE_MEGA_MAP.html → Chasse HTML
+https://heroesoftime.online/assets/MAP_ICON_PLACER_ADVANCED.html → Icon Placer HTML
+https://heroesoftime.online/API_EXPLORER_COMPLETE.html → API Explorer
+https://heroesoftime.online/VECTOR_DB_EXPLORER_UI.html  → Vector UI
+https://heroesoftime.online/interfaces/interface_visual_magic.html → Visual Magic Translator
 
-http://localhost:5175/              → React Unified (CASSÉ ❌)
-http://localhost:5175/editor        → MapIconPlacerV2 (CASSÉ ❌)
-http://localhost:5175/unified       → Unified Map System (CASSÉ ❌)
-
-COMMANDES RAPIDES
------------------
-./go start    → Lance TOUT
-./go stop     → Arrête TOUT
-./go status   → État des services
-./go api      → Ouvre API Explorer
-./go mcp      → Lance MCP Server
-./go map      → Ouvre MAP_ICON_PLACER_ADVANCED ⭐
-./go editor   → Ouvre MAP_ICON_PLACER_ADVANCED (alias) ⭐
-./go game     → Ouvre éditeur/jeu
-./go html     → Lance serveur HTML
-./go front    → Lance serveur HTML (alias)
+COMMANDES VPS
+-------------
+- systemctl restart caddy magic-java magic-rust magic-vector magic-clippy
+- journalctl -fu caddy|magic-java|magic-rust|magic-vector|magic-clippy
