@@ -66,6 +66,12 @@ heroesoftime.online {
 		file_server
 	}
 
+	# Serve /interfaces/* statically (HTML tools)
+	handle /interfaces/* {
+		root * /opt/hot/app
+		file_server
+	}
+
 	# HTML utilities (catch-all + fallback)
 	handle /api-explorer {
 		root * /opt/hot/app
