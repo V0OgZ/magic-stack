@@ -96,6 +96,13 @@ heroesoftime.online {
 		file_server
 	}
 
+	# Serve top-level HTML files (e.g., /CHASSE_TEMPORELLE_MEGA_MAP.html)
+	@root_html path_regexp root_html ^/[A-Za-z0-9_\-]+\.html$
+	handle @root_html {
+		root * /opt/hot/app
+		file_server
+	}
+
 	# Serve the new front page locally (no external redirect)
 	handle / {
 		root * /opt/hot/app/FRONTPAGE
