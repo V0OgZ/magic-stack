@@ -106,7 +106,9 @@
             height: 58px;
             transition: all 0.2s ease;
             cursor: pointer;
-            opacity: 0.9;
+            opacity: 0.95;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .hex:hover {
@@ -123,18 +125,83 @@
             justify-content: center;
             font-size: 28px;
             position: relative;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        /* Hide terrain emojis by default, show only on hover */
+        .terrain-grass .hex-content,
+        .terrain-water .hex-content,
+        .terrain-mountain .hex-content,
+        .terrain-desert .hex-content,
+        .terrain-forest .hex-content,
+        .terrain-snow .hex-content,
+        .terrain-lava .hex-content,
+        .terrain-void .hex-content,
+        .terrain-mystique .hex-content,
+        .terrain-quantum .hex-content,
+        .terrain-temporal .hex-content {
+            opacity: 0;
+        }
+        
+        .hex:hover .hex-content {
+            opacity: 1;
+        }
+        
+        /* Always show objects/heroes */
+        .object-hero .hex-content,
+        .object-enemy .hex-content,
+        .object-artifact .hex-content,
+        .object-portal .hex-content,
+        .object-vendor .hex-content,
+        .object-regulator .hex-content {
+            opacity: 1 !important;
         }
 
-        /* Terrain types */
-        .terrain-grass { background: #2d5016; }
-        .terrain-water { background: #0066cc; }
-        .terrain-mountain { background: #666; }
-        .terrain-desert { background: #c4a000; }
-        .terrain-snow { background: #e0e0ff; }
-        .terrain-lava { background: #ff4500; }
-        .terrain-void { background: #1a0033; }
+        /* Terrain types - Professional gradients from WorldEditor */
+        .terrain-grass { 
+            background: linear-gradient(135deg, #2d7a2d 0%, #48bb78 100%);
+            border: 1px solid #276749;
+        }
+        .terrain-water { 
+            background: linear-gradient(135deg, #1a4d7a 0%, #2c5282 100%);
+            border: 1px solid #2c5f8d;
+        }
+        .terrain-mountain { 
+            background: linear-gradient(135deg, #5c3810 0%, #744210 100%);
+            border: 1px solid #553b08;
+        }
+        .terrain-desert { 
+            background: linear-gradient(135deg, #c4a000 0%, #ffd700 100%);
+            border: 1px solid #b8860b;
+        }
+        .terrain-forest { 
+            background: linear-gradient(135deg, #1a4d1a 0%, #22543d 100%);
+            border: 1px solid #1a4d2e;
+        }
+        .terrain-snow { 
+            background: linear-gradient(135deg, #e0e0ff 0%, #ffffff 100%);
+            border: 1px solid #c0c0ff;
+        }
+        .terrain-lava { 
+            background: linear-gradient(135deg, #ff4500 0%, #ff6347 100%);
+            border: 1px solid #dc143c;
+        }
+        .terrain-void { 
+            background: linear-gradient(135deg, #1a0033 0%, #2d0066 100%);
+            border: 1px solid #0d001a;
+        }
+        .terrain-mystique {
+            background: linear-gradient(135deg, #553b8a 0%, #805ad5 100%);
+            border: 1px solid #6b46c1;
+        }
+        .terrain-quantum {
+            background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+            border: 1px solid #0096c7;
+        }
         .terrain-temporal { 
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            background: linear-gradient(135deg, #b5179e 0%, #f6019d 100%);
+            border: 1px solid #d6007e;
             animation: temporal-pulse 2s infinite;
         }
 
@@ -638,16 +705,19 @@
             craftStations: []
         };
 
-        // Terrain generation
+        // Terrain generation - matching WorldEditor styles
         const TERRAIN_TYPES = [
-            { type: 'grass', emoji: '🌿', weight: 30 },
+            { type: 'grass', emoji: '🌿', weight: 25 },
+            { type: 'forest', emoji: '🌲', weight: 18 },
             { type: 'water', emoji: '💧', weight: 15 },
-            { type: 'mountain', emoji: '⛰️', weight: 10 },
-            { type: 'desert', emoji: '🏜️', weight: 10 },
-            { type: 'snow', emoji: '❄️', weight: 5 },
+            { type: 'mountain', emoji: '⛰️', weight: 12 },
+            { type: 'desert', emoji: '🏜️', weight: 8 },
+            { type: 'snow', emoji: '❄️', weight: 6 },
+            { type: 'mystique', emoji: '✨', weight: 5 },
+            { type: 'quantum', emoji: '⚡', weight: 4 },
             { type: 'lava', emoji: '🔥', weight: 3 },
             { type: 'void', emoji: '🌑', weight: 2 },
-            { type: 'temporal', emoji: '🌀', weight: 5 }
+            { type: 'temporal', emoji: '🌀', weight: 2 }
         ];
 
         // Initialize map
