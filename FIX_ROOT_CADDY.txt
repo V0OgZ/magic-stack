@@ -1,0 +1,34 @@
+# POUR GPT - FIX LA RACINE BORDEL!
+
+## PROBLÈME:
+Vincent veut que https://heroesoftime.online/ (LA RACINE) affiche la FRONTPAGE avec images!
+
+## SOLUTION CADDY:
+```
+heroesoftime.online {
+    # Redirige la racine vers FRONTPAGE
+    handle / {
+        rewrite * /FRONTPAGE/index.html
+    }
+    
+    # Ou encore plus simple:
+    root * /var/www/FRONTPAGE
+    
+    file_server
+}
+```
+
+## OU SOLUTION ENCORE PLUS SIMPLE:
+```bash
+# Sur le serveur
+cd /var/www
+mv index.html index_old.html
+cp FRONTPAGE/index.html index.html
+# Et changer les paths dans index.html pour pointer vers /FRONTPAGE/assets/
+```
+
+## CE QU'ON VEUT:
+- heroesoftime.online/ → FRONTPAGE avec images qui marchent
+- PAS heroesoftime.online/FRONTPAGE/index.html
+
+STOP COMPLIQUER!

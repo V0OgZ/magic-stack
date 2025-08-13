@@ -18,7 +18,7 @@ export interface HexGridProps {
   width: number;
   height: number;
   hexSize?: number;
-  hexes: Map<string, Hex>;
+  hexes?: Map<string, Hex>;
   selectedHex?: { x: number; y: number } | null;
   onHexClick?: (x: number, y: number) => void;
   onHexHover?: (x: number, y: number) => void;
@@ -33,7 +33,7 @@ export function HexGrid({
   width,
   height,
   hexSize = 60,
-  hexes,
+  hexes = new Map<string, Hex>(),
   selectedHex,
   onHexClick,
   onHexHover,

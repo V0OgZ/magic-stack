@@ -370,6 +370,21 @@ case "$1" in
         open_api
         ;;
 
+    "vps-check")
+        # Healthcheck public du VPS (front + back)
+        echo "VPS Healthcheck: heroesoftime.online"
+        for URL in \
+            "https://heroesoftime.online/" \
+            "https://heroesoftime.online/FRONTPAGE/index.html" \
+            "https://heroesoftime.online/FRONTPAGE/assets/assets/HD/ExKAlibur.png" \
+            "https://heroesoftime.online/engine/health" \
+            "https://heroesoftime.online/vector/health"
+        do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            printf "%3s  %s\n" "$CODE" "$URL"
+        done
+        ;;
+
     "react")
         # Lance uniquement l'app UNIFIED (5176) et ouvre /unified
         start_unified
@@ -465,6 +480,7 @@ case "$1" in
         echo "  ./go api      - Ouvre l'API Explorer"
         echo "  ./go front    - Ouvre la Frontpage (FRONTPAGE/index.html)"
         echo "  ./go react    - Lance UNIFIED (5176) et ouvre /unified"
+        echo "  ./go vps-check- Healthcheck public (front/back) du VPS"
         echo "  ./go combat   - Ouvre le combat IA vs IA"
         echo "  ./go chasse   - Ouvre la chasse temporelle"
         echo "  ./go html     - Ouvre TOUS les vieux HTML"

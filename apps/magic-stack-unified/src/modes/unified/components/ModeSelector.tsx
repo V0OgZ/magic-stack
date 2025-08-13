@@ -28,6 +28,7 @@ export function ModeSelector({ currentMode, onModeChange }: Props): React.ReactE
       padding: 4,
       borderRadius: 12,
       border: '1px solid rgba(102, 126, 234, 0.3)',
+      alignItems: 'center',
     }}>
       {modes.map(({ mode, label, icon, color }) => (
         <button
@@ -69,6 +70,33 @@ export function ModeSelector({ currentMode, onModeChange }: Props): React.ReactE
           <span>{label}</span>
         </button>
       ))}
+
+      {/* Import Structure (5173 -> 5176) */}
+      <label style={{ marginLeft: 12, padding: '8px 12px', border: '1px dashed rgba(255,255,255,0.35)', borderRadius: 8, cursor: 'pointer', color: 'white' }}>
+        📥 Import Structure
+        <input
+          type="file"
+          accept="application/json"
+          style={{ display: 'none' }}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const text = await file.text();
+            try {
+              const raw = JSON.parse(text);
+              const width = raw?.map?.size?.x || raw?.world?.dimensions?.width || 50;
+              const height = raw?.map?.size?.y || raw?.world?.dimensions?.height || 50;
+              const { useUnifiedMapStore } = await import('../../../shared/store/unifiedMapStore');
+              const store = useUnifiedMapStore.getState();
+              store.newWorld(raw?.metadata?.name || raw?.world?.name || 'Imported World', width, height);
+              store.newMap(raw?.metadata?.name || raw?.map?.name || 'Imported Map');
+            } catch (err) {
+              console.error('Import structure failed', err);
+              alert('Import échoué: JSON invalide');
+            }
+          }}
+        />
+      </label>
     </div>
   );
 }

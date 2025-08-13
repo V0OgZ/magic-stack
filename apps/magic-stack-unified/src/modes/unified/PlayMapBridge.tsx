@@ -300,6 +300,7 @@ export function PlayMapBridge(): React.ReactElement {
               <HexGrid
                 width={currentWorld.dimensions.width}
                 height={currentWorld.dimensions.height}
+                hexes={new Map()}
                 onHexClick={(q, r) => {
                   if (selectedEntity) {
                     // Convertir coordonnées hex en pixel pour le déplacement

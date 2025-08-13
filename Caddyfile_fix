@@ -1,0 +1,36 @@
+# Configuration Caddy pour HeroesOfTime.online
+# Gère mieux les fichiers avec espaces
+
+herosoftime.online {
+    root * /var/www/herosoftime
+    
+    # Encoder automatiquement les URLs
+    encode gzip
+    
+    # Gérer les fichiers avec espaces
+    handle_path /assets/* {
+        file_server {
+            browse
+        }
+        header {
+            # Permettre les espaces dans les URLs
+            Content-Disposition inline
+            Access-Control-Allow-Origin *
+        }
+    }
+    
+    # SPA fallback
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+    
+    # API proxy
+    handle_path /api/v2/* {
+        reverse_proxy localhost:3001
+    }
+    
+    handle_path /api/magic/* {
+        reverse_proxy localhost:8082
+    }
+}
