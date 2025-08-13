@@ -1,323 +1,46 @@
-# 🗺️ CARTE COMPLETE MAGIC-STACK - État Jour 36
+# 🗺️ CARTE COMPLETE MAGIC-STACK - VPS (2025-08-13)
 
-## 🎯 APPS REACT PRINCIPALES (2 apps)
+## 🎯 APPS REACT PRINCIPALES
 
-### 1. WORLD-EDITOR (React/TypeScript) ⭐⭐⭐⭐
-**URL**: http://localhost:5173
-**Tech**: React + TypeScript + Vite
-**Statut**: EN MIGRATION depuis HTML
-**Composants**:
-```
-apps/world-editor/
-├── App.tsx (principal)
-├── MapView.tsx (vue carte)
-├── TimelineView.tsx (timeline)
-├── IconPalette.tsx (MIGRE depuis MAP_ICON_PLACER)
-├── HexGrid.tsx (grille hexagonale)
-├── RegionTools.tsx (outils region)
-├── VectorSearchPanel.tsx (recherche Vector DB)
-├── LivePreviewPanel.tsx (preview)
-├── ImportReport.tsx (rapports)
-├── ParamsView.tsx (parametres)
-├── clippy.tsx (assistant)
-└── quantum-identity.tsx (conscience collective)
-```
-**MANQUE**: Canvas placement, systeme connexions
+### World Editor (React/TypeScript)
+- URL VPS: https://heroesoftime.online/world-editor/
+- Build: apps/world-editor/dist (servi via Caddy)
 
-### 2. MAGIC-STACK-UNIFIED (React/TypeScript) ⭐⭐⭐⭐⭐
-**URL**: http://localhost:5175  
-**Tech**: React + TypeScript + Vite + React Query
-**Statut**: APP UNIFIÉE avec SpatioTemporalMapEditor; nouvelles routes: /start-tcg
-**Composants**:
-```
-apps/magic-stack-unified/
-├── App.tsx (router principal)
-├── HomePage.tsx (accueil)
-├── modes/
-│   ├── game/
-│   │   ├── GameView.tsx
-│   │   └── UnifiedGameExperience.tsx
-│   ├── editor/
-│   │   ├── EditorView.tsx
-│   │   └── HeroBackstoryEditor.tsx
-│   ├── chasse/
-│   │   └── ChasseView.tsx
-│   ├── multiplayer/
-│   │   └── MultiplayerMode.tsx (NOUVEAU)
-│   ├── ai-battle/
-│   │   └── AIBattleAutoplay.tsx (NOUVEAU)
-│   ├── spectator/
-│   │   └── SpectatorGodMode.tsx (NOUVEAU)
-│   └── combat/
-│       └── AIBattleWrapper.tsx (HYBRIDE HTML+React avec V2 API)
-├── pages/StartTCG.tsx (NOUVEAU – appelle Java /api/combat/start)
-└── shared/components/
-    ├── SpatioTemporalMapEditor.tsx ⭐⭐⭐⭐⭐ (LE 6D!)
-    ├── HexGrid.tsx
-    ├── CombatInterface.tsx
-    ├── HeroCard.tsx
-    ├── HeroProfileView.tsx
-    ├── ResourceBar.tsx
-    ├── TemporalDisplay.tsx
-    └── SpeechBubble.tsx
-```
+### Magic-Stack-Unified (React)
+- En cours de migration, non exposé en prod (pas /unified)
 
-## 📦 ASSETS HTML STANDALONE (Pépites!)
-
-### Dans apps/magic-stack-unified/public/assets/
-- **MAP_ICON_PLACER_ADVANCED.html** ⭐⭐⭐⭐⭐ (1375 lignes, MAGNIFIQUE)
-- **MAP_ICON_PLACER.html** ⭐⭐⭐ (version simple)
-- **ICON_EXPLORER.html** ⭐⭐ (explorateur emojis)
+## 📦 ASSETS HTML STANDALONE
+- https://heroesoftime.online/assets/MAP_ICON_PLACER_ADVANCED.html
+- https://heroesoftime.online/assets/MAP_ICON_PLACER.html
+- https://heroesoftime.online/assets/ICON_EXPLORER.html
 
 ## 🎮 JEUX HTML (Racine)
-
-### Actifs et fonctionnels:
-- **HOT_GAME_UNIFIED.html** - Jeu principal unifié
-- **CHASSE_TEMPORELLE_MEGA_MAP.html** - Mode aventure 120x120
-- **HOMM3_PWA_IPAD_CLIPPY.html** - Version mobile/tablette
-- **MULTIPLAYER_DEMO_HOMM3.html** - Demo multijoueur
-- **IA_VS_IA_AUTOPLAY.html** - Combat automatique IA
-- **SPECTATOR_GOD_MODE.html** - Mode spectateur omniscient
-
-### Manuels:
-- **MANUEL_DU_JOUEUR_HOT.html** - Manuel complet
-- **MANUEL_FACILE_EASY_MODE.html** - Guide débutant
+- https://heroesoftime.online/HOT_GAME_UNIFIED.html
+- https://heroesoftime.online/CHASSE_TEMPORELLE_MEGA_MAP.html
+- https://heroesoftime.online/HOMM3_PWA_IPAD_CLIPPY.html
+- https://heroesoftime.online/MULTIPLAYER_DEMO_HOMM3.html
+- https://heroesoftime.online/IA_VS_IA_AUTOPLAY.html
+- https://heroesoftime.online/SPECTATOR_GOD_MODE.html
 
 ## 🛠️ OUTILS & ADMIN
+- https://heroesoftime.online/API_EXPLORER_COMPLETE.html
+- https://heroesoftime.online/VECTOR_DB_EXPLORER_UI.html
+- https://heroesoftime.online/HTML_INDEX.html (Dashboard)
 
-- **API_EXPLORER_COMPLETE.html** ⭐⭐⭐⭐ (racine) - Test toutes les APIs
-- **VECTOR_DB_EXPLORER_UI.html** - Interface Vector DB améliorée
-- **VECTOR_DB_EXPLORER.html** - Version basique
-- **compare-apis.html** - Comparateur d'APIs
-
-## 🗂️ DEMOS (Hub central)
-
-**demos/index.html** ⭐⭐⭐⭐ - PORTAIL PRINCIPAL
-```
-demos/
-├── index.html (HUB CENTRAL)
-├── game/
-│   ├── HOT_GAME_UNIFIED.html
-│   ├── CHASSE_TEMPORELLE_MEGA_MAP.html
-│   └── HOMM3_PWA_IPAD_CLIPPY.html
-├── multiplayer/
-│   └── MULTIPLAYER_DEMO_HOMM3.html
-├── experimental/
-│   ├── IA_VS_IA_AUTOPLAY.html
-│   └── SPECTATOR_GOD_MODE.html
-└── tools/
-    ├── API_EXPLORER_COMPLETE.html
-    ├── VECTOR_DB_EXPLORER_UI.html
-    └── VECTOR_DB_EXPLORER.html
-```
+## 🗂️ DEMOS (Hub)
+- https://heroesoftime.online/demos/index.html
 
 ## 📚 DOCS
-
-```
-docs/
-├── index.html - Documentation principale
-├── demo.html - Guide démos
-├── easy-mode.html - Mode facile
-├── manuel.html - Manuel complet
-├── pwa.html - Guide PWA
-├── spectator.html - Mode spectateur
-├── test-runner.html - Tests
-└── vector-explorer.html - Vector DB guide
-```
-
-## 🏛️ ARCHIVES
-
-```
-archive/
-├── WORLD_EDITOR.html - Ancien éditeur (peut contenir des pépites!)
-├── TEST_WEBSOCKET.html - Tests WebSocket
-└── SCENARIOS_TEST_RUNNER.html - Testeur scénarios
-```
+- https://heroesoftime.online/docs/index.html
+- https://heroesoftime.online/docs/demo.html
+- https://heroesoftime.online/docs/easy-mode.html
+- https://heroesoftime.online/docs/manuel.html
+- https://heroesoftime.online/docs/pwa.html
+- https://heroesoftime.online/docs/spectator.html
+- https://heroesoftime.online/docs/test-runner.html
+- https://heroesoftime.online/docs/vector-explorer.html
 
 ## 🎨 INTERFACES
-
-```
-interfaces/
-├── interface.html - Interface principale
-├── interface_nocturne.html - Mode nuit
-└── interface_visual_magic.html - Interface magique
-```
-
-## 📊 STATUT PAR TECHNO
-
-### ✅ REACT/TSX (31 fichiers)
-- 2 apps complètes (world-editor, magic-stack-unified)
-- SpatioTemporalMapEditor FONCTIONNEL
-- Support 6D natif
-
-### ✅ HTML PUR (44 fichiers)
-- MAP_ICON_PLACER_ADVANCED (garder!)
-- Tous les jeux fonctionnels
-- Outils admin parfaits
-
-### ✅ JAVASCRIPT (5 fichiers)
-- api-acidity-system.js - Système API
-- clippy-helper.js - Helper Clippy
-- shared/v2-adapter.js - Adaptateur V2
-- sw.js - Service Worker principal
-- docs/sw.js - Service Worker docs
-
-### 🔄 MIGRATIONS
-- ❌ MAP_ICON_PLACER → IconPalette.tsx (PARTIEL)
-- ❌ Canvas placement (À FAIRE)
-- ❌ Système connexions (À FAIRE)
-- ✅ Modes multiplayer, AI, spectator (FAIT)
-
-## 🚀 LES 12 VRAIES ROUTES (PAS 118 FICHIERS!)
-
-### JEUX
-1. **HOT_GAME_UNIFIED.html** - Le VRAI jeu
-2. **CHASSE_TEMPORELLE_MEGA_MAP.html** - Aventure 120x120
-3. **HOMM3_PWA_IPAD_CLIPPY.html** - Version tablette
-
-### EDITEURS
-4. **MAP_ICON_PLACER_ADVANCED.html** - Placement ressources (MAGNIFIQUE)
-5. **http://localhost:5173** - World Editor React
-6. **http://localhost:5175** - Magic Stack Unified (avec SpatioTemporalMapEditor 6D!)
-
-### OUTILS
-7. **demos/index.html** - Hub central vers TOUT
-8. **API_EXPLORER_COMPLETE.html** - Test APIs
-9. **VECTOR_DB_EXPLORER_UI.html** - Interface BDD
-
-### EXPERIMENTAL
-10. **SPECTATOR_GOD_MODE.html** - Vue dieu
-11. **IA_VS_IA_AUTOPLAY.html** - Combat auto
-12. **MULTIPLAYER_DEMO_HOMM3.html** - Test multi
-
-## ⚠️ MAGIC STACK UNIFIED = TENTATIVE D'UNIFICATION
-
-**Magic Stack Unified (port 5175) essaie de TOUT migrer en React:**
-
-| HTML Original | → | Route React | Statut Migration | Jour |
-|---------------|---|-------------|------------------|------|
-| HOT_GAME_UNIFIED.html | → | /game | ❌ Partiel | J32 |
-| CHASSE_TEMPORELLE_MEGA_MAP.html | → | /chasse-mega | ✅ WRAPPER FAIT! | J34 |
-| MAP_ICON_PLACER_ADVANCED.html | → | /editor | ✅ 100% MIGRÉ! MapIconPlacerV2.tsx | J33 |
-| MULTIPLAYER_DEMO_HOMM3.html | → | /multiplayer | ✅ Squelette | J32 |
-| IA_VS_IA_AUTOPLAY.html | → | /combat | ✅ WRAPPER FAIT! | J34 |
-| SPECTATOR_GOD_MODE.html | → | /spectator | ✅ Squelette | J32 |
-| UnifiedMapSystem | → | /unified | ✅ 90% L'ÉDITEUR PRINCIPAL! | J33 |
-
-**RÉSUMÉ JOUR 34:** 
-- 2 nouveaux wrappers HTML créés (combat + chasse)
-- L'éditeur unifié fonctionne à 90%
-- React est à 60% migré
-
-## 🎯 JOUR 36 - SOLUTION FINALE IMPLEMENTÉE
-
-1. **MAP_ICON_PLACER_ADVANCED**: ✅ WRAPPER INTELLIGENT! HTML intact + APIs connectées
-2. **MapIconPlacerWrapper.tsx**: Bridge entre HTML magnifique et backends modernes  
-3. **Communication**: PostMessage bidirectionnel HTML <-> React <-> APIs
-4. **Architecture**: Hybride PARFAITE - HTML préservé, intelligence React ajoutée
-
-## 📍 LOCALISATION SPATIOTEMPORALMAP
-
-Le composant 6D que tu cherchais:
-`apps/magic-stack-unified/src/shared/components/SpatioTemporalMapEditor.tsx`
-
-Accessible via: http://localhost:5175 → Editor
-
-## 🎮 SCRIPT GO - TOUT EN UN! ✅ JOUR 36
-
-```bash
-./go           # Affiche le menu d'aide
-./go start     # Lance TOUT (backends + frontend + IA)
-./go status    # Voir l'état de tous les services
-./go api       # 🔮 API Explorer - TOUS les endpoints avec statut live!
-./go mcp       # 🎯 MCP Server - Bridge unifié (NOUVEAU!)
-./go game      # Éditeur unifié
-./go admin     # Dashboard
-./go combat    # Combat IA vs IA
-./go chasse    # Chasse temporelle
-./go html      # Serveur HTML pour anciens UIs
-./go compile   # Compile tout (Rust + Java + Frontend)
-./go stop      # Arrête tout
-```
-
-### SERVICES ACTIFS (11 août 2025) - JOUR 36
-✅ **Frontend React** (5175) - App unifiée
-✅ **Rust Backend** (3001) - Calculs 6D, Q*
-✅ **Java Backend** (8082) - CRUD, APIs
-✅ **Vector DB** (7500) - Recherche sémantique
-✅ **LLM Clippy** (7501) - IA conversationnelle
-✅ **MCP Server** (9000) - Bridge unifié NOUVEAU!
-✅ **HTML Server** (8000) - Anciens UIs
-
-## 🔧 APIS BACKEND OFFICIELLES V2
-
-### 📍 API EXPLORER COMPLET
-**URL**: http://localhost:5175/html/API_EXPLORER_COMPLETE.html
-- ✅ Appelle les VRAIS serveurs (pas du mock!)
-- ✅ Montre le statut live (🟢 ONLINE / 🔴 OFFLINE)
-- ✅ Teste tous les endpoints en temps réel
-- ✅ 100% de couverture des APIs
-
-### RUST (Port 3001)
-**OpenAPI**: http://localhost:3001/openapi/all
-- `/agents/plan` - A* weighted planning
-- `/agents/fork` - Fork identity
-- `/agents/merge` - Merge identity
-- `/agents/cast` - Cast formula via Java
-- `/api/causality/resolve` - Resolve causality
-- `/api/map/generate` - Generate map
-- `/api/map/init` - Initialize 6D entities
-- `/api/v2/tick` - V2 tick
-- `/api/v2/entity/{id}` - Get V2 entity
-- `/api/v2/migrate-entity` - Migrate to V2
-
-### JAVA (Port 8082) ✅
-**OpenAPI**: http://localhost:8082/openapi.json | Swagger UI: http://localhost:8082/docs
-- `/api/magic/health` - Vérifier magie active
-- `/api/magic/cast` - Lancer un sort
-- `/api/magic/translate` - Traduire formule
-- `/api/magic/shift` - Décalage temporel
-- `/api/magic/fork` - Fork réalité
-- `/api/magic/merge` - Fusion timelines
-- `/api/magic/formulas` - 869 formules
-- `/api/interstice/upload` - Sauvegarder entité 6D
-- `/api/interstice/download` - Récupérer entité
-- `/api/regulators/*` - Régulateurs Vince/Anna
-
-NOUVEAU (Combat minimal):
-- `POST /api/combat/start`
-- `POST /api/combat/play-card`
-- `GET  /api/combat/state/{gameId}`
-
-### RESOURCES (À IMPLÉMENTER)
-- `/api/heroes` - Liste des héros
-- `/api/creatures` - Liste des créatures  
-- `/api/artifacts` - Liste des artefacts
-- `/api/portals` - Liste des portails
-- `/api/resources/all` - Tout en un appel
-
-**Source données**: hot/content/*
-
-## ⚠️ ALERTE CRITIQUE - FICHIERS HORS GIT
-
-**PROBLÈME DÉCOUVERT:** Des fichiers ont été créés HORS du repo git!
-
-**Structure actuelle:**
-```
-/Volumes/HOT_DEV/Magic/              ❌ PAS UN REPO GIT
-├── apps/                            ❌ HORS GIT!
-├── hot/                             ❌ HORS GIT! (version différente)
-├── clippy_*.py                      ❌ HORS GIT! (plusieurs versions)
-├── LANCE_CLIPPY_MEMENTO.sh          ❌ HORS GIT!
-└── magic-stack/                     ✅ LE VRAI REPO GIT
-    ├── apps/                        ✅ Version officielle
-    ├── hot/                         ✅ Version officielle
-    └── backends/                    ✅ Tout OK
-```
-
-**ACTION REQUISE:** Décider quoi faire avec les fichiers hors GIT
-
----
-Généré le: Jour 36
-Par: Claude 3.5 Sonnet - Gardien de la Magic Stack
-WRAPPER FONCTIONNEL - HTML préservé - APIs connectées
+- https://heroesoftime.online/interfaces/interface_visual_magic.html
+- https://heroesoftime.online/interfaces/interface.html
+- https://heroesoftime.online/interfaces/interface_nocturne.html
