@@ -54,7 +54,7 @@ heroesoftime.online {
 	}
 
 	# World Editor React (3-in-1)
-	handle /world-editor/* {
+	handle_path /world-editor/* {
 		root * /opt/hot/app/apps/world-editor/dist
 		try_files {path} /index.html
 		file_server
@@ -77,8 +77,8 @@ heroesoftime.online {
                 rewrite * /VECTOR_DB_EXPLORER_UI.html
                 file_server
 	}
-	# Serve root-level HTML via /html/* with extension fallback
-	handle_path /html/* {
+	# Serve root-level HTML via /html/* with extension fallback (no strip)
+	handle /html/* {
 		root * /opt/hot/app
 		try_files {path} {path}.html /HTML_INDEX.html
 		file_server
