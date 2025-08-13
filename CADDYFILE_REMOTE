@@ -93,13 +93,7 @@ heroesoftime.online {
 	# Serve the new front page locally (no external redirect)
 	handle / {
 		root * /opt/hot/app/FRONTPAGE
-		file_server
-	}
-
-	# Catch-all: serve root files and subfolders (docs, demos, archive, etc.)
-	handle /* {
-		root * /opt/hot/app
-		try_files {path} {path}.html /FRONTPAGE/404.html
+		try_files {path} /index.html
 		file_server
 	}
 
