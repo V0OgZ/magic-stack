@@ -11,7 +11,7 @@
 //! It works alongside the Java Spring Boot backend, handling performance-critical tasks.
 
 use magic_stack_core::*;
-use magic_stack_core::temporal_grammar::{ExecutionContext as TgExecutionContext, TemporalFormula as TgTemporalFormula};
+use magic_stack_core::temporal_grammar::{ExecutionContext as TgExecutionContext};
 use sha2::{Digest, Sha256};
 use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts, Topology as PfTopology};
 use magic_stack_core::mapgen::{generate_map, MapGenParams};
@@ -1256,9 +1256,17 @@ struct TemporalApplyReq { formula: String, context: Option<serde_json::Value>, s
 struct TemporalApplyResp { ok: bool, world_diff: serde_json::Value, trace_hash: String }
 
 async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalApplyReq>) -> Result<Json<TemporalApplyResp>, StatusCode> {
-    // Reuse execute for deterministic trace_hash
-    let exec = temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await?;
-    let trace_hash = exec.0.trace_hash.clone();
+    // Try execute for deterministic trace_hash; if parser fails (e.g., runic input), hash raw inputs
+    let trace_hash = match temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await {
+        Ok(res) => res.0.trace_hash.clone(),
+        Err(_) => {
+            let mut hasher = Sha256::new();
+            hasher.update(req.formula.as_bytes());
+            if let Some(ctx) = &req.context { hasher.update(serde_json::to_vec(ctx).unwrap_or_default()); }
+            if let Some(s) = req.seed { hasher.update(&s.to_le_bytes()); }
+            format!("{:x}", hasher.finalize())
+        }
+    };
     // Minimal real world diff: detect MOV(Name, @x,y), Δt+N and TL(timeline) to upsert and shift nodes
     let mut entities_created = 0usize;
     let mut entities_updated = 0usize;
