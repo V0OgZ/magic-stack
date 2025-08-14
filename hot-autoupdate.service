@@ -1,0 +1,16 @@
+[Unit]
+Description=Heroes of Time Auto Update on Boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/hot/app
+ExecStart=/opt/hot/app/VPS_SAFE_SYNC.sh
+StandardOutput=journal
+StandardError=journal
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
