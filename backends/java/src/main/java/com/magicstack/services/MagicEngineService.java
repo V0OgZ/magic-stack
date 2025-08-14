@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import com.magicstack.models.Position6D;
 import com.magicstack.dto.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Core Magic Engine - handles all magical operations
@@ -37,7 +36,8 @@ public class MagicEngineService {
         position.setPsi(random.nextDouble()); // Quantum fluctuation
         
         // Normalize formula via registry (Vector DB)
-        String normalized = registry.resolveFormulaText(request.getFormula());
+        String key = request.getFormulaId() != null ? request.getFormulaId() : request.getFormula();
+        String normalized = registry.resolveFormulaText(key);
 
         // Store active spell
         Map<String, Object> spellData = new HashMap<>();
@@ -70,18 +70,25 @@ public class MagicEngineService {
         response.setSuccess(true);
         response.setPosition6D(position);
 
-        // Minimal unified outputs for front
+        // Minimal unified outputs for front (until Rust executor is wired)
         Map<String, String> outputs = new HashMap<>();
         outputs.put("literary", response.getMessage());
-        String icon = response.getEffect().contains("FREEZE") ? "❄️"
-            : response.getEffect().contains("TELEPORT") ? "🌀"
-            : response.getEffect().contains("FIRE") ? "🔥"
-            : response.getEffect().contains("SHIELD") ? "🛡️" : "✨";
+        String keyForIcon = response.getEffect() + ":" + normalized;
+        String upper = keyForIcon.toUpperCase();
+        String icon = upper.contains("FREEZE") ? "❄️"
+            : upper.contains("TELEPORT") ? "🌀"
+            : upper.contains("FIRE") ? "🔥"
+            : upper.contains("SHIELD") ? "🛡️" : "✨";
         outputs.put("iconic", icon);
-        outputs.put("runic", (request.getFormula() != null ? request.getFormula().replaceAll("[^A-Z_]", "") : "")
-            .replaceAll("__+", "_").substring(0, Math.min(16, Math.max(0, (request.getFormula() != null ? request.getFormula().length() : 0)))));
+        String formulaText = (request.getFormulaId() != null ? request.getFormulaId() : (request.getFormula() != null ? request.getFormula() : ""));
+        String runic = formulaText.replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
+        if (runic.length() > 16) runic = runic.substring(0, 16);
+        outputs.put("runic", runic.isEmpty() ? "ᚠᚢᚦ" : runic);
         outputs.put("quantum", normalized);
         response.setOutputs(outputs);
+        response.setEffects(Arrays.asList("magic_cast"));
+        response.setSounds(Arrays.asList("magic_cast"));
+        response.setTraceHash(Integer.toHexString(normalized.hashCode()));
         
         return response;
     }
