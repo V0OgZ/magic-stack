@@ -12,6 +12,7 @@ import { ResourceBar } from '../../shared/components/ResourceBar';
 import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { AssetsService } from '../../services/AssetsService';
 import { audioManager } from '../../services/AudioManager';
+import { coreStore } from '../../shared/world6dCore';
 
 interface GameEntity {
   id: string;
@@ -137,6 +138,21 @@ export function PlayMapBridge(): React.ReactElement {
     });
 
     setGameState(prev => ({ ...prev, entities }));
+
+    // Sync minimal world to 6D core (hero/portal/buff mapping)
+    try {
+      coreStore.reset();
+      entities.forEach(e => {
+        const pos = { x: e.position.x, y: e.position.y, z: e.position.z || 0, t: 0, psi: 0, sigma: 0 } as any;
+        if (e.type === 'hero') {
+          coreStore.upsertEntity({ id: e.id, type: 'hero', name: e.name, pos, amplitude: 1 });
+        } else if (e.type === 'portal') {
+          coreStore.upsertEntity({ id: e.id, type: 'portal', state: 'stable', pos });
+        } else {
+          coreStore.upsertEntity({ id: e.id, type: 'buff', kind: e.type, level: 1, pos });
+        }
+      });
+    } catch {}
   }, [currentMap]);
 
   // Gérer les événements temporels
@@ -321,6 +337,15 @@ export function PlayMapBridge(): React.ReactElement {
       if (pickups.length > 0) {
         console.log(`🎁 Pickup x${pickups.length} → +${goldDelta} gold, +${crystalsDelta} crystals, +${energyDelta} energy, +${temporalDelta} temporal`);
       }
+
+      // Core events: move + collapse on pickups
+      try {
+        const movedBefore = (prev.entities.find(e => e.id === entityId) || { position: { x: newX, y: newY } }) as any;
+        const dx = newX - (movedBefore.position?.x || 0);
+        const dy = newY - (movedBefore.position?.y || 0);
+        coreStore.dispatch({ type: 'move6d', entityId, delta: { x: dx, y: dy } as any });
+        pickups.forEach(p => coreStore.dispatch({ type: 'collapse', targetId: p.id, reason: 'decay' }));
+      } catch {}
 
       // Effets: son + bulles
       try { audioManager.play('pickup_item'); } catch {}
@@ -626,7 +651,8 @@ export function PlayMapBridge(): React.ReactElement {
                           entities: prev2.entities.filter(e => e.id !== selectedEntity.id),
                         }));
                         syncInventory();
-                        (data.buffs || []).forEach((b: any) => setActiveBuffs(prev => [...prev, { id: b.id, name: b.name, expiresAt: Date.now() + (b.durationSec || 30) * 1000, params: b.params }]));
+              (data.buffs || []).forEach((b: any) => setActiveBuffs(prev => [...prev, { id: b.id, name: b.name, expiresAt: Date.now() + (b.durationSec || 30) * 1000, params: b.params }]));
+              try { coreStore.dispatch({ type: 'artifactApplied', entityId: selectedEntity.id, modifier: { key: 'treasure', factor: 1.1 } }); } catch {}
                         setSelectedEntity(null);
                         try { audioManager.play('success'); } catch {}
                       }

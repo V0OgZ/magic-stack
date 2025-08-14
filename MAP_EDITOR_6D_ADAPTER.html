@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Editor 6D - Core Adapter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: monospace; background: #0a0e27; color: #fff; }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            height: 100vh;
+        }
+        
+        .canvas-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        canvas {
+            cursor: crosshair;
+        }
+        
+        .sidebar {
+            background: #1a1f2e;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .entity-item {
+            background: #252b3e;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .entity-item:hover {
+            background: #2d3449;
+        }
+        
+        .coords {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+        
+        .event-log {
+            margin-top: 20px;
+            padding: 10px;
+            background: #0a0e27;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: #1a1f2e;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        .toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(26, 31, 46, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="mapCanvas"></canvas>
+            <div class="toolbar">
+                <button onclick="editorAdapter.addHero()">Add Hero</button>
+                <button onclick="editorAdapter.addPortal()">Add Portal</button>
+                <button onclick="editorAdapter.addBuff()">Add Buff</button>
+                <button onclick="editorAdapter.exportEvents()">Export Events</button>
+                <button onclick="editorAdapter.replay()">Replay</button>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <h3>Entities (6D)</h3>
+            <div id="entityList"></div>
+            
+            <h3>Event Log</h3>
+            <div id="eventLog" class="event-log"></div>
+            
+            <button onclick="editorAdapter.saveTrace()">Save Trace</button>
+            <button onclick="editorAdapter.clearAll()">Clear All</button>
+        </div>
+    </div>
+
+    <script>
+        // Inline core implementation (simplified version of world6dCore.ts)
+        class Position6D {
+            constructor(x = 0, y = 0, z = 0, t = 0, psi = 0, sigma = 0) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.t = t;
+                this.psi = psi;
+                this.sigma = sigma;
+            }
+        }
+        
+        class CoreStore {
+            constructor() {
+                this.state = {
+                    version: '1.1',
+                    entities: {},
+                    clock: new Position6D()
+                };
+                this.log = [];
+                this.subscribers = new Set();
+            }
+            
+            getState() {
+                return this.state;
+            }
+            
+            dispatch(event) {
+                const ts = Date.now();
+                this.log.push({ ts, event });
+                
+                // Apply event to state
+                switch(event.type) {
+                    case 'move6d':
+                        if (this.state.entities[event.entityId]) {
+                            const entity = this.state.entities[event.entityId];
+                            Object.assign(entity.pos, event.delta);
+                        }
+                        break;
+                    case 'add':
+                        this.state.entities[event.entity.id] = event.entity;
+                        break;
+                    case 'remove':
+                        delete this.state.entities[event.entityId];
+                        break;
+                    case 'collapse':
+                        delete this.state.entities[event.targetId];
+                        break;
+                }
+                
+                // Notify subscribers
+                this.subscribers.forEach(fn => fn(event, this.state));
+                
+                return event;
+            }
+            
+            subscribe(fn) {
+                this.subscribers.add(fn);
+                return () => this.subscribers.delete(fn);
+            }
+            
+            getLog() {
+                return this.log;
+            }
+            
+            replay(events) {
+                this.state = {
+                    version: '1.1',
+                    entities: {},
+                    clock: new Position6D()
+                };
+                this.log = [];
+                events.forEach(entry => {
+                    this.dispatch(entry.event || entry);
+                });
+            }
+        }
+        
+        // Editor Adapter - connects UI to Core
+        class EditorAdapter {
+            constructor() {
+                this.core = new CoreStore();
+                this.canvas = document.getElementById('mapCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.selectedEntity = null;
+                this.nextId = 1;
+                
+                this.setupCanvas();
+                this.setupSubscriptions();
+                this.render();
+            }
+            
+            setupCanvas() {
+                this.canvas.width = window.innerWidth - 300;
+                this.canvas.height = window.innerHeight;
+                
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.handleCanvasClick(x, y);
+                });
+            }
+            
+            setupSubscriptions() {
+                this.core.subscribe((event, state) => {
+                    this.render();
+                    this.updateEntityList();
+                    this.logEvent(event);
+                });
+            }
+            
+            handleCanvasClick(x, y) {
+                if (this.selectedEntity) {
+                    // Move selected entity
+                    this.core.dispatch({
+                        type: 'move6d',
+                        entityId: this.selectedEntity,
+                        delta: { x, y }
+                    });
+                }
+            }
+            
+            addHero() {
+                const id = `hero_${this.nextId++}`;
+                this.core.dispatch({
+                    type: 'add',
+                    entity: {
+                        id,
+                        type: 'hero',
+                        name: `Hero ${this.nextId}`,
+                        pos: new Position6D(200, 200, 0, Date.now(), 0, 0),
+                        amplitude: 10
+                    }
+                });
+            }
+            
+            addPortal() {
+                const id = `portal_${this.nextId++}`;
+                this.core.dispatch({
+                    type: 'add',
+                    entity: {
+                        id,
+                        type: 'portal',
+                        state: 'stable',
+                        pos: new Position6D(400, 300, 0, Date.now(), Math.PI/4, 0)
+                    }
+                });
+            }
+            
+            addBuff() {
+                const id = `buff_${this.nextId++}`;
+                this.core.dispatch({
+                    type: 'add',
+                    entity: {
+                        id,
+                        type: 'buff',
+                        kind: 'speed',
+                        level: 1,
+                        pos: new Position6D(300, 400, 0, Date.now(), 0, 1)
+                    }
+                });
+            }
+            
+            render() {
+                const state = this.core.getState();
+                
+                // Clear canvas
+                this.ctx.fillStyle = '#0a0e27';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw grid
+                this.ctx.strokeStyle = '#1a1f2e';
+                this.ctx.lineWidth = 1;
+                for (let x = 0; x < this.canvas.width; x += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                for (let y = 0; y < this.canvas.height; y += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Draw entities
+                Object.values(state.entities).forEach(entity => {
+                    const { x, y } = entity.pos;
+                    
+                    this.ctx.save();
+                    this.ctx.translate(x, y);
+                    
+                    switch(entity.type) {
+                        case 'hero':
+                            this.ctx.fillStyle = '#ffd700';
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            this.ctx.fillStyle = '#000';
+                            this.ctx.font = '20px monospace';
+                            this.ctx.textAlign = 'center';
+                            this.ctx.fillText('H', 0, 7);
+                            break;
+                        case 'portal':
+                            this.ctx.strokeStyle = entity.state === 'stable' ? '#00ffff' : '#ff00ff';
+                            this.ctx.lineWidth = 3;
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                            this.ctx.stroke();
+                            // Draw psi angle indicator
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(0, 0);
+                            this.ctx.lineTo(Math.cos(entity.pos.psi) * 25, Math.sin(entity.pos.psi) * 25);
+                            this.ctx.stroke();
+                            break;
+                        case 'buff':
+                            this.ctx.fillStyle = '#00ff00';
+                            this.ctx.fillRect(-15, -15, 30, 30);
+                            this.ctx.fillStyle = '#000';
+                            this.ctx.font = '16px monospace';
+                            this.ctx.textAlign = 'center';
+                            this.ctx.fillText('B', 0, 5);
+                            break;
+                    }
+                    
+                    // Highlight selected
+                    if (entity.id === this.selectedEntity) {
+                        this.ctx.strokeStyle = '#ff0000';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeRect(-30, -30, 60, 60);
+                    }
+                    
+                    this.ctx.restore();
+                });
+            }
+            
+            updateEntityList() {
+                const state = this.core.getState();
+                const list = document.getElementById('entityList');
+                
+                list.innerHTML = Object.values(state.entities).map(entity => `
+                    <div class="entity-item" onclick="editorAdapter.selectEntity('${entity.id}')">
+                        <div>${entity.type}: ${entity.id}</div>
+                        <div class="coords">
+                            x:${Math.round(entity.pos.x)} y:${Math.round(entity.pos.y)} 
+                            t:${Math.round(entity.pos.t)} ψ:${entity.pos.psi.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            selectEntity(id) {
+                this.selectedEntity = id;
+                this.render();
+                this.updateEntityList();
+            }
+            
+            logEvent(event) {
+                const log = document.getElementById('eventLog');
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event-item';
+                eventDiv.textContent = JSON.stringify(event);
+                log.insertBefore(eventDiv, log.firstChild);
+                
+                // Keep only last 10 events in UI
+                while (log.children.length > 10) {
+                    log.removeChild(log.lastChild);
+                }
+            }
+            
+            exportEvents() {
+                const log = this.core.getLog();
+                const jsonl = log.map(entry => JSON.stringify(entry)).join('\n');
+                console.log('Event trace JSONL:', jsonl);
+                
+                // Download as file
+                const blob = new Blob([jsonl], { type: 'application/jsonl' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `trace_${Date.now()}.jsonl`;
+                a.click();
+            }
+            
+            saveTrace() {
+                const log = this.core.getLog();
+                const traceId = `trace_${Date.now()}`;
+                localStorage.setItem(traceId, JSON.stringify(log));
+                console.log(`Trace saved as ${traceId}`);
+            }
+            
+            replay() {
+                const traces = Object.keys(localStorage).filter(k => k.startsWith('trace_'));
+                if (traces.length > 0) {
+                    const lastTrace = localStorage.getItem(traces[traces.length - 1]);
+                    const events = JSON.parse(lastTrace);
+                    this.core.replay(events);
+                    console.log(`Replayed ${events.length} events`);
+                }
+            }
+            
+            clearAll() {
+                this.core.replay([]);
+                this.selectedEntity = null;
+                this.nextId = 1;
+            }
+        }
+        
+        // Initialize
+        const editorAdapter = new EditorAdapter();
+    </script>
+</body>
+</html>
