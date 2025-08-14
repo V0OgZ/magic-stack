@@ -151,8 +151,10 @@ public class MagicEngineService {
 	            translations.put("iconic", buildIconicFromText(normalized));
 	            translations.put("quantum", normalized);
 	        } else {
-	            // Non-runic: fallback to simple redacted description
-	            String literary = applyRedactionLayer("Activation de la formule: " + normalized);
+	            // Non-runic: try JSON-asset translation then fallback to redacted description
+	            String literary =
+	                tryTranslateJsonAsset(normalized)
+	                    .orElse(applyRedactionLayer("Activation de la formule: " + normalized));
 	            translations.put("literary", literary);
 	            translations.put("runic", deriveRunicToken(normalized));
 	            translations.put("iconic", buildIconicFromText(normalized));
@@ -229,6 +231,36 @@ public class MagicEngineService {
 	        return "" + timePhrase + action + (locPhrase.isEmpty() ? "" : (" "+locPhrase)).trim();
 	    }
 
+	    // ===== JSON assets translation (heuristics inspired by legacy) =====
+	    private java.util.Optional<String> tryTranslateJsonAsset(String text) {
+	        if (text == null) return java.util.Optional.empty();
+	        boolean looksJson = text.contains("{") && text.contains(":");
+	        if (!looksJson) return java.util.Optional.empty();
+	        try {
+	            Map<?,?> map = new com.fasterxml.jackson.databind.ObjectMapper().readValue(text, Map.class);
+	            StringBuilder sb = new StringBuilder();
+	            if (map.containsKey("paradoxRisk")) {
+	                sb.append("Évaluation du risque de paradoxe: ").append(String.valueOf(map.get("paradoxRisk"))).append(". ");
+	            }
+	            if (map.containsKey("temporalStability")) {
+	                sb.append("Stabilité temporelle: ").append(String.valueOf(map.get("temporalStability"))).append(". ");
+	            }
+	            if (map.containsKey("affectedRadius")) {
+	                sb.append("Zone affectée de rayon ").append(String.valueOf(map.get("affectedRadius"))).append(". ");
+	            }
+	            if (map.containsKey("damage")) {
+	                sb.append("Dégâts infligés: ").append(String.valueOf(map.get("damage"))).append(". ");
+	            }
+	            if (map.containsKey("healing")) {
+	                sb.append("Soins prodigués: ").append(String.valueOf(map.get("healing"))).append(". ");
+	            }
+	            String s = sb.toString().trim();
+	            return s.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(applyRedactionLayer(s));
+	        } catch (Exception ignored) {
+	            return java.util.Optional.empty();
+	        }
+	    }
+
 	    private String applyRedactionLayer(String text) {
 	        if (text == null) return null;
 	        // Minimal synonym/lexicon mapping to hide engine tokens
@@ -237,8 +269,13 @@ public class MagicEngineService {
 	            {"HEAL_HERO", "guérison"},
 	            {"DAMAGE_ENEMY", "frappe"},
 	            {"CREATE", "manifeste"},
+	            {"AMPLIFY", "amplifie"},
+	            {"CONSTRUCTIVE", "interférence constructive"},
+	            {"DESTRUCTIVE", "interférence destructive"},
 	            {"QUANTUM", "quantique"},
-	            {"RUNIC", "runique"}
+	            {"RUNIC", "runique"},
+	            {"EXCALIBUR", "épée sacrée"},
+	            {"BANKAI", "révélation ultime"}
 	        };
 	        String redacted = text;
 	        for (String[] kv : map) {
