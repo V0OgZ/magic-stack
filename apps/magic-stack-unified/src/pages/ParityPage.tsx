@@ -6,8 +6,22 @@ function hash(obj: any): string {
   try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).slice(0, 16); } catch { return 'NA'; }
 }
 
+async function fetchExpected(): Promise<Record<string, string>> {
+  try {
+    const r = await fetch('http://localhost:8000/test_snapshots.json');
+    const j = await r.json();
+    const map: Record<string, string> = {};
+    if (Array.isArray(j)) {
+      j.forEach((it: any) => { const n = it.name || it.id; if (n) map[n] = (typeof it.hash === 'string') ? it.hash : hash(it.snapshot ?? it); });
+    } else {
+      Object.keys(j).forEach(k => { const v = (j as any)[k]; map[k] = (typeof v === 'string') ? v : (typeof v?.hash === 'string' ? v.hash : hash(v)); });
+    }
+    return map;
+  } catch { return {}; }
+}
+
 export default function ParityPage(): React.ReactElement {
-  const [results, setResults] = useState<Array<{ name: string; ok: boolean; snapshot: any; hash: string }>>([]);
+  const [results, setResults] = useState<Array<{ name: string; ok: boolean; snapshot: any; hash: string; expected?: string }>>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,12 +33,15 @@ export default function ParityPage(): React.ReactElement {
           { name: 'scenario2_portal_collapse', url: `${base}/scenario2_portal_collapse.jsonl` },
           { name: 'scenario3_buff_chain', url: `${base}/scenario3_buff_chain.jsonl` },
         ];
-        const out: Array<{ name: string; ok: boolean; snapshot: any; hash: string }> = [];
+        const expected = await fetchExpected();
+        const out: Array<{ name: string; ok: boolean; snapshot: any; hash: string; expected?: string }> = [] as any;
         for (const s of scenarios) {
           coreStore.reset();
           await replayJsonl(s.url);
           const snap = getStableSnapshot();
-          out.push({ name: s.name, ok: true, snapshot: snap, hash: hash(snap) });
+          const h = hash(snap);
+          const ok = expected[s.name] ? (expected[s.name] === h) : true;
+          out.push({ name: s.name, ok, snapshot: snap, hash: h, expected: expected[s.name] });
         }
         setResults(out);
       } catch (e: any) {
@@ -39,12 +56,12 @@ export default function ParityPage(): React.ReactElement {
       {error && <div style={{ color: 'tomato' }}>Error: {error}</div>}
       <ul>
         {results.map(r => (
-          <li key={r.name} style={{ marginBottom: 8 }}>
-            <strong>{r.name}</strong>: {r.ok ? 'OK' : 'KO'} — {r.hash}
+          <li key={r.name} style={{ marginBottom: 8, color: r.ok ? '#10b981' : '#ef4444' }}>
+            <strong>{r.name}</strong>: {r.ok ? 'PASS' : 'FAIL'} — {r.hash}{r.expected ? ` (${r.expected})` : ''}
           </li>
         ))}
       </ul>
-      <p style={{ color: '#8892b0' }}>Fetches traces from http://localhost:8000/test_traces/*.jsonl and replays in the shared 6D core.</p>
+      <p style={{ color: '#8892b0' }}>Traces: http://localhost:8000/test_traces/*.jsonl — Expected: http://localhost:8000/test_snapshots.json</p>
     </div>
   );
 }

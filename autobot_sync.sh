@@ -23,8 +23,8 @@ echo -n "  Java (8082): "
 lsof -i :8082 > /dev/null 2>&1 && echo "✅ RUNNING" || echo "❌ STOPPED"
 echo -n "  Python (8000): "
 lsof -i :8000 > /dev/null 2>&1 && echo "✅ RUNNING" || echo "❌ STOPPED"
-echo -n "  React (5173): "
-lsof -i :5173 > /dev/null 2>&1 && echo "✅ RUNNING" || echo "❌ STOPPED"
+echo -n "  React (5173/5176): "
+(lsof -i :5173 > /dev/null 2>&1 || lsof -i :5176 > /dev/null 2>&1) && echo "✅ RUNNING" || echo "❌ STOPPED"
 echo ""
 
 # Test status
