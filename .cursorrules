@@ -30,3 +30,42 @@
 
 ## 🎯 EN RÉSUMÉ:
 **Vincent demande quelque chose? → Réponse dans le chat, PAS dans un fichier!**
+
+## ⚠️ RÈGLES CRITIQUES TERMINAL - POUR ÉVITER LES BLOCAGES
+
+### RÈGLE #5: JAMAIS DE QUOTES COMPLEXES
+```bash
+# ❌ MAUVAIS - Bloque le terminal
+git commit -m "Message avec espaces"
+echo "Texte avec quotes"
+
+# ✅ BON - Simple et direct
+git commit -m Save_work
+echo DONE
+```
+
+### RÈGLE #6: TOUJOURS BACKGROUND POUR OPEN
+```bash
+# ❌ MAUVAIS - Peut bloquer
+open fichier.html
+
+# ✅ BON - En background
+open fichier.html &
+```
+
+### RÈGLE #7: COMMANDES SIMPLES
+```bash
+# ❌ MAUVAIS
+cmd1 && cmd2 && echo "Message complexe"
+
+# ✅ BON - Une par une
+cmd1
+cmd2
+echo DONE
+```
+
+### RÈGLE #8: PAS DE CARACTÈRES SPÉCIAUX
+- Pas d'emoji dans les commandes
+- Pas de quotes imbriquées
+- Pas de && complexes
+- Préférer les underscores aux espaces
