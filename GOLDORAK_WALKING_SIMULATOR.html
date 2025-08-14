@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 GOLDORAK MARCHE ! + CITÉS D'OR + JAYCE ⚡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: white;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        /* Scanlines TV années 80 */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Sol */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, 
+                rgba(139, 69, 19, 0.8), 
+                rgba(101, 67, 33, 0.9));
+            z-index: 10;
+        }
+
+        /* Goldorak qui marche ! */
+        .goldorak-walker {
+            position: absolute;
+            bottom: 150px;
+            left: 50px;
+            width: 150px;
+            height: 200px;
+            z-index: 100;
+            transition: left 0.5s ease-out;
+        }
+
+        .goldorak-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF0000, #FFD700);
+            clip-path: polygon(
+                50% 0%, 65% 15%, 65% 35%, 85% 45%, 85% 65%,
+                65% 75%, 65% 95%, 35% 95%, 35% 75%, 15% 65%,
+                15% 45%, 35% 35%, 35% 15%
+            );
+            position: relative;
+            box-shadow: 0 0 50px #FFD700;
+        }
+
+        /* Jambes qui marchent */
+        .leg {
+            position: absolute;
+            bottom: -50px;
+            width: 30px;
+            height: 60px;
+            background: linear-gradient(#FF0000, #8B0000);
+            border-radius: 10px;
+        }
+
+        .leg.left {
+            left: 30px;
+            animation: walk-left 0.5s infinite alternate;
+        }
+
+        .leg.right {
+            right: 30px;
+            animation: walk-right 0.5s infinite alternate;
+        }
+
+        @keyframes walk-left {
+            0% { transform: rotate(-10deg) translateY(0); }
+            100% { transform: rotate(10deg) translateY(-10px); }
+        }
+
+        @keyframes walk-right {
+            0% { transform: rotate(10deg) translateY(-10px); }
+            100% { transform: rotate(-10deg) translateY(0); }
+        }
+
+        /* Bras */
+        .arm {
+            position: absolute;
+            top: 50px;
+            width: 25px;
+            height: 80px;
+            background: linear-gradient(#FF0000, #8B0000);
+            border-radius: 10px;
+        }
+
+        .arm.left {
+            left: -20px;
+            animation: swing-left 0.5s infinite alternate;
+            transform-origin: top center;
+        }
+
+        .arm.right {
+            right: -20px;
+            animation: swing-right 0.5s infinite alternate;
+            transform-origin: top center;
+        }
+
+        @keyframes swing-left {
+            0% { transform: rotate(20deg); }
+            100% { transform: rotate(-20deg); }
+        }
+
+        @keyframes swing-right {
+            0% { transform: rotate(-20deg); }
+            100% { transform: rotate(20deg); }
+        }
+
+        /* Yeux qui brillent */
+        .eyes {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .eye {
+            width: 15px;
+            height: 15px;
+            background: #00FFFF;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00FFFF;
+            animation: blink 3s infinite;
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0; }
+        }
+
+        /* Grand Condor (Cités d'Or) */
+        .condor {
+            position: absolute;
+            top: 100px;
+            right: -200px;
+            width: 150px;
+            height: 100px;
+            z-index: 90;
+            animation: fly-condor 15s linear infinite;
+        }
+
+        .condor-body {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            border-radius: 50% 20% 20% 50%;
+            position: relative;
+            box-shadow: 0 0 30px #FFD700;
+        }
+
+        .condor-wing {
+            position: absolute;
+            top: -20px;
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            animation: flap 0.3s infinite alternate;
+        }
+
+        .condor-wing.left {
+            left: -70px;
+            transform-origin: right center;
+            clip-path: polygon(100% 50%, 0 0, 0 100%);
+        }
+
+        .condor-wing.right {
+            right: -70px;
+            transform-origin: left center;
+            clip-path: polygon(0 50%, 100% 0, 100% 100%);
+        }
+
+        @keyframes fly-condor {
+            from { right: -200px; }
+            to { right: calc(100% + 200px); }
+        }
+
+        @keyframes flap {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(45deg); }
+        }
+
+        /* Monstroplantes de Jayce */
+        .monstroplante {
+            position: absolute;
+            bottom: 150px;
+            right: 200px;
+            width: 120px;
+            height: 150px;
+            z-index: 80;
+        }
+
+        .plant-body {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(135deg, #228B22, #006400);
+            border-radius: 50% 50% 20% 20%;
+            position: relative;
+            animation: wiggle 2s infinite;
+        }
+
+        .tentacle {
+            position: absolute;
+            bottom: -50px;
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(#228B22, #004d00);
+            border-radius: 50%;
+            animation: tentacle-move 1s infinite alternate;
+        }
+
+        .tentacle:nth-child(2) { left: 20px; animation-delay: 0.2s; }
+        .tentacle:nth-child(3) { left: 50px; animation-delay: 0.4s; }
+        .tentacle:nth-child(4) { left: 80px; animation-delay: 0.6s; }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @keyframes tentacle-move {
+            0% { transform: scaleY(1) rotate(-10deg); }
+            100% { transform: scaleY(1.2) rotate(10deg); }
+        }
+
+        /* UI Contrôles */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 500;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FF0000, #FFD700);
+            border: 2px solid #FFD700;
+            color: white;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.8);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Messages */
+        .dialogue {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid #FFD700;
+            font-size: 24px;
+            text-align: center;
+            z-index: 500;
+            display: none;
+        }
+
+        .dialogue.show {
+            display: block;
+            animation: pop-in 0.5s ease-out;
+        }
+
+        @keyframes pop-in {
+            0% { transform: translateX(-50%) scale(0); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        /* Étoiles */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Titre */
+        h1 {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            text-shadow: 0 0 20px #FFD700;
+            z-index: 200;
+            text-align: center;
+        }
+
+        .subtitle {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            font-size: 14px;
+            color: #87CEEB;
+            z-index: 200;
+        }
+
+        /* Easter Egg */
+        .easter-egg {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #FFD700;
+            cursor: pointer;
+            z-index: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Titre -->
+    <h1>🤖 GOLDORAK + CITÉS D'OR + JAYCE ⚡</h1>
+    <div class="subtitle">Nos dessins animés d'enfance réunis !</div>
+
+    <!-- Easter Egg -->
+    <div class="easter-egg" onclick="easterEgg()">🥚 Psst...</div>
+
+    <!-- Dialogue -->
+    <div class="dialogue" id="dialogue"></div>
+
+    <!-- Sol -->
+    <div class="ground"></div>
+
+    <!-- Goldorak qui marche -->
+    <div class="goldorak-walker" id="goldorak">
+        <div class="goldorak-body">
+            <div class="eyes">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+        </div>
+        <div class="leg left"></div>
+        <div class="leg right"></div>
+        <div class="arm left"></div>
+        <div class="arm right"></div>
+    </div>
+
+    <!-- Grand Condor -->
+    <div class="condor" id="condor">
+        <div class="condor-body"></div>
+        <div class="condor-wing left"></div>
+        <div class="condor-wing right"></div>
+    </div>
+
+    <!-- Monstroplante -->
+    <div class="monstroplante" id="monstroplante">
+        <div class="plant-body"></div>
+        <div class="tentacle"></div>
+        <div class="tentacle"></div>
+        <div class="tentacle"></div>
+        <div class="tentacle"></div>
+    </div>
+
+    <!-- Contrôles -->
+    <div class="controls">
+        <button class="btn" onclick="walk()">⬅️ MARCHER</button>
+        <button class="btn" onclick="attack()">⚡ FULGUROPOING</button>
+        <button class="btn" onclick="jump()">🚀 SAUTER</button>
+        <button class="btn" onclick="transform()">🔄 TRANSFORMATION</button>
+        <button class="btn" onclick="callFriends()">📢 APPELER AMIS</button>
+    </div>
+
+    <script>
+        // Créer les étoiles
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 50 + '%';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDelay = Math.random() * 3 + 's';
+            document.body.appendChild(star);
+        }
+
+        let goldorakPosition = 50;
+        let isTransformed = false;
+
+        // Marcher
+        function walk() {
+            const goldorak = document.getElementById('goldorak');
+            goldorakPosition += 100;
+            if (goldorakPosition > window.innerWidth - 200) {
+                goldorakPosition = 50;
+            }
+            goldorak.style.left = goldorakPosition + 'px';
+            
+            showDialogue("GOLDORAK AVANCE !");
+        }
+
+        // Attaquer
+        function attack() {
+            const goldorak = document.getElementById('goldorak');
+            const monstroplante = document.getElementById('monstroplante');
+            
+            showDialogue("FULGUUUUROPOIIING !!!");
+            
+            // Animation d'attaque
+            goldorak.style.animation = 'none';
+            setTimeout(() => {
+                goldorak.style.animation = 'attack-move 0.5s ease-out';
+            }, 10);
+            
+            // Faire disparaître la monstroplante
+            setTimeout(() => {
+                monstroplante.style.animation = 'explode 0.5s ease-out';
+                setTimeout(() => {
+                    monstroplante.style.display = 'none';
+                    showDialogue("MONSTROPLANTE VAINCUE ! JAYCE SERAIT FIER !");
+                }, 500);
+            }, 300);
+        }
+
+        // Sauter
+        function jump() {
+            const goldorak = document.getElementById('goldorak');
+            showDialogue("GOLDORAK VOLE !");
+            
+            goldorak.style.transition = 'bottom 0.5s ease-out';
+            goldorak.style.bottom = '350px';
+            
+            setTimeout(() => {
+                goldorak.style.bottom = '150px';
+            }, 500);
+        }
+
+        // Transformation
+        function transform() {
+            const goldorak = document.getElementById('goldorak');
+            const body = goldorak.querySelector('.goldorak-body');
+            
+            if (!isTransformed) {
+                showDialogue("GOLDOFLASH ! TRANSFORMATION !");
+                body.style.background = 'linear-gradient(135deg, #00FFFF, #FF00FF)';
+                body.style.transform = 'scale(1.2)';
+                isTransformed = true;
+            } else {
+                showDialogue("RETOUR À LA NORMALE !");
+                body.style.background = 'linear-gradient(135deg, #FF0000, #FFD700)';
+                body.style.transform = 'scale(1)';
+                isTransformed = false;
+            }
+        }
+
+        // Appeler les amis
+        function callFriends() {
+            showDialogue("ESTEBAN ! TAO ! ZIA ! ACTARUS ! JAYCE !");
+            
+            // Faire passer le Condor plus vite
+            const condor = document.getElementById('condor');
+            condor.style.animationDuration = '3s';
+            
+            // Ajouter plus d'effets
+            document.body.style.animation = 'rainbow 2s';
+            
+            setTimeout(() => {
+                showDialogue("TOUS ENSEMBLE CONTRE LES FORCES DU MAL !");
+                condor.style.animationDuration = '15s';
+            }, 2000);
+        }
+
+        // Easter Egg
+        function easterEgg() {
+            showDialogue("🎵 GOLDORAK GO ! 🎵 AH AH AH LES CITÉS D'OR ! 🎵");
+            
+            // Jouer les génériques dans la console
+            console.log(`
+🎵 GÉNÉRIQUE GOLDORAK 🎵
+"Goldorak Go ! 
+Au signal, Goldorak !
+Tu surgis de la nuit
+Pour combattre le mal qui nous menace..."
+
+🎵 GÉNÉRIQUE CITÉS D'OR 🎵
+"Enfant du soleil
+Tu parcours la terre le ciel
+Cherche ton chemin
+C'est ta vie, c'est ton destin..."
+
+🎵 GÉNÉRIQUE JAYCE 🎵
+"Jayce et les Conquérants de la lumière
+Combat les Monstroplantes
+Dans tout l'univers..."
+
+NOSTALGIE LEVEL: OVER 9000!
+            `);
+        }
+
+        // Afficher dialogue
+        function showDialogue(text) {
+            const dialogue = document.getElementById('dialogue');
+            dialogue.textContent = text;
+            dialogue.classList.add('show');
+            
+            setTimeout(() => {
+                dialogue.classList.remove('show');
+            }, 2000);
+        }
+
+        // Animations CSS supplémentaires
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes attack-move {
+                0% { transform: translateX(0); }
+                50% { transform: translateX(200px) rotate(360deg); }
+                100% { transform: translateX(0); }
+            }
+            
+            @keyframes explode {
+                0% { transform: scale(1); opacity: 1; }
+                100% { transform: scale(2); opacity: 0; }
+            }
+            
+            @keyframes rainbow {
+                0% { filter: hue-rotate(0deg); }
+                100% { filter: hue-rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Message de bienvenue
+        setTimeout(() => {
+            showDialogue("BIENVENUE DANS NOTRE ENFANCE !");
+        }, 1000);
+
+        // Faire marcher Goldorak automatiquement
+        setInterval(() => {
+            const legs = document.querySelectorAll('.leg');
+            // Les jambes bougent déjà avec CSS
+        }, 500);
+
+        console.log(`
+🤖 GOLDORAK MARCHE ! 🤖
+========================
+Contrôles:
+- MARCHER : Goldorak avance
+- FULGUROPOING : Attaque la monstroplante
+- SAUTER : Goldorak vole
+- TRANSFORMATION : Goldoflash!
+- APPELER AMIS : Esteban, Tao, Zia, Actarus, Jayce!
+
+Easter Egg: Clique sur 🥚 en haut à droite...
+
+Nos dessins animés d'enfance:
+- Goldorak (1975-1977)
+- Les Mystérieuses Cités d'Or (1982)
+- Jayce et les Conquérants de la Lumière (1985)
+
+NOSTALGIE ACTIVÉE !
+        `);
+    </script>
+</body>
+</html>
