@@ -1259,16 +1259,67 @@ async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalA
     // Reuse execute for deterministic trace_hash
     let exec = temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await?;
     let trace_hash = exec.0.trace_hash.clone();
-    // Minimal world diff example: increment a tick and attach a synthetic change
+    // Minimal real world diff: detect MOV(Name, @x,y) inside runic ψ… formula and upsert an entity node
+    let mut entities_created = 0usize;
+    let mut entities_updated = 0usize;
+    let mut changes: Vec<serde_json::Value> = Vec::new();
+    if let Some(mov_idx) = req.formula.find("MOV(") {
+        let rest = &req.formula[mov_idx + 4..]; // after 'MOV('
+        if let Some(end_paren) = rest.find(')') {
+            let inner = &rest[..end_paren];
+            // inner like: "Arthur, @10,10" or "Arthur, @10.0,10.0"
+            let mut name = String::new();
+            let mut part_iter = inner.splitn(2, ',');
+            if let Some(n) = part_iter.next() { name = n.trim().to_string(); }
+            let after_name = part_iter.next().unwrap_or("");
+            let at_pos = after_name.find('@');
+            if let Some(at_i) = at_pos {
+                let coords = &after_name[at_i+1..];
+                let mut xy_iter = coords.split(|c| c == ',' || c == ' ');
+                let x_str = xy_iter.next().unwrap_or("").trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
+                let y_str = xy_iter.next().unwrap_or("").trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
+                if let (Ok(x), Ok(y)) = (x_str.parse::<f64>(), y_str.parse::<f64>()) {
+                    let hero_id = format!("hero:{}", name);
+                    let pos = Position6D::new(x, y, 0.0, 0.0, 1.0, 0.5).map_err(|_| StatusCode::BAD_REQUEST)?;
+                    if state.world_state.get_node(&hero_id).is_some() {
+                        // update position
+                        let _ = state.world_state.update_position(&hero_id, pos);
+                        entities_updated += 1;
+                        changes.push(serde_json::json!({"nodeId": hero_id, "type": "positionChanged", "x": x, "y": y}));
+                    } else {
+                        // create entity node
+                        let node = world_state::StateNode {
+                            id: hero_id.clone(),
+                            position: pos,
+                            node_type: world_state::NodeType::Entity,
+                            properties: {
+                                let mut m = std::collections::HashMap::new();
+                                m.insert("name".to_string(), serde_json::json!(name));
+                                m
+                            },
+                            connections: std::collections::HashSet::new(),
+                            last_updated: now_ms(),
+                            identity_id: None,
+                            timeline_id: Some("principale".to_string()),
+                        };
+                        let _ = state.world_state.update_node(node);
+                        entities_created += 1;
+                        changes.push(serde_json::json!({"nodeId": hero_id, "type": "nodeCreated", "x": x, "y": y}));
+                    }
+                }
+            }
+        }
+    }
+
     let now = now_ms();
     let world_nodes = state.world_state.node_count();
     let diff = serde_json::json!({
-        "entitiesUpdated": 0,
-        "entitiesCreated": 0,
+        "entitiesUpdated": entities_updated,
+        "entitiesCreated": entities_created,
         "entitiesRemoved": 0,
         "branches": {"created": [], "merged": []},
-        "changes": [],
-        "notes": "stub apply; replace with real state changes",
+        "changes": changes,
+        "notes": "apply processed (MVP MOV detector)",
         "timestamp": now,
         "worldNodes": world_nodes
     });
