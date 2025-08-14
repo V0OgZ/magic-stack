@@ -144,10 +144,18 @@ public class MagicEngineService {
 	            translations.put("quantum", normalized);
 	        }
 	        
-	        response.setFormula(input);
-	        response.setTranslations(translations);
-	        response.setFormat(request.getTargetFormat());
-	        return response;
+        // Optional: include quantum/trace by simulating a no-op execution in Rust
+        if (Boolean.TRUE.equals(request.getIncludeQuantum())) {
+            try {
+                RustTemporalClient.ExecuteResult exec = rust.execute(normalized, Map.of(), null);
+                translations.put("traceHash", exec.traceHash);
+            } catch (Exception ignored) { }
+        }
+
+        response.setFormula(input);
+        response.setTranslations(translations);
+        response.setFormat(request.getTargetFormat());
+        return response;
     }
 
 	    // ===== Translation helpers (ported/adapted from legacy AVALON-1 concepts) =====
