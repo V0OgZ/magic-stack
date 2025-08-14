@@ -238,6 +238,31 @@
             word-break: break-all;
         }
         
+        /* Aide utilisateur */
+        .help-toggle {
+            display: inline-block;
+            margin: 0 auto 14px auto;
+            padding: 8px 12px;
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            color: var(--gold);
+            background: rgba(212,175,55,0.08);
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+        }
+        .help-panel {
+            display: none;
+            background: rgba(10,14,26,0.6);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .help-panel p, .help-panel li {
+            color: var(--text-light);
+        }
+        
         .loading {
             text-align: center;
             color: var(--gold);
@@ -285,6 +310,36 @@
     <div class="container">
         <h1>🧪 Spells Lab</h1>
         <p class="subtitle">Laboratoire de Grammaire Temporelle - Moteur Réel</p>
+        
+        <div style="text-align:center">
+            <button class="help-toggle" onclick="toggleHelp()">❓ Mode d'emploi</button>
+        </div>
+        <div id="help" class="help-panel">
+            <div class="panel" style="margin:0; padding:16px">
+                <h2 style="color: var(--gold); margin: 0 0 8px 0; font-size: 1.2rem;">Comment utiliser</h2>
+                <ol style="margin: 0 0 12px 18px; padding:0">
+                    <li>Choisissez un preset ou tapez une formule manuelle dans le champ « Formule ».</li>
+                    <li>Optionnel: choisissez la Classe et le Mode (Simulation/Apply).</li>
+                    <li>Cliquez « Lancer le sort » — les 4 sorties s'affichent et un <b>traceHash</b> est généré.</li>
+                </ol>
+                <h3 style="color: var(--gold); margin: 8px 0 6px 0; font-size: 1.05rem;">Exemples</h3>
+                <ul style="margin: 0 0 12px 18px; padding:0">
+                    <li>Id canonique: <code>CHRONO_LOCK</code> (rempli la formule interne automatiquement)</li>
+                    <li>Formule texte: <code>TEMPUS::FREEZE</code></li>
+                </ul>
+                <h3 style="color: var(--gold); margin: 8px 0 6px 0; font-size: 1.05rem;">Comprendre la réponse</h3>
+                <ul style="margin: 0 0 12px 18px; padding:0">
+                    <li><b>Iconique/Littéraire/Runique/Quantique</b>: 4 vues de la même action.</li>
+                    <li><b>traceHash</b>: identifiant stable du résultat; même entrée ⇒ même hash.</li>
+                    <li><b>Mode Apply</b>: applique le sort (renvoie un <code>worldDiff</code>).</li>
+                </ul>
+                <h3 style="color: var(--gold); margin: 8px 0 6px 0; font-size: 1.05rem;">En cas d'erreur</h3>
+                <ul style="margin: 0 0 0 18px; padding:0">
+                    <li>« sort non trouvé »: utilisez un preset ou tapez une formule texte valide.</li>
+                    <li>JSON contexte invalide: laissez <code>{}</code> ou corrigez le JSON.</li>
+                </ul>
+            </div>
+        </div>
         
         <div class="panel">
             <h2 style="color: var(--gold); margin-top: 0;">Configuration du Sort</h2>
@@ -595,6 +650,11 @@
             const errorDiv = document.getElementById('error');
             errorDiv.style.display = 'block';
             errorDiv.innerHTML = `⚠️ ${message}`;
+        }
+        
+        function toggleHelp() {
+            const el = document.getElementById('help');
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
         
         // Auto-focus sur le champ formule
