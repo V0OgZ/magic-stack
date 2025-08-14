@@ -42,6 +42,37 @@ public class RustTemporalClient {
         return new ExecuteResult(hash);
     }
 
+    public static class ApplyResult {
+        public final String traceHash;
+        public final String worldDiffJson;
+        public ApplyResult(String traceHash, String worldDiffJson) {
+            this.traceHash = traceHash; this.worldDiffJson = worldDiffJson;
+        }
+    }
+
+    public ApplyResult apply(String normalizedFormula, Object context, Long seed) throws Exception {
+        String ctxJson = context != null ? toJson(context) : "{}";
+        String payload = String.format("{\"formula\":%s,\"context\":%s,\"seed\":%s}",
+                quote(normalizedFormula), ctxJson, seed == null ? "null" : seed.toString());
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/temporal/apply"))
+                .timeout(Duration.ofSeconds(4))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() / 100 != 2) {
+            throw new RuntimeException("Rust apply failed: HTTP " + res.statusCode());
+        }
+        String body = res.body();
+        String hash = extractField(body, "trace_hash");
+        if (hash == null || hash.isEmpty()) {
+            throw new RuntimeException("trace_hash missing in Rust apply response");
+        }
+        // Return raw world_diff JSON string for the controller/service to map into Map if needed
+        return new ApplyResult(hash, body);
+    }
+
     private static String quote(String s) {
         if (s == null) return "null";
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";

@@ -295,6 +295,7 @@ async fn main() {
         // Temporal grammar endpoints (for Java integration)
         .route("/temporal/parse", post(temporal_parse))
         .route("/temporal/execute", post(temporal_execute))
+        .route("/temporal/apply", post(temporal_apply))
         // Archives (Vector DB local proxy)
         .route("/api/archives/status", get(archives_status))
         .route("/api/archives/search", post(archives_search))
@@ -1245,6 +1246,31 @@ async fn temporal_execute(Json(req): Json<TemporalExecuteReq>) -> Result<Json<Te
     hasher.update(serde_json::to_vec(&result).unwrap_or_default());
     let trace_hash = format!("{:x}", hasher.finalize());
     Ok(Json(TemporalExecuteResp { ok: true, result, trace_hash }))
+}
+
+// ===== Minimal apply endpoint (stub) =====
+#[derive(Deserialize)]
+struct TemporalApplyReq { formula: String, context: Option<serde_json::Value>, seed: Option<u64> }
+
+#[derive(Serialize)]
+struct TemporalApplyResp { ok: bool, world_diff: serde_json::Value, trace_hash: String }
+
+async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalApplyReq>) -> Result<Json<TemporalApplyResp>, StatusCode> {
+    // Reuse execute for deterministic trace_hash
+    let exec = temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await?;
+    let trace_hash = exec.0.trace_hash.clone();
+    // Minimal world diff example: increment a tick and attach a synthetic change
+    let now = now_ms();
+    let world_nodes = state.world_state.node_count();
+    let diff = serde_json::json!({
+        "entitiesUpdated": 0,
+        "entitiesCreated": 0,
+        "entitiesRemoved": 0,
+        "notes": "stub apply; replace with real state changes",
+        "timestamp": now,
+        "worldNodes": world_nodes
+    });
+    Ok(Json(TemporalApplyResp { ok: true, world_diff: diff, trace_hash }))
 }
 
 // ===== Vector Archives Proxy =====

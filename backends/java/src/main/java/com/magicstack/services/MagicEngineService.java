@@ -94,14 +94,29 @@ public class MagicEngineService {
             response.setSounds(Arrays.asList("magic_cast"));
             response.setTraceHash(exec.traceHash);
 
-            // Apply mode stub: mark applied and return a minimal world diff structure
+            // Apply mode: delegate to Rust /temporal/apply for world diff (MVP)
             boolean isApply = "apply".equalsIgnoreCase(request.getMode());
             response.setApplied(isApply);
             if (isApply) {
-                Map<String, Object> diff = new HashMap<>();
-                diff.put("entitiesUpdated", 1);
-                diff.put("notes", "stub world_diff; to be replaced by real state changes");
-                response.setWorldDiff(diff);
+                try {
+                    RustTemporalClient.ApplyResult applyRes = rust.apply(normalized, request.getContext(), request.getSeed());
+                    // Parse world_diff from returned JSON string
+                    Map<String, Object> parsed = new com.fasterxml.jackson.databind.ObjectMapper().readValue(applyRes.worldDiffJson, Map.class);
+                    Object wd = parsed.get("world_diff");
+                    if (wd instanceof Map) {
+                        //noinspection unchecked
+                        response.setWorldDiff((Map<String, Object>) wd);
+                    } else {
+                        Map<String, Object> fallback = new HashMap<>();
+                        fallback.put("raw", parsed);
+                        response.setWorldDiff(fallback);
+                    }
+                } catch (Exception ignore) {
+                    Map<String, Object> diff = new HashMap<>();
+                    diff.put("entitiesUpdated", 0);
+                    diff.put("notes", "apply fallback; rust unavailable");
+                    response.setWorldDiff(diff);
+                }
             }
         } catch (Exception e) {
             // Fallback to previous placeholder
