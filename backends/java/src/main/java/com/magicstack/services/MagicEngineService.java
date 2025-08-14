@@ -22,6 +22,9 @@ public class MagicEngineService {
         this.rust = new RustTemporalClient(System.getenv().getOrDefault("RUST_BASE_URL", "http://localhost:3001"));
     }
     
+    public Map<String, Object> getRegistryInfo() { return registry.getRegistryInfo(); }
+    public Map<String, String> getAllCachedFormulas() { return registry.getAllCachedFormulas(); }
+    
     public CastResponse cast(CastRequest request) {
         CastResponse response = new CastResponse();
         

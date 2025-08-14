@@ -63,7 +63,10 @@ public class MagicController {
     
     @GetMapping("/formulas")
     public Map<String, Object> listFormulas() {
-        return magicEngine.getAllFormulas();
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("registry", magicEngine.getRegistryInfo());
+        resp.put("formulas", magicEngine.getAllCachedFormulas());
+        return resp;
     }
     
     @GetMapping("/dimensions/{entityId}")
