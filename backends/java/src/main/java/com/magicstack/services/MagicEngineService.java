@@ -122,22 +122,132 @@ public class MagicEngineService {
     }
     
     public TranslateResponse translate(TranslateRequest request) {
-        TranslateResponse response = new TranslateResponse();
-        
-        // Simple translation logic - in reality would use the 869 formulas
-        Map<String, String> translations = new HashMap<>();
-        
-        String formula = request.getFormula();
-        translations.put("literary", "Invoke the ancient powers of " + formula);
-        translations.put("runic", "ᚠᚢᚦᚨᚱᚲ " + formula.substring(0, Math.min(formula.length(), 3)));
-        translations.put("iconic", "🔮✨" + formula.charAt(0) + "⚡");
-        
-        response.setFormula(formula);
-        response.setTranslations(translations);
-        response.setFormat(request.getTargetFormat());
-        
-        return response;
+	        TranslateResponse response = new TranslateResponse();
+	        String input = request.getFormula() != null ? request.getFormula() : "";
+	        String normalized = registry.resolveFormulaText(input);
+	        
+	        Map<String, String> translations = new LinkedHashMap<>();
+	        
+	        // 1) Runic detection (ψ123: ⊙(...)) and narrative translation with light redaction layer
+	        if (isRunicFormula(normalized)) {
+	            String narrative = translateRunicContent(normalized);
+	            translations.put("literary", narrative);
+	            translations.put("runic", extractRunicGlyph(normalized));
+	            translations.put("iconic", buildIconicFromText(normalized));
+	            translations.put("quantum", normalized);
+	        } else {
+	            // Non-runic: fallback to simple redacted description
+	            String literary = applyRedactionLayer("Activation de la formule: " + normalized);
+	            translations.put("literary", literary);
+	            translations.put("runic", deriveRunicToken(normalized));
+	            translations.put("iconic", buildIconicFromText(normalized));
+	            translations.put("quantum", normalized);
+	        }
+	        
+	        response.setFormula(input);
+	        response.setTranslations(translations);
+	        response.setFormat(request.getTargetFormat());
+	        return response;
     }
+
+	    // ===== Translation helpers (ported/adapted from legacy AVALON-1 concepts) =====
+	    private boolean isRunicFormula(String formula) {
+	        if (formula == null) return false;
+	        return formula.matches("^ψ\\d+:\\s*⊙\\(.*\\)$");
+	    }
+
+	    private String translateRunicContent(String runicFormula) {
+	        try {
+	            // Prefer embedded narrative if present (legacy assets sometimes embed description in JSON-ish payload)
+	            String llm = extractLLMDescription(runicFormula);
+	            if (llm != null && !llm.isEmpty()) {
+	                return applyRedactionLayer("" + llm);
+	            }
+	            // Fallback: generate narrative from recognizable tokens
+	            return applyRedactionLayer(generateSimpleTranslation(runicFormula));
+	        } catch (Exception e) {
+	            return "Traduction indisponible";
+	        }
+	    }
+
+	    private String extractLLMDescription(String content) {
+	        try {
+	            String[] fields = {"description", "narrative", "story", "lore", "flavor_text", "text_description", "llm_description"};
+	            for (String f : fields) {
+	                java.util.regex.Matcher m = java.util.regex.Pattern
+	                    .compile("\"" + f + "\"\\s*:\\s*\"([^\"]+)\"")
+	                    .matcher(content);
+	                if (m.find()) return m.group(1);
+	            }
+	        } catch (Exception ignored) { }
+	        return null;
+	    }
+
+	    private String generateSimpleTranslation(String content) {
+	        // Time Δt+n
+	        String timePhrase = "";
+	        java.util.regex.Matcher tm = java.util.regex.Pattern.compile("Δt\\+(\\d+)").matcher(content);
+	        if (tm.find()) {
+	            timePhrase = "dans " + tm.group(1) + " tours, ";
+	        }
+	        // Coordinates @x,y
+	        String locPhrase = "";
+	        java.util.regex.Matcher cm = java.util.regex.Pattern.compile("@(\\d+),(\\d+)").matcher(content);
+	        if (cm.find()) {
+	            locPhrase = "aux coordonnées (" + cm.group(1) + ", " + cm.group(2) + "), ";
+	        }
+	        String action = "une énergie quantique se manifeste";
+	        if (content.contains("MOV(")) action = "un déplacement quantique s'opère";
+	        else if (content.contains("HEAL_HERO")) action = "une lumière dorée restaure la vie";
+	        else if (content.contains("DAMAGE_ENEMY")) action = "des éclairs de destruction frappent";
+	        else if (content.contains("BATTLE(")) action = "les destins s'entrechoquent dans un combat";
+	        else if (content.contains("CREATE(")) action = "la réalité se plie et façonne un objet";
+	        
+	        return "" + timePhrase + action + (locPhrase.isEmpty() ? "" : (" "+locPhrase)).trim();
+	    }
+
+	    private String applyRedactionLayer(String text) {
+	        if (text == null) return null;
+	        // Minimal synonym/lexicon mapping to hide engine tokens
+	        String[][] map = new String[][]{
+	            {"MOV", "déplacement"},
+	            {"HEAL_HERO", "guérison"},
+	            {"DAMAGE_ENEMY", "frappe"},
+	            {"CREATE", "manifeste"},
+	            {"QUANTUM", "quantique"},
+	            {"RUNIC", "runique"}
+	        };
+	        String redacted = text;
+	        for (String[] kv : map) {
+	            redacted = redacted.replace(kv[0], kv[1]);
+	        }
+	        return redacted;
+	    }
+
+	    private String extractRunicGlyph(String runicFormula) {
+	        // Keep a short marker for UI
+	        String psi = "ψ";
+	        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^ψ(\\d+):").matcher(runicFormula);
+	        if (m.find()) psi += m.group(1);
+	        return psi;
+	    }
+
+	    private String deriveRunicToken(String text) {
+	        if (text == null) return "ᚠᚢᚦ";
+	        String cleaned = text.toUpperCase().replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
+	        return cleaned.isEmpty() ? "ᚠᚢᚦ" : cleaned.substring(0, Math.min(16, cleaned.length()));
+	    }
+
+	    private String buildIconicFromText(String text) {
+	        if (text == null) return "✨";
+	        String upper = text.toUpperCase();
+	        if (upper.contains("FIRE")) return "🔥";
+	        if (upper.contains("HEAL")) return "💚";
+	        if (upper.contains("TELEPORT") || upper.contains("MOV(")) return "🌀";
+	        if (upper.contains("SHIELD")) return "🛡️";
+	        if (upper.contains("DAMAGE")) return "⚔️";
+	        return "✨";
+	    }
     
     public ShiftResponse temporalShift(ShiftRequest request) {
         ShiftResponse response = new ShiftResponse();
