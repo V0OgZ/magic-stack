@@ -679,8 +679,23 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
         
-        // Auto-focus sur le champ formule
+        // Auto-focus + lecture des paramètres d'URL (action, formula, mode)
         window.addEventListener('DOMContentLoaded', () => {
+            const url = new URL(window.location.href);
+            const params = url.searchParams;
+            const action = params.get('action');
+            const formula = params.get('formula') || params.get('f');
+            const mode = params.get('mode');
+            if (action && document.getElementById('action')) {
+                document.getElementById('action').value = action;
+            }
+            if (mode && document.getElementById('mode')) {
+                document.getElementById('mode').value = mode;
+            }
+            if (formula) {
+                const el = document.getElementById('formula');
+                el.value = formula;
+            }
             document.getElementById('formula').focus();
         });
     </script>
