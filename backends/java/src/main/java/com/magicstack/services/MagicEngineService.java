@@ -24,6 +24,16 @@ public class MagicEngineService {
     
     public Map<String, Object> getRegistryInfo() { return registry.getRegistryInfo(); }
     public Map<String, String> getAllCachedFormulas() { return registry.getAllCachedFormulas(); }
+    public Map<String, Object> getRecentChanges(Integer limit) {
+        try {
+            return rust.getRecentChanges(limit);
+        } catch (Exception e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "rust_changes_unavailable");
+            err.put("message", e.getMessage());
+            return err;
+        }
+    }
     
     public CastResponse cast(CastRequest request) {
         CastResponse response = new CastResponse();

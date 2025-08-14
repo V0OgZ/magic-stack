@@ -73,4 +73,9 @@ public class MagicController {
     public Position6D getEntityPosition(@PathVariable String entityId) {
         return magicEngine.getEntityPosition(entityId);
     }
+
+    @GetMapping("/world-state/changes")
+    public Map<String, Object> recentChanges(@RequestParam(value = "limit", required = false) Integer limit) {
+        return magicEngine.getRecentChanges(limit);
+    }
 }
