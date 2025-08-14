@@ -434,18 +434,26 @@
         }
         
         function setFormula(formulaId) {
-            const formula = FORMULAS[formulaId];
-            document.getElementById('formula').value = formulaId;
-            
+            const preset = FORMULAS[formulaId];
+            const textarea = document.getElementById('formula');
+            if (preset && preset.formula) {
+                textarea.value = preset.formula;
+                textarea.dataset.formulaId = formulaId;
+            } else {
+                textarea.value = formulaId;
+                delete textarea.dataset.formulaId;
+            }
             // Ajouter tooltip
-            if (formula && formula.tooltip) {
+            if (preset && preset.tooltip) {
                 const btn = event.target;
-                btn.title = formula.tooltip;
+                btn.title = preset.tooltip;
             }
         }
         
         async function castSpell() {
-            const formula = document.getElementById('formula').value.trim();
+            const formulaEl = document.getElementById('formula');
+            const formula = formulaEl.value.trim();
+            const formulaId = formulaEl.dataset.formulaId || null;
             if (!formula) {
                 showError('Veuillez entrer une formule !');
                 return;
@@ -454,7 +462,7 @@
             // Préparer la requête
             const request = {
                 formula: formula,
-                formulaId: FORMULAS[formula] ? formula : null,
+                formulaId: formulaId,
                 class: document.getElementById('class').value,
                 mode: document.getElementById('mode').value,
                 context: {},
