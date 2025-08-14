@@ -406,6 +406,7 @@
         <div id="results" style="display: none;">
             <div class="panel">
                 <h2 style="color: var(--gold); margin-top: 0;">Résultats du Sort</h2>
+                <div id="meta-line" style="margin:6px 0 12px 0; color:#cbb07a; font-family:'Cinzel', serif; font-size:0.95rem;"></div>
                 
                 <div class="outputs" id="outputs">
                     <!-- Rempli dynamiquement -->
@@ -417,6 +418,10 @@
                 
                 <div class="trace-hash" id="trace-hash" style="display: none;">
                     <!-- Hash de trace -->
+                </div>
+                <div class="output-card" id="world-diff" style="display:none; margin-top:12px;">
+                    <div class="output-title">🌍 World Diff (apply)</div>
+                    <pre class="output-content" id="world-diff-content" style="white-space:pre-wrap; word-break:break-word;"></pre>
                 </div>
             </div>
         </div>
@@ -611,6 +616,10 @@
         
         function displayResults(result) {
             document.getElementById('results').style.display = 'block';
+            const mode = (document.getElementById('mode')?.value)||'simulate';
+            const action = (document.getElementById('action')?.value)||'cast';
+            const meta = document.getElementById('meta-line');
+            meta.textContent = `Action: ${action} · Mode: ${mode}`;
             
             // Afficher les 4 outputs
             const outputsDiv = document.getElementById('outputs');
@@ -672,6 +681,18 @@
                     <strong>🔐 Trace Hash:</strong><br>
                     ${result.traceHash}
                 `;
+            }
+
+            // Afficher worldDiff en mode apply si renvoyé
+            const wd = result.worldDiff || result.world_diff;
+            const wdBox = document.getElementById('world-diff');
+            const wdContent = document.getElementById('world-diff-content');
+            if (wd) {
+                wdBox.style.display = 'block';
+                wdContent.textContent = typeof wd === 'string' ? wd : JSON.stringify(wd, null, 2);
+            } else {
+                wdBox.style.display = 'none';
+                wdContent.textContent = '';
             }
         }
         
