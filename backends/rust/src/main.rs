@@ -1266,6 +1266,8 @@ async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalA
         "entitiesUpdated": 0,
         "entitiesCreated": 0,
         "entitiesRemoved": 0,
+        "branches": {"created": [], "merged": []},
+        "changes": [],
         "notes": "stub apply; replace with real state changes",
         "timestamp": now,
         "worldNodes": world_nodes
