@@ -1,0 +1,36 @@
+WorldEditor 6D - Plan and status (for Vincent)
+
+Status
+- /unified playable: pickups -> backend, encounters, treasure, HUD inventory/buffs
+- Map schema extended: spawners, growth_rules; type-check/build OK
+- Backend: /api/game/resources, /api/encounter/resolve, /api/treasure/open; targeted tests OK
+
+Strategy (dual UI)
+- React = logic reference (controllers, events, economy)
+- HTML  = visual reference (layout/UX)
+- Guardrails: shared 6D core + single dispatch(event) + React=HTML snapshots in CI + design tokens + no-touch zones
+
+Next steps
+1) Freeze world6d v1.1 (events: move6d, collapse, artifactApplied) + TS types
+2) Create packages/editor-core (6D state, validators, event bus, event-log + replay)
+3) Bind React to core (replace setState with dispatch(event)); add 3 unit tests
+4) Provide HTML a thin adapter to emit/consume the same events via core
+5) Parity: 3 JSONL fixtures; strict snapshots React == HTML in CI
+6) Extract tokens from HTML; apply in React
+
+Definition of Done v1
+- world6d v1.1 consumed by both UIs
+- 100% mutations via dispatch(event) -> core
+- Replay: 3 canonical scenarios produce identical snapshots
+- Shared tokens; visual parity validated
+- CI blocks logic/parity regressions
+
+Mac-safe ops
+- curl with -m 2, no pipes, JSON via -d @/tmp/file.json
+- one command per line, no chained &&
+- commits in plain ASCII, no emojis
+
+Approvals
+- OK to create packages/editor-core and freeze world6d v1.1
+- OK to add CI parity gate
+- OK for Claude to wire HTML to core via events and handle VPS updates

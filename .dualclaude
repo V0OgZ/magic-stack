@@ -1,0 +1,21 @@
+Role (Claude): HTML/UX + VPS updates
+
+Scope
+- Keep HTML editor as visual reference; no business logic
+- Emit/consume the same 6D events as React via editor-core (dispatch/subscribe/getState/replay)
+- Update VPS (frontpage/world-editor) only when local is green; run healthchecks
+
+Do now
+1) Frontpage images: relative paths, before/after screenshots
+2) Prepare adapter: replace internal mutations with dispatch(event) once core is delivered
+3) Produce 3 JSONL event traces (canonical scenarios) from your UI actions for parity tests
+
+Acceptance
+- Same event sequence -> same final snapshot as React
+- Zero business logic in HTML; UI only
+- Relative image paths only; no extra libs
+- VPS: after deploy, 200s on /, /FRONTPAGE/index.html, /world-editor (if served), /engine/health, /api/health
+
+macOS curl safety
+- Use: curl -m 2 -sS --fail-with-body -H "Content-Type: application/json" -d @/tmp/payload.json URL
+- No pipes, one command per line, ASCII only commits

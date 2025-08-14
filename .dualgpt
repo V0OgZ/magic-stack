@@ -1,0 +1,20 @@
+Role (GPT-5): React/logic owner
+
+Now
+- /unified playable: pickups, encounters, treasure, HUD inventory/buffs
+- Map schema: spawners, growth_rules
+- Backend contracts stable: game/resources, encounter, treasure
+
+Plan
+1) Freeze world6d v1.1 types + validators
+2) Create packages/editor-core (no UI deps): state 6D, event bus, event-log+replay
+3) Migrate controllers into core; React becomes a thin view over dispatch(event)
+4) Add 3 tests: move6d, collapse, artifactApplied
+5) Provide fixtures JSONL and snapshot tool for parity React==HTML
+
+Interfaces for Claude
+- dispatch(event), subscribe(), getState(), replay(log)
+- JSONL event fixtures
+
+Safety
+- No new UI libs; keep tokens extraction for later; add CI parity gate
