@@ -5,12 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heroes of Time - Le Multivers vous attend</title>
     
-    <!-- PWA Support -->
+    <!-- PWA Support Amélioré -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#1a0033">
+    
+    <!-- iOS Specific -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Heroes Time">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
+    
+    <!-- iOS Splash Screens -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-startup-image" href="/FRONTPAGE/assets/hero-bg.jpg">
+    
+    <!-- Autres optimisations PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Heroes Time">
+    <meta name="msapplication-TileColor" content="#1a0033">
+    <meta name="msapplication-TileImage" content="/icons/icon-192.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap');
         
@@ -1102,5 +1117,44 @@
 </script>
     <!-- SPA Navigation -->
     <script src="/FRONTPAGE/spa-navigation.js"></script>
+    
+    <!-- Service Worker pour PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker enregistré:', registration);
+                        
+                        // Vérifier les mises à jour toutes les heures
+                        setInterval(() => {
+                            registration.update();
+                        }, 3600000);
+                    })
+                    .catch(error => {
+                        console.log('Erreur Service Worker:', error);
+                    });
+            });
+        }
+        
+        // Détection installation PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Créer un bouton d'installation si pas déjà installé
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('PWA peut être installé');
+                // Optionnel: afficher un bouton d'installation
+            }
+        });
+        
+        // Détection si lancé comme PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Lancé comme PWA');
+            document.body.classList.add('pwa-mode');
+        }
+    </script>
 </body>
 </html>
