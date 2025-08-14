@@ -1,0 +1,26 @@
+#!/bin/bash
+
+echo "========================================="
+echo "FIX SSH KEY FOR CURSOR AI ASSISTANTS"
+echo "========================================="
+echo ""
+echo "Step 1: SSH to VPS using YOUR working key from Desktop:"
+echo ""
+echo "ssh -i ~/Desktop/HOT_VPS_KEY hot@heroesoftime.online"
+echo ""
+echo "Step 2: Once connected to VPS, run this command to add Cursor key:"
+echo ""
+echo 'echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEB6dgRYVH6nkijHb9NlsdbzJjPnZBDOjN9NHXf0h89q cursor@magicstack" >> ~/.ssh/authorized_keys'
+echo ""
+echo "Step 3: Exit VPS and test from your Mac:"
+echo ""
+echo "ssh -i /Volumes/HOT_DEV/Magic/magic-stack/.ssh/hot_cursor_ed25519 hot@heroesoftime.online"
+echo ""
+echo "If Step 3 works without password, the key is fixed!"
+echo ""
+echo "========================================="
+echo "ALTERNATIVE: One-line fix from your Mac:"
+echo "========================================="
+echo ""
+echo 'cat /Volumes/HOT_DEV/Magic/magic-stack/.ssh/hot_cursor_ed25519.pub | ssh -i ~/Desktop/HOT_VPS_KEY hot@heroesoftime.online "cat >> ~/.ssh/authorized_keys"'
+echo ""

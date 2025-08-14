@@ -148,6 +148,31 @@ export const ResourceConnectionSchema = z.object({
 });
 
 /**
+ * Générateurs de ressources/créatures (spawn périodique)
+ */
+export const SpawnerSchema = z.object({
+  id: z.string(),
+  type: z.enum(['resource', 'creature', 'artifact']),
+  subtype: z.string().optional(),
+  emoji: z.string().optional(),
+  name: z.string().optional(),
+  rateDays: z.number().positive().default(1),
+  maxAlive: z.number().positive().default(5),
+  area: z.object({
+    x: z.number(), y: z.number(), width: z.number(), height: z.number(),
+  }).optional(),
+});
+
+/**
+ * Règles de croissance de ressources (style Dr. Stone)
+ */
+export const ResourceGrowthRuleSchema = z.object({
+  kind: z.enum(['wood', 'stone', 'herb', 'flower']),
+  dailySpawn: z.number().nonnegative().default(0),
+  cap: z.number().nonnegative().default(50),
+});
+
+/**
  * Événement temporel dans la timeline
  */
 export const TemporalEventSchema = z.object({
@@ -225,6 +250,8 @@ export const MapSchema = z.object({
   // Resources placées
   resources: z.array(PlacedResourceSchema).default([]),
   connections: z.array(ResourceConnectionSchema).default([]),
+  spawners: z.array(SpawnerSchema).default([]),
+  growth_rules: z.array(ResourceGrowthRuleSchema).default([]),
   
   // Timeline
   timeline: z.object({
@@ -279,6 +306,8 @@ export type Position6D = z.infer<typeof Position6DSchema>;
 export type EnergyComplex = z.infer<typeof EnergyComplexSchema>;
 export type PlacedResource = z.infer<typeof PlacedResourceSchema>;
 export type ResourceConnection = z.infer<typeof ResourceConnectionSchema>;
+export type Spawner = z.infer<typeof SpawnerSchema>;
+export type ResourceGrowthRule = z.infer<typeof ResourceGrowthRuleSchema>;
 export type TemporalEvent = z.infer<typeof TemporalEventSchema>;
 export type Regulators = z.infer<typeof RegulatorsSchema>;
 export type VictoryCondition = z.infer<typeof VictoryConditionSchema>;
@@ -344,6 +373,8 @@ export function createEmptyMap(name: string, worldIdOrWorld: string | World): Ma
     world: worldIdOrWorld,
     resources: [],
     connections: [],
+    spawners: [],
+    growth_rules: [],
     timeline: {
       events: [],
       maxDays: 100,

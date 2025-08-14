@@ -39,6 +39,8 @@ public class GameController {
         inv.energy = clamp(inv.energy + n(req.energyDelta), 0, 100);
         inv.temporal += n(req.temporalDelta);
 
+        // XP: simple rule — crystals/2 add to XP
+        inv.xp += Math.max(0, n(req.crystalsDelta)) / 2;
         inv.lastUpdatedEpochMs = System.currentTimeMillis();
         return inv;
     }
@@ -66,6 +68,7 @@ public class GameController {
         public int crystals;
         public int energy;
         public int temporal;
+        public int xp;
 
         public long lastUpdatedEpochMs = System.currentTimeMillis();
     }
