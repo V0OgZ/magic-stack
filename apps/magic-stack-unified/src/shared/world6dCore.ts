@@ -124,24 +124,26 @@ export class CoreStore {
     this.state.entities[entity.id] = entity;
   }
 
-  private apply(event: CoreEvent | (EventLogEntry & { event: any })) {
-    // Support an 'add' event used in traces to insert entities
-    if ((event as any).event && (event as any).event.type) {
-      // called from replay(JSONL parsed)
-      const inner = (event as any).event;
+  private apply(input: CoreEvent | (EventLogEntry & { event: any })) {
+    // Normalize to CoreEvent and handle trace-only 'add'
+    let ev: CoreEvent;
+    if ((input as any).event && (input as any).event.type) {
+      const inner = (input as any).event;
       if (inner.type === 'add' && inner.entity) {
         this.upsertEntity(inner.entity as any);
         return;
       }
-      event = inner as CoreEvent;
+      ev = inner as CoreEvent;
+    } else {
+      ev = input as CoreEvent;
     }
-    switch (event.type) {
+    switch (ev.type) {
       case 'move6d': {
-        const e = this.state.entities[event.entityId];
+        const e = this.state.entities[ev.entityId];
         if (!e) return;
-        const d = event.delta;
+        const d = ev.delta;
         const p = { ...e.pos } as Position6D;
-        this.state.entities[event.entityId] = {
+        this.state.entities[ev.entityId] = {
           ...(e as any),
           pos: {
             x: d.x !== undefined ? d.x : p.x,
@@ -155,18 +157,18 @@ export class CoreStore {
         break;
       }
       case 'collapse': {
-        delete this.state.entities[event.targetId];
+        delete this.state.entities[ev.targetId];
         break;
       }
       case 'artifactApplied': {
-        const e = this.state.entities[event.entityId];
+        const e = this.state.entities[ev.entityId];
         if (!e || e.type !== 'portal') return;
         const portal = e as Portal;
         const mods = { ...(portal.modifiers || {}) };
-        const k = event.modifier.key;
-        const f = event.modifier.factor;
+        const k = ev.modifier.key;
+        const f = ev.modifier.factor;
         mods[k] = (mods[k] ?? 1) * f;
-        this.state.entities[event.entityId] = { ...portal, modifiers: mods };
+        this.state.entities[ev.entityId] = { ...portal, modifiers: mods };
         break;
       }
     }
@@ -174,3 +176,25 @@ export class CoreStore {
 }
 
 export const coreStore = new CoreStore();
+
+// Stable snapshot for parity checks
+export function getStableSnapshot(state: World6D = coreStore.getState()): any {
+  const orderedIds = Object.keys(state.entities).sort();
+  const entities = orderedIds.map(id => {
+    const e = state.entities[id] as any;
+    const pos = e.pos as Position6D;
+    return {
+      id,
+      type: e.type,
+      name: e.name,
+      amplitude: e.amplitude,
+      state: e.state,
+      modifiers: e.modifiers,
+      pos: {
+        x: +pos.x.toFixed(3), y: +pos.y.toFixed(3), z: +pos.z.toFixed(3),
+        t: +pos.t.toFixed(3), psi: +pos.psi.toFixed(3), sigma: +pos.sigma.toFixed(3)
+      }
+    };
+  });
+  return { version: state.version, entities };
+}
