@@ -4,9 +4,7 @@ export function QuickCastPanel(): React.ReactElement {
 	const [formula, setFormula] = React.useState('TEMPUS::FREEZE');
 	const [casterClass, setCasterClass] = React.useState<'warrior' | 'mage' | 'rogue' | 'priest' | 'temporal' | 'quantum'>('temporal');
 	const [forceMode, setForceMode] = React.useState<'iconic' | 'literary' | 'runic' | 'quantum'>('quantum');
-	const [useRealEngine, setUseRealEngine] = React.useState<boolean>(() => {
-		try { return localStorage.getItem('useRealEngine') === 'true'; } catch { return false; }
-	});
+	const [useRealEngine] = React.useState<boolean>(true);
 
 	const [health, setHealth] = React.useState<{rust?: boolean; java?: boolean; vector?: boolean}>({});
 	React.useEffect(() => {
@@ -132,18 +130,9 @@ export function QuickCastPanel(): React.ReactElement {
 			<span>Vector: <span style={{ color: health.vector ? '#48bb78' : '#fc8181' }}>{health.vector ? 'OK' : 'OFF'}</span></span>
 		</div>
 
-		{/* Engine toggle */}
-		<label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#a0aec0' }}>
-			<input
-				type="checkbox"
-				checked={useRealEngine}
-				onChange={(e) => {
-					setUseRealEngine(e.target.checked);
-					try { localStorage.setItem('useRealEngine', String(e.target.checked)); } catch {}
-				}}
-			/>
-			<span>Utiliser le moteur réel (/api/magic/cast)</span>
-		</label>
+		<div style={{ fontSize: 12, color: '#a0aec0' }}>
+			Moteur: réel (/api/magic/cast)
+		</div>
 
 			<div style={{ display: 'flex', gap: 10 }}>
 				<div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>

@@ -15,6 +15,11 @@ public class MagicEngineService {
     
     private final Map<String, Object> activeSpells = new HashMap<>();
     private final Random random = new Random();
+    private final FormulaRegistryService registry;
+
+    public MagicEngineService(FormulaRegistryService registry) {
+        this.registry = registry;
+    }
     
     public CastResponse cast(CastRequest request) {
         CastResponse response = new CastResponse();
@@ -31,6 +36,9 @@ public class MagicEngineService {
         position.setC(0.8); // High causality for spells
         position.setPsi(random.nextDouble()); // Quantum fluctuation
         
+        // Normalize formula via registry (Vector DB)
+        String normalized = registry.resolveFormulaText(request.getFormula());
+
         // Store active spell
         Map<String, Object> spellData = new HashMap<>();
         
@@ -49,7 +57,7 @@ public class MagicEngineService {
             spellData.put("patterns", patterns);
         } else {
             response.setEffect("SPELL_CAST_SUCCESS");
-            response.setMessage("Formula " + request.getFormula() + " cast successfully!");
+            response.setMessage("Formula " + normalized + " cast successfully!");
         }
         spellData.put("formula", request.getFormula());
         spellData.put("power", request.getPower());
@@ -61,6 +69,19 @@ public class MagicEngineService {
         response.setSpellId(spellId);
         response.setSuccess(true);
         response.setPosition6D(position);
+
+        // Minimal unified outputs for front
+        Map<String, String> outputs = new HashMap<>();
+        outputs.put("literary", response.getMessage());
+        String icon = response.getEffect().contains("FREEZE") ? "❄️"
+            : response.getEffect().contains("TELEPORT") ? "🌀"
+            : response.getEffect().contains("FIRE") ? "🔥"
+            : response.getEffect().contains("SHIELD") ? "🛡️" : "✨";
+        outputs.put("iconic", icon);
+        outputs.put("runic", (request.getFormula() != null ? request.getFormula().replaceAll("[^A-Z_]", "") : "")
+            .replaceAll("__+", "_").substring(0, Math.min(16, Math.max(0, (request.getFormula() != null ? request.getFormula().length() : 0)))));
+        outputs.put("quantum", normalized);
+        response.setOutputs(outputs);
         
         return response;
     }

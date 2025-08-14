@@ -192,12 +192,42 @@ class MagicStackAPI {
       }).then(r => r.json()),
 
     // POST /api/magic/cast (real engine route)
-    magicCast: (payload: { formula_id?: string; formula?: string; context?: any; mode?: 'simulate' | 'apply' }) =>
-      fetch(`${this.endpoints.java}/api/magic/cast`, {
+    magicCast: async (payload: { formula_id?: string; formula?: string; context?: any; mode?: 'simulate' | 'apply' }) => {
+      const res = await fetch(`${this.endpoints.java}/api/magic/cast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).then(r => r.json()),
+      });
+      const data = await res.json();
+      // Normalize to CastResult expected by CastingManager
+      const formula = payload.formula || (data && (data.formula || data.formula_id)) || 'UNKNOWN_FORMULA';
+      const output: any = {};
+      if (data && data.output) {
+        Object.assign(output, data.output);
+      } else {
+        const msg: string = data?.message || `Formula ${formula} executed`;
+        // Literary: backend message
+        output.literary = msg;
+        // Iconic: map effect or formula to emojis
+        const effect = (data?.effect || '').toString().toUpperCase();
+        const fxIcon = effect.includes('FREEZE') || formula.includes('FREEZE') ? '❄️'
+          : effect.includes('TELEPORT') || formula.includes('TELEPORT') ? '🌀'
+          : effect.includes('FIRE') || formula.includes('FIRE') || formula.includes('FIREBALL') ? '🔥'
+          : effect.includes('SHIELD') || formula.includes('SHIELD') ? '🛡️'
+          : effect.includes('LIGHTNING') || formula.includes('LIGHTNING') ? '⚡'
+          : '✨';
+        output.iconic = fxIcon;
+        // Runic: compact rune-like from formula
+        output.runic = formula.replace(/[^A-Z_]/g, '').slice(0, 16) || 'ᚠᚢᚦ';
+        // Quantum: echo the formula id/text for now
+        output.quantum = formula;
+      }
+      const effects = Array.isArray(data?.effects) ? data.effects : (data?.effect ? [String(data.effect)] : []);
+      const sounds = Array.isArray(data?.sounds) ? data.sounds : (
+        (output.iconic === '🌀') ? ['magic_portal'] : ['magic_cast']
+      );
+      return { formula, output, effects, sounds };
+    },
     
     // GET /api/heroes
     getHeroes: () =>

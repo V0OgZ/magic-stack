@@ -100,28 +100,18 @@ class CastingManager {
     const config = this.classConfig[caster.class];
     const mode = options?.forceMode || config.preferredMode;
 
-    const useRealEngine = options?.useRealEngine ?? (typeof localStorage !== 'undefined' && localStorage.getItem('useRealEngine') === 'true');
-
-    // Appel moteur réel ou chemin démo
-    const result = useRealEngine
-      ? await MagicStack.java.magicCast({
-          formula: formula,
-          context: {
-            mode,
-            caster_class: caster.class,
-            caster_level: caster.level || 1,
-            target_position: target,
-            request_modes: ['iconic', 'literary', 'runic', 'quantum']
-          },
-          mode: 'simulate'
-        })
-      : await MagicStack.java.castFormula(formula, {
-          mode,
-          caster_class: caster.class,
-          caster_level: caster.level || 1,
-          target_position: target,
-          request_modes: ['iconic', 'literary', 'runic', 'quantum']
-        });
+    // Mode réel uniquement (pas de fallback démo)
+    const result = await MagicStack.java.magicCast({
+      formula: formula,
+      context: {
+        mode,
+        caster_class: caster.class,
+        caster_level: caster.level || 1,
+        target_position: target,
+        request_modes: ['iconic', 'literary', 'runic', 'quantum']
+      },
+      mode: 'simulate'
+    });
     
     // Affichage sur la map selon le mode et la classe
     await this.displayCast(result, caster, target, config, options);

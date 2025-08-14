@@ -1,0 +1,28 @@
+# Fichiers spécifiques au VPS à ne pas toucher lors des pulls
+/etc/caddy/Caddyfile
+Caddyfile
+backup_vps/
+*.pid
+/opt/hot/app/backup_vps/
+
+# Configs locales du VPS
+.env.production
+.ssh/
+
+# Bases de données locales
+backends/java/data/*.db
+*.mv.db
+
+# Assets générés sur le VPS
+assets/generated/
+FRONTPAGE/assets/HD/
+FRONTPAGE/assets/compressed/
+
+# Logs VPS
+*.log
+logs/
+
+# Build artifacts sur le VPS
+dist/
+build/
+target/
