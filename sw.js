@@ -1,45 +1,43 @@
-// Service Worker for Heroes of Time PWA
-const CACHE_NAME = 'heroes-of-time-v1';
+// Heroes of Time - Service Worker v1.0
+// Minimal passthrough with basic offline support
+
+const CACHE_NAME = 'hot-v1';
 const urlsToCache = [
-  '/HOMM3_PWA_IPAD_CLIPPY.html',
-  '/manifest.json'
+  '/',
+  '/FRONTPAGE/index.html',
+  '/FRONTPAGE/assets/assets/compressed/ExKAlibur.jpg'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('📦 Cache ouvert');
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
   );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
+        cacheNames.filter(cacheName => {
+          return cacheName !== CACHE_NAME;
+        }).map(cacheName => {
+          return caches.delete(cacheName);
         })
       );
     })
   );
+  return self.clients.claim();
+});
+
+self.addEventListener('fetch', event => {
+  // Passthrough for most requests, cache-first for critical assets
+  if (event.request.url.includes('/FRONTPAGE/') || 
+      event.request.url.endsWith('.html')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => response || fetch(event.request))
+    );
+  }
 });
