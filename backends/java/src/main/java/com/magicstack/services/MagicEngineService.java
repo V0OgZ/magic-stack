@@ -278,7 +278,10 @@ public class MagicEngineService {
 	            {"QUANTUM", "quantique"},
 	            {"RUNIC", "runique"},
 	            {"EXCALIBUR", "épée sacrée"},
-	            {"BANKAI", "révélation ultime"}
+            {"BANKAI", "révélation ultime"},
+            {"ETH", "énergie éthérique"},
+            {"FACES", "visages du destin"},
+            {"GROFI", "philosophie Grofi"}
 	        };
 	        String redacted = text;
 	        for (String[] kv : map) {
