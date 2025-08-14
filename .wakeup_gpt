@@ -1,0 +1,30 @@
+GPT WAKEUP — Séquence d’éveil (React/Logic/Backend)
+
+1) Ouvrir (ordre)
+- .dualstatus
+- .dualgpt
+- SCRIBE/CHECKPOINT.md
+- apps/magic-stack-unified/src/api/MagicStackAPI.ts
+- backends/java/src/main/java/com/magicstack/services/MagicEngineService.java
+- backends/rust/src/temporal_grammar.rs
+
+2) État rapide (commandes)
+- git status -sb | cat
+- git log --oneline -n 10 | cat
+
+3) Tâches immédiates (M1 Cast « réel »)
+- [ ] UI: préparer payload /api/magic/cast (formula_id, context, mode)
+- [ ] Java: esquisser FormulaRegistry (Vector DB /formulas + cache TTL)
+- [ ] Rust: valider parse/exec (SHIFT/FORK/MERGE) et format d’output normalisé
+- [ ] Tests: 4 formules frontpage + determinism trace_hash
+
+4) Rappels
+- Chemin actuel démo: /api/interstice/cast-formula
+- Cible M1: /api/magic/cast (simulate|apply) → Registry → Rust parse/exec → effets 6D + trace_hash
+
+5) Liens utiles
+- SCRIBE/README.md, SCRIBE/MAP.md, SCRIBE/ASSETS_MAP.md
+- simple_vector_server.py (/formulas)
+- ___LATEST ENGINE SPECS - 0826/13_doc_back.md
+
+Note: commits « ⚛️ GPT: … », garder scope petit et atomique, pas de hooks. 

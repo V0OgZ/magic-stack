@@ -11,6 +11,8 @@
 //! It works alongside the Java Spring Boot backend, handling performance-critical tasks.
 
 use magic_stack_core::*;
+use magic_stack_core::temporal_grammar::{ExecutionContext as TgExecutionContext, TemporalFormula as TgTemporalFormula};
+use sha2::{Digest, Sha256};
 use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts, Topology as PfTopology};
 use magic_stack_core::mapgen::{generate_map, MapGenParams};
 
@@ -290,6 +292,9 @@ async fn main() {
         .route("/explorer", get(api_explorer_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
+        // Temporal grammar endpoints (for Java integration)
+        .route("/temporal/parse", post(temporal_parse))
+        .route("/temporal/execute", post(temporal_execute))
         // Archives (Vector DB local proxy)
         .route("/api/archives/status", get(archives_status))
         .route("/api/archives/search", post(archives_search))
@@ -1194,6 +1199,52 @@ async fn openapi_ui_handler() -> Html<String> {
 async fn api_explorer_handler() -> Html<String> {
     let html = include_str!("../explorer.html");
     Html(html.to_string())
+}
+
+// ===== Temporal grammar endpoints =====
+#[derive(Deserialize)]
+struct TemporalParseReq { formula: String }
+
+#[derive(Serialize)]
+struct TemporalParseResp { ok: bool, ast: serde_json::Value, normalized: String }
+
+async fn temporal_parse(Json(req): Json<TemporalParseReq>) -> Result<Json<TemporalParseResp>, StatusCode> {
+    let mut parser = TemporalParser::new();
+    match parser.parse(&req.formula) {
+        Ok(tf) => {
+            let ast = serde_json::to_value(&tf.ast).unwrap_or(serde_json::json!({"error":"serialize_ast"}));
+            Ok(Json(TemporalParseResp { ok: true, ast, normalized: tf.source }))
+        }
+        Err(e) => {
+            eprintln!("temporal_parse error: {}", e);
+            Err(StatusCode::BAD_REQUEST)
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct TemporalExecuteReq { formula: String, context: Option<serde_json::Value>, seed: Option<u64> }
+
+#[derive(Serialize)]
+struct TemporalExecuteResp { ok: bool, result: serde_json::Value, trace_hash: String }
+
+async fn temporal_execute(Json(req): Json<TemporalExecuteReq>) -> Result<Json<TemporalExecuteResp>, StatusCode> {
+    let mut parser = TemporalParser::new();
+    let tf = parser.parse(&req.formula).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let ctx_json = req.context.unwrap_or_else(|| serde_json::json!({}));
+    let mut vars = std::collections::HashMap::new();
+    if let Some(map) = ctx_json.as_object() {
+        for (k, v) in map.iter() { vars.insert(k.clone(), v.clone()); }
+    }
+    let ctx = TgExecutionContext { variables: vars, temporal_position: 0.0, causal_probability: 1.0, identity_coherence: 0.8 };
+    let result = parser.execute(&tf, &ctx).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    // Stable trace hash: hash of normalized source + seed (if any) + result JSON canonical
+    let mut hasher = Sha256::new();
+    hasher.update(tf.source.as_bytes());
+    if let Some(s) = req.seed { hasher.update(&s.to_le_bytes()); }
+    hasher.update(serde_json::to_vec(&result).unwrap_or_default());
+    let trace_hash = format!("{:x}", hasher.finalize());
+    Ok(Json(TemporalExecuteResp { ok: true, result, trace_hash }))
 }
 
 // ===== Vector Archives Proxy =====

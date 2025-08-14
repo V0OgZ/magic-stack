@@ -15,9 +15,11 @@ public class MagicEngineService {
     private final Map<String, Object> activeSpells = new HashMap<>();
     private final Random random = new Random();
     private final FormulaRegistryService registry;
+    private final RustTemporalClient rust;
 
     public MagicEngineService(FormulaRegistryService registry) {
         this.registry = registry;
+        this.rust = new RustTemporalClient(System.getenv().getOrDefault("RUST_BASE_URL", "http://localhost:3001"));
     }
     
     public CastResponse cast(CastRequest request) {
@@ -70,25 +72,39 @@ public class MagicEngineService {
         response.setSuccess(true);
         response.setPosition6D(position);
 
-        // Minimal unified outputs for front (until Rust executor is wired)
-        Map<String, String> outputs = new HashMap<>();
-        outputs.put("literary", response.getMessage());
-        String keyForIcon = response.getEffect() + ":" + normalized;
-        String upper = keyForIcon.toUpperCase();
-        String icon = upper.contains("FREEZE") ? "❄️"
-            : upper.contains("TELEPORT") ? "🌀"
-            : upper.contains("FIRE") ? "🔥"
-            : upper.contains("SHIELD") ? "🛡️" : "✨";
-        outputs.put("iconic", icon);
-        String formulaText = (request.getFormulaId() != null ? request.getFormulaId() : (request.getFormula() != null ? request.getFormula() : ""));
-        String runic = formulaText.replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
-        if (runic.length() > 16) runic = runic.substring(0, 16);
-        outputs.put("runic", runic.isEmpty() ? "ᚠᚢᚦ" : runic);
-        outputs.put("quantum", normalized);
-        response.setOutputs(outputs);
-        response.setEffects(Arrays.asList("magic_cast"));
-        response.setSounds(Arrays.asList("magic_cast"));
-        response.setTraceHash(Integer.toHexString(normalized.hashCode()));
+        // Call Rust temporal grammar executor (simulate by default)
+        try {
+            RustTemporalClient.ExecuteResult exec = rust.execute(normalized, request.getContext(), request.getSeed());
+            Map<String, String> outputs = new HashMap<>();
+            outputs.put("literary", response.getMessage());
+            // Iconic: keep heuristic for now
+            String upper = (response.getEffect() + ":" + normalized).toUpperCase();
+            String icon = upper.contains("FREEZE") ? "❄️"
+                : upper.contains("TELEPORT") ? "🌀"
+                : upper.contains("FIRE") ? "🔥"
+                : upper.contains("SHIELD") ? "🛡️" : "✨";
+            outputs.put("iconic", icon);
+            String formulaText = (request.getFormulaId() != null ? request.getFormulaId() : (request.getFormula() != null ? request.getFormula() : ""));
+            String runic = formulaText.replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
+            if (runic.length() > 16) runic = runic.substring(0, 16);
+            outputs.put("runic", runic.isEmpty() ? "ᚠᚢᚦ" : runic);
+            outputs.put("quantum", normalized);
+            response.setOutputs(outputs);
+            response.setEffects(Arrays.asList("magic_cast"));
+            response.setSounds(Arrays.asList("magic_cast"));
+            response.setTraceHash(exec.traceHash);
+        } catch (Exception e) {
+            // Fallback to previous placeholder
+            Map<String, String> outputs = new HashMap<>();
+            outputs.put("literary", response.getMessage());
+            outputs.put("iconic", "✨");
+            outputs.put("runic", "ᚠᚢᚦ");
+            outputs.put("quantum", normalized);
+            response.setOutputs(outputs);
+            response.setEffects(Arrays.asList("magic_cast"));
+            response.setSounds(Arrays.asList("magic_cast"));
+            response.setTraceHash(Integer.toHexString(normalized.hashCode()));
+        }
         
         return response;
     }

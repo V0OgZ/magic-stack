@@ -200,10 +200,11 @@ class MagicStackAPI {
       });
       const data = await res.json();
       // Normalize to CastResult expected by CastingManager
-      const formula = payload.formula || (data && (data.formula || data.formula_id)) || 'UNKNOWN_FORMULA';
+      const formula = payload.formula || payload.formula_id || (data && (data.formula || data.formula_id)) || 'UNKNOWN_FORMULA';
       const output: any = {};
-      if (data && data.output) {
-        Object.assign(output, data.output);
+      const backendOutput = (data && (data.output || data.outputs)) || null;
+      if (backendOutput) {
+        Object.assign(output, backendOutput);
       } else {
         const msg: string = data?.message || `Formula ${formula} executed`;
         // Literary: backend message
