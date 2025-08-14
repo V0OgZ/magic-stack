@@ -508,7 +508,8 @@
         async function castSpell() {
             const formulaEl = document.getElementById('formula');
             const formula = formulaEl.value.trim();
-            const formulaId = formulaEl.dataset.formulaId || null;
+            // Pour compatibilité maximale VPS, on envoie uniquement la formule texte
+            const formulaId = null;
             if (!formula) {
                 showError('Veuillez entrer une formule !');
                 return;
