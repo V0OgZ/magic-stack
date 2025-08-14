@@ -237,6 +237,19 @@ export function PlayMapBridge(): React.ReactElement {
       }
       if (newEntities.length > 0) {
         setGameState(prev2 => ({ ...prev2, entities: [...prev2.entities, ...newEntities] }));
+        // Sync vers core 6D
+        try {
+          newEntities.forEach(e => {
+            const pos: any = { x: e.position.x, y: e.position.y, z: e.position.z || 0, t: day, psi: 0, sigma: 0 };
+            if (e.type === 'hero') {
+              coreStore.upsertEntity({ id: e.id, type: 'hero', name: e.name, pos, amplitude: 1 });
+            } else if (e.type === 'portal') {
+              coreStore.upsertEntity({ id: e.id, type: 'portal', state: 'stable', pos });
+            } else {
+              coreStore.upsertEntity({ id: e.id, type: 'buff', kind: e.type, level: 1, pos });
+            }
+          });
+        } catch {}
       }
     } catch {}
   }, [gameState.temporal.currentDay, currentMap]);
