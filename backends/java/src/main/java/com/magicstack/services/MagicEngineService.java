@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import com.magicstack.models.Position6D;
 import com.magicstack.dto.*;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Core Magic Engine - handles all magical operations
@@ -11,6 +13,7 @@ import java.util.*;
  */
 @Service
 public class MagicEngineService {
+    private static final Logger log = LoggerFactory.getLogger(MagicEngineService.class);
     
     private final Map<String, Object> activeSpells = new HashMap<>();
     private final Random random = new Random();
@@ -113,9 +116,15 @@ public class MagicEngineService {
             if (isApply) {
                 try {
                     RustTemporalClient.ApplyResult applyRes = rust.apply(normalized, request.getContext(), request.getSeed());
+                    if (log.isDebugEnabled()) {
+                        log.debug("/temporal/apply traceHash={}", applyRes.traceHash);
+                    }
                     // Parse world_diff from returned JSON string
                     Map<String, Object> parsed = new com.fasterxml.jackson.databind.ObjectMapper().readValue(applyRes.worldDiffJson, Map.class);
                     Object wd = parsed.get("world_diff");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Parsed apply payload keys={}, has_world_diff={}", parsed.keySet(), (wd != null));
+                    }
                     if (wd instanceof Map) {
                         //noinspection unchecked
                         response.setWorldDiff((Map<String, Object>) wd);
@@ -131,6 +140,9 @@ public class MagicEngineService {
                         response.setWorldDiff(fallback);
                     }
                 } catch (Exception ignore) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Apply mode failed to parse or call Rust; using fallback worldDiff", ignore);
+                    }
                     Map<String, Object> diff = new HashMap<>();
                     diff.put("entitiesUpdated", 0);
                     diff.put("notes", "apply fallback; rust unavailable");
