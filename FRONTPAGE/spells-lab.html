@@ -379,6 +379,14 @@
                         <option value="preview">Prévisualisation</option>
                     </select>
                 </div>
+                
+                <div class="input-group">
+                    <label for="action">Action</label>
+                    <select id="action">
+                        <option value="cast">Lancer (cast)</option>
+                        <option value="translate">Traduire (translate)</option>
+                    </select>
+                </div>
             </div>
             
             <div class="input-group">
@@ -514,6 +522,7 @@
                 showError('Veuillez entrer une formule !');
                 return;
             }
+            const action = (document.getElementById('action')?.value || 'cast');
             
             // Préparer la requête
             const request = {
@@ -544,8 +553,10 @@
             document.querySelector('.cast-btn').disabled = true;
             document.querySelector('.cast-btn').classList.add('casting-active');
             
-            // Activer le cercle magique
-            document.getElementById('magicCircle').classList.add('active');
+            // Activer le cercle magique uniquement pour cast
+            if (action === 'cast') {
+                document.getElementById('magicCircle').classList.add('active');
+            }
             
             // Créer des particules au clic
             const btn = document.querySelector('.cast-btn');
@@ -553,23 +564,32 @@
             createMagicParticles(rect.left + rect.width/2, rect.top + rect.height/2);
             
             // Jouer le son magique
-            try { playMagicSound(); } catch(e) {}
+            try { if (action === 'cast') playMagicSound(); } catch(e) {}
             
             try {
-                // Appel API
-                const response = await fetch('/api/magic/cast', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                let result;
+                if (action === 'translate') {
+                    // Traduction
+                    const tReq = { formula: formula, targetFormat: 'all' };
+                    const tRes = await fetch('/api/magic/translate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(tReq)
+                    });
+                    if (!tRes.ok) throw new Error(`Erreur ${tRes.status}: ${tRes.statusText}`);
+                    const tJson = await tRes.json();
+                    // Adapter au rendu commun
+                    result = { outputs: tJson.translations || {}, effects: [], sounds: [] };
+                } else {
+                    // Cast
+                    const cRes = await fetch('/api/magic/cast', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(request)
+                    });
+                    if (!cRes.ok) throw new Error(`Erreur ${cRes.status}: ${cRes.statusText}`);
+                    result = await cRes.json();
                 }
-                
-                const result = await response.json();
                 displayResults(result);
                 
             } catch (error) {
