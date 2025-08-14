@@ -280,6 +280,7 @@ async fn main() {
         .route("/api/world-state/nodes", post(create_node))
         .route("/api/world-state/nodes/:id", get(get_node))
         .route("/api/world-state/nodes/:id/position", post(update_position))
+        .route("/api/world-state/changes", get(get_recent_changes))
         .route("/api/world-state/identities/:id/doubles", get(get_identity_doubles))
         .route("/api/world-state/nodes/radius", get(get_nodes_in_radius))
         .route("/api/world-state/collapse", post(observation_collapse))
@@ -899,6 +900,19 @@ async fn update_position(
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+/// Get recent world-state changes (default 50)
+async fn get_recent_changes(
+    State(state): State<AppState>,
+    Query(q): Query<std::collections::HashMap<String, String>>,
+) -> Json<serde_json::Value> {
+    let limit = q.get("limit").and_then(|s| s.parse::<usize>().ok()).unwrap_or(50);
+    let changes = state.world_state.get_recent_changes(limit);
+    Json(serde_json::json!({
+        "count": changes.len(),
+        "changes": changes
+    }))
 }
 
 /// Get nodes within radius
