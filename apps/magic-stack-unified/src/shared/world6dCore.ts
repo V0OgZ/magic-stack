@@ -124,7 +124,17 @@ export class CoreStore {
     this.state.entities[entity.id] = entity;
   }
 
-  private apply(event: CoreEvent) {
+  private apply(event: CoreEvent | (EventLogEntry & { event: any })) {
+    // Support an 'add' event used in traces to insert entities
+    if ((event as any).event && (event as any).event.type) {
+      // called from replay(JSONL parsed)
+      const inner = (event as any).event;
+      if (inner.type === 'add' && inner.entity) {
+        this.upsertEntity(inner.entity as any);
+        return;
+      }
+      event = inner as CoreEvent;
+    }
     switch (event.type) {
       case 'move6d': {
         const e = this.state.entities[event.entityId];
