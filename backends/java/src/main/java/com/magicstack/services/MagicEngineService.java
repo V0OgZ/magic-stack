@@ -72,7 +72,7 @@ public class MagicEngineService {
         response.setSuccess(true);
         response.setPosition6D(position);
 
-        // Call Rust temporal grammar executor (simulate by default)
+        // Call Rust temporal grammar executor (simulate/apply)
         try {
             RustTemporalClient.ExecuteResult exec = rust.execute(normalized, request.getContext(), request.getSeed());
             Map<String, String> outputs = new HashMap<>();
@@ -93,6 +93,16 @@ public class MagicEngineService {
             response.setEffects(Arrays.asList("magic_cast"));
             response.setSounds(Arrays.asList("magic_cast"));
             response.setTraceHash(exec.traceHash);
+
+            // Apply mode stub: mark applied and return a minimal world diff structure
+            boolean isApply = "apply".equalsIgnoreCase(request.getMode());
+            response.setApplied(isApply);
+            if (isApply) {
+                Map<String, Object> diff = new HashMap<>();
+                diff.put("entitiesUpdated", 1);
+                diff.put("notes", "stub world_diff; to be replaced by real state changes");
+                response.setWorldDiff(diff);
+            }
         } catch (Exception e) {
             // Fallback to previous placeholder
             Map<String, String> outputs = new HashMap<>();
@@ -104,6 +114,8 @@ public class MagicEngineService {
             response.setEffects(Arrays.asList("magic_cast"));
             response.setSounds(Arrays.asList("magic_cast"));
             response.setTraceHash(Integer.toHexString(normalized.hashCode()));
+            boolean isApply = "apply".equalsIgnoreCase(request.getMode());
+            response.setApplied(isApply);
         }
         
         return response;

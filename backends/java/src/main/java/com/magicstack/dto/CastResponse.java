@@ -14,6 +14,8 @@ public class CastResponse {
     private List<String> effects;          // fx identifiers
     private List<String> sounds;           // sound identifiers
     private String traceHash;              // stable hash of normalized execution trace
+    private Boolean applied;               // true when mode=apply
+    private Map<String, Object> worldDiff; // optional world diff when applied
     
     public String getSpellId() {
         return spellId;
@@ -85,5 +87,21 @@ public class CastResponse {
 
     public void setTraceHash(String traceHash) {
         this.traceHash = traceHash;
+    }
+
+    public Boolean getApplied() {
+        return applied;
+    }
+
+    public void setApplied(Boolean applied) {
+        this.applied = applied;
+    }
+
+    public Map<String, Object> getWorldDiff() {
+        return worldDiff;
+    }
+
+    public void setWorldDiff(Map<String, Object> worldDiff) {
+        this.worldDiff = worldDiff;
     }
 }
