@@ -1259,10 +1259,27 @@ async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalA
     // Reuse execute for deterministic trace_hash
     let exec = temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await?;
     let trace_hash = exec.0.trace_hash.clone();
-    // Minimal real world diff: detect MOV(Name, @x,y) inside runic ψ… formula and upsert an entity node
+    // Minimal real world diff: detect MOV(Name, @x,y), Δt+N and TL(timeline) to upsert and shift nodes
     let mut entities_created = 0usize;
     let mut entities_updated = 0usize;
     let mut changes: Vec<serde_json::Value> = Vec::new();
+
+    // Extract Δt+N (time offset)
+    let mut delta_t: f64 = 0.0;
+    if let Some(dt_i) = req.formula.find("Δt+") {
+        let tail = &req.formula[dt_i + 3..];
+        let num: String = tail.chars().take_while(|c| c.is_ascii_digit()).collect();
+        if let Ok(v) = num.parse::<f64>() { delta_t = v; }
+    }
+    // Extract TL(name) timeline hint
+    let mut timeline_hint: Option<String> = None;
+    if let Some(tl_i) = req.formula.find("TL(") {
+        let rest = &req.formula[tl_i + 3..];
+        if let Some(end) = rest.find(')') {
+            let name = rest[..end].trim();
+            if !name.is_empty() { timeline_hint = Some(name.to_string()); }
+        }
+    }
     if let Some(mov_idx) = req.formula.find("MOV(") {
         let rest = &req.formula[mov_idx + 4..]; // after 'MOV('
         if let Some(end_paren) = rest.find(')') {
@@ -1280,31 +1297,42 @@ async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalA
                 let y_str = xy_iter.next().unwrap_or("").trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
                 if let (Ok(x), Ok(y)) = (x_str.parse::<f64>(), y_str.parse::<f64>()) {
                     let hero_id = format!("hero:{}", name);
-                    let pos = Position6D::new(x, y, 0.0, 0.0, 1.0, 0.5).map_err(|_| StatusCode::BAD_REQUEST)?;
-                    if state.world_state.get_node(&hero_id).is_some() {
-                        // update position
-                        let _ = state.world_state.update_position(&hero_id, pos);
-                        entities_updated += 1;
-                        changes.push(serde_json::json!({"nodeId": hero_id, "type": "positionChanged", "x": x, "y": y}));
-                    } else {
-                        // create entity node
-                        let node = world_state::StateNode {
-                            id: hero_id.clone(),
-                            position: pos,
-                            node_type: world_state::NodeType::Entity,
-                            properties: {
-                                let mut m = std::collections::HashMap::new();
-                                m.insert("name".to_string(), serde_json::json!(name));
-                                m
-                            },
-                            connections: std::collections::HashSet::new(),
-                            last_updated: now_ms(),
-                            identity_id: None,
-                            timeline_id: Some("principale".to_string()),
-                        };
-                        let _ = state.world_state.update_node(node);
-                        entities_created += 1;
-                        changes.push(serde_json::json!({"nodeId": hero_id, "type": "nodeCreated", "x": x, "y": y}));
+                    match state.world_state.get_node(&hero_id) {
+                        Some(mut existing) => {
+                            // Compute new time and timeline
+                            let new_t = existing.position.t + delta_t;
+                            let new_pos = Position6D::new(x, y, existing.position.z, new_t, existing.position.c, existing.position.psi)
+                                .map_err(|_| StatusCode::BAD_REQUEST)?;
+                            let _ = state.world_state.update_position(&hero_id, new_pos);
+                            entities_updated += 1;
+                            changes.push(serde_json::json!({"nodeId": hero_id, "type": "positionChanged", "x": x, "y": y, "t": new_t}));
+                            if let Some(tl) = timeline_hint.clone() {
+                                existing.timeline_id = Some(tl.clone());
+                                let _ = state.world_state.update_node(existing);
+                                changes.push(serde_json::json!({"nodeId": hero_id, "type": "timelineChanged", "timeline": tl}));
+                            }
+                        }
+                        None => {
+                            let t0 = delta_t; // start at offset
+                            let pos = Position6D::new(x, y, 0.0, t0, 1.0, 0.5).map_err(|_| StatusCode::BAD_REQUEST)?;
+                            let node = world_state::StateNode {
+                                id: hero_id.clone(),
+                                position: pos,
+                                node_type: world_state::NodeType::Entity,
+                                properties: {
+                                    let mut m = std::collections::HashMap::new();
+                                    m.insert("name".to_string(), serde_json::json!(name));
+                                    m
+                                },
+                                connections: std::collections::HashSet::new(),
+                                last_updated: now_ms(),
+                                identity_id: None,
+                                timeline_id: Some(timeline_hint.clone().unwrap_or_else(|| "principale".to_string())),
+                            };
+                            let _ = state.world_state.update_node(node);
+                            entities_created += 1;
+                            changes.push(serde_json::json!({"nodeId": hero_id, "type": "nodeCreated", "x": x, "y": y, "t": t0, "timeline": timeline_hint}));
+                        }
                     }
                 }
             }
