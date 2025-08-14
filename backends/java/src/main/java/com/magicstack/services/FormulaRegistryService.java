@@ -52,6 +52,31 @@ public class FormulaRegistryService {
         return resolved != null ? resolved : key;
     }
 
+    /**
+     * Expose all cached formulas for API consumers.
+     */
+    public Map<String, String> getAllCachedFormulas() {
+        refreshIfNeeded();
+        return new HashMap<>(cache);
+    }
+
+    /**
+     * Expose simple registry metrics and configuration to clients.
+     */
+    public Map<String, Object> getRegistryInfo() {
+        Map<String, Object> info = new HashMap<>();
+        long now = System.currentTimeMillis();
+        boolean fresh = (now - lastLoad) < TTL_MS && !cache.isEmpty();
+        info.put("status", fresh ? "FRESH" : "STALE");
+        info.put("count", cache.size());
+        info.put("ttlMs", TTL_MS);
+        info.put("lastLoad", lastLoad);
+        info.put("vectorDbUrl", VECTOR_DB_URL);
+        return info;
+    }
+
+    public String getVectorDbUrl() { return VECTOR_DB_URL; }
+
     // Minimal JSON parser for flat objects (avoid bringing a full JSON lib here)
     @SuppressWarnings("unchecked")
     private Map<String, Object> parseJson(String json) {
