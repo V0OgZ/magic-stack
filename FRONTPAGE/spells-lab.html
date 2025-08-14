@@ -570,7 +570,7 @@
                 let result;
                 if (action === 'translate') {
                     // Traduction
-                    const tReq = { formula: formula, targetFormat: 'all' };
+                    const tReq = { formula: formula, targetFormat: 'all', includeQuantum: true };
                     const tRes = await fetch('/api/magic/translate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -580,6 +580,9 @@
                     const tJson = await tRes.json();
                     // Adapter au rendu commun
                     result = { outputs: tJson.translations || {}, effects: [], sounds: [] };
+                    if (tJson.translations && tJson.translations.traceHash) {
+                        result.traceHash = tJson.translations.traceHash;
+                    }
                 } else {
                     // Cast
                     const cRes = await fetch('/api/magic/cast', {
