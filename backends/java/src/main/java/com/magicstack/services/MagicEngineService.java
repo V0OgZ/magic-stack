@@ -109,7 +109,13 @@ public class MagicEngineService {
                     if (wd instanceof Map) {
                         //noinspection unchecked
                         response.setWorldDiff((Map<String, Object>) wd);
+                    } else if (parsed.containsKey("world_diff") && parsed.get("world_diff") == null) {
+                        // Ensure not null in response
+                        Map<String, Object> empty = new HashMap<>();
+                        empty.put("notes", "world_diff missing; empty diff");
+                        response.setWorldDiff(empty);
                     } else {
+                        // If structure differs, expose full payload under raw
                         Map<String, Object> fallback = new HashMap<>();
                         fallback.put("raw", parsed);
                         response.setWorldDiff(fallback);
