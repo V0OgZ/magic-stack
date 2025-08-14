@@ -190,6 +190,14 @@ class MagicStackAPI {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formula, context })
       }).then(r => r.json()),
+
+    // POST /api/magic/cast (real engine route)
+    magicCast: (payload: { formula_id?: string; formula?: string; context?: any; mode?: 'simulate' | 'apply' }) =>
+      fetch(`${this.endpoints.java}/api/magic/cast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()),
     
     // GET /api/heroes
     getHeroes: () =>

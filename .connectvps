@@ -1,0 +1,48 @@
+# 🔑 CONNEXION VPS - CONFIGURATION ACTUELLE
+# Dernière mise à jour: 14/08/2025 07:50
+
+## ✅ SSH KEY ACTIVE
+```bash
+# Clé privée: ~/.ssh/hot_magic_key
+# Clé publique: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBtlP4hW+7uJPXxp2elYTz71mNgKbFlfwXXSHVARJeZs vincent@magic
+```
+
+## 🚀 CONNEXION DIRECTE
+```bash
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178
+# OU
+ssh -i ~/.ssh/hot_magic_key root@heroesoftime.online
+```
+
+## 📦 DÉPLOIEMENT RAPIDE
+```bash
+# Script tout prêt
+./DEPLOY_SIMPLE.sh
+
+# OU manuellement:
+rsync -avz -e "ssh -i ~/.ssh/hot_magic_key" FRONTPAGE/ root@191.101.2.178:/opt/hot/app/FRONTPAGE/
+rsync -avz -e "ssh -i ~/.ssh/hot_magic_key" *.html root@191.101.2.178:/opt/hot/app/
+```
+
+## 🔧 COMMANDES VPS UTILES
+```bash
+# Redéployer tout (pull + build + restart)
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "/usr/local/bin/hot-redeploy"
+
+# Vérifier les services
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "/usr/local/bin/hot-check"
+
+# Restart services
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "systemctl restart caddy magic-java magic-rust magic-vector magic-clippy"
+```
+
+## 🌐 URLS DE SANTÉ
+- https://heroesoftime.online/api/health
+- https://heroesoftime.online/engine/health
+- https://heroesoftime.online/vector/health
+- https://heroesoftime.online/clippy/health
+
+## 📍 EMPLACEMENTS VPS
+- App: /opt/hot/app
+- Caddy: /etc/caddy/Caddyfile
+- Build React: /opt/hot/app/apps/magic-stack-unified/dist

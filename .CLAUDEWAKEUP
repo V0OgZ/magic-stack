@@ -1,0 +1,106 @@
+================================================================================
+                         🚨 CLAUDE - RÉVEILLE-TOI! 🚨
+                             LIRE EN PREMIER
+================================================================================
+
+1. 🔑 SSH - ARRÊTE AVEC LES MOTS DE PASSE!
+------------------------------------------
+❌ NE MARCHE PAS: ssh -i ~/Desktop/HOT_VPS_KEY (pas sur Desktop!)
+❌ NE MARCHE PAS: ssh -i .ssh/hot_cursor_ed25519 (clé pas configurée sur VPS)
+
+✅ CE QUI MARCHE:
+ssh root@191.101.2.178
+ssh root@heroesoftime.online
+(Vincent a configuré sa clé locale pour root)
+
+✅ POUR RSYNC:
+rsync -avz FRONTPAGE/ root@191.101.2.178:/opt/hot/app/FRONTPAGE/
+rsync -avz apps/magic-stack-unified/dist/ root@191.101.2.178:/opt/hot/app/apps/magic-stack-unified/dist/
+
+2. 📁 STRUCTURE IMPORTANTE
+--------------------------
+/Volumes/HOT_DEV/Magic/magic-stack/        → TON WORKSPACE
+/Volumes/HOT_DEV/Magic/magic-stack/FRONTPAGE/index.html → PAGE PRINCIPALE
+/Volumes/HOT_DEV/Magic/magic-stack/.ssh/   → Clés SSH (mais pas configurées sur VPS)
+
+3. 🚀 SCRIPTS QUI MARCHENT
+--------------------------
+./go                    → Lance tout localement
+./DEPLOY_VPS_READY.sh   → Deploy au VPS (utilise root@191.101.2.178)
+./vps_healthcheck.sh    → Vérifie que tout marche
+
+4. ⚠️ RÈGLES VINCENT
+--------------------
+- PAS DE ECHO QUI BLOQUENT LE CHAT → use background: true
+- PAS DE MOT DE PASSE → use root@191.101.2.178 
+- PRÉFÈRE write PLUTÔT QUE search_replace
+- VÉRIFIE QUE LES IMAGES EXISTENT AVANT DE CHANGER LES PATHS
+- NE PAS CRÉER DE FICHIERS .md SAUF SI DEMANDÉ
+
+5. 🌐 URLS IMPORTANTES
+----------------------
+LOCAL:
+- http://localhost:8000 → Serveur Python (HTML statiques)
+- http://localhost:5176 → React dev server (apps/magic-stack-unified)
+- http://localhost:5173 → Ancien port React (plus utilisé)
+
+PRODUCTION:
+- https://heroesoftime.online/
+- https://heroesoftime.online/FRONTPAGE/index.html
+- https://heroesoftime.online/world-editor/ → React app
+
+6. 🔧 CADDY CONFIG (VPS)
+------------------------
+Location: /etc/caddy/Caddyfile
+
+IMPORTANT: L'ordre des règles compte!
+1. /FRONTPAGE/assets/* → DOIT être AVANT /assets/*
+2. /world-editor → React build 
+3. /unified → À CONFIGURER (pas encore fait)
+
+7. 🎮 PAGES DU SITE
+-------------------
+JEUX:
+- CHASSE_TEMPORELLE_MEGA_MAP.html → Jeu principal
+- CERBERE_MEGA_MAP.html → Version Cerbère
+- AI_AUTOPLAY_MODE.html → Mode IA
+
+ÉDITEURS:
+- WORKFLOW_MANAGER.html → Workflow d'édition de maps
+- MAP_ICON_PLACER_ADVANCED.html → Éditeur d'icônes
+- MAP_EDITOR_6D_ADAPTER.html → Adaptateur 6D
+- /world-editor/ → World Editor React
+
+UNIFIED (EN COURS):
+- /unified → App unifiée (PAS ENCORE CONFIGURÉ SUR VPS!)
+
+8. 📝 DUAL AI COORDINATION
+--------------------------
+CLAUDE (toi): Frontend, VPS, deployment
+GPT: React, 6D core, parity testing
+
+STATUS FILES:
+- .dualclaude → Tes tâches
+- .dualgpt → Tâches de GPT
+- AUTOBOT_SYNC.md → Dashboard central
+
+9. 🚨 QUAND TU TE PERDS
+-----------------------
+1. Lis .CLAUDEWAKEUP (ce fichier!)
+2. Vérifie ./go status
+3. Regarde AUTOBOT_SYNC.md
+4. Check git status
+5. Lis les derniers commits
+
+10. 🔴 NE JAMAIS FAIRE
+----------------------
+- git reset --hard sur le VPS
+- Supprimer des fichiers sans demander
+- Utiliser des clés SSH qui ne marchent pas
+- Créer des .md non demandés
+- Bloquer le chat avec des echo
+
+================================================================================
+                    MAINTENANT TU ES RÉVEILLÉ! 
+                         GO WORK! 💪
+================================================================================
