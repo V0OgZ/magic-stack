@@ -17,6 +17,7 @@ Next steps
 4) Provide HTML a thin adapter to emit/consume the same events via core
 5) Parity: 3 JSONL fixtures; strict snapshots React == HTML in CI
 6) Extract tokens from HTML; apply in React
+7) Magic engine: front uses `/api/magic/cast` only; Java calls Rust parser/executor; registry TTL cache; tests produce stable `trace_hash`.
 
 Definition of Done v1
 - world6d v1.1 consumed by both UIs
@@ -24,6 +25,7 @@ Definition of Done v1
 - Replay: 3 canonical scenarios produce identical snapshots
 - Shared tokens; visual parity validated
 - CI blocks logic/parity regressions
+ - Spells cast via real engine; 5 magic integration tests passing; `trace_hash` returned.
 
 Mac-safe ops
 - curl with -m 2, no pipes, JSON via -d @/tmp/file.json
