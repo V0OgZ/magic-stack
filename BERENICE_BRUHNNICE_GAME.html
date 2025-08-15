@@ -24,6 +24,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
+            touch-action: manipulation;
         }
 
         /* NIVEAU 0 - Terminal */
@@ -385,12 +386,13 @@
     </div>
 
     <script>
-        // Configuration globale
+        // Configuration globale (prod/dev safe)
+        const __isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
         const CONFIG = {
-            JAVA_API: 'http://localhost:8082',
-            RUST_API: 'http://localhost:3001',
-            VECTOR_DB: 'http://localhost:5000',
-            LLM_API: 'http://localhost:8889',
+            JAVA_API: __isLocal ? 'http://localhost:8082' : '/api',
+            RUST_API: __isLocal ? 'http://localhost:3001' : '/engine',
+            VECTOR_DB: __isLocal ? 'http://localhost:5000' : '/vector',
+            LLM_API: __isLocal ? 'http://localhost:8889' : '/llm',
             TICK_RATE: 100, // ms
             DEBUG_MODE: true
         };
@@ -803,20 +805,35 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 await card.action(gameState.combat.enemy);
             }
 
-            // Call backend
+            // Call backend (map card → real formula; simulate mode)
             try {
+                const CARD_TO_FORMULA = {
+                    'Ping': 'Δt[PING(1)]',
+                    'Firewall': 'SHIELD(3)',
+                    'Debug': 'REVEAL(FOG)',
+                    'Fork Process': '⊙(SELF) ⊕ CLONE(2,2)',
+                    'Ctrl+Z': 'Ψ(state[-1]) → RESTORE',
+                    'Stack Overflow': 'DAMAGE(X)',
+                    'Sudo Privilege': 'CONTROL(1)',
+                    'Kernel Panic': 'NUKE(); DRAW(3)',
+                    'Time.sleep(∞)': 'FREEZE(2)'
+                };
+                const payload = {
+                    formula: CARD_TO_FORMULA[card.name] ?? card.code,
+                    mode: 'simulate',
+                    context: { caster: gameState.player.id, target: gameState.combat.enemy?.id }
+                };
                 const response = await fetch(CONFIG.JAVA_API + '/api/magic/cast', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        formula: card.code,
-                        caster: gameState.player.id,
-                        target: gameState.combat.enemy?.id
-                    })
+                    body: JSON.stringify(payload)
                 });
-
                 const result = await response.json();
                 if (CONFIG.DEBUG_MODE) console.log('Cast result:', result);
+                const literary = result?.outputs?.literary || '...';
+                const iconic = result?.outputs?.iconic || '✨';
+                showDialogue(iconic, literary);
+                showFloatingMessage(iconic, 300, 300, '#0ff');
             } catch (error) {
                 console.error('API error:', error);
             }
@@ -927,9 +944,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 const tileSize = 20;
                 const map = gameState.world.map;
                 
+                ctx.font = `${tileSize}px Arial`;
                 for (let y = 0; y < map.length; y++) {
                     for (let x = 0; x < map[y].length; x++) {
-                        ctx.font = `${tileSize}px Arial`;
                         ctx.fillText(map[y][x], x * tileSize, y * tileSize + tileSize);
                     }
                 }
@@ -1034,6 +1051,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 showDialogue("System", "Tu peux installer le jeu! (A2HS)");
             }
         });
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(()=>{});
+        }
     </script>
 </body>
 </html>

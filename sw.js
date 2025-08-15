@@ -1,3 +1,51 @@
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('hot-static-v1').then((cache) => {
+      return cache.addAll([
+        '/',
+        '/FRONTPAGE/index.html',
+        '/BERENICE_BRUHNNICE_GAME.html',
+        '/FRONTPAGE/assets/hero-bg.jpg',
+        '/icons/icon-192.png',
+        '/icons/icon-512.png'
+      ]);
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+  // Runtime cache for GET requests only
+  if (req.method !== 'GET') return;
+
+  // Network-first for API; fallback to cache
+  if (url.pathname.startsWith('/api') || url.pathname.startsWith('/engine')) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Cache-first for static
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      return cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open('hot-static-v1').then((cache) => cache.put(req, copy));
+        return res;
+      }).catch(() => {
+        // Offline fallback to shell
+        if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+          return caches.match('/FRONTPAGE/index.html');
+        }
+      });
+    })
+  );
+});
+
 // Heroes of Time - Service Worker v1.0
 // Minimal passthrough with basic offline support
 
