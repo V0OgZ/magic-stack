@@ -107,6 +107,23 @@ public class MagicController {
         return magicEngine.getRecentChanges(limit);
     }
 
+    @PostMapping("/visibility/los")
+    public Map<String, Object> visibilityLos(@RequestBody Map<String, Object> body) {
+        try {
+            // Passthrough to Rust /api/visibility/los via simple HTTP client
+            com.magicstack.util.Http json = new com.magicstack.util.Http(System.getenv().getOrDefault("RUST_API_BASE", "http://localhost:3001"));
+            String path = "/api/visibility/los";
+            String res = json.postJson(path, new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(body));
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = new com.fasterxml.jackson.databind.ObjectMapper().readValue(res, Map.class);
+            return map;
+        } catch (Exception e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            return err;
+        }
+    }
+
     @PostMapping("/translate-scenario")
     public Map<String, Object> translateScenario(@RequestBody Map<String, Object> body) {
         String script = Objects.toString(body.getOrDefault("hots", ""));

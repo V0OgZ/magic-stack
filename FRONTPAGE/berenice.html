@@ -1351,6 +1351,26 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 }
             }
 
+            // Server-side LOS (engine) for future-proof visibility (fallback to local if fails)
+            (async () => {
+                try {
+                    const obstacles = Array.from({length:10},()=>Array(10).fill(0));
+                    for (let i=0;i<10;i++){ obstacles[0][i]=1; obstacles[9][i]=1; obstacles[i][0]=1; obstacles[i][9]=1; }
+                    const res = await fetch(CONFIG.RUST_API + '/api/visibility/los', {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ width:10, height:10, obstacles, agents:[{x:px,y:py,kind:'player'}], radius:r })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        for (let y=0; y<10; y++) {
+                            for (let x=0; x<10; x++) {
+                                const i = y*10+x; if (!data.visible[i]) cells[i].classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (_) { /* ignore */ }
+            })();
+
             // Causality Fog: mark tiles visible by any creature (their FOV)
             const enemyLOS = new Set();
             const enemyStale = new Map();
