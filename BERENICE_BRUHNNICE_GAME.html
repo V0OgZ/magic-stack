@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BruhNice - Hackeuse Temporelle</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* NIVEAU 0 - Terminal */
+        #level0 {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #000;
+            padding: 20px;
+        }
+
+        #terminal {
+            flex: 1;
+            background: #111;
+            border: 2px solid #0f0;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        #terminal-input {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        #terminal-prompt {
+            color: #0f0;
+            margin-right: 5px;
+        }
+
+        #terminal-cmd {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .terminal-line {
+            margin: 2px 0;
+        }
+
+        .terminal-error {
+            color: #f00;
+        }
+
+        .terminal-success {
+            color: #0ff;
+        }
+
+        /* NIVEAU 1+ - Jeu principal */
+        #gameContainer {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            background: #222;
+            image-rendering: pixelated;
+        }
+
+        #stats {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 2px solid #0ff;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        #dialogue {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 300px;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border: 2px solid #f0f;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #cards {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,20,0.9));
+            border-top: 2px solid #0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .card {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f3a);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #f0f;
+            box-shadow: 0 10px 20px rgba(255,0,255,0.5);
+        }
+
+        .card.cooldown {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #0ff;
+            color: #000;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .card-name {
+            font-size: 12px;
+            color: #0ff;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .card-desc {
+            font-size: 10px;
+            color: #aaa;
+            flex: 1;
+        }
+
+        .card-effect {
+            font-size: 9px;
+            color: #f0f;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* Combat overlay */
+        #combatOverlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 30%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+        }
+
+        .combat-hero {
+            position: absolute;
+            width: 150px;
+            height: 200px;
+            background: rgba(0,255,255,0.1);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #hero-player {
+            bottom: 20px;
+            left: 50px;
+        }
+
+        #hero-enemy {
+            top: 20px;
+            right: 50px;
+        }
+
+        .hero-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #0ff;
+        }
+
+        .hero-hp {
+            font-size: 18px;
+            color: #0f0;
+            margin-bottom: 5px;
+        }
+
+        .hero-name {
+            font-size: 14px;
+            color: #0ff;
+        }
+
+        /* Effets visuels */
+        @keyframes glitch {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            10% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+            20% { transform: translate(2px, -2px); filter: hue-rotate(180deg); }
+            30% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); }
+            40% { transform: translate(2px, 2px); filter: hue-rotate(360deg); }
+            50% { transform: translate(0); filter: hue-rotate(0deg); }
+            100% { transform: translate(0); filter: hue-rotate(0deg); }
+        }
+
+        .glitch-effect {
+            animation: glitch 0.5s infinite;
+        }
+
+        /* Messages flottants */
+        .floating-msg {
+            position: absolute;
+            color: #0ff;
+            font-size: 20px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: float-up 2s ease-out forwards;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes float-up {
+            0% { 
+                transform: translateY(0) scale(0.5); 
+                opacity: 0;
+            }
+            50% { 
+                transform: translateY(-30px) scale(1.2); 
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(-60px) scale(0.8); 
+                opacity: 0;
+            }
+        }
+
+        /* Loading */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #0ff;
+            text-align: center;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
+        /* Avatar styles */
+        .avatar-ber0 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber0.png'); }
+        .avatar-ber1 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber1.png'); }
+        .avatar-ber2 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber2.png'); }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div>INITIALIZING TEMPORAL HACK</div>
+        <div class="loading-dots">LOADING</div>
+    </div>
+
+    <!-- NIVEAU 0 - Terminal Tutorial -->
+    <div id="level0" style="display:none;">
+        <div id="terminal">
+            <div class="terminal-line terminal-success">== BÉRÉNICE TEMPORAL HACKER v1.0 ==</div>
+            <div class="terminal-line">Connectée à: INTERSTICE.QUANTUM.NET</div>
+            <div class="terminal-line">Date: 2024-??-?? (temporal drift detected)</div>
+            <div class="terminal-line">---</div>
+            <div class="terminal-line">ALERTE: Faille temporelle détectée!</div>
+            <div class="terminal-line">Tu es coincée dans l'Interstice.</div>
+            <div class="terminal-line">Tape 'help' pour voir les commandes.</div>
+        </div>
+        <div id="terminal-input">
+            <span id="terminal-prompt">berenice@interstice:~$ </span>
+            <input type="text" id="terminal-cmd" autofocus>
+        </div>
+    </div>
+
+    <!-- Game Container (Niveaux 1+) -->
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Stats -->
+        <div id="stats">
+            <div>HP: <span id="hp">30</span>/<span id="maxHp">30</span></div>
+            <div>Niveau: <span id="level">1</span></div>
+            <div>Mana: <span id="mana">3</span>/<span id="maxMana">10</span></div>
+            <div>Position: <span id="pos">0,0,0</span></div>
+            <div>Ψ: <span id="psi">0.5</span></div>
+        </div>
+
+        <!-- Dialogue -->
+        <div id="dialogue">
+            <div id="dialogue-speaker">???</div>
+            <div id="dialogue-text"></div>
+        </div>
+
+        <!-- Combat Overlay -->
+        <div id="combatOverlay">
+            <div id="hero-player" class="combat-hero">
+                <div class="hero-avatar avatar-ber0"></div>
+                <div class="hero-hp">HP: 30/30</div>
+                <div class="hero-name">BruhNice</div>
+            </div>
+            <div id="hero-enemy" class="combat-hero">
+                <div class="hero-avatar"></div>
+                <div class="hero-hp">HP: 40/40</div>
+                <div class="hero-name">???</div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div id="cards">
+            <!-- Les cartes seront générées dynamiquement -->
+        </div>
+    </div>
+
+    <script>
+        // Configuration globale
+        const CONFIG = {
+            JAVA_API: 'http://localhost:8082',
+            RUST_API: 'http://localhost:3001',
+            VECTOR_DB: 'http://localhost:5000',
+            LLM_API: 'http://localhost:8889',
+            TICK_RATE: 100, // ms
+            DEBUG_MODE: true
+        };
+
+        // État du jeu
+        let gameState = {
+            currentLevel: 0,
+            player: {
+                id: 'berenice_bruhnnice',
+                hp: 30,
+                maxHp: 30,
+                mana: 3,
+                maxMana: 10,
+                position_6d: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    t: 0,
+                    c: 1,
+                    psi: 0.5
+                },
+                avatar: 'ber0',
+                cards: [],
+                inventory: []
+            },
+            world: {
+                entities: [],
+                map: null,
+                fogOfWar: true
+            },
+            combat: {
+                active: false,
+                enemy: null,
+                turn: 'player'
+            }
+        };
+
+        // Terminal commands (Niveau 0)
+        const terminalCommands = {
+            help: () => {
+                return `Commandes disponibles:
+- help : Affiche cette aide
+- ls : Liste les fichiers
+- cd <dir> : Change de répertoire
+- cat <file> : Lit un fichier
+- ./hack.sh : Lance le hack temporel
+- whoami : Qui suis-je?
+- clear : Efface l'écran`;
+            },
+            ls: () => {
+                if (gameState.player.position_6d.x === 0) {
+                    return "bugs.exe  readme.txt  hack.sh  portal/";
+                } else {
+                    return "server1.quantum  server2.quantum  server3.quantum  LOCKED/";
+                }
+            },
+            whoami: () => {
+                return `berenice - Hackeuse temporelle (10 ans)
+Discord: BruhNice
+Famille: Nièce de VINCE, fille de CHR SHRINE111
+Status: PERDUE DANS L'INTERSTICE`;
+            },
+            cat: (args) => {
+                if (args[0] === 'readme.txt') {
+                    return `URGENT - LIRE IMMÉDIATEMENT
+
+Bérénice,
+
+Si tu lis ça, c'est que le serveur quantique a planté.
+Tu es dans l'Interstice - l'espace entre les mondes.
+Ton oncle Vince contrôle le brouillard ici.
+Ton père CHR connaît les passages secrets.
+
+Pour sortir, tu dois:
+1. Hacker les serveurs temporels
+2. Stabiliser ton Ψ (psi) à 1.0
+3. Vaincre les gardiens
+4. Trouver le portail de retour
+
+Lance ./hack.sh pour commencer.
+
+PS: Méfie-toi du Dragon. Il déteste Excalibur.`;
+                }
+                return "Fichier non trouvé";
+            },
+            './hack.sh': () => {
+                setTimeout(() => startLevel(1), 2000);
+                return `Initialisation du hack temporel...
+[####______] 40%
+[########__] 80%
+[##########] 100%
+
+HACK RÉUSSI! Téléportation vers Niveau 1...`;
+            },
+            clear: () => {
+                document.getElementById('terminal').innerHTML = '';
+                return '';
+            }
+        };
+
+        // Initialisation
+        window.onload = async function() {
+            // Check backend services
+            const services = await checkServices();
+            
+            if (services.allUp) {
+                document.getElementById('loading').style.display = 'none';
+                startLevel(0);
+            } else {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color:#f00">ERREUR: Services manquants!</div>
+                    <div>Java API: ${services.java ? '✓' : '✗'}</div>
+                    <div>Rust Engine: ${services.rust ? '✓' : '✗'}</div>
+                    <div>Vector DB: ${services.vector ? '✓' : '✗'}</div>
+                `;
+            }
+
+            // Terminal input handler
+            document.getElementById('terminal-cmd').addEventListener('keypress', handleTerminalInput);
+
+            // Start game loop
+            setInterval(gameLoop, CONFIG.TICK_RATE);
+        };
+
+        async function checkServices() {
+            const checks = {
+                java: fetch(CONFIG.JAVA_API + '/api/health').then(r => r.ok).catch(() => false),
+                rust: fetch(CONFIG.RUST_API + '/health').then(r => r.ok).catch(() => false),
+                vector: fetch(CONFIG.VECTOR_DB + '/health').then(r => r.ok).catch(() => false)
+            };
+
+            const results = await Promise.all(Object.values(checks));
+            return {
+                java: results[0],
+                rust: results[1],
+                vector: results[2],
+                allUp: results.every(r => r)
+            };
+        }
+
+        function handleTerminalInput(e) {
+            if (e.key === 'Enter') {
+                const input = e.target.value.trim();
+                const terminal = document.getElementById('terminal');
+                
+                // Affiche la commande
+                const cmdLine = document.createElement('div');
+                cmdLine.className = 'terminal-line';
+                cmdLine.textContent = 'berenice@interstice:~$ ' + input;
+                terminal.appendChild(cmdLine);
+
+                // Exécute la commande
+                const [cmd, ...args] = input.split(' ');
+                let output = '';
+
+                if (terminalCommands[cmd]) {
+                    output = terminalCommands[cmd](args);
+                } else if (input === '') {
+                    output = '';
+                } else {
+                    output = `bash: ${cmd}: command not found`;
+                }
+
+                if (output) {
+                    const outputLine = document.createElement('div');
+                    outputLine.className = 'terminal-line';
+                    if (output.includes('non trouvé') || output.includes('not found')) {
+                        outputLine.className += ' terminal-error';
+                    }
+                    outputLine.textContent = output;
+                    terminal.appendChild(outputLine);
+                }
+
+                // Clear input
+                e.target.value = '';
+                
+                // Scroll to bottom
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        function startLevel(level) {
+            gameState.currentLevel = level;
+            
+            if (level === 0) {
+                document.getElementById('level0').style.display = 'flex';
+                document.getElementById('gameContainer').style.display = 'none';
+            } else {
+                document.getElementById('level0').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                initLevel(level);
+            }
+        }
+
+        async function initLevel(level) {
+            const levelConfigs = {
+                1: {
+                    name: "Prairie Bugguée",
+                    avatar: "ber0",
+                    map: generateMap(20, 20, 'prairie'),
+                    cards: ["Ping", "Firewall", "Debug"],
+                    enemies: ["Virus Lapin", "Bug Syntaxique"],
+                    dialogue: "SÉRIEUX?! Un avatar cartoon?! Je DÉTESTE ça! Bruh!"
+                },
+                2: {
+                    name: "Serveur Quantique",
+                    avatar: "ber1",
+                    map: generateMap(40, 40, 'quantum'),
+                    cards: ["Fork Process", "Ctrl+Z", "Stack Overflow"],
+                    enemies: ["Process Zombie", "Memory Leak"],
+                    dialogue: "Enfin! Ça c'est mieux! Mode hacker activé!"
+                },
+                3: {
+                    name: "Coeur de l'Interstice",
+                    avatar: "ber2",
+                    map: generateMap(60, 60, 'interstice'),
+                    cards: ["Sudo Privilege", "Kernel Panic", "Time.sleep(∞)"],
+                    enemies: ["GROEKEN", "Dragon Temporel", "Arthur Quantique"],
+                    dialogue: "Maintenant on parle! Cyberpunk mode ON!"
+                }
+            };
+
+            const config = levelConfigs[level];
+            if (!config) return;
+
+            // Update avatar
+            gameState.player.avatar = config.avatar;
+            updateAvatar();
+
+            // Show dialogue
+            showDialogue("Bérénice", config.dialogue);
+
+            // Load cards
+            await loadCards(config.cards);
+
+            // Initialize map
+            gameState.world.map = config.map;
+            
+            // Start rendering
+            renderGame();
+        }
+
+        function generateMap(width, height, type) {
+            const map = [];
+            const tiles = {
+                prairie: ['🌳', '🌺', '🌿', '·'],
+                quantum: ['▓', '░', '⚡', '◊'],
+                interstice: ['█', '▒', '◈', '∴']
+            };
+
+            for (let y = 0; y < height; y++) {
+                const row = [];
+                for (let x = 0; x < width; x++) {
+                    const tileSet = tiles[type];
+                    row.push(tileSet[Math.floor(Math.random() * tileSet.length)]);
+                }
+                map.push(row);
+            }
+
+            // Add objectives
+            map[5][5] = '💎'; // Crystal
+            map[height-2][width-2] = '🚪'; // Exit
+
+            return map;
+        }
+
+        async function loadCards(cardNames) {
+            const cardDefinitions = {
+                "Ping": {
+                    cost: 1,
+                    desc: "Teste la connexion",
+                    effect: "1 dégât, pioche si touche",
+                    code: "ping -c 1 enemy.ip",
+                    action: async (target) => {
+                        await dealDamage(target, 1);
+                        if (target.hp > 0) drawCard();
+                    }
+                },
+                "Firewall": {
+                    cost: 2,
+                    desc: "Protection réseau",
+                    effect: "Bloque 3 dégâts",
+                    code: "iptables -A INPUT -j DROP",
+                    action: async () => {
+                        gameState.player.shield = 3;
+                    }
+                },
+                "Debug": {
+                    cost: 1,
+                    desc: "Analyse du code",
+                    effect: "Pioche 2, défausse 1",
+                    code: "console.log(hand);",
+                    action: async () => {
+                        drawCard();
+                        drawCard();
+                        // TODO: implement discard
+                    }
+                },
+                "Fork Process": {
+                    cost: 3,
+                    desc: "Duplication quantique",
+                    effect: "Crée un clone 2/2",
+                    code: "process.fork()",
+                    action: async () => {
+                        createClone();
+                    }
+                },
+                "Ctrl+Z": {
+                    cost: 2,
+                    desc: "Annulation temporelle",
+                    effect: "Annule dernière action",
+                    code: "git revert HEAD~1",
+                    action: async () => {
+                        await revertLastAction();
+                    }
+                },
+                "Stack Overflow": {
+                    cost: 4,
+                    desc: "Débordement récursif",
+                    effect: "X dégâts (X = cartes en main)",
+                    code: "while(1) damage.push()",
+                    action: async (target) => {
+                        const damage = gameState.player.cards.length;
+                        await dealDamage(target, damage);
+                    }
+                },
+                "Sudo Privilege": {
+                    cost: 6,
+                    desc: "Escalade de privilèges",
+                    effect: "Contrôle 1 ennemi",
+                    code: "sudo chown berenice enemy",
+                    action: async (target) => {
+                        target.controller = 'player';
+                    }
+                },
+                "Kernel Panic": {
+                    cost: 7,
+                    desc: "Crash système total",
+                    effect: "Détruit tout, pioche 3",
+                    code: "kernel panic: not syncing",
+                    action: async () => {
+                        gameState.world.entities = [];
+                        for (let i = 0; i < 3; i++) drawCard();
+                    }
+                },
+                "Time.sleep(∞)": {
+                    cost: 8,
+                    desc: "Boucle infinie temporelle",
+                    effect: "Gèle tout 2 tours",
+                    code: "while(true) { wait(); }",
+                    action: async () => {
+                        gameState.world.frozen = 2;
+                    }
+                }
+            };
+
+            gameState.player.cards = cardNames.map(name => ({
+                ...cardDefinitions[name],
+                name: name,
+                cooldown: 0
+            }));
+
+            renderCards();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cards');
+            container.innerHTML = '';
+
+            gameState.player.cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card' + (card.cooldown > 0 ? ' cooldown' : '');
+                cardEl.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-desc">${card.desc}</div>
+                    <div class="card-effect">${card.code}</div>
+                `;
+                
+                if (card.cooldown === 0) {
+                    cardEl.onclick = () => playCard(index);
+                }
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        async function playCard(index) {
+            const card = gameState.player.cards[index];
+            
+            if (card.cooldown > 0) {
+                showFloatingMessage("En cooldown!", card.x, card.y, '#f00');
+                return;
+            }
+
+            if (gameState.player.mana < card.cost) {
+                showFloatingMessage("Pas assez de mana!", card.x, card.y, '#f00');
+                return;
+            }
+
+            // Consume mana
+            gameState.player.mana -= card.cost;
+            updateStats();
+
+            // Apply cooldown
+            card.cooldown = card.cost;
+
+            // Execute card action
+            if (card.action) {
+                await card.action(gameState.combat.enemy);
+            }
+
+            // Call backend
+            try {
+                const response = await fetch(CONFIG.JAVA_API + '/api/magic/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: card.code,
+                        caster: gameState.player.id,
+                        target: gameState.combat.enemy?.id
+                    })
+                });
+
+                const result = await response.json();
+                if (CONFIG.DEBUG_MODE) console.log('Cast result:', result);
+            } catch (error) {
+                console.error('API error:', error);
+            }
+
+            // Visual effect
+            showFloatingMessage(card.name + "!", 300, 300, '#0ff');
+            
+            renderCards();
+        }
+
+        function showDialogue(speaker, text) {
+            const dialogue = document.getElementById('dialogue');
+            document.getElementById('dialogue-speaker').textContent = speaker;
+            document.getElementById('dialogue-text').textContent = text;
+            dialogue.style.display = 'block';
+
+            setTimeout(() => {
+                dialogue.style.display = 'none';
+            }, 5000);
+        }
+
+        function showFloatingMessage(text, x, y, color = '#0ff') {
+            const msg = document.createElement('div');
+            msg.className = 'floating-msg';
+            msg.style.left = x + 'px';
+            msg.style.top = y + 'px';
+            msg.style.color = color;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        function updateStats() {
+            document.getElementById('hp').textContent = gameState.player.hp;
+            document.getElementById('maxHp').textContent = gameState.player.maxHp;
+            document.getElementById('level').textContent = gameState.currentLevel;
+            document.getElementById('mana').textContent = gameState.player.mana;
+            document.getElementById('maxMana').textContent = gameState.player.maxMana;
+            document.getElementById('pos').textContent = 
+                `${gameState.player.position_6d.x},${gameState.player.position_6d.y},${gameState.player.position_6d.z}`;
+            document.getElementById('psi').textContent = gameState.player.position_6d.psi.toFixed(3);
+        }
+
+        function updateAvatar() {
+            const avatars = document.querySelectorAll('.hero-avatar');
+            avatars.forEach(avatar => {
+                if (avatar.parentElement.id === 'hero-player') {
+                    avatar.className = 'hero-avatar avatar-' + gameState.player.avatar;
+                }
+            });
+        }
+
+        async function gameLoop() {
+            if (gameState.currentLevel === 0) return;
+
+            // Tick synchronization with backend
+            gameState.player.position_6d.t++;
+
+            // Update cooldowns
+            gameState.player.cards.forEach(card => {
+                if (card.cooldown > 0) card.cooldown--;
+            });
+
+            // Regenerate mana
+            if (gameState.player.mana < gameState.player.maxMana) {
+                gameState.player.mana += 0.01;
+            }
+
+            // Update UI
+            updateStats();
+            
+            // Sync with Rust backend every 100ms
+            if (gameState.player.position_6d.t % 1 === 0) {
+                try {
+                    const response = await fetch(CONFIG.RUST_API + '/api/v2/tick', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            player_id: gameState.player.id,
+                            position_6d: gameState.player.position_6d,
+                            actions: [] // TODO: queue actions
+                        })
+                    });
+
+                    const worldState = await response.json();
+                    // TODO: update world state
+                } catch (error) {
+                    // Continue locally if backend is down
+                }
+            }
+        }
+
+        function renderGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Render map
+            if (gameState.world.map) {
+                const tileSize = 20;
+                const map = gameState.world.map;
+                
+                for (let y = 0; y < map.length; y++) {
+                    for (let x = 0; x < map[y].length; x++) {
+                        ctx.font = `${tileSize}px Arial`;
+                        ctx.fillText(map[y][x], x * tileSize, y * tileSize + tileSize);
+                    }
+                }
+
+                // Render player
+                ctx.fillStyle = '#0ff';
+                ctx.fillRect(
+                    gameState.player.position_6d.x * tileSize,
+                    gameState.player.position_6d.y * tileSize,
+                    tileSize,
+                    tileSize
+                );
+            }
+
+            requestAnimationFrame(renderGame);
+        }
+
+        // Helper functions
+        async function dealDamage(target, amount) {
+            if (!target) return;
+            target.hp -= amount;
+            showFloatingMessage(`-${amount}`, target.x, target.y, '#f00');
+        }
+
+        function drawCard() {
+            // TODO: implement card drawing
+            showFloatingMessage("Pioche!", 100, 400, '#0f0');
+        }
+
+        function createClone() {
+            // TODO: implement clone creation with Phi mechanics
+            gameState.player.position_6d.psi += 0.318;
+            showFloatingMessage("Clone créé! Ψ+" + 0.318, 200, 200, '#f0f');
+        }
+
+        async function revertLastAction() {
+            // TODO: implement action history and revert
+            showFloatingMessage("Ctrl+Z!", 250, 250, '#ff0');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (gameState.currentLevel === 0) return;
+
+            const moves = {
+                'ArrowUp': [0, -1],
+                'ArrowDown': [0, 1],
+                'ArrowLeft': [-1, 0],
+                'ArrowRight': [1, 0],
+                'w': [0, -1],
+                's': [0, 1],
+                'a': [-1, 0],
+                'd': [1, 0]
+            };
+
+            if (moves[e.key]) {
+                const [dx, dy] = moves[e.key];
+                gameState.player.position_6d.x += dx;
+                gameState.player.position_6d.y += dy;
+                e.preventDefault();
+            }
+        });
+
+        // Touch controls for mobile
+        let touchStartX = null;
+        let touchStartY = null;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!touchStartX || !touchStartY) return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal swipe
+                gameState.player.position_6d.x += dx > 0 ? 1 : -1;
+            } else {
+                // Vertical swipe
+                gameState.player.position_6d.y += dy > 0 ? 1 : -1;
+            }
+
+            touchStartX = null;
+            touchStartY = null;
+        });
+
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button after level 1
+            if (gameState.currentLevel >= 1) {
+                showDialogue("System", "Tu peux installer le jeu! (A2HS)");
+            }
+        });
+    </script>
+</body>
+</html>

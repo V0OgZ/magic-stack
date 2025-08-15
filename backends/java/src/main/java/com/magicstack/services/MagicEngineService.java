@@ -56,6 +56,16 @@ public class MagicEngineService {
         // Normalize formula via registry (Vector DB)
         String key = request.getFormulaId() != null ? request.getFormulaId() : request.getFormula();
         String normalized = registry.resolveFormulaText(key);
+        // Ultimate guard (FOUB Millennium Controller)
+        boolean handledAsUltimate = false;
+        boolean isMillennium = key != null && "MILLENNIUM_CONTROLLER".equalsIgnoreCase(key.trim());
+        String activeHeroId = null;
+        try {
+            if (request.getContext() instanceof java.util.Map<?, ?> ctx) {
+                Object ah = ctx.get("activeHeroId");
+                if (ah != null) activeHeroId = String.valueOf(ah);
+            }
+        } catch (Exception ignored) { }
 
         // Store active spell
         Map<String, Object> spellData = new HashMap<>();
@@ -77,6 +87,28 @@ public class MagicEngineService {
             response.setEffect("SPELL_CAST_SUCCESS");
             response.setMessage("Formula " + normalized + " cast successfully!");
         }
+        // Apply FOUB guard after default effect/message
+        if (isMillennium) {
+            if (activeHeroId == null || !activeHeroId.toLowerCase().contains("foub")) {
+                response.setSuccess(false);
+                response.setEffect("NOT_FOUB_PALADIN");
+                response.setMessage("🚫 MILLENNIUM CONTROLLER: Seul Foub peut utiliser cet ultimate !");
+                Map<String, String> outputs = new HashMap<>();
+                outputs.put("literary", "Le pouvoir refuse l'appel. Seul Foub peut invoquer la Lueur du Juste.");
+                outputs.put("iconic", "⛔");
+                outputs.put("runic", "FORBIDDEN");
+                outputs.put("quantum", normalized);
+                response.setOutputs(outputs);
+                response.setEffects(Arrays.asList("ultimate_denied"));
+                response.setSounds(Arrays.asList("error"));
+                response.setApplied("apply".equalsIgnoreCase(request.getMode()));
+                return response;
+            } else {
+                handledAsUltimate = true;
+                response.setEffect("MILLENNIUM_CONTROLLER_ACTIVATED");
+                response.setMessage("🏆 MILLENNIUM CONTROLLER ACTIVÉ ! Foub invoque la Lueur du Juste – résurrection de masse et protection divine.");
+            }
+        }
         spellData.put("formula", request.getFormula());
         spellData.put("power", request.getPower());
         spellData.put("position", position);
@@ -91,24 +123,35 @@ public class MagicEngineService {
         // Call Rust temporal grammar executor (simulate/apply)
         try {
             RustTemporalClient.ExecuteResult exec = rust.execute(normalized, request.getContext(), request.getSeed());
-            Map<String, String> outputs = new HashMap<>();
-            outputs.put("literary", response.getMessage());
-            // Iconic: keep heuristic for now
-            String upper = (response.getEffect() + ":" + normalized).toUpperCase();
-            String icon = upper.contains("FREEZE") ? "❄️"
-                : upper.contains("TELEPORT") ? "🌀"
-                : upper.contains("FIRE") ? "🔥"
-                : upper.contains("SHIELD") ? "🛡️" : "✨";
-            outputs.put("iconic", icon);
-            String formulaText = (request.getFormulaId() != null ? request.getFormulaId() : (request.getFormula() != null ? request.getFormula() : ""));
-            String runic = formulaText.replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
-            if (runic.length() > 16) runic = runic.substring(0, 16);
-            outputs.put("runic", runic.isEmpty() ? "ᚠᚢᚦ" : runic);
-            outputs.put("quantum", normalized);
-            response.setOutputs(outputs);
-            response.setEffects(Arrays.asList("magic_cast"));
-            response.setSounds(Arrays.asList("magic_cast"));
             response.setTraceHash(exec.traceHash);
+            if (handledAsUltimate) {
+                Map<String, String> outputs = new HashMap<>();
+                outputs.put("literary", response.getMessage());
+                outputs.put("iconic", "🛡️");
+                outputs.put("runic", "MILLENNIUM");
+                outputs.put("quantum", "SEQ(transform→mass_rez→exhaustion→recovery)");
+                response.setOutputs(outputs);
+                response.setEffects(Arrays.asList("ultimate_transform","divine_bubble","mass_resurrection","divine_exhaustion","recovery"));
+                response.setSounds(Arrays.asList("aura_dbz","bubble","rez_mass","exhaust","recover"));
+            } else {
+                Map<String, String> outputs = new HashMap<>();
+                outputs.put("literary", response.getMessage());
+                // Iconic: keep heuristic for now
+                String upper = (response.getEffect() + ":" + normalized).toUpperCase();
+                String icon = upper.contains("FREEZE") ? "❄️"
+                    : upper.contains("TELEPORT") ? "🌀"
+                    : upper.contains("FIRE") ? "🔥"
+                    : upper.contains("SHIELD") ? "🛡️" : "✨";
+                outputs.put("iconic", icon);
+                String formulaText = (request.getFormulaId() != null ? request.getFormulaId() : (request.getFormula() != null ? request.getFormula() : ""));
+                String runic = formulaText.replaceAll("[^A-Z_]", "").replaceAll("__+", "_");
+                if (runic.length() > 16) runic = runic.substring(0, 16);
+                outputs.put("runic", runic.isEmpty() ? "ᚠᚢᚦ" : runic);
+                outputs.put("quantum", normalized);
+                response.setOutputs(outputs);
+                response.setEffects(Arrays.asList("magic_cast"));
+                response.setSounds(Arrays.asList("magic_cast"));
+            }
 
             // Apply mode: delegate to Rust /temporal/apply for world diff (MVP)
             boolean isApply = "apply".equalsIgnoreCase(request.getMode());
@@ -127,16 +170,23 @@ public class MagicEngineService {
                     }
                     if (wd instanceof Map) {
                         //noinspection unchecked
-                        response.setWorldDiff((Map<String, Object>) wd);
+                        Map<String, Object> wdm = (Map<String, Object>) wd;
+                        if (handledAsUltimate) {
+                            wdm.putIfAbsent("ultimate", "MILLENNIUM_CONTROLLER");
+                            wdm.putIfAbsent("phases", Arrays.asList("transform","divine_bubble","mass_rez","exhaustion","recovery"));
+                        }
+                        response.setWorldDiff(wdm);
                     } else if (parsed.containsKey("world_diff") && parsed.get("world_diff") == null) {
                         // Ensure not null in response
                         Map<String, Object> empty = new HashMap<>();
                         empty.put("notes", "world_diff missing; empty diff");
+                        if (handledAsUltimate) empty.put("ultimate", "MILLENNIUM_CONTROLLER");
                         response.setWorldDiff(empty);
                     } else {
                         // If structure differs, expose full payload under raw
                         Map<String, Object> fallback = new HashMap<>();
                         fallback.put("raw", parsed);
+                        if (handledAsUltimate) fallback.put("ultimate", "MILLENNIUM_CONTROLLER");
                         response.setWorldDiff(fallback);
                     }
                 } catch (Exception ignore) {
@@ -153,12 +203,17 @@ public class MagicEngineService {
             // Fallback to previous placeholder
             Map<String, String> outputs = new HashMap<>();
             outputs.put("literary", response.getMessage());
-            outputs.put("iconic", "✨");
-            outputs.put("runic", "ᚠᚢᚦ");
-            outputs.put("quantum", normalized);
+            outputs.put("iconic", handledAsUltimate ? "🛡️" : "✨");
+            outputs.put("runic", handledAsUltimate ? "MILLENNIUM" : "ᚠᚢᚦ");
+            outputs.put("quantum", handledAsUltimate ? "SEQ(transform→mass_rez→exhaustion→recovery)" : normalized);
             response.setOutputs(outputs);
-            response.setEffects(Arrays.asList("magic_cast"));
-            response.setSounds(Arrays.asList("magic_cast"));
+            if (handledAsUltimate) {
+                response.setEffects(Arrays.asList("ultimate_transform","divine_bubble","mass_resurrection","divine_exhaustion","recovery"));
+                response.setSounds(Arrays.asList("aura_dbz","bubble","rez_mass","exhaust","recover"));
+            } else {
+                response.setEffects(Arrays.asList("magic_cast"));
+                response.setSounds(Arrays.asList("magic_cast"));
+            }
             response.setTraceHash(Integer.toHexString(normalized.hashCode()));
             boolean isApply = "apply".equalsIgnoreCase(request.getMode());
             response.setApplied(isApply);
