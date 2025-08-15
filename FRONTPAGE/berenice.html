@@ -548,8 +548,8 @@
     <div id="gameContainer">
         <div id="topBar">
             <button class="top-btn" id="btnHelp">Aide</button>
-            <button class="top-btn" id="btnTalk">Parler</button>
-            <button class="top-btn" id="btnEditor">Mode Éditeur</button>
+            <!-- <button class="top-btn" id="btnTalk">Parler</button> -->
+            <!-- <button class="top-btn" id="btnEditor">Mode Éditeur</button> -->
             <button class="top-btn" id="btnHero">Héroïne</button>
             <button class="top-btn" id="btnLevels">Niveaux</button>
         </div>
@@ -559,10 +559,10 @@
                 <h3>Guide rapide</h3>
                 <ol style="text-align:left; color:#0ff;">
                     <li>Tape ./hack.sh pour démarrer</li>
-                    <li>Touche une case pour te déplacer</li>
-                    <li>Récupère 3 💎, rejoins 🚪</li>
-                    <li>En combat: joue une carte → l’ennemi répond</li>
-                    <li>Fork Process crée un clone 🧬</li>
+                    <li>Niveau 1: Récupère 3 💎 puis va sur 🚪</li>
+                    <li>Déplacement: touche une case adjacente</li>
+                    <li>Combat: joue une carte (Ping/Firewall/Debug)</li>
+                    <li>Les dialogues s’affichent automatiquement</li>
                 </ol>
             </div>
         </div>
@@ -1490,16 +1490,19 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 const ent = (gameState.world.entities||[]).find(e=>e.x===x && e.y===y);
                 if (ent) {
                     if (ent.type==='item') {
-                        if (ent.subtype==='crystal') { gameState.player.crystals=(gameState.player.crystals||0)+1; showFloatingMessage('💎 +1', x*52, y*52, '#0ff'); }
+                        if (ent.subtype==='crystal') { gameState.player.crystals=(gameState.player.crystals||0)+1; showFloatingMessage('💎 +1', x*52, y*52, '#0ff');
+                            if (gameState.player.crystals===1) showDialogue('Bérénice','Premier cristal! Plus que 2.');
+                            if (gameState.player.crystals===2) showDialogue('Bérénice','Encore un cristal et on file à la porte.');
+                            if (gameState.player.crystals>=3) showDialogue('Bérénice','OK go à la porte 🚪 !');
+                        }
                         else { (gameState.player.inventory||[]).push(ent.emoji); showFloatingMessage('Ramassé '+ent.emoji, x*52, y*52, '#0ff'); }
                         gameState.world.entities = gameState.world.entities.filter(e=>e!==ent);
                         updateStats();
                     } else if (ent.type==='creature' && !gameState.combat.active) {
-                        gameState.combat.enemy = { id: ent.name||'enemy', x: ent.x, y: ent.y, hp: ent.hp||30, maxHp: ent.maxHp||30 };
-                        startCombat();
+                        startCombat(ent);
                     } else if (ent.type==='exit') {
-                        showFloatingMessage('Niveau '+(gameState.currentLevel+1)+'!', x*52, y*52, '#0ff');
-                        setTimeout(()=> startLevel(Math.min(3, gameState.currentLevel+1)), 400);
+                        if ((gameState.player.crystals||0) >= 3) { showDialogue('Bérénice','Niveau terminé!'); startLevel(Math.min(3, gameState.currentLevel+1)); }
+                        else { showDialogue('Bérénice','Il manque des cristaux...'); }
                     }
                 }
             }
@@ -1544,12 +1547,11 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         // Top bar actions
         window.addEventListener('DOMContentLoaded', () => {
             const btnHelp = document.getElementById('btnHelp');
-            const btnTalk = document.getElementById('btnTalk');
             const btnEditor = document.getElementById('btnEditor');
             const btnHero = document.getElementById('btnHero');
             const btnLevels = document.getElementById('btnLevels');
             if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
-            if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
+            // if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
             if (btnLevels) btnLevels.onclick = () => { document.getElementById('levelsOverlay').style.display = 'block'; };
             if (btnHero) btnHero.onclick = async () => {
                 try {
@@ -1575,17 +1577,6 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     }
                 } catch {}
                 document.getElementById('heroOverlay').style.display = 'block';
-            };
-            if (btnTalk) btnTalk.onclick = async () => {
-                try {
-                    const q = `Bérénice, niveau ${gameState.currentLevel}`;
-                    const ctx = await fetch(CONFIG.VECTOR_DB + '/search', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query: 'Bérénice backstory', limit: 3 }) }).then(r=>r.json()).catch(()=>({results:[]}));
-                    const prompt = { character: 'berenice', context: { level: gameState.currentLevel, hints: ctx.results?.map(r=>r.match).join('\n').slice(0,500) || '' } };
-                    const resp = await fetch(CONFIG.LLM_API + '/character/speak', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(prompt) }).then(r=>r.json()).catch(()=>({ text: "Je vais y arriver! (mode offline)" }));
-                    showDialogue('Bérénice', resp.text || 'Je vais y arriver!');
-                } catch {
-                    showDialogue('Bérénice', 'Je vais y arriver!');
-                }
             };
         });
 
