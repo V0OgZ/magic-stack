@@ -220,10 +220,10 @@
         }
         #skillName { color:#9ff; font-size:12px; margin-left:6px; }
 
-        /* Objective chip */
+        /* Objective chip (anchored to grid wrapper) */
         #objectiveChip {
-            position: fixed;
-            top: 8px;
+            position: absolute;
+            top: -34px;
             left: 50%;
             transform: translateX(-50%);
             padding: 6px 10px;
@@ -232,7 +232,7 @@
             background: rgba(0, 16, 24, 0.85);
             color: #0ff;
             font-weight: bold;
-            z-index: 900;
+            z-index: 85;
             box-shadow: 0 0 10px rgba(0,255,255,0.25);
         }
 
@@ -649,12 +649,13 @@
             </div>
         </div>
         <!-- Container pour la grille et l'avatar -->
-        <div style="position: relative; display: inline-block; margin: 0 auto;">
+        <div id="gridWrapper" style="position: relative; display: inline-block; margin: 0 auto;">
             <!-- Grille de jeu style PWA -->
             <div id="gameGrid"></div>
             
             <!-- Avatar du joueur -->
             <img id="playerAvatar" class="player-avatar avatar-ber0" style="display:none;">
+            <div id="objectiveChip">Objectif</div>
         </div>
         
         <!-- Stats compactes (tap pour détails) -->
@@ -722,7 +723,6 @@
             <button id="btnAttack" class="combat-btn">Attaquer</button>
             <button id="btnSkill" class="combat-btn">Compétence <span id="skillName"></span></button>
         </div>
-        <div id="objectiveChip">Objectif</div>
     </div>
 
     <script>
