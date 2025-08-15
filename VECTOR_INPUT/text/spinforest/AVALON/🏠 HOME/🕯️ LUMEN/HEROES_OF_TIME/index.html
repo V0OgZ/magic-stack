@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 Heroes of Time - Carte Isométrique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* HUD Principal */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(5px);
+            pointer-events: all;
+        }
+        
+        .hero-info h3 {
+            color: #ffd700;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .stat-bar {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            width: 100px;
+            font-size: 14px;
+        }
+        
+        .bar-container {
+            flex: 1;
+            height: 20px;
+            background: #333;
+            border: 1px solid #666;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .move-bar { background: linear-gradient(90deg, #4169E1, #6495ED); }
+        .temporal-bar { background: linear-gradient(90deg, #9370DB, #BA55D3); }
+        
+        .bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        /* Contrôles Temporels */
+        #temporalControls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .temporal-button {
+            display: block;
+            width: 180px;
+            background: linear-gradient(135deg, #4169E1, #9370DB);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(100, 149, 237, 0.3);
+        }
+        
+        .temporal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 149, 237, 0.5);
+        }
+        
+        .temporal-button:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .temporal-button.danger {
+            background: linear-gradient(135deg, #DC143C, #FF6347);
+        }
+        
+        /* Mini-carte */
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #666;
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 100;
+        }
+        
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Inventaire */
+        #inventory {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 50px);
+            gap: 5px;
+        }
+        
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #444;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .inventory-slot:hover {
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+        
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #ffd700;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+        
+        /* Notifications */
+        #notifications {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 200;
+        }
+        
+        .notification {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin: 10px 0;
+            font-size: 18px;
+            text-align: center;
+            animation: slideIn 0.5s ease, fadeOut 0.5s ease 2.5s;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        
+        /* Dialogue Modal */
+        #dialogueModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dialogue-box {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .dialogue-title {
+            color: #ffd700;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .dialogue-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .dialogue-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .dialogue-button {
+            background: #4169E1;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dialogue-button:hover {
+            background: #6495ED;
+            transform: scale(1.05);
+        }
+        
+        /* Contrôles */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 50;
+        }
+        
+        /* Fog UI - 7 points colorés */
+        #fogUI {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 4px;
+            z-index: 1000;
+            display: flex;
+            gap: 2px;
+        }
+        
+        .fog-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .fog-dot:hover {
+            transform: scale(1.5);
+        }
+        
+        .fog-tooltip {
+            position: absolute;
+            top: 20px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+        }
+        
+        .fog-dot:hover .fog-tooltip {
+            display: block;
+        }
+        
+        /* Loading */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #ffd700;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="minimapCanvas"></canvas>
+    
+    <!-- Loading -->
+    <div id="loading">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Chargement des fragments temporels...</div>
+        </div>
+    </div>
+    
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-panel hero-info">
+            <h3>🎮 <span id="heroName">Marcheur Temporel</span></h3>
+            
+            <div class="stat-bar">
+                <span class="stat-label">🚶 Mouvement</span>
+                <div class="bar-container">
+                    <div class="bar-fill move-bar" id="moveBar" style="width: 100%"></div>
+                    <span class="bar-text" id="moveText">5/5</span>
+                </div>
+            </div>
+            
+            <div class="stat-bar">
+                <span class="stat-label">⏳ Temporel</span>
+                <div class="bar-container">
+                    <div class="bar-fill temporal-bar" id="temporalBar" style="width: 100%"></div>
+                    <span class="bar-text" id="temporalText">3/3</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 14px;">
+                📍 Position: <span id="heroPos">0, 0</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contrôles Temporels -->
+    <div id="temporalControls" class="hud-panel">
+        <button class="temporal-button" id="undoBtn" title="Annuler le dernier mouvement (Ctrl+Z)">
+            ↶ Annuler Temporel
+        </button>
+        <button class="temporal-button danger" id="collapseBtn" title="Forcer le collapse causal de la zone">
+            💥 Collapse Causal
+        </button>
+        <button class="temporal-button" id="visionBtn" title="Activer la vision temporelle">
+            👁️ Vision Temporelle
+        </button>
+    </div>
+    
+    <!-- Inventaire -->
+    <div id="inventory" class="hud-panel">
+        <div class="inventory-grid" id="inventoryGrid"></div>
+    </div>
+    
+    <!-- Mini-carte -->
+    <div id="minimap"></div>
+    
+    <!-- Contrôles -->
+    <div id="controls">
+        🖱️ Click pour déplacer | ⌨️ Flèches pour naviguer | ESPACE pour interagir | TAB pour centrer
+    </div>
+    
+    <!-- Notifications -->
+    <div id="notifications"></div>
+    
+    <!-- Dialogue Modal -->
+    <div id="dialogueModal">
+        <div class="dialogue-box">
+            <h2 class="dialogue-title" id="dialogueTitle">Titre</h2>
+            <p class="dialogue-text" id="dialogueText">Texte</p>
+            <div class="dialogue-buttons" id="dialogueButtons"></div>
+        </div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+    
+    <!-- Fog UI - 7 points -->
+    <div id="fogUI"></div>
+    
+    <!-- Scripts -->
+    <script src="src/IsoMapEngine.js"></script>
+    <script src="src/IsoMapRenderer.js"></script>
+    <script>
+        // Initialisation
+        let engine = null;
+        
+        async function init() {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Créer le moteur
+            engine = new IsoMapEngine(canvas);
+            
+            // Configurer les callbacks UI
+            setupUICallbacks();
+            
+            // Initialiser l'UI du fog
+            initFogUI();
+            
+            // Initialiser le jeu
+            const success = await engine.initialize('fragments_temporels');
+            
+            if (success) {
+                document.getElementById('loading').style.display = 'none';
+                updateUI();
+                initMinimap();
+            } else {
+                showNotification("Erreur de chargement !", 'error');
+            }
+        }
+        
+        // Initialiser l'UI des 7 états de fog
+        function initFogUI() {
+            const fogUI = document.getElementById('fogUI');
+            
+            // Créer les 7 points
+            Object.values(engine.FOG_STATES).forEach(state => {
+                const dot = document.createElement('div');
+                dot.className = 'fog-dot';
+                dot.style.backgroundColor = state.color;
+                dot.title = state.name;
+                
+                // Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'fog-tooltip';
+                tooltip.innerHTML = `<strong>${state.name}</strong><br>${state.description}`;
+                dot.appendChild(tooltip);
+                
+                // Click pour tester l'état (dev mode)
+                dot.addEventListener('click', () => {
+                    if (engine.config.devMode) {
+                        const hero = engine.gameState.hero;
+                        engine.gameState.fog.set(`${hero.x},${hero.y}`, state.id);
+                        showNotification(`État fog changé : ${state.name}`);
+                    }
+                });
+                
+                fogUI.appendChild(dot);
+            });
+        }
+        
+        // Mise à jour de l'interface
+        function updateUI() {
+            if (!engine || !engine.gameState.hero) return;
+            
+            const hero = engine.gameState.hero;
+            
+            // Infos héros
+            document.getElementById('heroName').textContent = hero.name;
+            document.getElementById('heroPos').textContent = `${hero.x}, ${hero.y}`;
+            
+            // Barres
+            const movePercent = (hero.movePoints / hero.maxMovePoints) * 100;
+            document.getElementById('moveBar').style.width = movePercent + '%';
+            document.getElementById('moveText').textContent = `${hero.movePoints}/${hero.maxMovePoints}`;
+            
+            const tempPercent = (hero.temporalCharges / 3) * 100;
+            document.getElementById('temporalBar').style.width = tempPercent + '%';
+            document.getElementById('temporalText').textContent = `${hero.temporalCharges}/3`;
+            
+            // Boutons
+            document.getElementById('undoBtn').disabled = 
+                hero.temporalCharges <= 0 || engine.gameState.history.length === 0;
+            
+            // Inventaire
+            updateInventory();
+            
+            requestAnimationFrame(updateUI);
+        }
+        
+        // Mise à jour inventaire
+        function updateInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            const hero = engine.gameState.hero;
+            
+            // Clear
+            grid.innerHTML = '';
+            
+            // Slots vides
+            for (let i = 0; i < 6; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                
+                if (hero.inventory[i]) {
+                    slot.textContent = getItemIcon(hero.inventory[i]);
+                    slot.title = hero.inventory[i];
+                }
+                
+                grid.appendChild(slot);
+            }
+        }
+        
+        function getItemIcon(item) {
+            const icons = {
+                'flute_fragile': '🎵',
+                'épée_du_collapse': '⚔️',
+                'orbe_de_vision_temporelle': '🔮',
+                'clé_arcane': '🔑',
+                'white_russian': '🥃'
+            };
+            return icons[item] || '📦';
+        }
+        
+        // Mini-carte
+        function initMinimap() {
+            const miniCanvas = document.getElementById('minimapCanvas');
+            miniCanvas.width = 200;
+            miniCanvas.height = 200;
+            
+            const miniCtx = miniCanvas.getContext('2d');
+            
+            function drawMinimap() {
+                miniCtx.fillStyle = '#0a0a0a';
+                miniCtx.fillRect(0, 0, 200, 200);
+                
+                if (!engine || !engine.gameState.map) return;
+                
+                // Calculer l'échelle
+                const scale = 10;
+                const offsetX = 100;
+                const offsetY = 100;
+                
+                // Dessiner les plateformes
+                engine.gameState.map.platforms.forEach(platform => {
+                    const x = platform.position.x * scale + offsetX;
+                    const y = platform.position.y * scale + offsetY;
+                    const w = platform.size.w * scale;
+                    const h = platform.size.h * scale;
+                    
+                    miniCtx.fillStyle = engine.getPlatformColor(platform.type);
+                    miniCtx.fillRect(x, y, w, h);
+                });
+                
+                // Position du héros
+                if (engine.gameState.hero) {
+                    const hx = engine.gameState.hero.x * scale + offsetX;
+                    const hy = engine.gameState.hero.y * scale + offsetY;
+                    
+                    miniCtx.fillStyle = '#FFD700';
+                    miniCtx.beginPath();
+                    miniCtx.arc(hx, hy, 3, 0, Math.PI * 2);
+                    miniCtx.fill();
+                }
+                
+                requestAnimationFrame(drawMinimap);
+            }
+            
+            drawMinimap();
+        }
+        
+        // Callbacks UI
+        function setupUICallbacks() {
+            // Boutons temporels
+            document.getElementById('undoBtn').addEventListener('click', () => {
+                if (engine.undoMove()) {
+                    showNotification("Retour temporel effectué !");
+                }
+            });
+            
+            document.getElementById('collapseBtn').addEventListener('click', () => {
+                const hero = engine.gameState.hero;
+                engine.collapseCausalArea(hero.x, hero.y, 2);
+                showNotification("Zone causalement verrouillée !", 'warning');
+            });
+            
+            document.getElementById('visionBtn').addEventListener('click', () => {
+                engine.config.showGrid = !engine.config.showGrid;
+                engine.config.showCoordinates = !engine.config.showCoordinates;
+            });
+            
+            // Override des dialogues du moteur
+            engine.showVortexDialog = (vortex) => {
+                showDialogue(
+                    "Vortex Temporel",
+                    `Ce vortex mène vers : ${vortex.destinations.join(', ')}`,
+                    [
+                        { text: "Entrer", action: () => engine.activateVortex(vortex) },
+                        { text: "Reculer", action: () => {} }
+                    ]
+                );
+            };
+            
+            engine.showArtifactDialog = (artifactId) => {
+                showDialogue(
+                    "Artefact Découvert",
+                    `Vous avez trouvé : ${artifactId}`,
+                    [
+                        { text: "Prendre", action: () => {
+                            engine.collectArtifact(artifactId);
+                            showNotification(`${artifactId} ajouté à l'inventaire !`);
+                        }},
+                        { text: "Laisser", action: () => {} }
+                    ]
+                );
+            };
+        }
+        
+        // Notifications
+        function showNotification(text, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = text;
+            
+            document.getElementById('notifications').appendChild(notif);
+            
+            setTimeout(() => notif.remove(), 3000);
+        }
+        
+        // Dialogues
+        function showDialogue(title, text, buttons) {
+            document.getElementById('dialogueTitle').textContent = title;
+            document.getElementById('dialogueText').textContent = text;
+            
+            const buttonsContainer = document.getElementById('dialogueButtons');
+            buttonsContainer.innerHTML = '';
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = 'dialogue-button';
+                button.textContent = btn.text;
+                button.onclick = () => {
+                    btn.action();
+                    closeDialogue();
+                };
+                buttonsContainer.appendChild(button);
+            });
+            
+            document.getElementById('dialogueModal').style.display = 'flex';
+        }
+        
+        function closeDialogue() {
+            document.getElementById('dialogueModal').style.display = 'none';
+        }
+        
+        // Démarrer
+        window.addEventListener('load', init);
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            if (engine) {
+                engine.canvas.width = window.innerWidth;
+                engine.canvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body>
+</html>

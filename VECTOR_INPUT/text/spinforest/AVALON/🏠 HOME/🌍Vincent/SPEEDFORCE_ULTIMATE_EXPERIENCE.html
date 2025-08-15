@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ SPEEDFORCE ULTIMATE - FEEL THE POWER ⚡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Arial Black', sans-serif;
+            position: relative;
+        }
+        
+        /* Custom Cursor */
+        .lightning-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 9999;
+            filter: drop-shadow(0 0 10px #ffff00);
+        }
+        
+        /* Speedforce Background */
+        #speedforce-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #000033 0%, #000 100%);
+            animation: speedforce-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes speedforce-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Lightning Bolts */
+        .lightning {
+            position: absolute;
+            width: 2px;
+            height: 100vh;
+            background: linear-gradient(to bottom, transparent, #ffff00, #ffffff, #ffff00, transparent);
+            animation: lightning-strike 0.1s linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes lightning-strike {
+            0% { opacity: 0; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(10px); }
+            100% { opacity: 0; transform: translateX(-10px); }
+        }
+        
+        /* Speed Lines */
+        .speed-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #00ffff, transparent);
+            animation: speed-rush 0.5s linear infinite;
+        }
+        
+        @keyframes speed-rush {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(200%); }
+        }
+        
+        /* Central Flash Symbol */
+        .flash-symbol {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            z-index: 100;
+        }
+        
+        .flash-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff0000, #990000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: flash-rotate 2s linear infinite, flash-pulse 1s ease-in-out infinite;
+            box-shadow: 0 0 100px #ff0000, inset 0 0 50px #ffff00;
+        }
+        
+        @keyframes flash-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes flash-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .lightning-bolt {
+            font-size: 100px;
+            color: #ffff00;
+            text-shadow: 0 0 30px #ffff00, 0 0 60px #ffffff;
+            animation: bolt-flicker 0.1s linear infinite;
+        }
+        
+        @keyframes bolt-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Speed Counter */
+        .speed-counter {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            z-index: 200;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .speed-value {
+            animation: counter-glow 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes counter-glow {
+            0%, 100% { text-shadow: 0 0 20px #00ffff; }
+            50% { text-shadow: 0 0 40px #00ffff, 0 0 60px #ffffff; }
+        }
+        
+        /* Time Particles */
+        .time-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffff00;
+            border-radius: 50%;
+            animation: particle-flow 3s linear infinite;
+        }
+        
+        @keyframes particle-flow {
+            from {
+                transform: translateZ(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateZ(1000px) scale(10);
+                opacity: 0;
+            }
+        }
+        
+        /* Messages */
+        .speedforce-message {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ffff00;
+            text-align: center;
+            z-index: 300;
+            opacity: 0;
+            animation: message-flash 3s ease-in-out infinite;
+        }
+        
+        @keyframes message-flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        /* Reality Tears */
+        .reality-tear {
+            position: absolute;
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ff00ff, #00ffff, #ff00ff, transparent);
+            animation: tear-expand 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+        
+        @keyframes tear-expand {
+            0%, 100% { transform: scaleX(0); opacity: 0; }
+            50% { transform: scaleX(1); opacity: 1; }
+        }
+        
+        /* Power Level Bar */
+        .power-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            overflow: hidden;
+            z-index: 400;
+        }
+        
+        .power-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ffff);
+            width: 0%;
+            animation: power-charge 5s ease-out forwards;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        @keyframes power-charge {
+            to { width: 100%; }
+        }
+        
+        /* Quantum Glitches */
+        .glitch-text {
+            position: fixed;
+            font-size: 72px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 500;
+            animation: glitch-move 0.1s linear infinite;
+        }
+        
+        @keyframes glitch-move {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch-text::before {
+            animation: glitch-1 0.5s linear infinite;
+            color: #00ffff;
+            z-index: -1;
+        }
+        
+        .glitch-text::after {
+            animation: glitch-2 0.5s linear infinite;
+            color: #ff00ff;
+            z-index: -2;
+        }
+        
+        @keyframes glitch-1 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(20% 0 60% 0); transform: translate(-5px); }
+            40% { clip-path: inset(40% 0 40% 0); transform: translate(5px); }
+            60% { clip-path: inset(60% 0 20% 0); transform: translate(-5px); }
+            80% { clip-path: inset(80% 0 0 0); transform: translate(5px); }
+        }
+        
+        @keyframes glitch-2 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(80% 0 0 0); transform: translate(5px); }
+            40% { clip-path: inset(60% 0 20% 0); transform: translate(-5px); }
+            60% { clip-path: inset(40% 0 40% 0); transform: translate(5px); }
+            80% { clip-path: inset(20% 0 60% 0); transform: translate(-5px); }
+        }
+        
+        /* Speedster Trail */
+        .speedster-trail {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 0, 0.8), transparent);
+            pointer-events: none;
+            animation: trail-fade 0.5s ease-out forwards;
+        }
+        
+        @keyframes trail-fade {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(0.5); opacity: 0; }
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 600;
+        }
+        
+        .control-button {
+            display: block;
+            width: 200px;
+            margin: 10px 0;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff0000, #ffff00);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .control-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #ffff00;
+        }
+        
+        /* Hidden initially */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Lightning Cursor -->
+    <div class="lightning-cursor">⚡</div>
+    
+    <!-- Speedforce Background -->
+    <div id="speedforce-bg"></div>
+    
+    <!-- Speed Counter -->
+    <div class="speed-counter">
+        SPEED: <span class="speed-value" id="speedValue">0</span> KM/H
+    </div>
+    
+    <!-- Central Flash Symbol -->
+    <div class="flash-symbol">
+        <div class="flash-circle">
+            <div class="lightning-bolt">⚡</div>
+        </div>
+    </div>
+    
+    <!-- Speedforce Message -->
+    <div class="speedforce-message" id="message">
+        TAP INTO THE SPEEDFORCE
+    </div>
+    
+    <!-- Power Bar -->
+    <div class="power-bar">
+        <div class="power-fill"></div>
+    </div>
+    
+    <!-- Glitch Text -->
+    <div class="glitch-text hidden" id="glitchText" data-text="SPEEDFORCE" style="top: 20%; left: 10%;">SPEEDFORCE</div>
+    
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <button class="control-button" onclick="activateHyperSpeed()">🚀 HYPER SPEED</button>
+        <button class="control-button" onclick="timeTravel()">⏰ TIME TRAVEL</button>
+        <button class="control-button" onclick="realityPhase()">🌀 PHASE REALITY</button>
+        <button class="control-button" onclick="quantumSpeed()">⚛️ QUANTUM SPEED</button>
+        <button class="control-button" onclick="flashpoint()">💥 FLASHPOINT</button>
+    </div>
+    
+    <script>
+        // Initialize variables
+        let speed = 0;
+        let maxSpeed = 299792458; // Speed of light in m/s
+        let isHyperSpeed = false;
+        let particles = [];
+        let lightningBolts = [];
+        let speedLines = [];
+        let tears = [];
+        
+        // Custom cursor
+        const cursor = document.querySelector('.lightning-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 15 + 'px';
+            cursor.style.top = e.clientY - 15 + 'px';
+            
+            // Create speedster trail
+            if (isHyperSpeed) {
+                createSpeedsterTrail(e.clientX, e.clientY);
+            }
+        });
+        
+        // Create speedster trail
+        function createSpeedsterTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'speedster-trail';
+            trail.style.left = x - 50 + 'px';
+            trail.style.top = y - 50 + 'px';
+            document.body.appendChild(trail);
+            
+            setTimeout(() => trail.remove(), 500);
+        }
+        
+        // Speed counter animation
+        function animateSpeed() {
+            const speedElement = document.getElementById('speedValue');
+            const targetSpeed = isHyperSpeed ? maxSpeed : 100000;
+            
+            const increment = (targetSpeed - speed) * 0.1;
+            speed += increment;
+            
+            speedElement.textContent = Math.floor(speed).toLocaleString();
+            
+            if (speed > 1000000) {
+                speedElement.style.color = '#ff0000';
+            } else if (speed > 100000) {
+                speedElement.style.color = '#ffff00';
+            } else {
+                speedElement.style.color = '#00ffff';
+            }
+            
+            requestAnimationFrame(animateSpeed);
+        }
+        
+        // Create lightning effects
+        function createLightning() {
+            for (let i = 0; i < 5; i++) {
+                const lightning = document.createElement('div');
+                lightning.className = 'lightning';
+                lightning.style.left = Math.random() * window.innerWidth + 'px';
+                lightning.style.animationDelay = Math.random() * 2 + 's';
+                lightning.style.animationDuration = (0.1 + Math.random() * 0.2) + 's';
+                document.body.appendChild(lightning);
+                lightningBolts.push(lightning);
+                
+                setTimeout(() => {
+                    lightning.remove();
+                    lightningBolts = lightningBolts.filter(l => l !== lightning);
+                }, 3000);
+            }
+        }
+        
+        // Create speed lines
+        function createSpeedLines() {
+            for (let i = 0; i < 20; i++) {
+                const line = document.createElement('div');
+                line.className = 'speed-line';
+                line.style.top = Math.random() * window.innerHeight + 'px';
+                line.style.width = (100 + Math.random() * 200) + 'px';
+                line.style.animationDuration = (0.2 + Math.random() * 0.3) + 's';
+                line.style.animationDelay = Math.random() * 0.5 + 's';
+                document.body.appendChild(line);
+                speedLines.push(line);
+                
+                setTimeout(() => {
+                    line.remove();
+                    speedLines = speedLines.filter(l => l !== line);
+                }, 1000);
+            }
+        }
+        
+        // Create time particles
+        function createTimeParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'time-particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = Math.random() * window.innerHeight + 'px';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(particle);
+                particles.push(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                    particles = particles.filter(p => p !== particle);
+                }, 3000);
+            }
+        }
+        
+        // Create reality tears
+        function createRealityTear() {
+            const tear = document.createElement('div');
+            tear.className = 'reality-tear';
+            tear.style.top = Math.random() * window.innerHeight + 'px';
+            tear.style.left = Math.random() * window.innerWidth + 'px';
+            tear.style.transform = `rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(tear);
+            tears.push(tear);
+            
+            setTimeout(() => {
+                tear.remove();
+                tears = tears.filter(t => t !== tear);
+            }, 2000);
+        }
+        
+        // Update message
+        function updateMessage(text) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.style.animation = 'none';
+            setTimeout(() => {
+                message.style.animation = 'message-flash 3s ease-in-out infinite';
+            }, 100);
+        }
+        
+        // Control functions
+        function activateHyperSpeed() {
+            isHyperSpeed = !isHyperSpeed;
+            if (isHyperSpeed) {
+                updateMessage("HYPER SPEED ACTIVATED!");
+                document.body.style.animation = 'flash-rotate 0.5s linear infinite';
+                setInterval(createSpeedLines, 100);
+                setInterval(createLightning, 500);
+            } else {
+                updateMessage("RETURNING TO NORMAL SPEED");
+                document.body.style.animation = 'none';
+            }
+        }
+        
+        function timeTravel() {
+            updateMessage("BREAKING THE TIME BARRIER!");
+            document.getElementById('glitchText').classList.remove('hidden');
+            
+            // Reverse time effect
+            document.body.style.filter = 'hue-rotate(180deg) invert(1)';
+            setTimeout(() => {
+                document.body.style.filter = 'none';
+                document.getElementById('glitchText').classList.add('hidden');
+            }, 3000);
+            
+            // Create massive particle burst
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => createTimeParticles(), i * 10);
+            }
+        }
+        
+        function realityPhase() {
+            updateMessage("PHASING THROUGH REALITY!");
+            document.body.style.opacity = '0.5';
+            
+            // Create reality tears
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => createRealityTear(), i * 200);
+            }
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 3000);
+        }
+        
+        function quantumSpeed() {
+            updateMessage("ENTERING QUANTUM REALM!");
+            
+            // Quantum effect
+            const bg = document.getElementById('speedforce-bg');
+            bg.style.background = 'radial-gradient(circle at center, #ff00ff 0%, #00ffff 50%, #000 100%)';
+            bg.style.animation = 'speedforce-pulse 0.1s ease-in-out infinite';
+            
+            // Create quantum particles
+            setInterval(() => {
+                const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff0000'];
+                particles.forEach(p => {
+                    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                });
+            }, 100);
+            
+            setTimeout(() => {
+                bg.style.background = 'radial-gradient(circle at center, #000033 0%, #000 100%)';
+                bg.style.animation = 'speedforce-pulse 2s ease-in-out infinite';
+            }, 5000);
+        }
+        
+        function flashpoint() {
+            updateMessage("FLASHPOINT PARADOX!");
+            
+            // White flash
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.background = '#ffffff';
+            flash.style.zIndex = '9999';
+            flash.style.opacity = '0';
+            document.body.appendChild(flash);
+            
+            // Animate flash
+            flash.style.transition = 'opacity 0.5s';
+            flash.style.opacity = '1';
+            
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 500);
+                
+                // Reality changes
+                document.body.style.transform = 'scaleX(-1)';
+                updateMessage("TIMELINE ALTERED!");
+                
+                setTimeout(() => {
+                    document.body.style.transform = 'scaleX(1)';
+                }, 3000);
+            }, 500);
+        }
+        
+        // Initialize effects
+        animateSpeed();
+        setInterval(createTimeParticles, 1000);
+        setInterval(createLightning, 2000);
+        setInterval(createSpeedLines, 500);
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    speed = Math.min(speed + 10000, maxSpeed);
+                    break;
+                case 'ArrowDown':
+                    speed = Math.max(speed - 10000, 0);
+                    break;
+                case ' ':
+                    activateHyperSpeed();
+                    break;
+                case 't':
+                    timeTravel();
+                    break;
+                case 'r':
+                    realityPhase();
+                    break;
+                case 'q':
+                    quantumSpeed();
+                    break;
+                case 'f':
+                    flashpoint();
+                    break;
+            }
+        });
+        
+        // Welcome message
+        setTimeout(() => {
+            updateMessage("PRESS SPACE TO FEEL THE SPEEDFORCE!");
+        }, 3000);
+        
+        // Auto effects
+        setTimeout(() => {
+            updateMessage("MY NAME IS BARRY ALLEN...");
+        }, 6000);
+        
+        setTimeout(() => {
+            updateMessage("AND I AM THE FASTEST MAN ALIVE!");
+        }, 9000);
+        
+        // Background music beat (visual)
+        setInterval(() => {
+            const flash = document.querySelector('.flash-circle');
+            flash.style.boxShadow = `0 0 ${100 + Math.random() * 50}px #ff0000, inset 0 0 ${50 + Math.random() * 30}px #ffff00`;
+        }, 100);
+    </script>
+</body>
+</html>

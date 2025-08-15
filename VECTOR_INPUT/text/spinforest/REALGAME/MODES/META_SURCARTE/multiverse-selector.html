@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Multiverse - Sélecteur de Mondes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            pointer-events: none;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #ff6b35;
+            text-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #ccc;
+            font-size: 1.2em;
+        }
+        
+        .world-info {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #ff6b35;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .world-info.active {
+            opacity: 1;
+        }
+        
+        .world-name {
+            font-size: 1.8em;
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+        
+        .world-desc {
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        
+        .world-status {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .enter-prompt {
+            margin-top: 15px;
+            color: #0ff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .timeline-indicator {
+            position: absolute;
+            top: 100px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #0ff;
+        }
+        
+        .timeline-item {
+            margin: 5px 0;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .timeline-item:hover {
+            color: #0ff;
+        }
+        
+        .timeline-item.active {
+            color: #ff6b35;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="ui-overlay">
+        <h1>🌌 MULTIVERSE</h1>
+        <p class="subtitle">Choisissez votre monde et votre timeline</p>
+    </div>
+    
+    <div class="timeline-indicator">
+        <h3 style="color: #0ff; margin-bottom: 10px;">⏰ Timelines</h3>
+        <div class="timeline-item active" data-time="present">▶ Présent</div>
+        <div class="timeline-item" data-time="past">◀ Passé (-100 ans)</div>
+        <div class="timeline-item" data-time="future">▶▶ Futur (+50 ans)</div>
+        <div class="timeline-item" data-time="quantum">🌀 Superposition</div>
+    </div>
+    
+    <div class="world-info" id="worldInfo">
+        <div class="world-name" id="worldName">Monde</div>
+        <div class="world-desc" id="worldDesc">Description</div>
+        <div class="world-status">
+            <div class="status-item">
+                <span>🔓</span>
+                <span id="worldAccess">Accessible</span>
+            </div>
+            <div class="status-item">
+                <span>⚡</span>
+                <span id="worldPower">100%</span>
+            </div>
+        </div>
+        <div class="enter-prompt">Cliquez pour entrer</div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Données des mondes
+        const worlds = [
+            {
+                id: 'frontiere_feu_foi',
+                name: '🔥 Frontière de Feu et Foi',
+                desc: 'Un monde où magie et religion s\'affrontent',
+                x: 0.3,
+                y: 0.5,
+                radius: 80,
+                color: '#ff6b35',
+                accessible: true,
+                power: 100,
+                timeline: 'present'
+            },
+            {
+                id: 'cite_cristal',
+                name: '💎 Cité de Cristal',
+                desc: 'Métropole quantique aux mille reflets',
+                x: 0.7,
+                y: 0.3,
+                radius: 70,
+                color: '#00ffff',
+                accessible: true,
+                power: 85,
+                timeline: 'future'
+            },
+            {
+                id: 'foret_oubliee',
+                name: '🌲 Forêt Oubliée',
+                desc: 'Ancien domaine des druides temporels',
+                x: 0.5,
+                y: 0.7,
+                radius: 75,
+                color: '#4a7c4e',
+                accessible: false,
+                power: 45,
+                timeline: 'past'
+            },
+            {
+                id: 'nexus_void',
+                name: '🌀 Nexus du Vide',
+                desc: 'Point de convergence des réalités',
+                x: 0.8,
+                y: 0.6,
+                radius: 60,
+                color: '#9400d3',
+                accessible: true,
+                power: 120,
+                timeline: 'quantum'
+            },
+            {
+                id: 'royaume_brise',
+                name: '👑 Royaume Brisé',
+                desc: 'Empire déchu aux timelines fracturées',
+                x: 0.2,
+                y: 0.3,
+                radius: 85,
+                color: '#ffd700',
+                accessible: false,
+                power: 30,
+                timeline: 'past'
+            }
+        ];
+        
+        let selectedWorld = null;
+        let hoveredWorld = null;
+        let currentTimeline = 'present';
+        let particles = [];
+        let connections = [];
+        
+        // Créer des connexions entre mondes
+        function createConnections() {
+            connections = [
+                { from: worlds[0], to: worlds[1], strength: 0.8 },
+                { from: worlds[0], to: worlds[2], strength: 0.5 },
+                { from: worlds[1], to: worlds[3], strength: 0.9 },
+                { from: worlds[2], to: worlds[4], strength: 0.6 },
+                { from: worlds[3], to: worlds[4], strength: 0.7 }
+            ];
+        }
+        
+        // Créer des particules
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // Initialiser les particules
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+        }
+        
+        // Dessiner une connexion
+        function drawConnection(conn) {
+            const from = conn.from;
+            const to = conn.to;
+            
+            ctx.save();
+            ctx.globalAlpha = conn.strength * 0.3;
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            ctx.moveTo(from.x * canvas.width, from.y * canvas.height);
+            ctx.lineTo(to.x * canvas.width, to.y * canvas.height);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // Dessiner un monde
+        function drawWorld(world) {
+            const x = world.x * canvas.width;
+            const y = world.y * canvas.height;
+            const isVisible = world.timeline === currentTimeline || currentTimeline === 'quantum';
+            const isHovered = world === hoveredWorld;
+            
+            ctx.save();
+            
+            // Effet de timeline
+            if (!isVisible) {
+                ctx.globalAlpha = 0.2;
+            } else if (!world.accessible) {
+                ctx.globalAlpha = 0.5;
+            }
+            
+            // Aura externe
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, world.radius * 2);
+            gradient.addColorStop(0, world.color + '40');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, world.radius * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Monde principal
+            const worldGradient = ctx.createRadialGradient(x, y, 0, x, y, world.radius);
+            worldGradient.addColorStop(0, world.color);
+            worldGradient.addColorStop(0.8, world.color + '80');
+            worldGradient.addColorStop(1, world.color + '40');
+            
+            ctx.fillStyle = worldGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, world.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bordure
+            ctx.strokeStyle = isHovered ? '#fff' : world.color;
+            ctx.lineWidth = isHovered ? 4 : 2;
+            ctx.stroke();
+            
+            // Effet de rotation pour les mondes quantiques
+            if (world.timeline === 'quantum') {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(Date.now() * 0.001);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                ctx.arc(0, 0, world.radius + 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // Nom du monde
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(world.name, x, y + world.radius + 25);
+            
+            // Indicateur d'accès
+            if (!world.accessible && isVisible) {
+                ctx.fillStyle = '#ff0000';
+                ctx.font = '24px Arial';
+                ctx.fillText('🔒', x, y);
+            }
+            
+            ctx.restore();
+        }
+        
+        // Animation principale
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Particules
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            // Connexions
+            connections.forEach(conn => {
+                drawConnection(conn);
+            });
+            
+            // Mondes
+            worlds.forEach(world => {
+                drawWorld(world);
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Gestion souris
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            hoveredWorld = null;
+            
+            worlds.forEach(world => {
+                const wx = world.x * canvas.width;
+                const wy = world.y * canvas.height;
+                const dist = Math.sqrt((x - wx) ** 2 + (y - wy) ** 2);
+                
+                if (dist < world.radius) {
+                    hoveredWorld = world;
+                    showWorldInfo(world);
+                }
+            });
+            
+            if (!hoveredWorld) {
+                hideWorldInfo();
+            }
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            if (hoveredWorld && hoveredWorld.accessible) {
+                const isVisible = hoveredWorld.timeline === currentTimeline || currentTimeline === 'quantum';
+                if (isVisible) {
+                    enterWorld(hoveredWorld);
+                }
+            }
+        });
+        
+        // Timeline selector
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                currentTimeline = item.dataset.time;
+            });
+        });
+        
+        // Afficher info monde
+        function showWorldInfo(world) {
+            const info = document.getElementById('worldInfo');
+            document.getElementById('worldName').textContent = world.name;
+            document.getElementById('worldDesc').textContent = world.desc;
+            document.getElementById('worldAccess').textContent = world.accessible ? 'Accessible' : 'Verrouillé';
+            document.getElementById('worldPower').textContent = world.power + '%';
+            info.classList.add('active');
+        }
+        
+        function hideWorldInfo() {
+            document.getElementById('worldInfo').classList.remove('active');
+        }
+        
+        // Entrer dans un monde
+        function enterWorld(world) {
+            console.log('Entering world:', world.name);
+            // Effet de zoom
+            const x = world.x * canvas.width;
+            const y = world.y * canvas.height;
+            
+            let scale = 1;
+            const zoomAnimation = setInterval(() => {
+                scale *= 1.1;
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.translate(x, y);
+                ctx.scale(scale, scale);
+                ctx.translate(-x, -y);
+                drawWorld(world);
+                ctx.restore();
+                
+                if (scale > 10) {
+                    clearInterval(zoomAnimation);
+                    // Rediriger vers la carte du monde
+                    window.location.href = '../CARTE_ISO_2D/demo-frontiere-feu-foi.html';
+                }
+            }, 50);
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Initialisation
+        createConnections();
+        animate();
+    </script>
+</body>
+</html>

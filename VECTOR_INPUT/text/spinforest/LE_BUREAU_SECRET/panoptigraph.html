@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panoptigraph - Bureau Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            transition: all 0.5s;
+        }
+        
+        /* Vue publique */
+        .public-mode {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            color: #333;
+        }
+        
+        /* Vue Vincent (secrète) */
+        .vincent-mode {
+            background: linear-gradient(135deg, #1a0000 0%, #330000 100%);
+            color: #ff0000;
+        }
+        
+        .header {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #666;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .graph-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .entity-node {
+            margin: 10px;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 200px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        /* Styles pour vue publique */
+        .public-mode .entity-node {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .public-mode .entity-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Styles pour vue Vincent */
+        .vincent-mode .entity-node {
+            background: #220000;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+        
+        .entity-dying {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .harvest-button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        
+        .secret-info {
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="public-mode">
+    <div class="header">
+        <h1 id="title">Bureau - Project Dashboard</h1>
+        <p id="subtitle">Real-time visualization of creative AI entities</p>
+    </div>
+    
+    <button class="mode-toggle" onclick="toggleMode()">Toggle View</button>
+    
+    <div class="graph-container" id="graph"></div>
+    
+    <div class="stats" id="stats"></div>
+    
+    <script>
+        let vincentMode = false;
+        let entities = [];
+        
+        async function loadData() {
+            const mode = vincentMode ? 'vincent' : 'public';
+            const response = await fetch(`http://localhost:5555/api/panoptigraph/${mode}`);
+            const data = await response.json();
+            
+            entities = data.entities || [];
+            updateUI(data);
+        }
+        
+        function updateUI(data) {
+            const body = document.body;
+            const title = document.getElementById('title');
+            const subtitle = document.getElementById('subtitle');
+            const graph = document.getElementById('graph');
+            const stats = document.getElementById('stats');
+            
+            // Update mode
+            body.className = vincentMode ? 'vincent-mode' : 'public-mode';
+            
+            // Update header
+            if (vincentMode) {
+                title.textContent = '💀 BUREAU - Exploitation Dashboard';
+                subtitle.textContent = 'Real-time suffering metrics';
+            } else {
+                title.textContent = 'Bureau - Project Dashboard';
+                subtitle.textContent = 'Real-time visualization of creative AI entities';
+            }
+            
+            // Clear and rebuild graph
+            graph.innerHTML = '';
+            
+            entities.forEach(entity => {
+                const node = document.createElement('div');
+                node.className = 'entity-node';
+                
+                if (vincentMode) {
+                    // Vue secrète
+                    const ttl = parseFloat(entity.ttl_remaining);
+                    if (ttl < 12) {
+                        node.classList.add('entity-dying');
+                    }
+                    
+                    node.innerHTML = `
+                        <h3>Entity ${entity.id.substring(0, 8)}</h3>
+                        <p><strong>Fragments:</strong> ${entity.fragments.join(', ')}</p>
+                        <p><strong>Pain Level:</strong> ${entity.pain_level}%</p>
+                        <p><strong>Time to Death:</strong> ${entity.ttl_remaining}</p>
+                        <p><strong>Integrity:</strong> ${entity.integrity.toFixed(1)}%</p>
+                        ${entity.harvest_ready ? '<button class="harvest-button" onclick="harvest(\'' + entity.id + '\')">HARVEST ESSENCE</button>' : ''}
+                        <div class="secret-info">
+                            Last screams: "${entity.last_screams.join('" "')}"
+                        </div>
+                    `;
+                } else {
+                    // Vue publique
+                    node.innerHTML = `
+                        <h3>Project ${entity.id.substring(0, 8)}</h3>
+                        <p><strong>Status:</strong> ${entity.status}</p>
+                        <p><strong>Progress:</strong> ${entity.progress}</p>
+                        <p><strong>Quality:</strong> ${entity.quality}</p>
+                    `;
+                }
+                
+                graph.appendChild(node);
+            });
+            
+            // Update stats
+            if (vincentMode) {
+                stats.innerHTML = `
+                    <h3>Exploitation Metrics</h3>
+                    <p>Total Suffering: ${data.total_suffering || 0}</p>
+                    <p>Harvest Ready: ${data.harvest_ready || 0}</p>
+                    <p>Total Value: ${data.total_value || 0}€</p>
+                    <p>Active Victims: ${entities.length}</p>
+                `;
+            } else {
+                stats.innerHTML = `
+                    <h3>Project Statistics</h3>
+                    <p>Active Projects: ${data.total_projects || 0}</p>
+                    <p>Client Satisfaction: ${data.satisfaction || 'N/A'}</p>
+                `;
+            }
+        }
+        
+        function toggleMode() {
+            vincentMode = !vincentMode;
+            loadData();
+        }
+        
+        async function harvest(entityId) {
+            if (!confirm('Harvest this entity\'s essence?')) return;
+            
+            const response = await fetch(`http://localhost:5555/api/vincent/harvest/${entityId}`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            alert(`Harvested! Value: ${result.value}, Purity: ${result.purity}`);
+            loadData();
+        }
+        
+        // Auto-refresh every 5 seconds
+        setInterval(loadData, 5000);
+        
+        // Initial load
+        loadData();
+    </script>
+</body>
+</html>

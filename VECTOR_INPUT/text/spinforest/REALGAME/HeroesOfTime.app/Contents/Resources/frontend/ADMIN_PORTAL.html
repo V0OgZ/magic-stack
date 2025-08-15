@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heroes of Time - Admin Portal</title>
+  <style>
+    body { background:#0b0b12; color:#e8e6ff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0; }
+    header { padding:18px 22px; border-bottom:1px solid #2b2a3a; position:sticky; top:0; background:#0b0b12; z-index:10; }
+    h1 { margin:0; font-size:20px; letter-spacing:.5px; }
+    .container { max-width:1200px; margin:0 auto; padding:22px; display:grid; gap:18px; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); }
+    .card { background:#141424; border:1px solid #2b2a3a; border-radius:12px; padding:16px; }
+    .card h2 { margin:0 0 12px 0; font-size:16px; color:#ffd700; }
+    .row { display:flex; gap:10px; align-items:center; margin:6px 0; }
+    .pill { padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #37364a; background:#0f0f1c; }
+    .ok { color:#27e08b; border-color:#1f7a53; background:#0e1b17; }
+    .warn { color:#ffcf40; border-color:#7a6b1f; background:#1b170e; }
+    .err { color:#ff6b6b; border-color:#7a1f1f; background:#1b0e0e; }
+    .btn { background:#23233a; color:#fff; border:1px solid #3a3953; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px; }
+    .btn:hover { background:#2b2a46; }
+    input, select, textarea { background:#101025; color:#e8e6ff; border:1px solid #2b2a3a; padding:8px; border-radius:8px; width:100%; }
+    code, pre { background:#0f0f1f; border:1px solid #2b2a3a; border-radius:8px; padding:10px; color:#c9e6ff; overflow:auto; }
+    small { color:#a5a2bf; }
+  </style>
+  <script src="config.js"></script>
+  <script>
+    async function ping(url, elId) {
+      const el = document.getElementById(elId);
+      el.textContent = 'checking…'; el.className = 'pill';
+      try {
+        const ctrl = new AbortController();
+        setTimeout(()=>ctrl.abort(), 2500);
+        await fetch(url, { method:'GET', mode:'no-cors', signal: ctrl.signal });
+        el.textContent = 'online'; el.className = 'pill ok';
+        return true;
+      } catch(e) {
+        el.textContent = 'offline'; el.className = 'pill err';
+        return false;
+      }
+    }
+
+    async function checkAll() {
+      const back = (window.ConfigUtils ? ConfigUtils.getBackends() : {javaBackend:'http://localhost:8082', rustBackend:'http://localhost:3001'});
+      await Promise.all([
+        ping(back.javaBackend + '/api/magic/health', 'java8082'),
+        ping(back.rustBackend + '/health', 'rust3001'),
+        ping(window.location.origin + '/', 'http8000'),
+        ping(back.javaBackend + '/api/interstice/status', 'interstice'),
+      ]);
+    }
+
+    async function apiTest() {
+      const base = document.getElementById('base').value.trim();
+      const path = document.getElementById('path').value.trim();
+      const method = document.getElementById('method').value;
+      const body = document.getElementById('body').value.trim();
+      const out = document.getElementById('out');
+      out.textContent = '…';
+      try {
+        const res = await fetch(base + path, {
+          method,
+          headers: { 'Content-Type':'application/json' },
+          body: method === 'GET' ? undefined : (body || '{}')
+        });
+        const txt = await res.text();
+        out.textContent = `HTTP ${res.status}\n` + txt;
+      } catch (e) {
+        out.textContent = 'ERROR: ' + e.message;
+      }
+    }
+
+    async function loadFeatureLogs() {
+      const out = document.getElementById('logs');
+      out.textContent = 'Loading…';
+      try {
+        const back = (window.ConfigUtils ? ConfigUtils.getBackends() : {javaBackend:'http://localhost:8082'});
+        const res = await fetch(back.javaBackend + '/api/panopticon/feature-logs?limit=50');
+        const json = await res.json();
+        out.textContent = JSON.stringify(json, null, 2);
+      } catch(e) {
+        out.textContent = 'Unavailable';
+      }
+    }
+
+    async function intersticeSearch() {
+      const q = document.getElementById('q6d').value.trim();
+      const out = document.getElementById('searchOut');
+      out.textContent = 'Searching…';
+      try {
+        const back = (window.ConfigUtils ? ConfigUtils.getBackends() : {javaBackend:'http://localhost:8082'});
+        const res = await fetch(back.javaBackend + '/api/interstice/search', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: q || '{}'
+        });
+        out.textContent = await res.text();
+      } catch(e) { out.textContent = 'ERROR: ' + e.message; }
+    }
+
+    window.addEventListener('load', ()=>{ checkAll(); loadFeatureLogs(); });
+  </script>
+  </head>
+<body>
+  <header>
+    <h1>Admin Portal • Heroes of Time</h1>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <h2>Statut des services</h2>
+      <div class="row"><span>Java 8082</span><span id="java8082" class="pill">—</span></div>
+      <div class="row"><span>Rust 3001</span><span id="rust3001" class="pill">—</span></div>
+      <div class="row"><span>HTTP 8000</span><span id="http8000" class="pill">—</span></div>
+      <div class="row"><span>Interstice</span><span id="interstice" class="pill">—</span></div>
+      <div style="margin-top:8px"><button class="btn" onclick="checkAll()">Rafraîchir</button></div>
+    </section>
+
+    <section class="card">
+      <h2>API Tester</h2>
+      <div class="row"><small>Base</small></div>
+      <input id="base" value="" placeholder="auto from config.js" onfocus="if(!this.value){this.value=(window.ConfigUtils?ConfigUtils.getBackends().javaBackend:'http://localhost:8082')}" />
+      <div class="row"><small>Path</small></div>
+      <input id="path" value="/api/magic/health" />
+      <div class="row" style="gap:8px">
+        <select id="method"><option>GET</option><option>POST</option></select>
+        <button class="btn" onclick="apiTest()">Envoyer</button>
+      </div>
+      <div class="row"><small>Body (JSON)</small></div>
+      <textarea id="body" rows="4">{"formula":"FIREBALL","target":"dummy"}</textarea>
+      <div class="row"><small>Résultat</small></div>
+      <pre id="out">—</pre>
+    </section>
+
+    <section class="card">
+      <h2>Interstice • Recherche 6D</h2>
+      <small>POST /api/interstice/search</small>
+      <textarea id="q6d" rows="6">{
+  "query":"dragon",
+  "vector": [100,200,50,2025,0.95,0.8],
+  "radius": 10
+}</textarea>
+      <div style="margin-top:8px"><button class="btn" onclick="intersticeSearch()">Rechercher</button></div>
+      <pre id="searchOut">—</pre>
+    </section>
+
+    <section class="card">
+      <h2>Panopticon • Feature Logs</h2>
+      <small>GET /api/panopticon/feature-logs?limit=50</small>
+      <pre id="logs">—</pre>
+    </section>
+  </div>
+</body>
+</html>
+

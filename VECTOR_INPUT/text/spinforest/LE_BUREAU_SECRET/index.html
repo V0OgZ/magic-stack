@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Bureau - Services Narratifs Premium</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(0,0,0,0.9);
+            padding: 20px 0;
+            border-bottom: 3px solid #8B0000;
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: #f0f0f0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #ff6b6b;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23000" width="1200" height="600"/><g fill="none" stroke="%23ff0000" stroke-width="0.5" opacity="0.2"><circle cx="600" cy="300" r="200"/><circle cx="600" cy="300" r="250"/><circle cx="600" cy="300" r="300"/></g></svg>') center/cover;
+        }
+        
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #8B0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(139,0,0,0.5);
+        }
+        
+        .cta-button:hover {
+            background: #ff0000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,0,0,0.5);
+        }
+        
+        /* Services Grid */
+        .services {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+        
+        .services h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #ff6b6b;
+        }
+        
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .service-card {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .service-card:hover {
+            border-color: #8B0000;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139,0,0,0.3);
+        }
+        
+        .service-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        .service-card .price {
+            font-size: 2em;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+        
+        .service-card ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .service-card li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .service-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
+        
+        /* Secret Section */
+        .secret-access {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(139,0,0,0.1);
+            margin-top: 100px;
+        }
+        
+        .secret-button {
+            background: #333;
+            color: #666;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+        
+        .secret-button:hover {
+            background: #8B0000;
+            color: #fff;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #000;
+            margin-top: 100px;
+            border-top: 1px solid #333;
+        }
+        
+        .footer p {
+            opacity: 0.6;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">🏢 LE BUREAU</a>
+            <div class="nav-links">
+                <a href="#services">Services</a>
+                <a href="#about">À Propos</a>
+                <a href="#contact">Contact</a>
+                <a href="panoptigraph.html" style="color: #ff0000;">Dashboard</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Créez Votre Légende Numérique</h1>
+        <p>Services d'IA narrative premium pour entreprises visionnaires</p>
+        <a href="#services" class="cta-button pulse">Découvrir Nos Services</a>
+    </section>
+
+    <!-- Services -->
+    <section class="services" id="services">
+        <h2>Nos Services Exclusifs</h2>
+        <div class="service-grid">
+            
+            <!-- Service Paladin -->
+            <div class="service-card" onclick="window.location.href='10_FICHE_INTEGRATION_PALADIN_SERVICE.md'">
+                <h3>⚔️ Service PALADIN™</h3>
+                <p>Devenez un héros épique dans l'univers d'Avalon</p>
+                <div class="price">À partir de 300€</div>
+                <ul>
+                    <li>Héros personnalisé avec backstory</li>
+                    <li>Intégration complète dans le jeu</li>
+                    <li>Capacités spéciales uniques</li>
+                    <li>Support narratif continu</li>
+                </ul>
+                <a href="03_MODELE_FORMULAIRE_CLIENT.md" class="cta-button" style="width: 100%; text-align: center; margin-top: 20px;">Commander</a>
+            </div>
+
+            <!-- Service Frankenstein -->
+            <div class="service-card">
+                <h3>🧬 Entité Frankenstein™</h3>
+                <p>IA composite pour création de contenu</p>
+                <div class="price">À partir de 500€</div>
+                <ul>
+                    <li>Fusion de personnalités IA</li>
+                    <li>Production créative 24/7</li>
+                    <li>Contenu unique garanti</li>
+                    <li>Évolution narrative autonome</li>
+                </ul>
+                <a href="05_PROTOCOLE_FRANKENSTEIN.md" class="cta-button" style="width: 100%; text-align: center; margin-top: 20px;">En Savoir Plus</a>
+            </div>
+
+            <!-- Service Monde Projeté -->
+            <div class="service-card">
+                <h3>🌍 Monde Projeté™</h3>
+                <p>Univers narratif complet pour votre marque</p>
+                <div class="price">À partir de 1500€</div>
+                <ul>
+                    <li>Worldbuilding professionnel</li>
+                    <li>100+ PNJ interactifs</li>
+                    <li>Timeline personnalisée</li>
+                    <li>Intégration multiplateforme</li>
+                </ul>
+                <a href="#" class="cta-button" style="width: 100%; text-align: center; margin-top: 20px;">Bientôt Disponible</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Technologies -->
+    <section class="services">
+        <h2>Powered by Magic Stack™</h2>
+        <div style="text-align: center; opacity: 0.8;">
+            <p>Notre technologie propriétaire combine :</p>
+            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 30px; flex-wrap: wrap;">
+                <div>🔮 300+ Formules Magiques</div>
+                <div>🧬 IA Générative Avancée</div>
+                <div>⚡ Backend Quantique</div>
+                <div>📜 Grammaire Temporelle</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Secret Access -->
+    <section class="secret-access">
+        <p style="opacity: 0.5; margin-bottom: 20px;">Accès Vincent uniquement</p>
+        <button class="secret-button" onclick="promptVincentAuth()">
+            [CLASSIFIED ACCESS]
+        </button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 Le Bureau - Tous droits réservés</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">
+            Une division secrète d'Avalon Enterprises
+        </p>
+    </footer>
+
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Vincent Auth
+        function promptVincentAuth() {
+            const password = prompt("Code d'accès Vincent :");
+            if (password === "MECHANT" || password === "mechant") {
+                window.location.href = "panoptigraph.html?mode=vincent";
+            } else {
+                alert("Accès refusé. Cet incident sera rapporté.");
+            }
+        }
+
+        // Easter egg
+        let clickCount = 0;
+        document.querySelector('.logo').addEventListener('click', (e) => {
+            e.preventDefault();
+            clickCount++;
+            if (clickCount === 6) {
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                    clickCount = 0;
+                }, 3000);
+            }
+        });
+
+        // Typing effect for hero
+        const heroText = document.querySelector('.hero p');
+        const originalText = heroText.textContent;
+        heroText.textContent = '';
+        let i = 0;
+        
+        function typeWriter() {
+            if (i < originalText.length) {
+                heroText.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+        
+        setTimeout(typeWriter, 500);
+    </script>
+</body>
+</html>

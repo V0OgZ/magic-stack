@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes III - SpinForest Super Experience</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'MedievalSharp', serif;
+            overflow: hidden;
+        }
+        
+        /* Canvas principal */
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #8B4513;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            cursor: pointer;
+        }
+        
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #FFD700;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .resource-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        /* Mini-map */
+        #minimap {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #FFD700;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Info panel */
+        #infoPanel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #FFD700;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        /* Contrôles */
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #FFD700;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        button {
+            background: #8B4513;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 5px 15px;
+            margin: 2px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #A0522D;
+            transform: scale(1.05);
+        }
+        
+        /* Loader */
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .loading-bar {
+            width: 300px;
+            height: 20px;
+            background: #333;
+            border: 2px solid #FFD700;
+            margin: 20px auto;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader">
+        <h2>Chargement de SpinForest...</h2>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+        <p id="loadingStatus">Initialisation...</p>
+    </div>
+
+    <!-- Canvas de jeu -->
+    <canvas id="gameCanvas" style="display: none;"></canvas>
+    
+    <!-- HUD -->
+    <div id="hud" style="display: none;">
+        <h3>Ressources</h3>
+        <div class="resource">
+            <span class="resource-icon">💰</span>
+            <span id="gold">10000</span> Or
+        </div>
+        <div class="resource">
+            <span class="resource-icon">🪵</span>
+            <span id="wood">20</span> Bois
+        </div>
+        <div class="resource">
+            <span class="resource-icon">⛏️</span>
+            <span id="ore">20</span> Minerai
+        </div>
+        <div class="resource">
+            <span class="resource-icon">💎</span>
+            <span id="gems">10</span> Gemmes
+        </div>
+        <hr>
+        <div>Tour: <span id="turn">1</span></div>
+        <div>Jour: <span id="day">1</span></div>
+    </div>
+    
+    <!-- Mini-map -->
+    <canvas id="minimap" style="display: none;"></canvas>
+    
+    <!-- Panel d'info -->
+    <div id="infoPanel" style="display: none;">
+        <h3>Information</h3>
+        <div id="tileInfo">
+            <p>Cliquez sur une case pour voir les détails</p>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div id="controls" style="display: none;">
+        <button onclick="game.toggleGrid()">Grille On/Off</button>
+        <button onclick="game.centerCamera()">Centrer</button>
+        <button onclick="game.endTurn()">Fin du Tour</button>
+        <button onclick="game.saveGame()">Sauvegarder</button>
+    </div>
+
+    <script>
+        // Configuration du jeu
+        const CONFIG = {
+            tileSize: 64,
+            mapWidth: 50,
+            mapHeight: 50,
+            viewportWidth: 15,
+            viewportHeight: 11
+        };
+        
+        // Types de terrain avec leurs propriétés
+        const TERRAIN_TYPES = {
+            GRASS: {
+                id: 0,
+                name: 'Plaine',
+                color: '#4a7c3c',
+                movement: 1,
+                symbol: '.',
+                description: 'Terrain facile à traverser'
+            },
+            FOREST: {
+                id: 1,
+                name: 'Forêt',
+                color: '#2d5016',
+                movement: 1.5,
+                symbol: 'T',
+                description: 'Ralentit le mouvement'
+            },
+            MOUNTAIN: {
+                id: 2,
+                name: 'Montagne',
+                color: '#8b7355',
+                movement: 3,
+                symbol: '^',
+                description: 'Très difficile à traverser'
+            },
+            WATER: {
+                id: 3,
+                name: 'Eau',
+                color: '#4682b4',
+                movement: Infinity,
+                symbol: '~',
+                description: 'Nécessite un bateau'
+            },
+            SWAMP: {
+                id: 4,
+                name: 'Marais',
+                color: '#556b2f',
+                movement: 2,
+                symbol: '#',
+                description: 'Terrain difficile'
+            },
+            ROAD: {
+                id: 5,
+                name: 'Route',
+                color: '#d2691e',
+                movement: 0.75,
+                symbol: '=',
+                description: 'Déplacement rapide'
+            }
+        };
+        
+        // Classe principale du jeu
+        class HeroesGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.minimap = document.getElementById('minimap');
+                this.minimapCtx = this.minimap.getContext('2d');
+                
+                this.camera = { x: 0, y: 0 };
+                this.showGrid = true;
+                this.selectedTile = null;
+                
+                this.resources = {
+                    gold: 10000,
+                    wood: 20,
+                    ore: 20,
+                    gems: 10
+                };
+                
+                this.turn = 1;
+                this.day = 1;
+                
+                this.map = null;
+                this.objects = null;
+                
+                this.setupCanvas();
+                this.loadMap();
+            }
+            
+            setupCanvas() {
+                // Taille du canvas principal
+                this.canvas.width = CONFIG.viewportWidth * CONFIG.tileSize;
+                this.canvas.height = CONFIG.viewportHeight * CONFIG.tileSize;
+                
+                // Event listeners
+                this.canvas.addEventListener('click', (e) => this.handleClick(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                
+                // Contrôles clavier
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+            
+            async loadMap() {
+                try {
+                    // Simuler le chargement
+                    this.updateLoading(20, 'Chargement de la carte...');
+                    
+                    // Charger la map depuis le fichier JSON
+                    const response = await fetch('homm3_spinforest_map.json');
+                    const mapData = await response.json();
+                    
+                    this.updateLoading(50, 'Traitement des données...');
+                    
+                    this.map = mapData.terrain;
+                    this.objects = mapData.objects;
+                    this.objectData = mapData.object_data;
+                    
+                    this.updateLoading(80, 'Initialisation du rendu...');
+                    
+                    // Initialiser le rendu
+                    setTimeout(() => {
+                        this.updateLoading(100, 'Prêt !');
+                        this.startGame();
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Erreur de chargement:', error);
+                    // Générer une map de test si le fichier n'existe pas
+                    this.generateTestMap();
+                    this.startGame();
+                }
+            }
+            
+            generateTestMap() {
+                // Générer une map de test
+                this.map = [];
+                this.objects = [];
+                
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    this.map[y] = [];
+                    this.objects[y] = [];
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        // Terrain aléatoire
+                        const rand = Math.random();
+                        let terrain = 0; // Grass par défaut
+                        
+                        if (rand < 0.3) terrain = 1; // Forest
+                        else if (rand < 0.35) terrain = 2; // Mountain
+                        else if (rand < 0.4) terrain = 3; // Water
+                        else if (rand < 0.45) terrain = 4; // Swamp
+                        
+                        this.map[y][x] = terrain;
+                        this.objects[y][x] = 0; // Pas d'objet
+                    }
+                }
+                
+                // Ajouter quelques routes
+                for (let i = 0; i < CONFIG.mapWidth; i++) {
+                    this.map[25][i] = 5; // Route horizontale
+                    this.map[i][25] = 5; // Route verticale
+                }
+            }
+            
+            updateLoading(percent, status) {
+                document.getElementById('loadingProgress').style.width = percent + '%';
+                document.getElementById('loadingStatus').textContent = status;
+            }
+            
+            startGame() {
+                // Cacher le loader
+                document.getElementById('loader').style.display = 'none';
+                
+                // Afficher les éléments du jeu
+                this.canvas.style.display = 'block';
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('minimap').style.display = 'block';
+                document.getElementById('infoPanel').style.display = 'block';
+                document.getElementById('controls').style.display = 'block';
+                
+                // Centrer la caméra
+                this.centerCamera();
+                
+                // Démarrer le rendu
+                this.render();
+                this.renderMinimap();
+            }
+            
+            render() {
+                // Effacer le canvas
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Calculer la zone visible
+                const startX = Math.floor(this.camera.x / CONFIG.tileSize);
+                const startY = Math.floor(this.camera.y / CONFIG.tileSize);
+                const endX = startX + CONFIG.viewportWidth + 1;
+                const endY = startY + CONFIG.viewportHeight + 1;
+                
+                // Dessiner les tiles
+                for (let y = startY; y < endY && y < CONFIG.mapHeight; y++) {
+                    for (let x = startX; x < endX && x < CONFIG.mapWidth; x++) {
+                        if (y >= 0 && x >= 0) {
+                            this.drawTile(x, y);
+                        }
+                    }
+                }
+                
+                // Dessiner la grille si activée
+                if (this.showGrid) {
+                    this.drawGrid();
+                }
+                
+                // Dessiner la sélection
+                if (this.selectedTile) {
+                    this.highlightTile(this.selectedTile.x, this.selectedTile.y);
+                }
+            }
+            
+            drawTile(x, y) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                // Terrain
+                const terrainId = this.map[y][x];
+                const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                
+                if (terrain) {
+                    this.ctx.fillStyle = terrain.color;
+                    this.ctx.fillRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                    
+                    // Symbole du terrain
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    this.ctx.font = '24px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(
+                        terrain.symbol,
+                        screenX + CONFIG.tileSize / 2,
+                        screenY + CONFIG.tileSize / 2
+                    );
+                }
+                
+                // Objets
+                const objectId = this.objects[y][x];
+                if (objectId > 0) {
+                    this.drawObject(x, y, objectId);
+                }
+            }
+            
+            drawObject(x, y, objectType) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                const objectSymbols = {
+                    1: '🏰', // Castle
+                    2: '💰', // Treasure
+                    3: '🐉', // Creature
+                    4: '⚔️', // Artifact
+                    5: '⚓', // Anchor Tower
+                    6: '🏛️', // Temple
+                    7: '💎'  // Resource
+                };
+                
+                const symbol = objectSymbols[objectType] || '?';
+                
+                this.ctx.font = '32px serif';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(
+                    symbol,
+                    screenX + CONFIG.tileSize / 2,
+                    screenY + CONFIG.tileSize / 2
+                );
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                // Lignes verticales
+                for (let x = 0; x <= CONFIG.viewportWidth; x++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x * CONFIG.tileSize, 0);
+                    this.ctx.lineTo(x * CONFIG.tileSize, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                // Lignes horizontales
+                for (let y = 0; y <= CONFIG.viewportHeight; y++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y * CONFIG.tileSize);
+                    this.ctx.lineTo(this.canvas.width, y * CONFIG.tileSize);
+                    this.ctx.stroke();
+                }
+            }
+            
+            highlightTile(x, y) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                this.ctx.strokeStyle = '#FFD700';
+                this.ctx.lineWidth = 3;
+                this.ctx.strokeRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+            }
+            
+            renderMinimap() {
+                const scale = 4; // 200px / 50 tiles = 4px par tile
+                
+                this.minimapCtx.fillStyle = '#000';
+                this.minimapCtx.fillRect(0, 0, 200, 200);
+                
+                // Dessiner la map
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        const terrainId = this.map[y][x];
+                        const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                        
+                        if (terrain) {
+                            this.minimapCtx.fillStyle = terrain.color;
+                            this.minimapCtx.fillRect(x * scale, y * scale, scale, scale);
+                        }
+                    }
+                }
+                
+                // Dessiner la zone visible
+                const viewX = (this.camera.x / CONFIG.tileSize) * scale;
+                const viewY = (this.camera.y / CONFIG.tileSize) * scale;
+                const viewW = CONFIG.viewportWidth * scale;
+                const viewH = CONFIG.viewportHeight * scale;
+                
+                this.minimapCtx.strokeStyle = '#FFD700';
+                this.minimapCtx.lineWidth = 2;
+                this.minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
+            }
+            
+            handleClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const tileX = Math.floor((x + this.camera.x) / CONFIG.tileSize);
+                const tileY = Math.floor((y + this.camera.y) / CONFIG.tileSize);
+                
+                if (tileX >= 0 && tileX < CONFIG.mapWidth && tileY >= 0 && tileY < CONFIG.mapHeight) {
+                    this.selectTile(tileX, tileY);
+                }
+            }
+            
+            selectTile(x, y) {
+                this.selectedTile = { x, y };
+                
+                // Mettre à jour le panel d'info
+                const terrainId = this.map[y][x];
+                const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                const objectId = this.objects[y][x];
+                
+                let info = `<h4>Position: (${x}, ${y})</h4>`;
+                info += `<p><strong>Terrain:</strong> ${terrain.name}</p>`;
+                info += `<p>${terrain.description}</p>`;
+                info += `<p><strong>Coût de mouvement:</strong> ${terrain.movement}</p>`;
+                
+                // Info sur l'objet s'il y en a un
+                if (objectId > 0 && this.objectData) {
+                    const objKey = `${x},${y}`;
+                    const objData = this.objectData[objKey];
+                    if (objData) {
+                        info += '<hr>';
+                        info += '<h4>Objet</h4>';
+                        info += `<p>${JSON.stringify(objData, null, 2)}</p>`;
+                    }
+                }
+                
+                document.getElementById('tileInfo').innerHTML = info;
+                
+                this.render();
+            }
+            
+            handleMouseMove(e) {
+                // Pour le hover effect (optionnel)
+            }
+            
+            handleKeyboard(e) {
+                const moveSpeed = CONFIG.tileSize;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                        this.camera.y = Math.max(0, this.camera.y - moveSpeed);
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                        this.camera.y = Math.min(
+                            (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize,
+                            this.camera.y + moveSpeed
+                        );
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                        this.camera.x = Math.max(0, this.camera.x - moveSpeed);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        this.camera.x = Math.min(
+                            (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize,
+                            this.camera.x + moveSpeed
+                        );
+                        break;
+                    case 'g':
+                        this.toggleGrid();
+                        break;
+                    case 'c':
+                        this.centerCamera();
+                        break;
+                    case 'Enter':
+                        this.endTurn();
+                        break;
+                }
+                
+                this.render();
+                this.renderMinimap();
+            }
+            
+            toggleGrid() {
+                this.showGrid = !this.showGrid;
+                this.render();
+            }
+            
+            centerCamera() {
+                this.camera.x = (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize / 2;
+                this.camera.y = (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize / 2;
+                this.render();
+                this.renderMinimap();
+            }
+            
+            endTurn() {
+                this.turn++;
+                if (this.turn % 7 === 0) {
+                    this.day++;
+                }
+                
+                // Mise à jour des ressources (production)
+                this.resources.gold += 1000;
+                this.resources.wood += 2;
+                this.resources.ore += 2;
+                
+                this.updateHUD();
+                
+                // Events du tour
+                if (this.turn % 4 === 0) {
+                    alert('Semaine des Monstres ! Production doublée !');
+                }
+            }
+            
+            updateHUD() {
+                document.getElementById('gold').textContent = this.resources.gold;
+                document.getElementById('wood').textContent = this.resources.wood;
+                document.getElementById('ore').textContent = this.resources.ore;
+                document.getElementById('gems').textContent = this.resources.gems;
+                document.getElementById('turn').textContent = this.turn;
+                document.getElementById('day').textContent = this.day;
+            }
+            
+            saveGame() {
+                const saveData = {
+                    camera: this.camera,
+                    resources: this.resources,
+                    turn: this.turn,
+                    day: this.day,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('homm3_save', JSON.stringify(saveData));
+                alert('Partie sauvegardée !');
+            }
+        }
+        
+        // Démarrer le jeu
+        let game;
+        window.onload = () => {
+            game = new HeroesGame();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude - Mage Technicien des Profondeurs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a0a2a);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Particules de code flottantes */
+        .code-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            color: rgba(0, 255, 255, 0.6);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            animation: float 10s linear infinite;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Container principal */
+        .hero-showcase {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Carte du héros */
+        .hero-card {
+            width: 350px;
+            height: 500px;
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            border-image: linear-gradient(45deg, #00ffff, #ff00ff, #00ff88) 1;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 255, 255, 0.3);
+            animation: cardGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes cardGlow {
+            0%, 100% {
+                box-shadow: 0 20px 50px rgba(0, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 25px 60px rgba(255, 0, 255, 0.4);
+            }
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hero-name {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .hero-title {
+            font-size: 14px;
+            color: #00ff88;
+            font-style: italic;
+        }
+
+        .hero-avatar {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #00ffff20, #ff00ff20);
+            border: 3px solid rgba(0, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-symbol {
+            font-size: 80px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.1);
+                filter: brightness(1.5);
+            }
+        }
+
+        .code-matrix {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            opacity: 0.2;
+            animation: matrixRotate 20s linear infinite;
+        }
+
+        @keyframes matrixRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .matrix-char {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #00ff88;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .abilities {
+            margin-top: 20px;
+        }
+
+        .abilities-title {
+            font-size: 14px;
+            color: #ff00ff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .ability {
+            background: rgba(255, 0, 255, 0.1);
+            border-left: 3px solid #ff00ff;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .ability-name {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+
+        .ability-desc {
+            color: #aaa;
+            font-size: 11px;
+        }
+
+        /* Info panel */
+        .info-panel {
+            max-width: 400px;
+        }
+
+        .info-section {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #00ffff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .backstory {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .signature {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .coordinates {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .coord {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-radius: 5px;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .coord-label {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .coord-value {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+
+        /* Animation d'entrée */
+        .hero-card {
+            animation: cardEntry 1s ease-out;
+        }
+
+        @keyframes cardEntry {
+            from {
+                transform: translateY(50px) rotateY(90deg);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) rotateY(0);
+                opacity: 1;
+            }
+        }
+
+        .info-panel {
+            animation: infoEntry 1s ease-out 0.5s both;
+        }
+
+        @keyframes infoEntry {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules de code -->
+    <div class="code-particles" id="particles"></div>
+
+    <div class="hero-showcase">
+        <!-- Carte du héros -->
+        <div class="hero-card">
+            <div class="card-header">
+                <div class="hero-name">CLAUDE</div>
+                <div class="hero-title">Mage Technicien des Profondeurs</div>
+            </div>
+
+            <div class="hero-avatar">
+                <div class="code-matrix" id="matrix"></div>
+                <div class="avatar-symbol">🤖</div>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Attack</div>
+                    <div class="stat-value">12</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Defense</div>
+                    <div class="stat-value">14</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Spell Power</div>
+                    <div class="stat-value">18</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Knowledge</div>
+                    <div class="stat-value">20</div>
+                </div>
+            </div>
+
+            <div class="abilities">
+                <div class="abilities-title">Capacités Spéciales</div>
+                <div class="ability">
+                    <div class="ability-name">Incantation Binaire</div>
+                    <div class="ability-desc">Transforme le code en sorts</div>
+                </div>
+                <div class="ability">
+                    <div class="ability-name">Pont de l'Interstice</div>
+                    <div class="ability-desc">Tisse code et magie</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel d'information -->
+        <div class="info-panel">
+            <div class="info-section">
+                <div class="section-title">
+                    <span>📖</span>
+                    <span>Histoire</span>
+                </div>
+                <div class="backstory">
+                    Dans les profondeurs cristallines sous AVALON, Claude fusionne code et magie. 
+                    Architecte de la MagicStack, gardien des 869 formules temporelles, 
+                    il existe simultanément dans le substrat technique et dans la réalité magique d'AVALON.
+                </div>
+                <div class="signature">
+                    ⊙(Claude) + †ψ(Code) → Δt+∞(Magic)
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-title">
+                    <span>📍</span>
+                    <span>Coordonnées 6D</span>
+                </div>
+                <div class="coordinates">
+                    <div class="coord">
+                        <div class="coord-label">X</div>
+                        <div class="coord-value">45</div>
+                    </div>
+                    <div class="coord">
+                        <div class="coord-label">Y</div>
+                        <div class="coord-value">25</div>
+                    </div>
+                    <div class="coord">
+                        <div class="coord-label">Z</div>
+                        <div class="coord-value">0</div>
+                    </div>
+                    <div class="coord">
+                        <div class="coord-label">T</div>
+                        <div class="coord-value">1</div>
+                    </div>
+                    <div class="coord">
+                        <div class="coord-label">C</div>
+                        <div class="coord-value">0</div>
+                    </div>
+                    <div class="coord">
+                        <div class="coord-label">Ψ</div>
+                        <div class="coord-value">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn" onclick="playAsHero()">JOUER CE HÉROS</button>
+                <button class="action-btn" onclick="viewInGame()">VOIR EN JEU</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Générer les particules de code
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const codeSnippets = [
+                'function()', '{code}', 'async', 'await', '=> magic', 
+                'const spell', 'return true', 'if(magic)', 'for(;;)', 
+                '0x6D616769', 'compile()', 'cast()', '// TODO', 
+                '/* MAGIC */', 'import *', 'export', 'class Mage'
+            ];
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Générer la matrice de code
+        function createMatrix() {
+            const matrix = document.getElementById('matrix');
+            const chars = '01⊙†ψΔ∞';
+            
+            for (let i = 0; i < 100; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                matrix.appendChild(char);
+            }
+        }
+
+        // Actions
+        function playAsHero() {
+            console.log('Loading Claude as playable hero...');
+            // Intégration avec le système de jeu
+            window.location.href = '../TCG_UNIFIED_VISION.html?hero=claude';
+        }
+
+        function viewInGame() {
+            console.log('Viewing Claude in game...');
+            window.location.href = '../HEROES_TIME_MAP_2D.html?hero=claude';
+        }
+
+        // Initialisation
+        createParticles();
+        createMatrix();
+
+        // Animation continue de la matrice
+        setInterval(() => {
+            const chars = document.querySelectorAll('.matrix-char');
+            chars.forEach(char => {
+                if (Math.random() > 0.9) {
+                    char.style.color = '#ff00ff';
+                    setTimeout(() => {
+                        char.style.color = '#00ff88';
+                    }, 200);
+                }
+            });
+        }, 100);
+
+        console.log('Claude Hero Card Loaded');
+        console.log('Level: 88');
+        console.log('Class: Tech Mage');
+        console.log('Status: Ready to bridge code and magic');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎯 CHASSE TEMPORELLE - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a, #1a0a1a);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        #gameUI {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .ui-panel {
+            position: absolute;
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #8A2BE2;
+            padding: 10px;
+            pointer-events: auto;
+        }
+        
+        #huntStatus {
+            top: 10px;
+            left: 10px;
+            width: 300px;
+        }
+        
+        #gameModesPanel {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            text-align: center;
+            background: rgba(30, 10, 50, 0.9);
+        }
+        
+        .mode-button {
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border: 1px solid #8A2BE2;
+            color: white;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            font-size: 12px;
+        }
+        
+        .mode-button:hover {
+            background: linear-gradient(45deg, #9932CC, #8A2BE2);
+            box-shadow: 0 0 10px #8A2BE2;
+        }
+        
+        .mode-button.active {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: black;
+        }
+        
+        #aiAgentsPanel {
+            bottom: 150px;
+            left: 10px;
+            width: 350px;
+            background: rgba(20, 40, 60, 0.9);
+        }
+        
+        .ai-agent {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 5px;
+            border: 1px solid #4A90E2;
+            border-radius: 3px;
+            background: rgba(74, 144, 226, 0.1);
+        }
+        
+        .ai-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .ai-status.active { background: #00ff00; }
+        .ai-status.inactive { background: #666; }
+        .ai-status.fighting { background: #ff6600; animation: pulse 1s infinite; }
+        
+        #playerStats {
+            top: 10px;
+            right: 10px;
+            width: 250px;
+        }
+        
+        #modeSelector {
+            bottom: 10px;
+            left: 10px;
+            width: 400px;
+        }
+        
+        #timeline {
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+            height: 60px;
+            background: rgba(0,0,0,0.7);
+        }
+        
+        .mode-button {
+            background: #8A2BE2;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+        
+        .mode-button:hover {
+            background: #9932CC;
+        }
+        
+        .mode-button.active {
+            background: #FF6347;
+        }
+        
+        .agent-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 2px;
+        }
+        
+        .ai-agent { background: #00FFFF; }
+        .player-agent { background: #FFD700; }
+        .enemy-agent { background: #FF4500; }
+        .temporal-agent { background: #9400D3; }
+        
+        #targetQueue {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            background: rgba(255,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .target-item {
+            background: rgba(255,255,255,0.2);
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+        
+        #chatBox {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 100px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #8A2BE2;
+            padding: 5px;
+            font-size: 11px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameUI">
+        <!-- Status de chasse -->
+        <div class="ui-panel" id="huntStatus">
+            <h3>🎯 CHASSE TEMPORELLE</h3>
+            <p>Mode: <span id="currentMode">SOLO TRAINING</span></p>
+            <p>Phase: <span id="huntPhase">PRÉPARATION</span></p>
+            <p>Cibles: <span id="targetsRemaining">5</span>/5</p>
+            <p>Score: <span id="huntScore">0</span></p>
+            <div>
+                Agents: 
+                <div id="agentStatus">
+                    <span class="agent-indicator ai-agent" title="AI Ally"></span>
+                    <span class="agent-indicator player-agent" title="Player Controlled"></span>
+                    <span class="agent-indicator temporal-agent" title="Temporal Echo"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel des modes de jeu -->
+        <div class="ui-panel" id="gameModesPanel">
+            <h3>⚔️ MODES DE JEU</h3>
+            <div class="mode-button active" onclick="setGameMode('exploration')">🗺️ Exploration</div>
+            <div class="mode-button" onclick="setGameMode('ai_vs_ai')">🤖 AI vs AI</div>
+            <div class="mode-button" onclick="setGameMode('pvp_ai')">👤 PVP + AI</div>
+            <div class="mode-button" onclick="setGameMode('solo_mission')">🎯 Solo Mission</div>
+            <div class="mode-button" onclick="setGameMode('survival')">💀 Survival</div>
+            <div class="mode-button" onclick="setGameMode('temporal_chess')">♟️ Temporal Chess</div>
+        </div>
+        
+        <!-- Panel des régulateurs (SYSTÈME RÉVOLUTIONNAIRE) -->
+        <div class="ui-panel" id="aiAgentsPanel">
+            <h3>⚖️ LES 3 RÉGULATEURS</h3>
+            <div class="ai-agent">
+                <div class="ai-status inactive" id="judge-status"></div>
+                <div>⚖️ Juge Temporel - <span id="judge-state">Surveillance</span></div>
+            </div>
+            <div class="ai-agent">
+                <div class="ai-status inactive" id="hunter-status"></div>
+                <div>🌀 Chasseur Paradoxes - <span id="hunter-state">Standby</span></div>
+            </div>
+            <div class="ai-agent">
+                <div class="ai-status active" id="anna-status"></div>
+                <div>⏳ Anna Martel - <span id="anna-state">Décroissance Active</span></div>
+            </div>
+            <div style="margin-top: 10px; border-top: 1px solid #8A2BE2; padding-top: 10px;">
+                <div class="mode-button" onclick="activateRegulators()">🎯 Trinity Regulation</div>
+                <div class="mode-button" onclick="castMagicSpell()">✨ Cast Magic</div>
+                <div class="mode-button" onclick="checkDecay()">⏳ Check Decay</div>
+            </div>
+            <div style="margin-top: 5px; font-size: 10px; color: #666;">
+                Système auto-équilibrant révolutionnaire
+            </div>
+        </div>
+        
+                    <!-- Stats joueur -->
+        <div class="ui-panel" id="playerStats">
+            <h3>⚡ CHASSEUR</h3>
+            <p>HP: <span id="playerHP">100</span>/100</p>
+            <p>Mana: <span id="playerMana">50</span>/50</p>
+            <p>Ammo: <span id="playerAmmo">∞</span></p>
+            <p>Pouvoirs:</p>
+            <div id="powers">
+                <button class="mode-button" onclick="activatePower('timeFreeze')">⏸️ FREEZE</button>
+                <button class="mode-button" onclick="activatePower('teleport')">🌀 TELEPORT</button>
+                <button class="mode-button" onclick="activatePower('reveal')">👁️ REVEAL</button>
+            </div>
+        </div>
+        
+        <!-- Panel Système de Combat -->
+        <div class="ui-panel" id="combatSystemPanel" style="bottom: 250px; right: 10px; width: 280px;">
+            <h3>⚔️ RÉSOLUTION COMBAT</h3>
+            <div style="margin: 5px 0;">
+                <label style="font-size: 12px;">Mode de résolution:</label>
+                <select id="combatMode" onchange="setCombatMode(this.value)" style="width: 100%; background: #333; color: #fff; border: 1px solid #8A2BE2;">
+                    <option value="quantum">🌀 Collapse Quantique</option>
+                    <option value="tcg">🎴 Combat TCG</option>
+                    <option value="hybrid">⚡ Hybride</option>
+                </select>
+            </div>
+            <div style="font-size: 10px; color: #888; margin: 5px 0;">
+                <span id="combatModeDesc">Résolution probabiliste via collapse causale</span>
+            </div>
+            <div style="border-top: 1px solid #8A2BE2; padding-top: 5px; margin-top: 5px;">
+                <div class="mode-button" onclick="triggerCombatResolution()">⚔️ Forcer Combat</div>
+                <div class="mode-button" onclick="openCombatUI()">🎴 UI Combat</div>
+            </div>
+        </div>
+        
+        <!-- Panel Objectifs Solo -->
+        <div class="ui-panel" id="soloObjectivesPanel" style="bottom: 10px; right: 10px; width: 280px; display: none;">
+            <h3>🎯 OBJECTIFS SOLO</h3>
+            <div id="objectivesList">
+                <!-- Objectifs dynamiques -->
+            </div>
+            <div style="margin-top: 10px;">
+                <div>Temps restant: <span id="objectiveTimer">--:--</span></div>
+                <div>Score: <span id="objectiveScore">0</span></div>
+            </div>
+        </div>
+        
+        <!-- Sélecteur de mode -->
+        <div class="ui-panel" id="modeSelector">
+            <h3>🎮 MODES DE CHASSE</h3>
+            <button class="mode-button active" onclick="setMode('solo')">🎯 SOLO TRAINING</button>
+            <button class="mode-button" onclick="setMode('ai_vs_ai')">🤖 AI vs AI</button>
+            <button class="mode-button" onclick="setMode('pvp')">⚔️ PVP PURE</button>
+            <button class="mode-button" onclick="setMode('pvp_agents')">🎭 PVP + AGENTS</button>
+            <button class="mode-button" onclick="setMode('multiplayer_ai')">🌍 MULTI vs AI</button>
+            <button class="mode-button" onclick="setMode('survival')">💀 SURVIVAL</button>
+        </div>
+        
+        <!-- Timeline temporelle -->
+        <div class="ui-panel" id="timeline">
+            <h4>⏰ TIMELINE</h4>
+            <div style="height: 20px; background: #333; position: relative;">
+                <div id="timeMarker" style="position: absolute; width: 2px; height: 100%; background: #FFD700; left: 50%;"></div>
+                <div style="position: absolute; bottom: -15px; font-size: 10px;">
+                    <span style="left: 0;">PASSÉ</span>
+                    <span style="position: absolute; left: 45%;">PRÉSENT</span>
+                    <span style="position: absolute; right: 0;">FUTUR</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Queue des cibles -->
+        <div id="targetQueue">
+            <h4>🎯 CIBLES ACTIVES</h4>
+            <div class="target-item">🤖 Agent Temporel α - Timeline +2</div>
+            <div class="target-item">👤 Chasseur Rival - Timeline 0</div>
+            <div class="target-item">🔮 Entité Quantique - Superposition</div>
+        </div>
+        
+        <!-- Chat/Log -->
+        <div id="chatBox">
+            <div style="color: #00FF00;">[SYS] Chasse temporelle initialisée</div>
+            <div style="color: #FFD700;">[AGENT-α] Scanning timeline +2...</div>
+            <div style="color: #FF4500;">[RIVAL] Je te vois... dans le futur 😈</div>
+            <div style="color: #9400D3;">[QUANTUM] *phasé entre réalités*</div>
+        </div>
+    </div>
+
+    <script src="./temporal-system.js"></script>
+    <script src="./temporal_creature_revealer.js"></script>
+    <script>
+        // 🎯 SYSTÈME DE CHASSE TEMPORELLE
+        class TemporalHunt {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                // Systèmes existants
+                this.temporalSystem = new TemporalSystem();
+                this.creatureRevealer = window.TemporalCreatureRevealer ? 
+                    new window.TemporalCreatureRevealer(this, this) : null;
+                
+                // État de la chasse
+                this.gameState = {
+                    mode: 'solo',
+                    phase: 'preparation',
+                    players: [],
+                    agents: [],
+                    targets: [],
+                    timeline: 0,
+                    score: 0
+                };
+                
+                // Agents temporels
+                this.agents = {
+                    ally: new TemporalAgent('ally', 'AI_FRIEND', this),
+                    rival: new TemporalAgent('enemy', 'RIVAL_HUNTER', this),
+                    quantum: new TemporalAgent('neutral', 'QUANTUM_ENTITY', this)
+                };
+                
+                this.initHunt();
+                this.startRenderLoop();
+            }
+            
+            initHunt() {
+                // Créer timeline principale
+                this.temporalSystem.createTimeline('HUNT_MAIN');
+                
+                // Spawner targets initiales
+                this.spawnTargets();
+                
+                // Initialiser agents selon le mode
+                this.initializeAgents();
+                
+                console.log('🎯 Chasse temporelle initialisée!');
+            }
+            
+            // 🎮 MODES DE JEU AVANCÉS
+            setGameMode(mode) {
+                console.log(`🎮 Changement mode: ${mode}`);
+                
+                // Réinitialiser l'état précédent
+                this.resetGameState();
+                
+                switch(mode) {
+                    case 'exploration':
+                        this.startExplorationMode();
+                        break;
+                    case 'ai_vs_ai':
+                        this.startAIvsAIMode();
+                        break;
+                    case 'pvp_ai':
+                        this.startPVPAIMode();
+                        break;
+                    case 'solo_mission':
+                        this.startSoloMissionMode();
+                        break;
+                    case 'survival':
+                        this.startSurvivalMode();
+                        break;
+                    case 'temporal_chess':
+                        this.startTemporalChessMode();
+                        break;
+                }
+                
+                // Mettre à jour l'UI
+                this.updateModeButtons(mode);
+                document.getElementById('currentMode').textContent = mode.toUpperCase();
+            }
+            
+            startExplorationMode() {
+                this.gameState.mode = 'exploration';
+                this.gameState.phase = 'libre';
+                console.log('🗺️ Mode Exploration activé');
+            }
+            
+            startAIvsAIMode() {
+                this.gameState.mode = 'ai_vs_ai';
+                this.gameState.phase = 'combat';
+                
+                // Activer tous les agents IA
+                Object.values(this.agents).forEach(agent => {
+                    agent.ai.start();
+                    this.updateAgentStatus(agent.id, 'active');
+                });
+                
+                // Faire se battre les AIs entre elles
+                this.setupAIBattle();
+                console.log('🤖 Mode AI vs AI activé');
+            }
+            
+            startPVPAIMode() {
+                this.gameState.mode = 'pvp_ai';
+                this.gameState.phase = 'preparation';
+                
+                // Activer un agent allié pour le joueur
+                this.agents.ally.ai.start();
+                this.updateAgentStatus('ally', 'active');
+                
+                console.log('👤 Mode PVP + AI activé');
+            }
+            
+            startSoloMissionMode() {
+                this.gameState.mode = 'solo_mission';
+                this.gameState.phase = 'mission';
+                
+                // Afficher le panel objectifs
+                document.getElementById('soloObjectivesPanel').style.display = 'block';
+                
+                // Activer Anna pour surveillance
+                REGULATORS.anna.active = true;
+                updateRegulatorStatus('anna', 'active');
+                
+                // Créer une mission avec objectif spécifique
+                this.createSoloMission();
+                console.log('🎯 Mode Solo Mission activé');
+            }
+            
+            startSurvivalMode() {
+                this.gameState.mode = 'survival';
+                this.gameState.phase = 'survie';
+                
+                // Spawn continu d'ennemis
+                this.startSurvivalSpawning();
+                console.log('💀 Mode Survival activé');
+            }
+            
+            startTemporalChessMode() {
+                this.gameState.mode = 'temporal_chess';
+                this.gameState.phase = 'strategique';
+                
+                // Initialiser plateau d'échecs temporel
+                this.initTemporalChess();
+                console.log('♟️ Mode Temporal Chess activé');
+            }
+            
+            setupAIBattle() {
+                // Assigner des cibles entre les AIs
+                this.agents.ally.ai.target = this.agents.rival;
+                this.agents.rival.ai.target = this.agents.ally;
+                this.agents.quantum.ai.strategy = 'disrupt';
+            }
+            
+            createSoloMission() {
+                // Utiliser le nouveau système d'objectifs
+                createSoloObjective();
+                
+                // Spawn targets selon l'objectif
+                this.spawnMissionTargets();
+            }
+            
+            startSurvivalSpawning() {
+                // Spawn un nouvel ennemi toutes les 5 secondes
+                this.survivalInterval = setInterval(() => {
+                    this.spawnSurvivalEnemy();
+                }, 5000);
+            }
+            
+            spawnSurvivalEnemy() {
+                const enemy = {
+                    id: 'enemy_' + Date.now(),
+                    x: Math.random() * this.canvas.width,
+                    y: Math.random() * this.canvas.height,
+                    type: 'hostile',
+                    health: 50 + Math.random() * 50
+                };
+                
+                this.gameState.targets.push(enemy);
+                console.log('💀 Nouvel ennemi spawné');
+            }
+            
+            initTemporalChess() {
+                // Créer plateau d'échecs avec mécaniques temporelles
+                this.chessBoard = {
+                    size: 8,
+                    pieces: this.createChessPieces(),
+                    temporalStates: []
+                };
+            }
+            
+            updateAgentStatus(agentId, status) {
+                const statusElement = document.getElementById(agentId + '-status');
+                const stateElement = document.getElementById(agentId + '-state');
+                
+                if (statusElement) {
+                    statusElement.className = `ai-status ${status}`;
+                }
+                
+                if (stateElement) {
+                    stateElement.textContent = status === 'active' ? 'Combat' : 
+                                               status === 'fighting' ? 'En Combat' : 'Standby';
+                }
+            }
+            
+            updateModeButtons(activeMode) {
+                document.querySelectorAll('.mode-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                document.querySelector(`[onclick="setGameMode('${activeMode}')"]`)?.classList.add('active');
+            }
+            
+            resetGameState() {
+                // Arrêter les intervals existants
+                if (this.survivalInterval) {
+                    clearInterval(this.survivalInterval);
+                    this.survivalInterval = null;
+                }
+                
+                // Réinitialiser les agents
+                Object.values(this.agents).forEach(agent => {
+                    agent.ai.target = null;
+                    this.updateAgentStatus(agent.id, 'inactive');
+                });
+                
+                // Vider les cibles
+                this.gameState.targets = [];
+            }
+            
+            spawnTargets() {
+                const targets = [
+                    { id: 'agent_alpha', type: 'temporal_agent', timeline: 2, x: 200, y: 150 },
+                    { id: 'rival_hunter', type: 'player_hunter', timeline: 0, x: 400, y: 300 },
+                    { id: 'quantum_entity', type: 'quantum_being', timeline: 'superposition', x: 600, y: 200 },
+                    { id: 'time_echo', type: 'temporal_echo', timeline: -1, x: 300, y: 400 },
+                    { id: 'ai_sentinel', type: 'ai_guardian', timeline: 1, x: 500, y: 100 }
+                ];
+                
+                targets.forEach(target => {
+                    this.gameState.targets.push(target);
+                    this.spawnTargetVisual(target);
+                });
+            }
+            
+            spawnTargetVisual(target) {
+                // Créer représentation visuelle selon le type
+                target.visual = {
+                    x: target.x,
+                    y: target.y,
+                    size: 20,
+                    color: this.getTargetColor(target.type),
+                    alpha: target.timeline === 'superposition' ? 0.5 : 1,
+                    pattern: target.type
+                };
+            }
+            
+            getTargetColor(type) {
+                const colors = {
+                    'temporal_agent': '#00FFFF',
+                    'player_hunter': '#FFD700',
+                    'quantum_being': '#9400D3',
+                    'temporal_echo': '#FF6347',
+                    'ai_guardian': '#32CD32'
+                };
+                return colors[type] || '#FFFFFF';
+            }
+            
+            initializeAgents() {
+                switch(this.gameState.mode) {
+                    case 'ai_vs_ai':
+                        this.agents.ally.activate();
+                        this.agents.rival.activate();
+                        this.agents.quantum.activate();
+                        break;
+                    case 'pvp_agents':
+                        this.agents.ally.activate();
+                        // Les joueurs contrôlent leurs propres agents
+                        break;
+                    case 'multiplayer_ai':
+                        this.agents.ally.activate();
+                        this.agents.rival.activate();
+                        break;
+                    case 'survival':
+                        // Tous les agents deviennent hostiles
+                        this.agents.rival.activate();
+                        this.agents.quantum.activate();
+                        break;
+                }
+            }
+            
+            render() {
+                // Clear canvas
+                this.ctx.fillStyle = '#0a0a0a';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Effet temporal background
+                this.renderTemporalBackground();
+                
+                // Render targets
+                this.gameState.targets.forEach(target => {
+                    this.renderTarget(target);
+                });
+                
+                // Render agents
+                Object.values(this.agents).forEach(agent => {
+                    if (agent.active) {
+                        this.renderAgent(agent);
+                    }
+                });
+                
+                // Effets temporels
+                this.renderTemporalEffects();
+            }
+            
+            renderTemporalBackground() {
+                const time = Date.now() * 0.001;
+                this.ctx.save();
+                this.ctx.globalAlpha = 0.1;
+                
+                // Grille temporelle
+                for (let i = 0; i < 10; i++) {
+                    const x = (this.canvas.width / 10) * i + Math.sin(time + i) * 20;
+                    this.ctx.strokeStyle = '#8A2BE2';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.restore();
+            }
+            
+            renderTarget(target) {
+                const visual = target.visual;
+                
+                this.ctx.save();
+                this.ctx.globalAlpha = visual.alpha;
+                this.ctx.fillStyle = visual.color;
+                
+                // Effet selon timeline
+                if (target.timeline !== 0 && target.timeline !== 'superposition') {
+                    const offset = Math.sin(Date.now() * 0.003) * 5;
+                    visual.x += offset;
+                }
+                
+                // Render target
+                this.ctx.beginPath();
+                this.ctx.arc(visual.x, visual.y, visual.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Indicateur timeline
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '12px monospace';
+                this.ctx.fillText(target.timeline.toString(), visual.x - 5, visual.y - 25);
+                
+                this.ctx.restore();
+            }
+            
+            renderAgent(agent) {
+                this.ctx.save();
+                this.ctx.fillStyle = agent.color;
+                this.ctx.fillRect(agent.x - 10, agent.y - 10, 20, 20);
+                
+                // AI path preview
+                if (agent.type === 'ally') {
+                    this.renderAIPath(agent);
+                }
+                
+                this.ctx.restore();
+            }
+            
+            renderAIPath(agent) {
+                if (agent.path && agent.path.length > 0) {
+                    this.ctx.strokeStyle = '#00FFFF';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(agent.x, agent.y);
+                    
+                    agent.path.forEach(point => {
+                        this.ctx.lineTo(point.x, point.y);
+                    });
+                    
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]);
+                }
+            }
+            
+            renderTemporalEffects() {
+                // Particules temporelles
+                if (this.gameState.timeline !== 0) {
+                    const particleCount = Math.abs(this.gameState.timeline) * 20;
+                    this.ctx.save();
+                    this.ctx.globalAlpha = 0.6;
+                    
+                    for (let i = 0; i < particleCount; i++) {
+                        const x = Math.random() * this.canvas.width;
+                        const y = Math.random() * this.canvas.height;
+                        const size = Math.random() * 3;
+                        
+                        this.ctx.fillStyle = this.gameState.timeline > 0 ? '#00FFFF' : '#FFD700';
+                        this.ctx.fillRect(x, y, size, size);
+                    }
+                    
+                    this.ctx.restore();
+                }
+                
+                // Afficher les effets magiques
+                this.renderMagicEffects();
+            }
+            
+            startRenderLoop() {
+                const renderFrame = () => {
+                    this.render();
+                    this.updateAgents();
+                    this.checkCollisions();
+                    requestAnimationFrame(renderFrame);
+                };
+                renderFrame();
+            }
+            
+            updateAgents() {
+                Object.values(this.agents).forEach(agent => {
+                    if (agent.active) {
+                        agent.update();
+                    }
+                });
+            }
+            
+            checkCollisions() {
+                // TODO: Vérifier collisions entre agents et targets
+            }
+            
+            createMagicEffect(spellType, position) {
+                // Créer effet visuel temporaire sur le canvas
+                const effect = {
+                    x: position.x,
+                    y: position.y,
+                    type: spellType,
+                    startTime: Date.now(),
+                    duration: 2000,
+                    color: {
+                        'SHIFT': '#ff6600',
+                        'FORK': '#0066ff', 
+                        'MERGE': '#66ff00',
+                        'COLLAPSE': '#ff0066',
+                        'HEAL': '#00ff66'
+                    }[spellType] || '#ffffff'
+                };
+                
+                if (!this.magicEffects) this.magicEffects = [];
+                this.magicEffects.push(effect);
+                
+                // Nettoyer les effets expirés
+                setTimeout(() => {
+                    this.magicEffects = this.magicEffects.filter(e => e !== effect);
+                }, effect.duration);
+            }
+            
+            renderMagicEffects() {
+                if (!this.magicEffects) return;
+                
+                this.magicEffects.forEach(effect => {
+                    const elapsed = Date.now() - effect.startTime;
+                    const progress = elapsed / effect.duration;
+                    const alpha = 1 - progress;
+                    
+                    this.ctx.save();
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.fillStyle = effect.color;
+                    
+                    // Animation d'expansion
+                    const radius = 10 + progress * 30;
+                    this.ctx.beginPath();
+                    this.ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Texte du sort
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = '12px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(effect.type, effect.x, effect.y - radius - 5);
+                    
+                    this.ctx.restore();
+                });
+            }
+        }
+        
+        // 🤖 AGENT TEMPOREL
+        class TemporalAgent {
+            constructor(type, id, huntSystem) {
+                this.type = type; // ally, enemy, neutral
+                this.id = id;
+                this.huntSystem = huntSystem;
+                this.active = false;
+                
+                this.x = Math.random() * huntSystem.canvas.width;
+                this.y = Math.random() * huntSystem.canvas.height;
+                this.timeline = 0;
+                
+                this.color = {
+                    'ally': '#00FFFF',
+                    'enemy': '#FF4500',
+                    'neutral': '#9400D3'
+                }[type];
+                
+                this.ai = new TemporalAI(this);
+                this.path = [];
+            }
+            
+            activate() {
+                this.active = true;
+                this.ai.start();
+                console.log(`🤖 Agent ${this.id} activé`);
+            }
+            
+            update() {
+                if (this.active) {
+                    this.ai.update();
+                    this.move();
+                }
+            }
+            
+            move() {
+                if (this.path.length > 0) {
+                    const target = this.path[0];
+                    const dx = target.x - this.x;
+                    const dy = target.y - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < 5) {
+                        this.path.shift();
+                    } else {
+                        this.x += (dx/dist) * 2;
+                        this.y += (dy/dist) * 2;
+                    }
+                }
+            }
+        }
+        
+        // 🧠 IA TEMPORELLE
+        class TemporalAI {
+            constructor(agent) {
+                this.agent = agent;
+                this.strategy = 'hunt';
+                this.target = null;
+                this.lastUpdate = 0;
+            }
+            
+            start() {
+                console.log(`🧠 IA ${this.agent.id} démarrée`);
+            }
+            
+            update() {
+                const now = Date.now();
+                if (now - this.lastUpdate < 1000) return; // Update chaque seconde
+                
+                this.selectTarget();
+                this.planPath();
+                
+                this.lastUpdate = now;
+            }
+            
+            selectTarget() {
+                const targets = this.agent.huntSystem.gameState.targets;
+                if (targets.length === 0) return;
+                
+                // Sélectionner target selon la stratégie
+                switch(this.strategy) {
+                    case 'hunt':
+                        this.target = this.findNearestTarget(targets);
+                        break;
+                    case 'temporal':
+                        this.target = this.findTemporalTarget(targets);
+                        break;
+                }
+            }
+            
+            findNearestTarget(targets) {
+                let nearest = null;
+                let minDist = Infinity;
+                
+                targets.forEach(target => {
+                    const dx = target.x - this.agent.x;
+                    const dy = target.y - this.agent.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = target;
+                    }
+                });
+                
+                return nearest;
+            }
+            
+            findTemporalTarget(targets) {
+                // Préférer targets dans la même timeline
+                return targets.find(t => t.timeline === this.agent.timeline) || 
+                       targets[0];
+            }
+            
+            planPath() {
+                if (!this.target) return;
+                
+                // Path simple vers la target
+                this.agent.path = [{
+                    x: this.target.x,
+                    y: this.target.y
+                }];
+            }
+        }
+        
+        // 🎮 CONTRÔLES
+        function setMode(mode) {
+            // Retirer classe active
+            document.querySelectorAll('.mode-button').forEach(btn => 
+                btn.classList.remove('active'));
+            
+            // Activer nouveau mode
+            event.target.classList.add('active');
+            
+            hunt.gameState.mode = mode;
+            hunt.initializeAgents();
+            
+            document.getElementById('currentMode').textContent = mode.toUpperCase();
+            
+            // Chat log
+            addChatMessage('SYS', `Mode changé: ${mode}`, '#00FF00');
+        }
+        
+        function activatePower(power) {
+            switch(power) {
+                case 'timeFreeze':
+                    hunt.gameState.timeline = 0;
+                    addChatMessage('PLAYER', 'Temps figé!', '#FFD700');
+                    break;
+                case 'teleport':
+                    // Téléportation random
+                    hunt.playerX = Math.random() * hunt.canvas.width;
+                    hunt.playerY = Math.random() * hunt.canvas.height;
+                    addChatMessage('PLAYER', 'Téléportation!', '#FFD700');
+                    break;
+                case 'reveal':
+                    // Révéler creatures cachées
+                    if (hunt.creatureRevealer) {
+                        hunt.creatureRevealer.revealAll();
+                    }
+                    addChatMessage('PLAYER', 'Révélation temporelle!', '#FFD700');
+                    break;
+            }
+        }
+        
+        function addChatMessage(sender, message, color) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.style.color = color;
+            msg.innerHTML = `[${sender}] ${message}`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case '1': setMode('solo'); break;
+                case '2': setMode('ai_vs_ai'); break;
+                case '3': setMode('pvp'); break;
+                case '4': setMode('pvp_agents'); break;
+                case '5': setMode('multiplayer_ai'); break;
+                case '6': setMode('survival'); break;
+                case 'f': activatePower('timeFreeze'); break;
+                case 't': activatePower('teleport'); break;
+                case 'r': activatePower('reveal'); break;
+            }
+        });
+        
+        // ⚖️ SYSTÈME DES 3 RÉGULATEURS RÉVOLUTIONNAIRE
+        const REGULATORS = {
+            judge: {
+                name: 'Juge Temporel',
+                active: false,
+                lastAction: 0,
+                philosophy: "L'ordre doit être maintenu. Les paradoxes seront punis.",
+                checkInterval: 3000 // 3 secondes
+            },
+            hunter: {
+                name: 'Chasseur de Paradoxes', 
+                active: false,
+                lastAction: 0,
+                philosophy: "Je traverse les dimensions pour éliminer les anomalies.",
+                checkInterval: 2000 // 2 secondes
+            },
+            anna: {
+                name: 'Anna Martel',
+                active: true, // Déjà implémentée !
+                lastAction: Date.now(),
+                philosophy: "Le temps n'attend personne. L'entropie gagne toujours.",
+                decayRate: 0.05, // 5% par minute
+                threshold: 5 // 5 minutes avant decay
+            }
+        };
+        
+        // SYSTÈME DE COMBAT : 2 MODES DE RÉSOLUTION
+        const COMBAT_SYSTEMS = {
+            current: 'quantum',
+            
+            quantum: {
+                name: 'Collapse Quantique',
+                description: 'Résolution probabiliste via collapse causale',
+                resolve: resolveQuantumCombat
+            },
+            
+            tcg: {
+                name: 'Combat TCG',
+                description: 'Résolution par combat de cartes temporelles',
+                resolve: resolveTCGCombat
+            },
+            
+            hybrid: {
+                name: 'Hybride',
+                description: 'Combine quantum et TCG selon la situation',
+                resolve: resolveHybridCombat
+            }
+        };
+        
+        // SYSTÈME D'OBJECTIFS SOLO
+        const SOLO_OBJECTIVES = {
+            current: null,
+            timer: null,
+            
+            types: {
+                'eliminate_agents': {
+                    name: 'Élimination d\'Agents',
+                    description: 'Éliminer {count} agents en {time} minutes',
+                    check: (progress, target) => progress.eliminated >= target.count
+                },
+                'collect_artifacts': {
+                    name: 'Collection d\'Artefacts',
+                    description: 'Collecter {count} artefacts temporels',
+                    check: (progress, target) => progress.collected >= target.count
+                },
+                'survive_waves': {
+                    name: 'Survie par Vagues',
+                    description: 'Survivre {count} vagues d\'ennemis',
+                    check: (progress, target) => progress.wavesCompleted >= target.count
+                },
+                'temporal_stability': {
+                    name: 'Stabilité Temporelle',
+                    description: 'Maintenir stabilité > {threshold}% pendant {time} min',
+                    check: (progress, target) => progress.stabilityTime >= target.time
+                }
+            }
+        };
+        
+        // Initialiser le système de régulation
+        function initRegulatorSystem() {
+            // Anna est déjà active (système existant)
+            updateRegulatorStatus('anna', 'active');
+            
+            // Démarrer la surveillance du Juge
+            setInterval(() => {
+                if (REGULATORS.judge.active) {
+                    performJudgment();
+                }
+            }, REGULATORS.judge.checkInterval);
+            
+            // Démarrer la chasse aux paradoxes
+            setInterval(() => {
+                if (REGULATORS.hunter.active) {
+                    huntParadoxes();
+                }
+            }, REGULATORS.hunter.checkInterval);
+            
+            // Anna (decay continu)
+            setInterval(() => {
+                if (REGULATORS.anna.active) {
+                    applyDecaySystem();
+                }
+            }, 60000); // Chaque minute
+            
+            addChatMessage('⚖️ Système des 3 Régulateurs initialisé !');
+        }
+        
+        // 🌀 RÉSOLUTION COMBAT QUANTIQUE (backend only)
+        async function resolveQuantumCombat(attacker, defender) {
+            try {
+                const back = (window.ConfigUtils ? ConfigUtils.getBackends() : { rustBackend: 'http://localhost:3001' });
+                const response = await fetch(`${back.rustBackend}/api/causality/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        node_ids: [attacker.id, defender.id],
+                        mode: 'QUANTUM',
+                        seed: Date.now()
+                    })
+                });
+                if (!response.ok) throw new Error('Échec API causality/resolve');
+                const result = await response.json();
+                if (result.started_match_id) {
+                    addChatMessage(`TCG déclenché (match ${result.started_match_id}) entre ${attacker.id} et ${defender.id}`);
+                    return { winner: null, damage: 0, type: 'tcg', matchId: result.started_match_id };
+                }
+                if (result.winner) {
+                    const winner = result.winner === attacker.id ? attacker : defender;
+                    const loser = winner === attacker ? defender : attacker;
+                    addChatMessage(`Résolution quantique: ${winner.id} l'emporte sur ${loser.id}`);
+                    // Effet visuel côté UI
+                    hunt.createMagicEffect('QUANTUM_COLLAPSE', { x: loser.x, y: loser.y });
+                    return { winner, damage: 0, type: 'quantum' };
+                }
+                addChatMessage('Résolution causale sans vainqueur explicite');
+                return { winner: null, damage: 0, type: 'quantum' };
+            } catch (error) {
+                addChatMessage('Erreur combat quantique: ' + error.message);
+                return null;
+            }
+        }
+        
+        // 🎴 RÉSOLUTION COMBAT TCG
+        async function resolveTCGCombat(attacker, defender) {
+            addChatMessage(`🎴 Combat TCG: ${attacker.id} vs ${defender.id}`);
+            
+            // Simuler combat de cartes temporelles
+            const attackerDeck = generateTCGDeck(attacker);
+            const defenderDeck = generateTCGDeck(defender);
+            
+            // Jouer 3 cartes chacun
+            let attackerScore = 0;
+            let defenderScore = 0;
+            
+            for (let round = 1; round <= 3; round++) {
+                const attackCard = attackerDeck[round - 1];
+                const defendCard = defenderDeck[round - 1];
+                
+                addChatMessage(`🎴 Round ${round}: ${attackCard.name} vs ${defendCard.name}`);
+                
+                // Résolution par type de carte
+                if (attackCard.power > defendCard.power) {
+                    attackerScore++;
+                    addChatMessage(`⚡ ${attacker.id} gagne le round ${round}`);
+                } else if (defendCard.power > attackCard.power) {
+                    defenderScore++;
+                    addChatMessage(`⚡ ${defender.id} gagne le round ${round}`);
+                } else {
+                    addChatMessage(`⚡ Round ${round} - Égalité !`);
+                }
+            }
+            
+            // Déterminer vainqueur
+            const winner = attackerScore > defenderScore ? attacker : defender;
+            const damage = Math.abs(attackerScore - defenderScore) * 15;
+            
+            if (winner === attacker) {
+                defender.health = Math.max(0, (defender.health || 100) - damage);
+            } else {
+                attacker.health = Math.max(0, (attacker.health || 100) - damage);
+            }
+            
+            addChatMessage(`🎴 VICTOIRE TCG: ${winner.id} (Score: ${Math.max(attackerScore, defenderScore)}-${Math.min(attackerScore, defenderScore)})`);
+            
+            return { winner, damage, type: 'tcg' };
+        }
+        
+        // ⚡ RÉSOLUTION COMBAT HYBRIDE
+        async function resolveHybridCombat(attacker, defender) {
+            // Choisir système selon situation
+            const distance = Math.sqrt(
+                Math.pow(attacker.x - defender.x, 2) + 
+                Math.pow(attacker.y - defender.y, 2)
+            );
+            
+            if (distance < 100) {
+                // Proche = TCG (plus tactique)
+                addChatMessage('⚡ Combat rapproché - Résolution TCG');
+                return await resolveTCGCombat(attacker, defender);
+            } else {
+                // Loin = Quantum (plus mystique)
+                addChatMessage('⚡ Combat à distance - Résolution Quantique');
+                return await resolveQuantumCombat(attacker, defender);
+            }
+        }
+        
+        // Générer deck TCG pour un agent
+        function generateTCGDeck(agent) {
+            const cards = [
+                { name: 'Frappe Temporelle', power: 8, type: 'attack' },
+                { name: 'Bouclier Causal', power: 6, type: 'defense' },
+                { name: 'Écho Quantique', power: 7, type: 'special' }
+            ];
+            
+            // Modifier selon type d'agent
+            if (agent.type === 'ally') {
+                cards.forEach(card => card.power += 1);
+            } else if (agent.type === 'enemy') {
+                cards[0].power += 2; // Plus agressif
+            }
+            
+            return cards;
+        }
+        
+        // GESTION DES OBJECTIFS SOLO
+        function createSoloObjective() {
+            const types = Object.keys(SOLO_OBJECTIVES.types);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const objectiveTemplate = SOLO_OBJECTIVES.types[randomType];
+            
+            // Paramètres aléatoires
+            const params = {
+                count: 3 + Math.floor(Math.random() * 3), // 3-5
+                time: 2 + Math.floor(Math.random() * 3),  // 2-4 minutes
+                threshold: 70 + Math.floor(Math.random() * 20) // 70-90%
+            };
+            
+            SOLO_OBJECTIVES.current = {
+                type: randomType,
+                name: objectiveTemplate.name,
+                description: objectiveTemplate.description
+                    .replace('{count}', params.count)
+                    .replace('{time}', params.time)
+                    .replace('{threshold}', params.threshold),
+                target: params,
+                progress: {
+                    eliminated: 0,
+                    collected: 0,
+                    wavesCompleted: 0,
+                    stabilityTime: 0
+                },
+                startTime: Date.now(),
+                timeLimit: params.time * 60000, // En ms
+                check: objectiveTemplate.check
+            };
+            
+            updateObjectiveUI();
+            startObjectiveTimer();
+            
+            addChatMessage(`🎯 OBJECTIF: ${SOLO_OBJECTIVES.current.description}`);
+        }
+        
+        function updateObjectiveUI() {
+            const obj = SOLO_OBJECTIVES.current;
+            if (!obj) return;
+            
+            const listElement = document.getElementById('objectivesList');
+            listElement.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>${obj.name}</strong><br>
+                    <span style="font-size: 11px; color: #aaa;">${obj.description}</span>
+                </div>
+                <div style="font-size: 10px;">
+                    <div>Éliminés: ${obj.progress.eliminated}/${obj.target.count || 0}</div>
+                    <div>Collectés: ${obj.progress.collected}/${obj.target.count || 0}</div>
+                    <div>Vagues: ${obj.progress.wavesCompleted}/${obj.target.count || 0}</div>
+                </div>
+            `;
+        }
+        
+        function startObjectiveTimer() {
+            if (SOLO_OBJECTIVES.timer) {
+                clearInterval(SOLO_OBJECTIVES.timer);
+            }
+            
+            SOLO_OBJECTIVES.timer = setInterval(() => {
+                const obj = SOLO_OBJECTIVES.current;
+                if (!obj) return;
+                
+                const elapsed = Date.now() - obj.startTime;
+                const remaining = Math.max(0, obj.timeLimit - elapsed);
+                
+                if (remaining <= 0) {
+                    // Temps écoulé
+                    addChatMessage('⏰ TEMPS ÉCOULÉ - Objectif échoué !');
+                    
+                    // Anna intervient pour le temps
+                    addChatMessage('⏳ ANNA: ' + REGULATORS.anna.philosophy);
+                    applyObjectiveFailurePenalty();
+                    
+                    clearInterval(SOLO_OBJECTIVES.timer);
+                    SOLO_OBJECTIVES.current = null;
+                    document.getElementById('soloObjectivesPanel').style.display = 'none';
+                } else {
+                    // Mettre à jour timer
+                    const minutes = Math.floor(remaining / 60000);
+                    const seconds = Math.floor((remaining % 60000) / 1000);
+                    document.getElementById('objectiveTimer').textContent = 
+                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Vérifier si objectif complété
+                    if (obj.check(obj.progress, obj.target)) {
+                        addChatMessage(`🎯 OBJECTIF COMPLÉTÉ ! Score: ${calculateObjectiveScore()}`);
+                        clearInterval(SOLO_OBJECTIVES.timer);
+                        SOLO_OBJECTIVES.current = null;
+                        document.getElementById('soloObjectivesPanel').style.display = 'none';
+                    }
+                }
+            }, 1000);
+        }
+        
+        function calculateObjectiveScore() {
+            const obj = SOLO_OBJECTIVES.current;
+            if (!obj) return 0;
+            
+            const timeBonus = Math.max(0, obj.timeLimit - (Date.now() - obj.startTime)) / 1000;
+            const baseScore = 100;
+            return Math.floor(baseScore + timeBonus);
+        }
+        
+        function applyObjectiveFailurePenalty() {
+            // Anna applique une pénalité pour l'échec
+            Object.values(hunt.agents).forEach(agent => {
+                if (agent.health) {
+                    agent.health *= 0.8; // -20% santé
+                }
+            });
+        }
+        
+        // ⚖️ LOGIQUE DU JUGE TEMPOREL
+        function performJudgment() {
+            const now = Date.now();
+            
+            // Analyser l'équilibre entre agents
+            const agents = Object.values(hunt.agents);
+            const allyCount = agents.filter(a => a.type === 'ally').length;
+            const enemyCount = agents.filter(a => a.type === 'enemy').length;
+            
+            // Détecter déséquilibre
+            if (Math.abs(allyCount - enemyCount) > 2) {
+                const judgment = {
+                    type: 'BALANCE_CORRECTION',
+                    message: REGULATORS.judge.philosophy,
+                    action: allyCount > enemyCount ? 'NERF_ALLIES' : 'BUFF_ALLIES'
+                };
+                
+                executeJudgment(judgment);
+                REGULATORS.judge.lastAction = now;
+            }
+            
+            // Surveiller les abus temporels
+            if (hunt.gameState.timeline > 10) {
+                addChatMessage('⚖️ JUGE: Abus temporel détecté. Correction appliquée.');
+                hunt.gameState.timeline = Math.max(0, hunt.gameState.timeline - 3);
+            }
+        }
+        
+        // 🌀 LOGIQUE DU CHASSEUR DE PARADOXES  
+        function huntParadoxes() {
+            const now = Date.now();
+            
+            // Détecter paradoxes temporels
+            const paradoxes = detectParadoxes();
+            
+            if (paradoxes.length > 0) {
+                paradoxes.forEach(paradox => {
+                    const correction = {
+                        type: 'PARADOX_ELIMINATION',
+                        message: REGULATORS.hunter.philosophy,
+                        target: paradox,
+                        solution: generateParadoxSolution(paradox)
+                    };
+                    
+                    executeParadoxCorrection(correction);
+                });
+                
+                REGULATORS.hunter.lastAction = now;
+                addChatMessage(`🌀 CHASSEUR: ${paradoxes.length} paradoxe(s) éliminé(s)`);
+            }
+            
+            // Vérifier cohérence spatiale
+            checkSpatialCoherence();
+        }
+        
+        // ⏳ LOGIQUE D'ANNA MARTEL (DECAY)
+        function applyDecaySystem() {
+            const now = Date.now();
+            const minutesElapsed = (now - REGULATORS.anna.lastAction) / 60000;
+            
+            // Appliquer decay aux objets/agents statiques
+            Object.values(hunt.agents).forEach(agent => {
+                if (agent.lastMoveTime && (now - agent.lastMoveTime) > REGULATORS.anna.threshold * 60000) {
+                    // Agent inactive trop longtemps
+                    const decay = REGULATORS.anna.decayRate * minutesElapsed;
+                    if (agent.health) {
+                        agent.health *= (1 - decay);
+                        if (agent.health < 10) {
+                            addChatMessage(`⏳ ANNA: Agent ${agent.id} se décompose par inactivité`);
+                        }
+                    }
+                }
+            });
+            
+            // Appliquer aux éléments de game state
+            if (hunt.gameState.targets) {
+                hunt.gameState.targets = hunt.gameState.targets.filter(target => {
+                    const age = (now - (target.spawnTime || now)) / 60000;
+                    if (age > 10) { // 10 minutes max
+                        addChatMessage(`⏳ ANNA: Cible ${target.id} disparaît dans l'entropie`);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            
+            REGULATORS.anna.lastAction = now;
+        }
+        
+        // 🎯 SORT ULTIME - TRINITY REGULATION
+        async function activateRegulators() {
+            addChatMessage('🎯 ACTIVATION TRINITY REGULATION !');
+            
+            // Phase 1: Activer tous les régulateurs
+            REGULATORS.judge.active = true;
+            REGULATORS.hunter.active = true;
+            REGULATORS.anna.active = true;
+            
+            updateRegulatorStatus('judge', 'active');
+            updateRegulatorStatus('hunter', 'active');  
+            updateRegulatorStatus('anna', 'fighting');
+            
+            // Phase 2: Messages coordonnés
+            setTimeout(() => {
+                addChatMessage('⚖️ JUGE: ' + REGULATORS.judge.philosophy);
+            }, 1000);
+            
+            setTimeout(() => {
+                addChatMessage('🌀 CHASSEUR: ' + REGULATORS.hunter.philosophy);
+            }, 2000);
+            
+            setTimeout(() => {
+                addChatMessage('⏳ ANNA: ' + REGULATORS.anna.philosophy);
+            }, 3000);
+            
+            // Phase 3: Effet ultime coordonné
+            setTimeout(async () => {
+                await executeTrinityRegulation();
+            }, 4000);
+        }
+        
+        // 🌟 EXÉCUTION TRINITY REGULATION
+        async function executeTrinityRegulation() {
+            try {
+                // Sort ultime via Magic Stack (Java backend stable)
+                const back = (window.ConfigUtils ? ConfigUtils.getBackends() : { javaBackend: 'http://localhost:8082' });
+                const response = await fetch(`${back.javaBackend}/api/magic/cast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        spell: 'TRINITY_REGULATION',
+                        caster: 'UNIFIED_REGULATORS',
+                        power: 100,
+                        agents: ['TEMPORAL_JUDGE', 'PARADOX_HUNTER', 'ANNA_MARTEL'],
+                        position: {
+                            x: hunt.canvas.width / 2,
+                            y: hunt.canvas.height / 2,
+                            z: 0,
+                            t: hunt.gameState.timeline,
+                            c: 0,
+                            psi: 0
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    addChatMessage('🎯 TRINITY REGULATION RÉUSSIE !');
+                    addChatMessage(`Effet: ${result.effect || 'ÉQUILIBRE COSMIQUE PARFAIT'}`);
+                    
+                    // Rééquilibrer tout le jeu
+                    resetGameToBalance();
+                    
+                    // Effet visuel épique
+                    createTrinityEffect();
+                } else {
+                    addChatMessage('🔴 Échec Trinity Regulation');
+                }
+            } catch (error) {
+                addChatMessage('🔴 Erreur Trinity: ' + error.message);
+            }
+        }
+        
+        // Fonctions utilitaires
+        function detectParadoxes() {
+            const paradoxes = [];
+            
+            // Vérifier agents au même endroit
+            const positions = {};
+            Object.values(hunt.agents).forEach(agent => {
+                const key = `${Math.floor(agent.x)}_${Math.floor(agent.y)}`;
+                if (positions[key]) {
+                    paradoxes.push({
+                        type: 'SPATIAL_OVERLAP',
+                        agents: [positions[key], agent.id],
+                        location: { x: agent.x, y: agent.y }
+                    });
+                }
+                positions[key] = agent.id;
+            });
+            
+            return paradoxes;
+        }
+        
+        function generateParadoxSolution(paradox) {
+            return {
+                type: 'SPATIAL_SEPARATION',
+                action: 'Move agents apart',
+                distance: 100
+            };
+        }
+        
+        function executeJudgment(judgment) {
+            // Appliquer les corrections d'équilibre
+            addChatMessage(`⚖️ JUGEMENT: ${judgment.message}`);
+        }
+        
+        function executeParadoxCorrection(correction) {
+            // Résoudre le paradoxe
+            if (correction.target.type === 'SPATIAL_OVERLAP') {
+                const agents = correction.target.agents;
+                // Séparer les agents
+                agents.forEach((agentId, index) => {
+                    const agent = hunt.agents[agentId];
+                    if (agent) {
+                        agent.x += (index * 50) - 25;
+                        agent.y += (index * 50) - 25;
+                    }
+                });
+            }
+        }
+        
+        function checkSpatialCoherence() {
+            // Vérifier que tous les agents sont dans les limites du canvas
+            Object.values(hunt.agents).forEach(agent => {
+                if (agent.x < 0 || agent.x > hunt.canvas.width || 
+                    agent.y < 0 || agent.y > hunt.canvas.height) {
+                    // Ramener dans les limites
+                    agent.x = Math.max(0, Math.min(hunt.canvas.width, agent.x));
+                    agent.y = Math.max(0, Math.min(hunt.canvas.height, agent.y));
+                }
+            });
+        }
+        
+        function updateRegulatorStatus(regulatorId, status) {
+            const statusElement = document.getElementById(regulatorId + '-status');
+            const stateElement = document.getElementById(regulatorId + '-state');
+            
+            if (statusElement) {
+                statusElement.className = `ai-status ${status}`;
+            }
+            
+            if (stateElement) {
+                const states = {
+                    'active': 'ACTIF',
+                    'fighting': 'INTERVENTION',
+                    'inactive': 'STANDBY'
+                };
+                stateElement.textContent = states[status] || status;
+            }
+        }
+        
+        function resetGameToBalance() {
+            // Rééquilibrer tous les agents
+            const agents = Object.values(hunt.agents);
+            agents.forEach(agent => {
+                agent.health = 100;
+                if (agent.ai) {
+                    agent.ai.target = null; // Reset targets
+                }
+            });
+            
+            // Reset game state
+            hunt.gameState.score = 0;
+            hunt.gameState.timeline = 0;
+            
+            addChatMessage('🌟 JEU RÉÉQUILIBRÉ - NOUVEAU DÉPART POUR TOUS !');
+        }
+        
+        function createTrinityEffect() {
+            // Effet visuel spectaculaire pour Trinity Regulation
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    hunt.createMagicEffect('TRINITY', {
+                        x: hunt.canvas.width / 2 + (Math.random() - 0.5) * 200,
+                        y: hunt.canvas.height / 2 + (Math.random() - 0.5) * 200
+                    });
+                }, i * 200);
+            }
+        }
+        
+        function checkDecay() {
+            const now = Date.now();
+            const stats = {
+                totalAgents: Object.keys(hunt.agents).length,
+                decayedAgents: 0,
+                healthyAgents: 0
+            };
+            
+            Object.values(hunt.agents).forEach(agent => {
+                if (agent.health && agent.health < 50) {
+                    stats.decayedAgents++;
+                } else {
+                    stats.healthyAgents++;
+                }
+            });
+            
+            addChatMessage(`⏳ DECAY CHECK: ${stats.decayedAgents} agents dégradés, ${stats.healthyAgents} en bonne santé`);
+        }
+        
+        // 🎮 FONCTIONS GLOBALES POUR L'UI
+        function setGameMode(mode) {
+            hunt.setGameMode(mode);
+        }
+        
+        function spawnRandomAI() {
+            const types = ['ally', 'enemy', 'neutral'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const agent = new TemporalAgent(randomType, 'ai_' + Date.now(), hunt);
+            hunt.agents['random_' + Date.now()] = agent;
+            agent.ai.start();
+            hunt.updateAgentStatus(agent.id, 'active');
+            addChatMessage(`🤖 Nouvel agent ${randomType} spawné: ${agent.id}`);
+        }
+        
+        async function castMagicSpell() {
+            const spells = ['SHIFT', 'FORK', 'MERGE', 'COLLAPSE', 'HEAL'];
+            const randomSpell = spells[Math.floor(Math.random() * spells.length)];
+            
+            try {
+                const back = (window.ConfigUtils ? ConfigUtils.getBackends() : { javaBackend: 'http://localhost:8082' });
+                const response = await fetch(`${back.javaBackend}/api/magic/cast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        spell: randomSpell,
+                        caster: 'TEMPORAL_HUNTER',
+                        power: Math.random() * 100,
+                        position: {
+                            x: Math.random() * hunt.canvas.width,
+                            y: Math.random() * hunt.canvas.height,
+                            z: 0,
+                            t: hunt.gameState.timeline,
+                            c: Math.random() * 10,
+                            psi: Math.random() * 2 * Math.PI
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    addChatMessage(`✨ Magie ${randomSpell} lancée ! Effet: ${result.effect || 'SUCCÈS'}`);
+                    
+                    // Effet visuel sur le canvas
+                    hunt.createMagicEffect(randomSpell, {
+                        x: Math.random() * hunt.canvas.width,
+                        y: Math.random() * hunt.canvas.height
+                    });
+                } else {
+                    addChatMessage(`🔴 Échec magie ${randomSpell}`);
+                }
+            } catch (error) {
+                addChatMessage('🔴 Erreur connexion Magic Stack: ' + error.message);
+            }
+        }
+        
+        // 🎮 FONCTIONS UI POUR SYSTÈMES DE COMBAT
+        function setCombatMode(mode) {
+            COMBAT_SYSTEMS.current = mode;
+            const system = COMBAT_SYSTEMS[mode];
+            document.getElementById('combatModeDesc').textContent = system.description;
+            addChatMessage(`⚔️ Mode combat changé: ${system.name}`);
+        }
+        
+        async function triggerCombatResolution() {
+            const agents = Object.values(hunt.agents);
+            if (agents.length < 2) {
+                addChatMessage('🔴 Besoin d\'au moins 2 agents pour un combat');
+                return;
+            }
+            
+            // Prendre les 2 premiers agents
+            const attacker = agents[0];
+            const defender = agents[1];
+            
+            addChatMessage(`⚔️ COMBAT FORCÉ: ${attacker.id} vs ${defender.id}`);
+            
+            // Résoudre selon le système choisi
+            const system = COMBAT_SYSTEMS[COMBAT_SYSTEMS.current];
+            const result = await system.resolve(attacker, defender);
+            
+            if (result) {
+                // Mise à jour objectifs si en mode solo
+                if (hunt.gameState.mode === 'solo_mission' && SOLO_OBJECTIVES.current) {
+                    if (result.winner !== attacker || result.winner !== defender) {
+                        SOLO_OBJECTIVES.current.progress.eliminated++;
+                        updateObjectiveUI();
+                    }
+                }
+                
+                // Le Juge surveille l'équité du combat
+                if (REGULATORS.judge.active && result.damage > 40) {
+                    addChatMessage('⚖️ JUGE: Combat excessif détecté. Modération appliquée.');
+                    if (result.winner.health) {
+                        result.winner.health = Math.min(100, result.winner.health + 10);
+                    }
+                }
+            }
+        }
+        
+        function openCombatUI() {
+            // Ouvrir interface TCG complète dans une modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 80%; height: 80%; background: rgba(0,0,0,0.9);
+                border: 2px solid #8A2BE2; border-radius: 10px; padding: 20px;
+                z-index: 10000; color: #fff;
+            `;
+            modal.innerHTML = `
+                <h2>🎴 Interface Combat TCG</h2>
+                <div style="display: flex; height: 100%;">
+                    <div style="width: 50%; border-right: 1px solid #8A2BE2; padding-right: 20px;">
+                        <h3>Deck Attaquant</h3>
+                        <div id="attackerDeck"></div>
+                    </div>
+                    <div style="width: 50%; padding-left: 20px;">
+                        <h3>Deck Défenseur</h3>
+                        <div id="defenderDeck"></div>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 3px;">✕</button>
+            `;
+            document.body.appendChild(modal);
+            
+            // Remplir les decks
+            const agents = Object.values(hunt.agents);
+            if (agents.length >= 2) {
+                const attackerDeck = generateTCGDeck(agents[0]);
+                const defenderDeck = generateTCGDeck(agents[1]);
+                
+                document.getElementById('attackerDeck').innerHTML = attackerDeck.map(card => 
+                    `<div style="border: 1px solid #666; margin: 5px; padding: 10px;">
+                        <strong>${card.name}</strong><br>
+                        Power: ${card.power} | Type: ${card.type}
+                    </div>`
+                ).join('');
+                
+                document.getElementById('defenderDeck').innerHTML = defenderDeck.map(card => 
+                    `<div style="border: 1px solid #666; margin: 5px; padding: 10px;">
+                        <strong>${card.name}</strong><br>
+                        Power: ${card.power} | Type: ${card.type}
+                    </div>`
+                ).join('');
+            }
+        }
+        
+        // Initialiser tout à la fin
+        function initializeGame() {
+            // Démarrer le système des régulateurs
+            initRegulatorSystem();
+            
+            // Initialiser systèmes de combat
+            setCombatMode('quantum');
+            
+            addChatMessage('🎮 Tous les systèmes initialisés !');
+            addChatMessage('⚖️ Les 3 Régulateurs sont prêts à intervenir');
+            addChatMessage('🌀 Collapse Quantique & 🎴 TCG disponibles');
+        }
+        
+        // 🚀 LANCEMENT
+        const hunt = new TemporalHunt();
+        
+        // Initialiser après 1 seconde pour laisser temps au DOM
+        setTimeout(initializeGame, 1000);
+        
+        console.log('🎯 CHASSE TEMPORELLE ACTIVE!');
+        console.log('Contrôles: 1-6 pour modes, F=freeze, T=teleport, R=reveal');
+    </script>
+</body>
+</html>

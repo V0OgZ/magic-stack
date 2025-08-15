@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 REALGAME - JOUEZ MAINTENANT !</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a1a url('FromVINCE/MAP ISO.png') center/cover no-repeat;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+        }
+        
+        .hero-stats {
+            margin-bottom: 15px;
+        }
+        
+        .level-bar {
+            background: #333;
+            height: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+        
+        .level-progress {
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .skill-tree {
+            margin-top: 10px;
+        }
+        
+        .skill-slot {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #666;
+            border-radius: 50%;
+            margin: 2px;
+            text-align: center;
+            line-height: 26px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-slot.unlocked {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+        
+        .skill-slot.locked {
+            border-color: #666;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .artifact-slots {
+            margin-top: 15px;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        
+        .artifact-slot {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 2px dashed #666;
+            border-radius: 8px;
+            margin: 3px;
+            text-align: center;
+            line-height: 36px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .artifact-slot.equipped {
+            border-color: #ffdd00;
+            background: rgba(255, 221, 0, 0.1);
+            border-style: solid;
+        }
+        
+        .artifact-slot.restricted {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            cursor: not-allowed;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border: 3px solid #ffdd00;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        /* Mini-Map 6D */
+        .minimap-6d {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: none;
+            transition: all 0.5s ease;
+        }
+        
+        .minimap-6d.revealed {
+            display: block;
+            animation: minimapReveal 2s ease-out;
+        }
+        
+        @keyframes minimapReveal {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.1) rotate(180deg);
+                filter: blur(20px);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2) rotate(90deg);
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                filter: blur(0px);
+            }
+        }
+        
+        .minimap-title {
+            text-align: center;
+            color: #00ffff;
+            font-size: 12px;
+            margin: 8px 0;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .minimap-canvas {
+            width: 100%;
+            height: 180px;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .revelation-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, transparent, rgba(0, 255, 255, 0.3));
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1000;
+        }
+        
+        .revelation-effect.active {
+            animation: revelation 3s ease-out;
+        }
+        
+        @keyframes revelation {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="hud">
+        <div class="hero-stats">
+            <h3 style="color: #ffdd00;">🎯 Sid Meier</h3>
+            <div>Niveau: <span id="level">1</span> | XP: <span id="xp">0</span>/<span id="xpNext">100</span></div>
+            <div class="level-bar">
+                <div class="level-progress" id="levelProgress" style="width: 0%"></div>
+            </div>
+            <div>❤️ Santé: <span id="health">100</span>/100</div>
+            <div>💎 Mana: <span id="mana">100</span>/100</div>
+            <div>⚡ BRISURE: <span id="energy">100</span>/100</div>
+        </div>
+        
+        <div class="skill-tree">
+            <strong>🎯 Compétences:</strong>
+            <div>
+                <div class="skill-slot unlocked" title="Combat de Base" data-skill="combat">⚔️</div>
+                <div class="skill-slot locked" title="Charge (Niveau 3)" data-skill="charge">💨</div>
+                <div class="skill-slot locked" title="Magie (Niveau 5)" data-skill="magic">🔮</div>
+                <div class="skill-slot locked" title="Téléportation (Niveau 7)" data-skill="teleport">🌀</div>
+                <div class="skill-slot locked" title="Maîtrise (Niveau 10)" data-skill="mastery">👑</div>
+            </div>
+        </div>
+        
+        <div class="artifact-slots">
+            <strong>🏺 Artefacts:</strong>
+            <div>
+                <div class="artifact-slot" title="Arme" data-slot="weapon">⚔️</div>
+                <div class="artifact-slot" title="Armure" data-slot="armor">🛡️</div>
+                <div class="artifact-slot" title="Accessoire" data-slot="accessory">💍</div>
+                <div class="artifact-slot" title="Spécial" data-slot="special">✨</div>
+            </div>
+        </div>
+        
+        <hr style="margin: 10px 0;">
+        <div>Position: <span id="pos">50, 40</span></div>
+    </div>
+    
+    <div class="controls">
+        <strong>Contrôles:</strong> WASD ou Flèches = Déplacer | Click = Attaquer | 1-5 = Items | E = Interagir
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <!-- Mini-Map 6D -->
+    <div class="minimap-6d" id="minimap6d">
+        <div class="minimap-title">🌌 NAVIGATEUR TEMPOREL 6D</div>
+        <canvas class="minimap-canvas" id="minimapCanvas"></canvas>
+        <div style="text-align: center; font-size: 10px; color: #666; margin-top: 5px;">
+            Clic = Téléportation | Double-clic = Voyage temporel
+        </div>
+    </div>
+    
+    <!-- Effet de révélation -->
+    <div class="revelation-effect" id="revelationEffect"></div>
+
+    <!-- Système de Progression GROEKEN -->
+    <script src="core/progression/hero-progression-system.js"></script>
+    
+    <script>
+        // Configuration
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Initialiser système de progression
+        const heroProgression = new HeroProgressionSystem();
+        
+        // État du jeu
+        const game = {
+            player: {
+                x: 50,
+                y: 40,
+                health: 100,
+                maxHealth: 100,
+                mana: 100,
+                maxMana: 100,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 0.5,
+                sprite: '🎯',
+                inventory: [],
+                hasOrbeTemporel: false,
+                functionCollapsed: false,
+                // Progression gérée par heroProgression
+            },
+            camera: { x: 0, y: 0 },
+            tileSize: 40,
+            mapSize: { width: 100, height: 80 },
+            objects: [],
+            enemies: [],
+            portals: [],
+            keys: {},
+            minimapRevealed: false,
+            quantumState: 'collapsed',
+            causalFog: {
+                zones: new Map(),
+                collapsed: new Set(),
+                timeObjects: ['orbe_temporel', 'cristal_temporel'],
+                active: true
+            },
+            timeline: 'prime'
+        };
+        
+        // Initialisation
+        function init() {
+            // Taille canvas
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Créer monde
+            createWorld();
+            
+            // Contrôles
+            setupControls();
+            
+            // Initialiser système de progression GROEKEN
+            heroProgression.loadProgress();
+            heroProgression.integrateWithGame(game);
+            heroProgression.updateUI();
+            
+            // Setup événements progression
+            setupProgressionEvents();
+            
+            // Message de bienvenue
+            showMessage("Bienvenue dans REALGAME ! Explorez Avalon !");
+            
+            // Boucle de jeu
+            gameLoop();
+        }
+        
+        // 🎯 SYSTÈME DE PROGRESSION HÉROS - GROEKEN
+        function setupProgressionEvents() {
+            // Gestion des clics sur les compétences
+            document.querySelectorAll('.skill-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    const skill = e.target.dataset.skill;
+                    const skillData = heroProgression.heroData.skills[skill];
+                    if (skillData.unlocked) {
+                        heroProgression.showMessage(`🎯 ${skill.toUpperCase()} : Déjà débloqué !`);
+                    } else {
+                        heroProgression.showMessage(`🔒 ${skill.toUpperCase()} nécessite le niveau ${skillData.requiredLevel}`);
+                    }
+                });
+            });
+            
+            // Gestion des artefacts
+            document.querySelectorAll('.artifact-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    const slotType = e.target.dataset.slot;
+                    showArtifactMenu(slotType);
+                });
+            });
+        }
+        
+        // Fonction XP utilisant le système GROEKEN
+        function gainXP(amount) {
+            heroProgression.gainXP(amount);
+            heroProgression.integrateWithGame(game);
+            heroProgression.saveProgress();
+            }
+            
+            updateHUD();
+            showMessage(`+${amount} XP !`);
+        }
+        
+        function levelUp() {
+            game.player.xp -= game.player.xpToNext;
+            game.player.level++;
+            game.player.skillPoints++;
+            
+            // Augmenter stats
+            game.player.maxHealth += 20;
+            game.player.maxMana += 15;
+            game.player.health = game.player.maxHealth;
+            game.player.mana = game.player.maxMana;
+            
+            // Calculer XP pour prochain niveau
+            game.player.xpToNext = Math.floor(100 * Math.pow(1.5, game.player.level - 1));
+            
+            // Débloquer compétences
+            unlockSkills();
+            
+            showMessage(`🎉 NIVEAU ${game.player.level} ! +1 Point de compétence !`);
+            updateHUD();
+        }
+        
+        function unlockSkills() {
+            Object.keys(game.player.skills).forEach(skillName => {
+                const skill = game.player.skills[skillName];
+                if (!skill.unlocked && game.player.level >= skill.requiredLevel) {
+                    skill.unlocked = true;
+                    
+                    // Mettre à jour l'interface
+                    const skillSlot = document.querySelector(`[data-skill="${skillName}"]`);
+                    if (skillSlot) {
+                        skillSlot.classList.remove('locked');
+                        skillSlot.classList.add('unlocked');
+                    }
+                    
+                    showMessage(`✨ Compétence débloquée : ${skillName.toUpperCase()} !`);
+                }
+            });
+        }
+        
+        function updateHUD() {
+            document.getElementById('level').textContent = game.player.level;
+            document.getElementById('xp').textContent = game.player.xp;
+            document.getElementById('xpNext').textContent = game.player.xpToNext;
+            document.getElementById('health').textContent = game.player.health;
+            document.getElementById('mana').textContent = game.player.mana;
+            document.getElementById('energy').textContent = game.player.energy;
+            
+            // Barre de progression XP
+            const progress = (game.player.xp / game.player.xpToNext) * 100;
+            document.getElementById('levelProgress').style.width = progress + '%';
+        }
+        
+        // 🏺 SYSTÈME D'ARTEFACTS INTELLIGENT
+        const ARTIFACTS = {
+            // Artefacts Novice (Niveau 1-3)
+            iron_sword: { 
+                name: "Épée en Fer", 
+                slot: "weapon", 
+                requiredLevel: 1, 
+                effect: "+5 ATK",
+                icon: "⚔️"
+            },
+            wooden_shield: { 
+                name: "Bouclier de Bois", 
+                slot: "armor", 
+                requiredLevel: 1, 
+                effect: "+3 DEF",
+                icon: "🛡️"
+            },
+            // Artefacts Intermédiaires (Niveau 4-8)
+            enchanted_blade: { 
+                name: "Lame Enchantée", 
+                slot: "weapon", 
+                requiredLevel: 4, 
+                requiredSkill: "magic",
+                effect: "+10 ATK, +5% critique",
+                icon: "🗡️"
+            },
+            fire_wand: { 
+                name: "Baguette de Feu", 
+                slot: "special", 
+                requiredLevel: 5, 
+                requiredSkill: "magic",
+                effect: "Sort Fireball 3/jour",
+                icon: "🔥"
+            },
+            // Artefacts Légendaires (Niveau 9+)
+            excalibur_temporal: { 
+                name: "Excalibur Temporelle", 
+                slot: "weapon", 
+                requiredLevel: 9, 
+                requiredSkill: "mastery",
+                effect: "ATK selon timeline",
+                icon: "⚡"
+            }
+        };
+        
+        function canUseArtifact(artifact) {
+            const player = game.player;
+            
+            // Vérifier niveau
+            if (player.level < artifact.requiredLevel) {
+                return { can: false, reason: `Niveau ${artifact.requiredLevel} requis` };
+            }
+            
+            // Vérifier compétence
+            if (artifact.requiredSkill && !player.skills[artifact.requiredSkill].unlocked) {
+                return { can: false, reason: `Compétence ${artifact.requiredSkill} requise` };
+            }
+            
+            return { can: true };
+        }
+        
+        function showArtifactMenu(slotType) {
+            const availableArtifacts = Object.entries(ARTIFACTS)
+                .filter(([id, artifact]) => artifact.slot === slotType)
+                .map(([id, artifact]) => {
+                    const canUse = canUseArtifact(artifact);
+                    return `${artifact.icon} ${artifact.name} (Niv.${artifact.requiredLevel}) - ${canUse.can ? '✅' : '❌ ' + canUse.reason}`;
+                })
+                .join('\n');
+            
+            showMessage(`🏺 Artefacts ${slotType}:\n${availableArtifacts}`);
+        }
+        
+        // 🌫️ SYSTÈME BROUILLARD CAUSAL - RÈGLE VINCENT
+        function canTimeTravel(entity = game.player) {
+            const hasTimeObject = entity.inventory.some(item => 
+                game.causalFog.timeObjects.includes(item)
+            );
+            const inFog = game.causalFog.zones.has(`${entity.x},${entity.y}`);
+            const notCollapsed = !entity.functionCollapsed;
+            
+            return hasTimeObject && inFog && notCollapsed;
+        }
+        
+        function createCausalFogZone(x, y, radius = 5) {
+            for (let i = x - radius; i <= x + radius; i++) {
+                for (let j = y - radius; j <= y + radius; j++) {
+                    if (Math.sqrt((i-x)**2 + (j-y)**2) <= radius) {
+                        game.causalFog.zones.set(`${i},${j}`, {
+                            x: i, y: j, strength: 1 - Math.sqrt((i-x)**2 + (j-y)**2)/radius
+                        });
+                    }
+                }
+            }
+        }
+        
+        function collapseFunction(entity) {
+            entity.functionCollapsed = true;
+            game.causalFog.collapsed.add(entity);
+            showMessage("⚠️ Fonction collapsed ! Plus de retour temporel possible ici.");
+        }
+        
+        function attemptTimeTravel() {
+            if (canTimeTravel()) {
+                showMessage("🌫️ VOYAGE TEMPOREL ACTIVÉ ! Vous retournez dans le passé...");
+                // Restaurer état précédent
+                game.player.health = Math.min(100, game.player.health + 20);
+                game.player.energy = Math.min(100, game.player.energy + 30);
+                game.timeline = 'past_echo';
+            } else {
+                const reasons = [];
+                if (!game.player.inventory.some(item => game.causalFog.timeObjects.includes(item))) {
+                    reasons.push("Pas d'objet temporel");
+                }
+                if (!game.causalFog.zones.has(`${game.player.x},${game.player.y}`)) {
+                    reasons.push("Hors du brouillard causal");
+                }
+                if (game.player.functionCollapsed) {
+                    reasons.push("Fonction collapsed");
+                }
+                showMessage(`❌ Voyage temporel impossible: ${reasons.join(', ')}`);
+            }
+        }
+
+        // Créer le monde
+        function createWorld() {
+            // Zones de brouillard causal
+            createCausalFogZone(45, 25, 8); // Zone Orbe Temporel
+            createCausalFogZone(20, 35, 6); // Zone mystique
+            createCausalFogZone(70, 50, 7); // Zone ancienne
+            
+            // Objets importants
+            game.objects = [
+                { x: 30, y: 30, icon: '🏰', name: 'Château d\'Avalon', type: 'landmark' },
+                { x: 70, y: 20, icon: '⛪', name: 'Église Mystique', type: 'landmark' },
+                { x: 20, y: 60, icon: '⚔️', name: 'Épée Légendaire', type: 'item' },
+                { x: 80, y: 50, icon: '💎', name: 'Coffre au Trésor', type: 'chest' },
+                { x: 40, y: 45, icon: '🧙', name: 'Merlin', type: 'npc' },
+                { x: 60, y: 35, icon: '🐻', name: 'URZ-KÔM', type: 'npc' },
+                // *** ITEM DÉCLENCHEUR : ORBE TEMPOREL ***
+                { 
+                    x: 45, y: 25, 
+                    icon: '🔮', 
+                    name: 'Orbe Temporel', 
+                    type: 'orbe_temporel',
+                    special: true,
+                    description: "Un artefact mystérieux qui pulse avec une énergie temporelle..."
+                }
+            ];
+            
+            // Portails BRISURE
+            game.portals = [
+                { x: 50, y: 30, icon: '🌀', color: '#8a2be2', name: 'Portail Standard' },
+                { x: 75, y: 65, icon: '🌀', color: '#ff69b4', name: 'Vortex Temporel' }
+            ];
+            
+            // Ennemis
+            game.enemies = [
+                { x: 60, y: 40, icon: '👺', name: 'Gobelin', health: 30 },
+                { x: 40, y: 55, icon: '🐉', name: 'Dragon', health: 100 },
+                { x: 25, y: 25, icon: '👻', name: 'Fantôme', health: 50 }
+            ];
+        }
+        
+        // Contrôles
+        function setupControls() {
+            // Clavier
+            window.addEventListener('keydown', e => {
+                game.keys[e.key.toLowerCase()] = true;
+                
+                // Actions spéciales
+                if (e.key === 'e') interact();
+                if (e.key >= '1' && e.key <= '5') useItem(parseInt(e.key));
+            });
+            
+            window.addEventListener('keyup', e => {
+                game.keys[e.key.toLowerCase()] = false;
+            });
+            
+            // Souris
+            canvas.addEventListener('click', e => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left + game.camera.x;
+                const y = e.clientY - rect.top + game.camera.y;
+                handleClick(x, y);
+            });
+        }
+        
+        // Déplacer joueur
+        function movePlayer() {
+            let dx = 0, dy = 0;
+            
+            if (game.keys['w'] || game.keys['arrowup']) dy = -1;
+            if (game.keys['s'] || game.keys['arrowdown']) dy = 1;
+            if (game.keys['a'] || game.keys['arrowleft']) dx = -1;
+            if (game.keys['d'] || game.keys['arrowright']) dx = 1;
+            
+            if (dx || dy) {
+                game.player.x += dx * game.player.speed;
+                game.player.y += dy * game.player.speed;
+                
+                // Limites
+                game.player.x = Math.max(0, Math.min(game.mapSize.width - 1, game.player.x));
+                game.player.y = Math.max(0, Math.min(game.mapSize.height - 1, game.player.y));
+                
+                // Mettre à jour caméra
+                updateCamera();
+                
+                // Mettre à jour HUD
+                document.getElementById('pos').textContent = 
+                    `${Math.floor(game.player.x)}, ${Math.floor(game.player.y)}`;
+            }
+        }
+        
+        // Mettre à jour caméra
+        function updateCamera() {
+            game.camera.x = game.player.x * game.tileSize - canvas.width / 2;
+            game.camera.y = game.player.y * game.tileSize - canvas.height / 2;
+        }
+        
+        // Interagir
+        function interact() {
+            // Vérifier proximité objets
+            game.objects.forEach(obj => {
+                const dist = Math.sqrt(
+                    Math.pow(game.player.x - obj.x, 2) + 
+                    Math.pow(game.player.y - obj.y, 2)
+                );
+                
+                if (dist < 3) {
+                    if (obj.type === 'npc') {
+                        showMessage(`${obj.name}: "Bienvenue dans Avalon, voyageur !"`);
+                    } else if (obj.type === 'item') {
+                        showMessage(`Vous avez trouvé : ${obj.name} !`);
+                        game.player.mana = Math.min(100, game.player.mana + 20);
+                        updateHUD();
+                    } else if (obj.type === 'chest') {
+                        showMessage(`Coffre ouvert ! +50 Mana !`);
+                        game.player.mana = 100;
+                        updateHUD();
+                    } else if (obj.type === 'orbe_temporel' && !game.player.hasOrbeTemporel) {
+                        // *** RÉVÉLATION DE LA MINI-MAP 6D ***
+                        game.player.hasOrbeTemporel = true;
+                        game.player.inventory.push('orbe_temporel');
+                        revealMinimap6D();
+                        showMessage("🌌 RÉVÉLATION : Vous percevez les dimensions temporelles !");
+                        // Retirer l'orbe de la carte
+                        obj.collected = true;
+                    }
+                }
+            });
+            
+            // Vérifier portails
+            game.portals.forEach(portal => {
+                const dist = Math.sqrt(
+                    Math.pow(game.player.x - portal.x, 2) + 
+                    Math.pow(game.player.y - portal.y, 2)
+                );
+                
+                if (dist < 3) {
+                    if (game.player.energy >= 25) {
+                        game.player.energy -= 25;
+                        game.player.x = Math.random() * 80 + 10;
+                        game.player.y = Math.random() * 60 + 10;
+                        showMessage(`Téléportation via ${portal.name} !`);
+                        updateHUD();
+                    } else {
+                        showMessage("Pas assez d'énergie BRISURE !");
+                    }
+                }
+            });
+        }
+        
+        // Gérer clic
+        function handleClick(x, y) {
+            const tileX = Math.floor(x / game.tileSize);
+            const tileY = Math.floor(y / game.tileSize);
+            
+            // Attaquer ennemis
+            game.enemies.forEach((enemy, index) => {
+                if (Math.abs(enemy.x - tileX) < 2 && Math.abs(enemy.y - tileY) < 2) {
+                    const damage = 10 + Math.floor(Math.random() * 20);
+                    enemy.health -= damage;
+                    
+                    showMessage(`Attaque ! ${damage} dégâts au ${enemy.name}`);
+                    
+                    if (enemy.health <= 0) {
+                        game.enemies.splice(index, 1);
+                        showMessage(`${enemy.name} vaincu ! +20 XP`);
+                        game.player.mana = Math.min(100, game.player.mana + 20);
+                        updateHUD();
+                    }
+                }
+            });
+        }
+        
+        // Utiliser item
+        function useItem(slot) {
+            const items = ['🗡️ Épée', '🛡️ Bouclier', '🔮 Sort', '🍃 Potion', '🔫 Gun de Vince'];
+            showMessage(`Utilisé : ${items[slot - 1]}`);
+            
+            if (slot === 5) {
+                // Gun de Vince Vega spécial
+                game.portals.push({
+                    x: game.player.x + 5,
+                    y: game.player.y,
+                    icon: '🌀',
+                    color: '#ff00ff',
+                    name: 'Portail de Vince'
+                });
+                showMessage("Nouveau portail créé avec le Gun de Vince Vega !");
+                
+                // Easter Egg : Code Konami quantique
+                checkQuantumFormula();
+            }
+        }
+        
+        // Easter Egg Ψ∞
+        let quantumCode = [];
+        function checkQuantumFormula() {
+            quantumCode.push(5); // Gun utilisé
+            
+            // Si le pattern correspond à la formule
+            if (quantumCode.length >= 9 && game.player.energy === 100) {
+                activateQuantumFormula();
+            }
+        }
+        
+        function activateQuantumFormula() {
+            // Message épique
+            showMessage("Ψ∞ = ∑ᵢ αᵢ · Êᵢ");
+            setTimeout(() => {
+                showMessage("VINCENT : PUTAIN MAIS C'EST MOI QUI AI TOUT CRÉÉ !!");
+            }, 2000);
+            
+            // Mode DIEU
+            setTimeout(() => {
+                game.player.sprite = '🧨';
+                game.player.speed = 2.0;
+                game.player.health = 999;
+                game.player.mana = 999;
+                game.player.energy = 999;
+                
+                // Créer portails partout
+                for (let i = 0; i < 20; i++) {
+                    game.portals.push({
+                        x: Math.random() * 100,
+                        y: Math.random() * 80,
+                        icon: '🌌',
+                        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                        name: 'Portail Quantique'
+                    });
+                }
+                
+                showMessage("MODE VINCENT ACTIVÉ ! Tu es maintenant ∞⁺¹ !");
+                updateHUD();
+            }, 4000);
+        }
+        
+        // Afficher message
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Mettre à jour HUD
+        function updateHUD() {
+            document.getElementById('health').textContent = game.player.health;
+            document.getElementById('mana').textContent = game.player.mana;
+            document.getElementById('energy').textContent = game.player.energy;
+        }
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Update
+            movePlayer();
+            
+            // Régénération énergie
+            if (game.player.energy < 100) {
+                game.player.energy = Math.min(100, game.player.energy + 0.1);
+                updateHUD();
+            }
+            
+            // Clear
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Render
+            ctx.save();
+            ctx.translate(-game.camera.x, -game.camera.y);
+            
+            // Grille
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.1)';
+            for (let x = 0; x < game.mapSize.width; x++) {
+                for (let y = 0; y < game.mapSize.height; y++) {
+                    ctx.strokeRect(
+                        x * game.tileSize, 
+                        y * game.tileSize, 
+                        game.tileSize, 
+                        game.tileSize
+                    );
+                }
+            }
+            
+            // Objets
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            game.objects.forEach(obj => {
+                if (!obj.collected) {  // Ne pas afficher les objets collectés
+                    const x = obj.x * game.tileSize + game.tileSize / 2;
+                    const y = obj.y * game.tileSize + game.tileSize / 2;
+                    
+                    // Effet spécial pour l'Orbe Temporel
+                    if (obj.type === 'orbe_temporel') {
+                        ctx.save();
+                        ctx.globalAlpha = 0.7 + Math.sin(Date.now() * 0.005) * 0.3;
+                        ctx.shadowColor = '#00ffff';
+                        ctx.shadowBlur = 20;
+                    }
+                    
+                    ctx.fillText(obj.icon, x, y);
+                    
+                    if (obj.type === 'orbe_temporel') {
+                        ctx.restore();
+                    }
+                }
+            });
+            
+            // Portails avec animation
+            game.portals.forEach(portal => {
+                const x = portal.x * game.tileSize + game.tileSize / 2;
+                const y = portal.y * game.tileSize + game.tileSize / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.003) * 0.3;
+                ctx.fillStyle = portal.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                
+                ctx.fillText(portal.icon, x, y);
+            });
+            
+            // Ennemis
+            game.enemies.forEach(enemy => {
+                const x = enemy.x * game.tileSize + game.tileSize / 2;
+                const y = enemy.y * game.tileSize + game.tileSize / 2;
+                
+                ctx.fillText(enemy.icon, x, y);
+                
+                // Barre de vie
+                ctx.fillStyle = 'red';
+                ctx.fillRect(x - 20, y - 30, (enemy.health / 100) * 40, 4);
+            });
+            
+            // Joueur
+            ctx.font = '35px Arial';
+            ctx.fillText(
+                game.player.sprite,
+                game.player.x * game.tileSize + game.tileSize / 2,
+                game.player.y * game.tileSize + game.tileSize / 2
+            );
+            
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // *** SYSTÈME MINI-MAP 6D ***
+        
+        // Révéler la mini-map 6D
+        function revealMinimap6D() {
+            // Effet de révélation
+            const revelationEffect = document.getElementById('revelationEffect');
+            revelationEffect.classList.add('active');
+            
+            // Révéler la mini-map après un délai
+            setTimeout(() => {
+                const minimap = document.getElementById('minimap6d');
+                minimap.classList.add('revealed');
+                game.minimapRevealed = true;
+                game.quantumState = 'superposed';
+                initMinimap6D();
+            }, 1500);
+            
+            // Retirer l'effet après animation
+            setTimeout(() => {
+                revelationEffect.classList.remove('active');
+            }, 3000);
+        }
+        
+        // Initialiser la mini-map 6D
+        function initMinimap6D() {
+            const minimapCanvas = document.getElementById('minimapCanvas');
+            const minimapCtx = minimapCanvas.getContext('2d');
+            minimapCanvas.width = 246;
+            minimapCanvas.height = 180;
+            
+            // État de la navigation 6D avec backend
+            const navigator6D = {
+                backendConnected: false,
+                entities: [],
+                timelines: [
+                    {
+                        id: 'current',
+                        name: 'Avalon Prime',
+                        x: 120, y: 90,
+                        type: 'current',
+                        icon: '🏰',
+                        accessible: true,
+                        energy: 0
+                    },
+                    {
+                        id: 'past1',
+                        name: 'Passé -1h',
+                        x: 80, y: 60,
+                        type: 'accessible',
+                        icon: '🌅',
+                        accessible: true,
+                        energy: 25
+                    },
+                    {
+                        id: 'future1',
+                        name: 'Futur +1h',
+                        x: 160, y: 120,
+                        type: 'phased',
+                        icon: '🌆',
+                        accessible: false,
+                        energy: 50
+                    },
+                    {
+                        id: 'quantum1',
+                        name: 'Superposition A',
+                        x: 60, y: 140,
+                        type: 'accessible',
+                        icon: '🔮',
+                        accessible: true,
+                        energy: 75
+                    }
+                ],
+                causalLinks: [
+                    { from: 'current', to: 'past1' },
+                    { from: 'current', to: 'future1' },
+                    { from: 'current', to: 'quantum1' }
+                ]
+            };
+            
+            // Connexion au backend pour récupérer les entités
+            async function fetchEntitiesFromBackend() {
+                try {
+                    const response = await fetch('http://localhost:8082/api/interstice/status');
+                    if (response.ok) {
+                        const data = await response.json();
+                        navigator6D.entities = data.entities || [];
+                        navigator6D.backendConnected = true;
+                        
+                        // Mise à jour des héros dans la game
+                        if (data.entities.length > 0) {
+                            const heroEntity = data.entities.find(e => e.name === 'CHRONOS');
+                            if (heroEntity) {
+                                game.hero.temporalPower = heroEntity.coordinates.ψ || 0.8;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log('Backend non disponible, mode local');
+                }
+            }
+            
+            // Mise à jour périodique
+            setInterval(fetchEntitiesFromBackend, 5000);
+            fetchEntitiesFromBackend();
+            
+            // Rendu de la mini-map
+            function renderMinimap() {
+                minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+                
+                // Fond quantique
+                minimapCtx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+                minimapCtx.lineWidth = 1;
+                for (let x = 0; x < minimapCanvas.width; x += 20) {
+                    minimapCtx.beginPath();
+                    minimapCtx.moveTo(x, 0);
+                    minimapCtx.lineTo(x, minimapCanvas.height);
+                    minimapCtx.stroke();
+                }
+                
+                // Liens causaux
+                navigator6D.causalLinks.forEach(link => {
+                    const from = navigator6D.timelines.find(t => t.id === link.from);
+                    const to = navigator6D.timelines.find(t => t.id === link.to);
+                    
+                    if (from && to) {
+                        minimapCtx.strokeStyle = '#00ffff';
+                        minimapCtx.lineWidth = 2;
+                        minimapCtx.globalAlpha = 0.6;
+                        minimapCtx.beginPath();
+                        minimapCtx.moveTo(from.x, from.y);
+                        minimapCtx.lineTo(to.x, to.y);
+                        minimapCtx.stroke();
+                        minimapCtx.globalAlpha = 1;
+                    }
+                });
+                
+                // Timelines
+                navigator6D.timelines.forEach(timeline => {
+                    minimapCtx.beginPath();
+                    minimapCtx.arc(timeline.x, timeline.y, 15, 0, Math.PI * 2);
+                    
+                    switch (timeline.type) {
+                        case 'current':
+                            minimapCtx.fillStyle = 'rgba(255, 221, 0, 0.3)';
+                            minimapCtx.strokeStyle = '#ffdd00';
+                            minimapCtx.lineWidth = 3;
+                            break;
+                        case 'accessible':
+                            minimapCtx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+                            minimapCtx.strokeStyle = '#00ff00';
+                            minimapCtx.lineWidth = 2;
+                            break;
+                        case 'phased':
+                            minimapCtx.fillStyle = 'rgba(255, 102, 0, 0.2)';
+                            minimapCtx.strokeStyle = '#ff6600';
+                            minimapCtx.lineWidth = 2;
+                            break;
+                    }
+                    
+                    minimapCtx.fill();
+                    minimapCtx.stroke();
+                    
+                    // Icône
+                    minimapCtx.font = '12px serif';
+                    minimapCtx.textAlign = 'center';
+                    minimapCtx.fillStyle = '#fff';
+                    minimapCtx.fillText(timeline.icon, timeline.x, timeline.y + 4);
+                });
+            }
+            
+            // Gestion des clics sur la mini-map
+            minimapCanvas.addEventListener('click', (e) => {
+                const rect = minimapCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                navigator6D.timelines.forEach(timeline => {
+                    const distance = Math.sqrt(
+                        Math.pow(x - timeline.x, 2) + 
+                        Math.pow(y - timeline.y, 2)
+                    );
+                    
+                    if (distance <= 15) {
+                        if (timeline.accessible && game.player.energy >= timeline.energy) {
+                            // Téléportation temporelle !
+                            game.player.energy -= timeline.energy;
+                            game.timeline = timeline.id;
+                            updateHUD();
+                            showMessage(`🌀 Voyage temporel vers ${timeline.name} !`);
+                            
+                            // Effet visuel
+                            const effect = document.createElement('div');
+                            effect.style = `
+                                position: absolute;
+                                left: ${timeline.x}px;
+                                top: ${timeline.y}px;
+                                width: 30px;
+                                height: 30px;
+                                border-radius: 50%;
+                                background: radial-gradient(circle, #00ffff, transparent);
+                                transform: translate(-50%, -50%);
+                                animation: teleport 1s ease-out;
+                                pointer-events: none;
+                            `;
+                            minimapCanvas.parentNode.appendChild(effect);
+                            setTimeout(() => effect.remove(), 1000);
+                            
+                        } else {
+                            showMessage(`❌ Énergie insuffisante ou timeline inaccessible !`);
+                        }
+                    }
+                });
+            });
+            
+            // Animation continue
+            setInterval(renderMinimap, 100);
+            renderMinimap();
+        }
+        
+        // Lancer le jeu
+        init();
+    </script>
+</body>
+</html>

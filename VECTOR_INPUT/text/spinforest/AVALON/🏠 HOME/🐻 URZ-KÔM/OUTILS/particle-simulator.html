@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐻 URZ-KÔM's Quantum Particle Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #001122 0%, #000000 100%);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        #controls {
+            width: 300px;
+            background: rgba(0, 20, 40, 0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid #00ff00;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin: 15px 0 10px 0;
+            color: #ffff00;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #003366;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #001122;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            font-family: inherit;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .particle-info {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0, 100, 200, 0.2);
+            border: 1px solid #0088ff;
+            border-radius: 5px;
+            font-size: 0.8em;
+        }
+
+        .quantum-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .quantum-value {
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #666;
+            text-align: center;
+            font-size: 0.8em;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: 5px;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.8em;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="info-panel">
+                <h3>🌌 Quantum Field Visualization</h3>
+                <div class="quantum-display">
+                    <div class="quantum-value">
+                        <strong>Particles:</strong> <span id="particle-count">0</span>
+                    </div>
+                    <div class="quantum-value">
+                        <strong>Time:</strong> <span id="sim-time">0</span>s
+                    </div>
+                    <div class="quantum-value">
+                        <strong>Energy:</strong> <span id="total-energy">0</span> GeV
+                    </div>
+                    <div class="quantum-value">
+                        <strong>Entangled:</strong> <span id="entangled-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <h1>🐻 Quantum Particle Lab</h1>
+            
+            <div class="status" id="status">
+                System: <span id="status-text">Offline</span>
+            </div>
+            
+            <h2>⚡ Simulation Control</h2>
+            <button id="start-btn" onclick="startSimulation()">Start Simulation</button>
+            <button id="stop-btn" onclick="stopSimulation()" disabled>Stop Simulation</button>
+            <button id="clear-btn" onclick="clearParticles()">Clear All</button>
+            
+            <h2>🎯 Create Particles</h2>
+            <select id="particle-type">
+                <optgroup label="Quarks">
+                    <option value="UP_QUARK">Up Quark (u)</option>
+                    <option value="DOWN_QUARK">Down Quark (d)</option>
+                    <option value="CHARM_QUARK">Charm Quark (c)</option>
+                    <option value="STRANGE_QUARK">Strange Quark (s)</option>
+                    <option value="TOP_QUARK">Top Quark (t)</option>
+                    <option value="BOTTOM_QUARK">Bottom Quark (b)</option>
+                </optgroup>
+                <optgroup label="Leptons">
+                    <option value="ELECTRON">Electron (e-)</option>
+                    <option value="POSITRON">Positron (e+)</option>
+                    <option value="MUON">Muon (μ-)</option>
+                    <option value="TAU">Tau (τ-)</option>
+                </optgroup>
+                <optgroup label="Bosons">
+                    <option value="PHOTON">Photon (γ)</option>
+                    <option value="GLUON">Gluon (g)</option>
+                    <option value="W_BOSON">W Boson</option>
+                    <option value="Z_BOSON">Z Boson</option>
+                    <option value="HIGGS">Higgs (H)</option>
+                </optgroup>
+                <optgroup label="Composite">
+                    <option value="PROTON">Proton (p)</option>
+                    <option value="NEUTRON">Neutron (n)</option>
+                    <option value="HYDROGEN">Hydrogen (H)</option>
+                    <option value="HELIUM">Helium (He)</option>
+                </optgroup>
+            </select>
+            <button onclick="createParticle()">Create Particle</button>
+            <button onclick="createRandomBurst()">Random Burst (10)</button>
+            
+            <h2>🌀 Quantum Effects</h2>
+            <button onclick="createEntangledPair()">Create Entangled Pair</button>
+            <button onclick="collapseRandom()">Collapse Random ψ</button>
+            <button onclick="createHydrogenAtom()">Create Hydrogen Atom</button>
+            
+            <h2>📊 Particle Legend</h2>
+            <div id="legend"></div>
+            
+            <h2>🔬 Selected Particle</h2>
+            <div id="selected-info" class="particle-info">
+                Click on a particle to see details
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8082/api/particle-simulation';
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let particles = [];
+        let selectedParticle = null;
+        let simulationRunning = false;
+        let animationId = null;
+        let startTime = Date.now();
+        let mouseX = 0, mouseY = 0;
+        
+        // Particle type info
+        const particleTypes = {};
+
+        // Initialize canvas
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Mouse tracking
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Find clicked particle
+            selectedParticle = null;
+            for (let particle of particles) {
+                const px = (particle.position.x + 10) * canvas.width / 20;
+                const py = (particle.position.y + 10) * canvas.height / 20;
+                const dist = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+                
+                if (dist < 20) {
+                    selectedParticle = particle;
+                    updateSelectedInfo();
+                    break;
+                }
+            }
+        });
+
+        // API Functions
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                // Store particle type info
+                if (data.particleTypes) {
+                    data.particleTypes.forEach(type => {
+                        particleTypes[type.name] = type;
+                    });
+                    updateLegend();
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching status:', error);
+                return null;
+            }
+        }
+
+        async function startSimulation() {
+            try {
+                const response = await fetch(`${API_BASE}/start`, { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    simulationRunning = true;
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('stop-btn').disabled = false;
+                    document.getElementById('status-text').textContent = 'Running';
+                    startTime = Date.now();
+                    animate();
+                }
+            } catch (error) {
+                console.error('Error starting simulation:', error);
+            }
+        }
+
+        async function stopSimulation() {
+            try {
+                const response = await fetch(`${API_BASE}/stop`, { method: 'POST' });
+                
+                if (response.ok) {
+                    simulationRunning = false;
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('stop-btn').disabled = true;
+                    document.getElementById('status-text').textContent = 'Stopped';
+                    
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error stopping simulation:', error);
+            }
+        }
+
+        async function fetchParticles() {
+            try {
+                const response = await fetch(`${API_BASE}/particles`);
+                const data = await response.json();
+                particles = data.particles || [];
+                updateStats();
+            } catch (error) {
+                console.error('Error fetching particles:', error);
+            }
+        }
+
+        async function createParticle(type = null, x = null, y = null) {
+            type = type || document.getElementById('particle-type').value;
+            x = x || (Math.random() * 20 - 10);
+            y = y || (Math.random() * 20 - 10);
+            const z = Math.random() * 20 - 10;
+            
+            try {
+                const response = await fetch(`${API_BASE}/create-particle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, x, y, z })
+                });
+                
+                if (response.ok) {
+                    fetchParticles();
+                }
+            } catch (error) {
+                console.error('Error creating particle:', error);
+            }
+        }
+
+        function createRandomBurst() {
+            const types = Object.keys(particleTypes);
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    createParticle(type);
+                }, i * 100);
+            }
+        }
+
+        async function createEntangledPair() {
+            // Create two electrons
+            await createParticle('ELECTRON', -2, 0);
+            await createParticle('ELECTRON', 2, 0);
+            
+            // Wait a bit then entangle them
+            setTimeout(async () => {
+                await fetchParticles();
+                if (particles.length >= 2) {
+                    const p1 = particles[particles.length - 2];
+                    const p2 = particles[particles.length - 1];
+                    
+                    try {
+                        await fetch(`${API_BASE}/quantum-entangle/${p1.id}/${p2.id}`, {
+                            method: 'POST'
+                        });
+                        fetchParticles();
+                    } catch (error) {
+                        console.error('Error entangling particles:', error);
+                    }
+                }
+            }, 500);
+        }
+
+        async function collapseRandom() {
+            if (particles.length === 0) return;
+            
+            const particle = particles[Math.floor(Math.random() * particles.length)];
+            
+            try {
+                await fetch(`${API_BASE}/collapse/${particle.id}`, {
+                    method: 'POST'
+                });
+                fetchParticles();
+            } catch (error) {
+                console.error('Error collapsing particle:', error);
+            }
+        }
+
+        async function createHydrogenAtom() {
+            await createParticle('PROTON', 0, 0);
+            await createParticle('ELECTRON', 1, 0);
+        }
+
+        function clearParticles() {
+            // Note: This would need a backend endpoint to clear all particles
+            // For now, just stop and restart
+            if (simulationRunning) {
+                stopSimulation();
+            }
+            particles = [];
+            render();
+        }
+
+        // Rendering
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw quantum field effect
+            drawQuantumField();
+            
+            // Draw entanglement connections
+            drawEntanglements();
+            
+            // Draw particles
+            particles.forEach(particle => {
+                drawParticle(particle);
+            });
+            
+            // Highlight selected particle
+            if (selectedParticle) {
+                const px = (selectedParticle.position.x + 10) * canvas.width / 20;
+                const py = (selectedParticle.position.y + 10) * canvas.height / 20;
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(px, py, 25, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawQuantumField() {
+            const time = Date.now() * 0.001;
+            
+            ctx.save();
+            ctx.globalAlpha = 0.05;
+            
+            for (let i = 0; i < 5; i++) {
+                const phase = time * 0.5 + i * 0.5;
+                const x = canvas.width / 2 + Math.cos(phase) * 200;
+                const y = canvas.height / 2 + Math.sin(phase) * 200;
+                
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 300);
+                gradient.addColorStop(0, 'rgba(0, 255, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            ctx.restore();
+        }
+
+        function drawEntanglements() {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 0, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            particles.forEach(particle => {
+                if (particle.entangledWith && particle.entangledWith.length > 0) {
+                    const px1 = (particle.position.x + 10) * canvas.width / 20;
+                    const py1 = (particle.position.y + 10) * canvas.height / 20;
+                    
+                    particle.entangledWith.forEach(otherId => {
+                        const other = particles.find(p => p.id === otherId);
+                        if (other) {
+                            const px2 = (other.position.x + 10) * canvas.width / 20;
+                            const py2 = (other.position.y + 10) * canvas.height / 20;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(px1, py1);
+                            ctx.lineTo(px2, py2);
+                            ctx.stroke();
+                        }
+                    });
+                }
+            });
+            
+            ctx.restore();
+        }
+
+        function drawParticle(particle) {
+            const px = (particle.position.x + 10) * canvas.width / 20;
+            const py = (particle.position.y + 10) * canvas.height / 20;
+            const pz = (particle.position.z + 10) / 20; // For size scaling
+            
+            // Size based on mass and z-position
+            const baseSize = Math.log(particle.mass + 1) * 5 + 5;
+            const size = baseSize * (0.5 + pz * 0.5);
+            
+            // Draw particle
+            ctx.save();
+            
+            // Glow effect
+            if (!particle.collapsed) {
+                const glow = ctx.createRadialGradient(px, py, 0, px, py, size * 2);
+                glow.addColorStop(0, particle.color + '88');
+                glow.addColorStop(1, particle.color + '00');
+                ctx.fillStyle = glow;
+                ctx.fillRect(px - size * 2, py - size * 2, size * 4, size * 4);
+            }
+            
+            // Main particle
+            ctx.fillStyle = particle.collapsed ? particle.color + '88' : particle.color;
+            ctx.beginPath();
+            ctx.arc(px, py, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner core
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = particle.probability || 0.5;
+            ctx.beginPath();
+            ctx.arc(px, py, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Symbol
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#000000';
+            ctx.font = `${size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(particle.symbol, px, py);
+            
+            ctx.restore();
+        }
+
+        function updateStats() {
+            document.getElementById('particle-count').textContent = particles.length;
+            document.getElementById('sim-time').textContent = 
+                ((Date.now() - startTime) / 1000).toFixed(1);
+            
+            const totalEnergy = particles.reduce((sum, p) => sum + (p.energy || 0), 0);
+            document.getElementById('total-energy').textContent = totalEnergy.toFixed(2);
+            
+            const entangledCount = particles.filter(p => 
+                p.entangledWith && p.entangledWith.length > 0
+            ).length;
+            document.getElementById('entangled-count').textContent = entangledCount;
+        }
+
+        function updateSelectedInfo() {
+            const info = document.getElementById('selected-info');
+            
+            if (!selectedParticle) {
+                info.innerHTML = 'Click on a particle to see details';
+                return;
+            }
+            
+            const p = selectedParticle;
+            info.innerHTML = `
+                <strong>${p.type}</strong> (${p.symbol})<br>
+                ID: ${p.id.substring(0, 8)}...<br>
+                Mass: ${p.mass.toFixed(3)} GeV/c²<br>
+                Charge: ${p.charge}e<br>
+                Spin: ${p.spin}<br>
+                Energy: ${p.energy.toFixed(3)} GeV<br>
+                Momentum: ${p.momentum.toFixed(3)} GeV/c<br>
+                ψ: ${p.psiState.real.toFixed(3)} + ${p.psiState.imaginary.toFixed(3)}i<br>
+                |ψ|²: ${p.probability.toFixed(3)}<br>
+                Collapsed: ${p.collapsed ? 'Yes' : 'No'}<br>
+                Entangled: ${p.entangledWith.length} particles
+            `;
+        }
+
+        function updateLegend() {
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+            
+            const types = ['ELECTRON', 'PROTON', 'UP_QUARK', 'DOWN_QUARK', 'PHOTON', 'GLUON'];
+            types.forEach(typeName => {
+                const type = particleTypes[typeName];
+                if (type) {
+                    const item = document.createElement('div');
+                    item.className = 'legend';
+                    item.innerHTML = `
+                        <div class="legend-color" style="background: ${type.color}"></div>
+                        <div>${type.symbol} - ${type.name.replace(/_/g, ' ')}</div>
+                    `;
+                    legend.appendChild(item);
+                }
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            if (!simulationRunning) return;
+            
+            fetchParticles();
+            render();
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        fetchStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealGame PWA</title>
+    
+    <script src="config.js"></script>
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="RealGame - Portal de jeux Heroes of Time">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RealGame">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e8e8e8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+
+        /* Game Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .game-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .game-description {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            line-height: 1.5;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #a0a0a0;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .nav {
+                gap: 12px;
+            }
+            
+            .nav-item {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-indicator" id="offlineIndicator">Hors ligne</div>
+    
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">RealGame</h1>
+            <p class="subtitle">Portal de jeux Heroes of Time</p>
+        </header>
+
+        <nav class="nav">
+            <a href="#main" class="nav-item active" onclick="showSection('main')">Principal</a>
+            <a href="#arcade" class="nav-item" onclick="showSection('arcade')">Arcade</a>
+            <a href="#tools" class="nav-item" onclick="showSection('tools')">Outils</a>
+            <a href="#status" class="nav-item" onclick="showSection('status')">Status</a>
+        </nav>
+
+        <!-- Main Section -->
+        <section id="main" class="section">
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-label">Backend Java:</span>
+                    <span class="status-value" id="javaStatus">Vérification...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Backend Rust:</span>
+                    <span class="status-value" id="rustStatus">Vérification...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Formules actives:</span>
+                    <span class="status-value">869</span>
+                </div>
+            </div>
+
+            <div class="games-grid">
+                <a href="maps/CHASSE_TEMPORELLE_HEROES.html" class="game-card">
+                    <span class="game-icon">🎯</span>
+                    <h3 class="game-title">Chasse Temporelle</h3>
+                    <p class="game-description">Mode MULTIPLAYER Heroes 3 en semi-temps réel avec brouillard de causalité</p>
+                </a>
+
+                <a href="HEROES_OF_TIME_COMPLETE.html" class="game-card">
+                    <span class="game-icon">⚔️</span>
+                    <h3 class="game-title">Heroes of Time</h3>
+                    <p class="game-description">Le jeu principal avec toutes les mécaniques</p>
+                </a>
+
+                <a href="AVALON-TCG/launcher.html" class="game-card">
+                    <span class="game-icon">🎴</span>
+                    <h3 class="game-title">TCG Combat</h3>
+                    <p class="game-description">Système de combat TCG style Hearthstone</p>
+                </a>
+
+                <a href="DARK_HOLOGRAPHIC_CARDS.html" class="game-card">
+                    <span class="game-icon">🃏</span>
+                    <h3 class="game-title">Cartes Holographiques</h3>
+                    <p class="game-description">Collection complète avec effets visuels</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Arcade Section -->
+        <section id="arcade" class="section" style="display: none;">
+            <div class="games-grid">
+                <a href="ARCADE/AVALON_ULTIMATE_ARCADE.html" class="game-card">
+                    <span class="game-icon">🕹️</span>
+                    <h3 class="game-title">Arcade Ultimate</h3>
+                    <p class="game-description">208 mini-jeux et expériences</p>
+                </a>
+
+                <a href="ARCADE/experimental-lab.html" class="game-card">
+                    <span class="game-icon">🧪</span>
+                    <h3 class="game-title">Laboratoire</h3>
+                    <p class="game-description">Expériences et prototypes</p>
+                </a>
+
+                <a href="ULTIMATE_LAUNCHER.html" class="game-card">
+                    <span class="game-icon">🚀</span>
+                    <h3 class="game-title">Ultimate Launcher</h3>
+                    <p class="game-description">Tous les launchers et modes</p>
+                </a>
+
+                <a href="worlds/frontiere_feu_foi/FrontiereFeuFoi.html" class="game-card">
+                    <span class="game-icon">🗺️</span>
+                    <h3 class="game-title">Exploration</h3>
+                    <p class="game-description">Carte isométrique des mondes</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Tools Section -->
+        <section id="tools" class="section" style="display: none;">
+            <div class="games-grid">
+                <a href="MASTER_INDEX.html" class="game-card">
+                    <span class="game-icon">📋</span>
+                    <h3 class="game-title">Master Index</h3>
+                    <p class="game-description">203+ interfaces HTML du projet</p>
+                </a>
+
+                <a href="AVALON_DASHBOARD.html" class="game-card">
+                    <span class="game-icon">📊</span>
+                    <h3 class="game-title">Dashboard</h3>
+                    <p class="game-description">Tableau de bord du projet</p>
+                </a>
+
+                <a href="heroes-of-time-launcher.html" class="game-card">
+                    <span class="game-icon">🎮</span>
+                    <h3 class="game-title">Ancien Launcher</h3>
+                    <p class="game-description">Le launcher d'avant</p>
+                </a>
+
+                <a href="../assets/panopticon-6d-grut.html" class="game-card">
+                    <span class="game-icon">👁️</span>
+                    <h3 class="game-title">Panopticon 6D</h3>
+                    <p class="game-description">Visualisation du multivers</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Status Section -->
+        <section id="status" class="section" style="display: none;">
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-label">Version PWA:</span>
+                    <span class="status-value">1.0.0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Connexion:</span>
+                    <span class="status-value" id="connectionStatus">En ligne</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Cache:</span>
+                    <span class="status-value" id="cacheStatus">Actif</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Dernière mise à jour:</span>
+                    <span class="status-value" id="lastUpdate">Maintenant</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+
+        <footer class="footer">
+            <p>RealGame PWA - Powered by Magic Stack</p>
+        </footer>
+    </div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Status checking
+        async function checkBackendStatus() {
+            try {
+                const back = (window.ConfigUtils ? ConfigUtils.getBackends() : {javaBackend:'http://localhost:8082'});
+                const javaResponse = await fetch(back.javaBackend + '/health', { 
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+                document.getElementById('javaStatus').textContent = 'Actif';
+                document.getElementById('javaStatus').style.color = '#4ade80';
+            } catch (error) {
+                document.getElementById('javaStatus').textContent = 'Inactif';
+                document.getElementById('javaStatus').style.color = '#ef4444';
+            }
+
+            try {
+                const back2 = (window.ConfigUtils ? ConfigUtils.getBackends() : {rustBackend:'http://localhost:3001'});
+                const rustResponse = await fetch(back2.rustBackend + '/health', { 
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+                document.getElementById('rustStatus').textContent = 'Actif';
+                document.getElementById('rustStatus').style.color = '#4ade80';
+            } catch (error) {
+                document.getElementById('rustStatus').textContent = 'Inactif';
+                document.getElementById('rustStatus').style.color = '#ef4444';
+            }
+        }
+
+        // Offline detection
+        window.addEventListener('online', () => {
+            document.getElementById('offlineIndicator').style.display = 'none';
+            document.getElementById('connectionStatus').textContent = 'En ligne';
+            document.getElementById('connectionStatus').style.color = '#4ade80';
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineIndicator').style.display = 'block';
+            document.getElementById('connectionStatus').textContent = 'Hors ligne';
+            document.getElementById('connectionStatus').style.color = '#ef4444';
+        });
+
+        // Initialize
+        checkBackendStatus();
+        setInterval(checkBackendStatus, 30000); // Check every 30 seconds
+
+        // Update last update time
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+    </script>
+</body>
+</html>

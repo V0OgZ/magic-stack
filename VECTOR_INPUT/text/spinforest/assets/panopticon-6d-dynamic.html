@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panopticon 6D - Vision Dynamique des Mages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #001122 0%, #000000 100%);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            background: rgba(0, 50, 0, 0.2);
+        }
+        
+        .section h3 {
+            margin-bottom: 10px;
+            color: #00ff00;
+        }
+        
+        .entity-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .entity-item:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .feature-log {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 0, 0.1);
+            border-left: 3px solid #ffff00;
+            font-size: 12px;
+        }
+        
+        .memory-cerebrale {
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(45deg, 
+                rgba(255,0,255,0.1), 
+                rgba(0,255,255,0.1));
+            border: 1px solid #ff00ff;
+            border-radius: 5px;
+        }
+        
+        .connection-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        
+        .connected { color: #00ff00; }
+        .disconnected { color: #ff0000; }
+        
+        #upload-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #003300;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        #upload-btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        .loading {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        .dimension-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .dimension-btn {
+            padding: 5px 10px;
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .dimension-btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="connection-status">
+                <div>Backend: <span id="backend-status" class="disconnected">Déconnecté</span></div>
+                <div>Entités: <span id="entity-count">0</span></div>
+                <div>Features actives: <span id="feature-count">0</span></div>
+            </div>
+        </div>
+        
+        <div id="sidebar">
+            <div class="section">
+                <h3>VISION 6D INTERSTICE</h3>
+                <button id="upload-btn">SELF-UPDATE MA POSITION</button>
+                <div class="dimension-filter">
+                    <button class="dimension-btn active" data-dim="ALL">TOUTES</button>
+                    <button class="dimension-btn" data-dim="SPATIALE">SPATIALE</button>
+                    <button class="dimension-btn" data-dim="TEMPORELLE">TEMPORELLE</button>
+                    <button class="dimension-btn" data-dim="CAUSALE">CAUSALE</button>
+                    <button class="dimension-btn" data-dim="QUANTIQUE">QUANTIQUE</button>
+                    <button class="dimension-btn" data-dim="IDENTITAIRE">IDENTITAIRE</button>
+                    <button class="dimension-btn" data-dim="ACTIVE">FEATURES</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>MAGES ACTIFS</h3>
+                <div id="mages-list" class="loading">Chargement...</div>
+            </div>
+            
+            <div class="section">
+                <h3>FEATURES RECENTES</h3>
+                <div id="features-list" class="loading">Chargement...</div>
+            </div>
+            
+            <div class="section">
+                <h3>MEMOIRE CEREBRALE</h3>
+                <div id="memory-display" class="memory-cerebrale">
+                    <div>Position actuelle: <span id="my-position">...</span></div>
+                    <div>Dernière action: <span id="last-action">...</span></div>
+                    <div>État quantique: <span id="quantum-state">...</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const CONFIG = {
+            backendUrl: 'http://localhost:8082',
+            refreshInterval: 5000,
+            myMageId: 'URZ-KOM' // À personnaliser
+        };
+        
+        let worldStateGraph = null;
+        let activeDimension = 'ALL';
+        let canvas, ctx;
+        let entities = [];
+        let features = [];
+        let animationFrame = 0;
+        
+        // Initialisation
+        window.onload = async function() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Connecter au backend
+            await connectToBackend();
+            
+            // Événements
+            document.querySelectorAll('.dimension-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelector('.dimension-btn.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    activeDimension = e.target.dataset.dim;
+                    renderEntities();
+                });
+            });
+            
+            document.getElementById('upload-btn').addEventListener('click', selfUpdate);
+            
+            // Animation loop
+            animate();
+            
+            // Refresh périodique
+            setInterval(refreshData, CONFIG.refreshInterval);
+        };
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        async function connectToBackend() {
+            try {
+                const response = await fetch(`${CONFIG.backendUrl}/api/panopticon/world-state-graph`);
+                if (response.ok) {
+                    worldStateGraph = await response.json();
+                    document.getElementById('backend-status').textContent = 'Connecté';
+                    document.getElementById('backend-status').className = 'connected';
+                    processWorldState();
+                } else {
+                    throw new Error('Backend non disponible');
+                }
+            } catch (error) {
+                console.error('Erreur connexion:', error);
+                document.getElementById('backend-status').textContent = 'Déconnecté';
+                document.getElementById('backend-status').className = 'disconnected';
+            }
+        }
+        
+        function processWorldState() {
+            if (!worldStateGraph) return;
+            
+            entities = worldStateGraph.nodes.filter(n => n.type !== 'FEATURE');
+            features = worldStateGraph.nodes.filter(n => n.type === 'FEATURE');
+            
+            document.getElementById('entity-count').textContent = entities.length;
+            document.getElementById('feature-count').textContent = features.length;
+            
+            updateMagesList();
+            updateFeaturesList();
+            renderEntities();
+        }
+        
+        function updateMagesList() {
+            const magesList = document.getElementById('mages-list');
+            magesList.innerHTML = '';
+            magesList.classList.remove('loading');
+            
+            const mages = entities.filter(e => 
+                e.type === 'MAGE' || e.type === 'GUARDIAN' || e.type === 'PLAYER'
+            );
+            
+            mages.forEach(mage => {
+                const div = document.createElement('div');
+                div.className = 'entity-item';
+                div.innerHTML = `
+                    <strong>${mage.name}</strong> (${mage.type})<br>
+                    Position: [${Math.round(mage.x)}, ${Math.round(mage.y)}, ${Math.round(mage.z)}]<br>
+                    Dimension: ${mage.dimension}
+                `;
+                div.onclick = () => focusEntity(mage);
+                magesList.appendChild(div);
+            });
+        }
+        
+        function updateFeaturesList() {
+            const featuresList = document.getElementById('features-list');
+            featuresList.innerHTML = '';
+            featuresList.classList.remove('loading');
+            
+            features.slice(0, 10).forEach(feature => {
+                const div = document.createElement('div');
+                div.className = 'feature-log';
+                div.style.borderColor = feature.color || '#ffff00';
+                div.innerHTML = `
+                    <strong>${feature.name}</strong><br>
+                    Par: ${feature.mageId}<br>
+                    Luminosité: ${Math.round(feature.luminosity * 100)}%
+                `;
+                featuresList.appendChild(div);
+            });
+        }
+        
+        let focusedEntity = null;
+        function focusEntity(entity) {
+            focusedEntity = entity;
+            updateMemoryDisplay(entity);
+        }
+        
+        function updateMemoryDisplay(entity) {
+            document.getElementById('my-position').textContent = 
+                `[${Math.round(entity.x)}, ${Math.round(entity.y)}, ${Math.round(entity.z)}]`;
+            document.getElementById('quantum-state').textContent = 
+                `Ψ=${entity.psi?.toFixed(2) || '0.00'}`;
+        }
+        
+        async function selfUpdate() {
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.textContent = 'MISE À JOUR...';
+            
+            try {
+                const response = await fetch(`${CONFIG.backendUrl}/api/mage/self-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mageId: CONFIG.myMageId,
+                        position: {
+                            x: Math.random() * 100,
+                            y: Math.random() * 100,
+                            z: Math.random() * 50
+                        },
+                        state: {
+                            action: 'Observation Panopticon',
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    btn.textContent = 'POSITION MISE À JOUR!';
+                    document.getElementById('last-action').textContent = 'Self-update réussi';
+                    await refreshData();
+                } else {
+                    throw new Error('Échec mise à jour');
+                }
+            } catch (error) {
+                btn.textContent = 'ERREUR!';
+                console.error('Erreur self-update:', error);
+            }
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = 'SELF-UPDATE MA POSITION';
+            }, 2000);
+        }
+        
+        async function refreshData() {
+            await connectToBackend();
+        }
+        
+        function animate() {
+            animationFrame++;
+            renderEntities();
+            requestAnimationFrame(animate);
+        }
+        
+        function renderEntities() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille de fond
+            drawGrid();
+            
+            // Connexions (edges)
+            if (worldStateGraph && worldStateGraph.edges) {
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.lineWidth = 1;
+                worldStateGraph.edges.forEach(edge => {
+                    const from = findNode(edge.from);
+                    const to = findNode(edge.to);
+                    if (from && to) {
+                        drawConnection(from, to, edge.strength);
+                    }
+                });
+            }
+            
+            // Entités
+            const entitiesToRender = activeDimension === 'ALL' 
+                ? [...entities, ...features]
+                : [...entities.filter(e => e.dimension === activeDimension),
+                   ...features.filter(f => activeDimension === 'ACTIVE')];
+            
+            entitiesToRender.forEach(entity => {
+                drawEntity(entity);
+            });
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(0, 100, 0, 0.2)';
+            ctx.lineWidth = 0.5;
+            
+            const gridSize = 50;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawEntity(entity) {
+            const x = (entity.x / 100) * canvas.width;
+            const y = (entity.y / 100) * canvas.height;
+            const z = entity.z || 0;
+            const size = 10 + (z / 10);
+            
+            // Effet de pulsation pour les features
+            let luminosity = 1;
+            if (entity.type === 'FEATURE') {
+                luminosity = entity.luminosity || 0.5;
+                size = size * (1 + Math.sin(animationFrame * 0.05) * 0.2) * luminosity;
+            }
+            
+            // Dessin de l'entité
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Aura
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 3);
+            gradient.addColorStop(0, entity.color || getColorForType(entity.type));
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradient;
+            ctx.globalAlpha = 0.3 * luminosity;
+            ctx.fillRect(-size * 3, -size * 3, size * 6, size * 6);
+            
+            // Corps
+            ctx.globalAlpha = luminosity;
+            ctx.fillStyle = entity.color || getColorForType(entity.type);
+            ctx.fillRect(-size/2, -size/2, size, size);
+            
+            // Nom
+            if (entity.type !== 'FEATURE' || luminosity > 0.7) {
+                ctx.font = '12px monospace';
+                ctx.fillText(entity.name, 5, -5);
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawConnection(from, to, strength = 0.5) {
+            const x1 = (from.x / 100) * canvas.width;
+            const y1 = (from.y / 100) * canvas.height;
+            const x2 = (to.x / 100) * canvas.width;
+            const y2 = (to.y / 100) * canvas.height;
+            
+            ctx.save();
+            ctx.globalAlpha = strength * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        function findNode(id) {
+            return [...entities, ...features].find(n => n.id === id);
+        }
+        
+        function getColorForType(type) {
+            const colors = {
+                'MAGE': '#00ff00',
+                'GUARDIAN': '#ff00ff',
+                'PLAYER': '#ffff00',
+                'ENTITY': '#00ffff',
+                'SPELL': '#ff6600',
+                'MEMORY': '#0066ff',
+                'FEATURE': '#ffffff'
+            };
+            return colors[type] || '#888888';
+        }
+    </script>
+</body>
+</html>

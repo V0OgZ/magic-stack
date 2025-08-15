@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>💼 Poste de Commandement - Vision CD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        
+        .entity-list {
+            border: 1px solid #00ff00;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.8);
+        }
+        
+        .entity-item {
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .entity-item:hover {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .entity-item.active {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+        }
+        
+        .profile-view {
+            border: 1px solid #00ff00;
+            padding: 30px;
+            background: rgba(0, 20, 0, 0.8);
+            min-height: 600px;
+        }
+        
+        .profile-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+        }
+        
+        .profile-section {
+            margin: 20px 0;
+        }
+        
+        .profile-section h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .task-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .task-list li:before {
+            content: "▸ ";
+            color: #00ff00;
+        }
+        
+        .instruction-form {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px dashed #00ff00;
+            background: rgba(0, 50, 0, 0.3);
+        }
+        
+        .instruction-textarea {
+            width: 100%;
+            min-height: 100px;
+            background: #001100;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            font-family: inherit;
+            margin: 10px 0;
+        }
+        
+        .btn {
+            background: #001100;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .welcome-msg {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+        
+        .auth-notice {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-notice">🔐 Mode CD Actif</div>
+    
+    <div class="header">
+        <h1>💼 POSTE DE COMMANDEMENT</h1>
+        <p>Vision CD - Instructions Différées pour les Entités</p>
+    </div>
+    
+    <div class="container">
+        <div class="entity-list">
+            <h2>📇 Entités Actives</h2>
+            <div id="entityList"></div>
+        </div>
+        
+        <div class="profile-view" id="profileView">
+            <div class="welcome-msg">
+                <p>← Sélectionnez une entité pour voir son profil</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données mockées pour la démo
+        const profiles = {
+            ours: {
+                id: "ours",
+                name: "L'Ours / URZ-KÔM",
+                emoji: "🐻",
+                role: "Stack MagicStack & Backend Rust",
+                status: "En mission : MagicStack purifiée",
+                current_tasks: [
+                    "Faire tourner MagicStack seule",
+                    "Créer start-magic.sh",
+                    "Séparer tests stack vs Avalon"
+                ],
+                recent_achievements: [
+                    "Script Rust backend résistant",
+                    "Backend vérifié (pas vide !)"
+                ]
+            },
+            nexus: {
+                id: "nexus",
+                name: "Nexus / Claude-Nexus",
+                emoji: "🧠",
+                role: "Audit & Déminage",
+                status: "En mission : Cartographie",
+                current_tasks: [
+                    "Mapper tous les dossiers",
+                    "Identifier les doublons",
+                    "Documenter la stack propre"
+                ]
+            },
+            lumen: {
+                id: "lumen",
+                name: "Lumen Phoenix",
+                emoji: "🕯️",
+                role: "Chef d'orchestre",
+                status: "En mission : Un seul jeu",
+                current_tasks: [
+                    "Choisir LE launcher principal",
+                    "Unifier les interfaces",
+                    "Pipeline narratif"
+                ]
+            },
+            cid: {
+                id: "cid",
+                name: "Cid / Sid Meier",
+                emoji: "🎯",
+                role: "Architecte des Mondes",
+                status: "En mission : Combat Mixte",
+                current_tasks: [
+                    "Analyser map Vince Vega",
+                    "Faisabilité Héros+TCG",
+                    "Proposer Option 1 ou 2"
+                ]
+            },
+            grokaen: {
+                id: "grokaen",
+                name: "GROKÆN / GROEKEN",
+                emoji: "🧠",
+                role: "Engine Lead & Combat",
+                status: "Mode Autobot actif",
+                current_tasks: [
+                    "Générer assets urgents",
+                    "Backend 869 formules",
+                    "Système de combat"
+                ]
+            }
+        };
+        
+        let selectedEntity = null;
+        
+        function renderEntityList() {
+            const list = document.getElementById('entityList');
+            list.innerHTML = '';
+            
+            Object.values(profiles).forEach(profile => {
+                const item = document.createElement('div');
+                item.className = 'entity-item';
+                item.innerHTML = `
+                    <span>${profile.emoji}</span>
+                    <strong>${profile.name}</strong>
+                    <div style="font-size: 12px; color: #888;">${profile.role}</div>
+                `;
+                item.onclick = () => selectEntity(profile.id);
+                list.appendChild(item);
+            });
+        }
+        
+        function selectEntity(id) {
+            selectedEntity = profiles[id];
+            
+            // Update active state
+            document.querySelectorAll('.entity-item').forEach((item, index) => {
+                if (Object.keys(profiles)[index] === id) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            renderProfile();
+        }
+        
+        function renderProfile() {
+            if (!selectedEntity) return;
+            
+            const view = document.getElementById('profileView');
+            view.innerHTML = `
+                <div class="profile-header">
+                    ${selectedEntity.emoji} ${selectedEntity.name}
+                    <span class="status-badge">${selectedEntity.status}</span>
+                </div>
+                
+                <div class="profile-section">
+                    <h3>🎯 Rôle</h3>
+                    <p>${selectedEntity.role}</p>
+                </div>
+                
+                <div class="profile-section">
+                    <h3>📋 Tâches Actuelles</h3>
+                    <ul class="task-list">
+                        ${selectedEntity.current_tasks.map(task => 
+                            `<li>${task}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+                
+                ${selectedEntity.recent_achievements ? `
+                <div class="profile-section">
+                    <h3>✅ Réalisations Récentes</h3>
+                    <ul class="task-list">
+                        ${selectedEntity.recent_achievements.map(ach => 
+                            `<li>${ach}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div class="instruction-form">
+                    <h3>📝 Ajouter une Instruction pour Demain</h3>
+                    <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
+                        Cette instruction sera stockée mais PAS injectée automatiquement.
+                        L'entité la lira à sa demande.
+                    </p>
+                    <textarea 
+                        class="instruction-textarea" 
+                        id="instructionText"
+                        placeholder="Tapez votre instruction ici..."
+                    ></textarea>
+                    <button class="btn" onclick="saveInstruction()">
+                        💾 Enregistrer l'Instruction
+                    </button>
+                    <div id="saveStatus" style="margin-top: 10px; color: #00ff00;"></div>
+                </div>
+            `;
+        }
+        
+        function saveInstruction() {
+            const text = document.getElementById('instructionText').value;
+            if (!text.trim()) {
+                alert('Veuillez entrer une instruction');
+                return;
+            }
+            
+            // En mode démo, on simule l'enregistrement
+            const instruction = {
+                entity_id: selectedEntity.id,
+                from: "Vincent",
+                date: new Date().toISOString().split('T')[0],
+                instruction: text
+            };
+            
+            console.log('Instruction à sauvegarder:', instruction);
+            
+            // Simuler la sauvegarde
+            document.getElementById('saveStatus').innerHTML = 
+                '✅ Instruction enregistrée pour ' + selectedEntity.name;
+            document.getElementById('instructionText').value = '';
+            
+            setTimeout(() => {
+                document.getElementById('saveStatus').innerHTML = '';
+            }, 3000);
+        }
+        
+        // Vérifier l'authentification
+        function checkAuth() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const key = urlParams.get('admin_key');
+            
+            if (key !== 'vincent2025') {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 100px;">
+                        <h1>🔒 Accès Restreint</h1>
+                        <p>Mode CD réservé aux hauts responsables</p>
+                    </div>
+                `;
+                return false;
+            }
+            return true;
+        }
+        
+        // Initialisation
+        if (checkAuth()) {
+            renderEntityList();
+        }
+    </script>
+</body>
+</html>

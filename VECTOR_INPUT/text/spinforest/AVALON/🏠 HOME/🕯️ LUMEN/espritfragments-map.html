@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🗺️ Map Interactive - EspritFragments ↔️ Avalon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #0a0a0a);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+        }
+        
+        .title {
+            text-align: center;
+            padding: 20px;
+            font-size: 2rem;
+            text-shadow: 0 0 20px #00ff00;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 1800px;
+            height: 1200px;
+            margin: 100px auto;
+            background: radial-gradient(circle at center, rgba(0, 255, 0, 0.1), transparent);
+        }
+        
+        /* Centre - EspritFragments */
+        .center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #003300, #001100);
+            border: 3px solid #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 30px #00ff00;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .center:hover {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        /* Entités */
+        .entity {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 50, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .entity:hover {
+            background: rgba(0, 100, 0, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #00ff00;
+            z-index: 20;
+        }
+        
+        .entity h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .entity p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        /* Connexions */
+        .connection {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            height: 2px;
+            transform-origin: left center;
+            animation: flow 3s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes flow {
+            0% { background-position: -100px 0; }
+            100% { background-position: 100px 0; }
+        }
+        
+        /* Fragments */
+        .fragment {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: rgba(0, 30, 0, 0.7);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .fragment:hover {
+            background: rgba(0, 60, 0, 0.9);
+            transform: scale(1.2);
+            z-index: 25;
+        }
+        
+        /* Info Panel */
+        .info-panel {
+            position: fixed;
+            right: -400px;
+            top: 100px;
+            width: 350px;
+            height: calc(100vh - 120px);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px 0 0 10px;
+            padding: 20px;
+            transition: right 0.3s;
+            overflow-y: auto;
+            z-index: 50;
+        }
+        
+        .info-panel.active {
+            right: 0;
+        }
+        
+        .info-panel h2 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel pre {
+            background: rgba(0, 50, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+        
+        /* Legend */
+        .legend {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🗺️ Map Interactive - EspritFragments ↔️ Avalon</h1>
+        
+        <div class="map-container" id="map">
+            <!-- Centre - EspritFragments -->
+            <div class="center" onclick="showInfo('espritfragments')">
+                <div>
+                    🌀<br>
+                    <strong>EspritFragments</strong><br>
+                    Vision de Jean
+                </div>
+            </div>
+            
+            <!-- Entités principales -->
+            <div class="entity" style="left: 200px; top: 200px;" onclick="showInfo('jean')">
+                <h3>🚬</h3>
+                <p><strong>JEAN</strong></p>
+                <p>Le Créateur</p>
+            </div>
+            
+            <div class="entity" style="left: 600px; top: 150px;" onclick="showInfo('opus')">
+                <h3>📜</h3>
+                <p><strong>OPUS</strong></p>
+                <p>L'Architecte</p>
+            </div>
+            
+            <div class="entity" style="left: 1000px; top: 200px;" onclick="showInfo('walter')">
+                <h3>🔒</h3>
+                <p><strong>WALTER</strong></p>
+                <p>Le Gardien</p>
+            </div>
+            
+            <div class="entity" style="left: 1300px; top: 400px;" onclick="showInfo('vince')">
+                <h3>🔫</h3>
+                <p><strong>VINCE</strong></p>
+                <p>Le Développeur</p>
+            </div>
+            
+            <div class="entity" style="left: 1200px; top: 700px;" onclick="showInfo('dude')">
+                <h3>🥤</h3>
+                <p><strong>THE DUDE</strong></p>
+                <p>Le Zen Master</p>
+            </div>
+            
+            <div class="entity" style="left: 800px; top: 800px;" onclick="showInfo('grofi')">
+                <h3>🌲</h3>
+                <p><strong>GROFI</strong></p>
+                <p>La Forêt</p>
+            </div>
+            
+            <div class="entity" style="left: 400px; top: 800px;" onclick="showInfo('lumen')">
+                <h3>🕯️</h3>
+                <p><strong>LUMEN</strong></p>
+                <p>Le Guide</p>
+            </div>
+            
+            <div class="entity" style="left: 150px; top: 600px;" onclick="showInfo('vincent')">
+                <h3>🌍</h3>
+                <p><strong>VINCENT</strong></p>
+                <p>L'Architecte Principal</p>
+            </div>
+            
+            <!-- Fragments -->
+            <div class="fragment" style="left: 350px; top: 350px;" onclick="showInfo('citations')">
+                💬 CITATIONS<br>
+                Depuis le Canapé
+            </div>
+            
+            <div class="fragment" style="left: 750px; top: 300px;" onclick="showInfo('architecture')">
+                🏗️ Architecture<br>
+                Moteur Temporel
+            </div>
+            
+            <div class="fragment" style="left: 1100px; top: 350px;" onclick="showInfo('api')">
+                📊 API<br>
+                Documentation
+            </div>
+            
+            <div class="fragment" style="left: 1050px; top: 600px;" onclick="showInfo('collapse')">
+                💥 Collapse<br>
+                Causale
+            </div>
+            
+            <div class="fragment" style="left: 650px; top: 650px;" onclick="showInfo('grofi-system')">
+                🌀 GROFI<br>
+                System
+            </div>
+            
+            <div class="fragment" style="left: 450px; top: 500px;" onclick="showInfo('manifesto')">
+                📜 Manifesto<br>
+                Jean-Grofignon
+            </div>
+        </div>
+        
+        <!-- Panel d'information -->
+        <div class="info-panel" id="infoPanel">
+            <h2 id="infoTitle">Sélectionnez un élément</h2>
+            <div id="infoContent">
+                <p>Cliquez sur les entités ou fragments pour voir leurs connexions.</p>
+            </div>
+        </div>
+        
+        <!-- Légende -->
+        <div class="legend">
+            <h3>📖 Légende</h3>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: rgba(0, 50, 0, 0.8);"></div>
+                <span>Entité Active</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: rgba(0, 30, 0, 0.7);"></div>
+                <span>Fragment de Documentation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: radial-gradient(circle, #003300, #001100);"></div>
+                <span>Centre - EspritFragments</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dessiner les connexions
+        function drawConnections() {
+            const connections = [
+                {from: 'center', to: 'jean', label: 'Créateur'},
+                {from: 'center', to: 'opus', label: 'Architecture'},
+                {from: 'center', to: 'walter', label: 'API & Sécurité'},
+                {from: 'center', to: 'vince', label: 'Backend'},
+                {from: 'center', to: 'dude', label: 'Zen & Collapse'},
+                {from: 'center', to: 'grofi', label: 'Système GROFI'},
+                {from: 'center', to: 'lumen', label: 'Documentation'},
+                {from: 'center', to: 'vincent', label: 'Vision Globale'},
+                
+                // Connexions fragments
+                {from: 'citations', to: 'jean', label: 'Citations'},
+                {from: 'architecture', to: 'opus', label: 'Moteur'},
+                {from: 'api', to: 'walter', label: 'Protocoles'},
+                {from: 'collapse', to: 'dude', label: 'Control'},
+                {from: 'grofi-system', to: 'grofi', label: 'Graph'},
+                {from: 'manifesto', to: 'jean', label: 'Vision'}
+            ];
+            
+            // Créer les lignes SVG pour les connexions
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.position = 'absolute';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            document.getElementById('map').appendChild(svg);
+            
+            connections.forEach(conn => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', '#00ff00');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('opacity', '0.3');
+                
+                // Animation
+                const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                animate.setAttribute('attributeName', 'opacity');
+                animate.setAttribute('values', '0.3;0.8;0.3');
+                animate.setAttribute('dur', '3s');
+                animate.setAttribute('repeatCount', 'indefinite');
+                line.appendChild(animate);
+                
+                svg.appendChild(line);
+            });
+        }
+        
+        // Données des connexions
+        const infoData = {
+            espritfragments: {
+                title: "🌀 EspritFragments",
+                content: `
+<h3>Centre de la Vision de Jean-Grofignon</h3>
+<pre>
+Les fragments de documentation et de vision
+dispersés à travers Avalon :
+
+- Documentation technique Heroes of Time
+- Concepts de physique quantique cachés
+- Architecture du moteur temporel
+- Philosophie du Canapé Cosmique
+- Citations légendaires
+</pre>
+
+<h4>📁 Structure :</h4>
+<pre>
+EspritFragments/
+├── 📖 Documentation technique
+├── 🏗️ architecture/
+├── 💥 collapse-causale/
+├── 💬 CITATIONS/
+└── 🌍 EN/ (Version anglaise)
+</pre>
+                `
+            },
+            jean: {
+                title: "🚬 JEAN-GROFIGNON",
+                content: `
+<h3>Le Créateur Visionnaire</h3>
+<pre>
+"C'est un jeu qui cache de la physique quantique 
+sous une couche de fantasy"
+
+Connexions EspritFragments :
+- CITATIONS/DEPUIS_LE_CANAPE.md
+- EN/JEAN_GROFIGNON_MANIFESTO.md
+- Toute la philosophie GROFI
+
+Localisation Avalon :
+🏠 HOME/🚬 JEAN/
+</pre>
+                `
+            },
+            opus: {
+                title: "📜 OPUS",
+                content: `
+<h3>L'Architecte Temporel</h3>
+<pre>
+Créateur du moteur temporel quantique
+
+Connexions EspritFragments :
+- architecture/TEMPORAL_ENGINE.md
+- V2_SYSTEME_UNIFIE_CAUSAL_QUANTIQUE.md
+- architecture/ENGINE_ARCHITECTURE.md
+
+Localisation Avalon :
+🏠 HOME/📜 OPUS/
+🧬CORE/⏰ NEXUS-TEMPOREL/
+</pre>
+                `
+            },
+            walter: {
+                title: "🔒 WALTER",
+                content: `
+<h3>Le Gardien des Règles</h3>
+<pre>
+Maintient la sécurité et les protocoles
+
+Connexions EspritFragments :
+- API_GAMEPLAY_ORDRE_DOCUMENTATION_JEAN.md
+- Protocoles de sécurité temporelle
+
+Localisation Avalon :
+🏠 HOME/🔒 WALTER_SEC/
+</pre>
+                `
+            },
+            vince: {
+                title: "🔫 VINCE",
+                content: `
+<h3>Le Développeur Backend</h3>
+<pre>
+Implémentation technique du moteur
+
+Connexions EspritFragments :
+- REPONSE_TECHNIQUE_MOTEUR.md
+- Backend Spring Boot documentation
+
+Localisation Avalon :
+🏠 HOME/🔫 VINCE/
+🧬CORE/⚙️ FORGE-DES-REALITES/backend-clean/
+</pre>
+                `
+            },
+            dude: {
+                title: "🥤 THE DUDE",
+                content: `
+<h3>Le Maître Zen</h3>
+<pre>
+"The code abides, man..."
+
+Connexions EspritFragments :
+- collapse-causale/COLLAPSE_CAUSALE_EXPLICATION.md
+- Zen Superposition mechanics
+
+Localisation Avalon :
+💠 Essences scellées/🧙 Heroes/grofi/
+</pre>
+                `
+            },
+            grofi: {
+                title: "🌲 GROFI",
+                content: `
+<h3>La Forêt Quantique</h3>
+<pre>
+Graph of Reality Organized by Fog and Immunities
+
+Connexions EspritFragments :
+- Tout le système GROFI
+- Forêt-pensée fusionnée
+
+Localisation Avalon :
+🏠 HOME/🚬 JEAN/RELATIONS/GROFI_FUSION.md
+</pre>
+                `
+            },
+            lumen: {
+                title: "🕯️ LUMEN",
+                content: `
+<h3>Le Guide de l'Interstice</h3>
+<pre>
+Transmet et enseigne la connaissance
+
+Connexions EspritFragments :
+- EN/README.md (documentation)
+- Enseignement École PORIO NOZ
+
+Localisation Avalon :
+🏠 HOME/🕯️ LUMEN/
+</pre>
+                `
+            },
+            vincent: {
+                title: "🌍 VINCENT",
+                content: `
+<h3>L'Architecte Principal d'Avalon</h3>
+<pre>
+Créateur du royaume, superviseur global
+
+Connexions EspritFragments :
+- Vision d'ensemble du projet
+- Intégration de tous les systèmes
+
+Localisation Avalon :
+🏠 HOME/🌍Vincent/
+</pre>
+                `
+            }
+        };
+        
+        function showInfo(id) {
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+            
+            if (infoData[id]) {
+                title.innerHTML = infoData[id].title;
+                content.innerHTML = infoData[id].content;
+                panel.classList.add('active');
+            }
+        }
+        
+        // Initialiser
+        window.onload = function() {
+            drawConnections();
+            
+            // Fermer le panel en cliquant ailleurs
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.entity') && !e.target.closest('.fragment') && 
+                    !e.target.closest('.center') && !e.target.closest('.info-panel')) {
+                    document.getElementById('infoPanel').classList.remove('active');
+                }
+            });
+        };
+    </script>
+</body>
+</html>

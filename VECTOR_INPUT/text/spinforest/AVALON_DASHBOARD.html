@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🏰 AVALON - Dashboard Unifié</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .card {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #00ff00;
+        }
+        .card h2 {
+            color: #00ffff;
+            margin-top: 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #00ff00;
+            color: #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #ff00ff;
+            box-shadow: 0 0 20px #ff00ff;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .online { color: #00ff00; }
+        .offline { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏰 AVALON CONTROL CENTER 🏰</h1>
+        
+        <div class="status" id="status">
+            <h3>Services Status</h3>
+            <div id="statusList"></div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>🎮 Jeux Principaux</h2>
+                <a href="/REALGAME/play.html" class="btn">AVALON TCG</a>
+                <a href="/frontend/avalon-tcg.html" class="btn">TCG Classic</a>
+                <a href="/REALGAME/maps/main/MainIsoMap.html" class="btn">Map ISO</a>
+            </div>
+            
+            <div class="card">
+                <h2>👁️ Visualisation</h2>
+                <a href="/assets/panopticon-6d-dynamic.html" class="btn">Panopticon 6D</a>
+                <a href="/REALGAME/DAILY/panopticon-6d-grut.html" class="btn">Panopticon GRUT</a>
+                <a href="/frontend/dashboard.html" class="btn">Dashboard</a>
+            </div>
+            
+            <div class="card">
+                <h2>🔮 Backend APIs</h2>
+                <a href="http://localhost:8082/api" class="btn">Java API Docs</a>
+                <a href="http://localhost:3001/health" class="btn">Rust Health</a>
+                <a href="http://localhost:8082/swagger-ui.html" class="btn">Swagger UI</a>
+            </div>
+            
+            <div class="card">
+                <h2>🧪 Tests & Démos</h2>
+                <a href="/REALGAME/test-spell-vince.html" class="btn">Test Spells</a>
+                <a href="/frontend/api-walter-interface.html" class="btn">Walter API</a>
+                <a href="/REALGAME/DEMO_ALL_FEATURES.html" class="btn">Toutes Démos</a>
+            </div>
+            
+            <div class="card">
+                <h2>🌀 Interfaces Spéciales</h2>
+                <a href="/AVALON/🏠 HOME/🌍Vincent/PORTAIL_MONDES_BRISES_TRESOR.html" class="btn">Mondes Brisés</a>
+                <a href="/AVALON/🏠 HOME/🌍Vincent/SPEEDFORCE_ULTIMATE_EXPERIENCE.html" class="btn">SpeedForce</a>
+                <a href="/REALGAME/panoramix-cauldron-ui.html" class="btn">Chaudron Panoramix</a>
+            </div>
+            
+            <div class="card">
+                <h2>📚 Documentation</h2>
+                <a href="/spells/stack/README.md" class="btn">Magic Stack</a>
+                <a href="/REALGAME/docs/" class="btn">Game Docs</a>
+                <a href="/pourVINCE/GUIDE_GAMEPLAY.md" class="btn">Guide Gameplay</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Vérifier le statut des services
+        async function checkStatus() {
+            const services = [
+                { name: 'Backend Java', url: 'http://localhost:8082/health', port: 8080 },
+                { name: 'Backend Rust', url: 'http://localhost:3001/health', port: 3001 },
+                { name: 'Frontend', url: 'http://localhost:8000/', port: 8000 }
+            ];
+            
+            const statusList = document.getElementById('statusList');
+            statusList.innerHTML = '';
+            
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { 
+                        method: 'GET',
+                        mode: 'no-cors'
+                    });
+                    statusList.innerHTML += 
+                        `<div class="online">✅ ${service.name} (port ${service.port})</div>`;
+                } catch (e) {
+                    statusList.innerHTML += 
+                        `<div class="offline">❌ ${service.name} (port ${service.port})</div>`;
+                }
+            }
+        }
+        
+        // Vérifier toutes les 5 secondes
+        checkStatus();
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌲 CHEMIN DE LA FORÊT - Interface Secrète 🌲</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+        }
+        
+        /* Sidebar Menu */
+        .sidebar {
+            width: 60px;
+            background: #111;
+            border-right: 1px solid #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            transition: width 0.3s ease;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .sidebar:hover {
+            width: 250px;
+        }
+        
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            margin: 15px 0;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-icon:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 10px #00ff00);
+        }
+        
+        .menu-icon span {
+            font-size: 24px;
+        }
+        
+        .menu-label {
+            position: absolute;
+            left: 60px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        
+        .sidebar:hover .menu-label {
+            opacity: 1;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            height: 60px;
+            background: #111;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .mode-btn:hover, .mode-btn.active {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        /* Forest View */
+        .forest-view {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #001100, #000);
+        }
+        
+        /* Tree Nodes */
+        .tree-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #003300, #001100);
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 32px;
+        }
+        
+        .tree-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #00ff00;
+            z-index: 100;
+        }
+        
+        .tree-node.hidden {
+            opacity: 0.3;
+            border-style: dashed;
+        }
+        
+        .tree-node.locked {
+            border-color: #ff0000;
+            cursor: not-allowed;
+        }
+        
+        .tree-node.unlocked {
+            border-color: #00ffff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px #00ffff; }
+            50% { box-shadow: 0 0 40px #00ffff; }
+        }
+        
+        /* Path Lines */
+        .path-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        .path-line.active {
+            opacity: 1;
+            animation: flow 2s linear infinite;
+        }
+        
+        @keyframes flow {
+            0% { background-position: -100% 0; }
+            100% { background-position: 100% 0; }
+        }
+        
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 20px;
+            display: none;
+        }
+        
+        .info-panel.active {
+            display: block;
+        }
+        
+        .info-panel h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .info-panel p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #00ff00;
+        }
+        
+        /* Secret Console */
+        .secret-console {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid #00ff00;
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+        
+        .secret-console.active {
+            height: 200px;
+        }
+        
+        .console-output {
+            height: 160px;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 12px;
+            color: #00ff00;
+        }
+        
+        .console-input {
+            height: 40px;
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-top: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0 10px;
+            font-family: 'Share Tech Mono', monospace;
+            outline: none;
+        }
+        
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff00;
+            pointer-events: none;
+            animation: float 10s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Mobile Menu */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #111;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                width: 250px;
+                height: 100vh;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .mobile-toggle {
+                display: flex;
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu-icon" data-action="home">
+            <span>🏠</span>
+            <div class="menu-label">AVALON Home</div>
+        </div>
+        <div class="menu-icon" data-action="forest">
+            <span>🌲</span>
+            <div class="menu-label">Chemin de la Forêt</div>
+        </div>
+        <div class="menu-icon" data-action="hidden">
+            <span>👁️</span>
+            <div class="menu-label">Fichiers Cachés</div>
+        </div>
+        <div class="menu-icon" data-action="night">
+            <span>🌙</span>
+            <div class="menu-label">Mode Nuit</div>
+        </div>
+        <div class="menu-icon" data-action="crypto">
+            <span>🔐</span>
+            <div class="menu-label">Crypté/Réparti</div>
+        </div>
+        <div class="menu-icon" data-action="phone">
+            <span>📱</span>
+            <div class="menu-label">Téléphone Secret</div>
+        </div>
+        <div class="menu-icon" data-action="console">
+            <span>💻</span>
+            <div class="menu-label">Console Cachée</div>
+        </div>
+        <div class="menu-icon" data-action="backend">
+            <span>🔌</span>
+            <div class="menu-label">Backend Status</div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌲 CHEMIN DE LA FORÊT 🌲</h1>
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="offline">OFFLINE</button>
+                <button class="mode-btn" data-mode="online">ONLINE</button>
+                <button class="mode-btn" data-mode="iso">ISO</button>
+            </div>
+        </div>
+        
+        <!-- Forest View -->
+        <div class="forest-view" id="forestView">
+            <!-- Tree nodes will be generated dynamically -->
+        </div>
+        
+        <!-- Info Panel -->
+        <div class="info-panel" id="infoPanel">
+            <h3 id="infoTitle">Node Info</h3>
+            <p id="infoContent">Select a node to see details...</p>
+        </div>
+        
+        <!-- Secret Console -->
+        <div class="secret-console" id="secretConsole">
+            <div class="console-output" id="consoleOutput">
+                > SYSTÈME CHEMIN DE LA FORÊT v6.0
+                > Mode: OFFLINE
+                > Status: READY
+                > _
+            </div>
+            <input type="text" class="console-input" id="consoleInput" placeholder="Enter command...">
+        </div>
+    </div>
+    
+    <!-- Mobile Toggle -->
+    <div class="mobile-toggle" id="mobileToggle">
+        <span style="color: #00ff00; font-size: 24px;">☰</span>
+    </div>
+
+    <script>
+        // Forest Data Structure
+        const forestData = {
+            nodes: [
+                { id: 'avalon', x: 50, y: 10, icon: '🏰', name: 'AVALON', type: 'unlocked', 
+                  info: 'Point d\'entrée principal. Accès à REALGAME et tous les mondes.' },
+                { id: 'realgame', x: 50, y: 30, icon: '🎮', name: 'REALGAME', type: 'unlocked',
+                  info: 'v0gz.github.io/SpinForest - Le jeu principal avec combat de cartes.' },
+                { id: 'memento', x: 20, y: 50, icon: '🧠', name: 'MEMENTO', type: 'hidden',
+                  info: 'Museum et mémoires de Flash. Archives temporelles secrètes.' },
+                { id: 'vincent', x: 80, y: 50, icon: '🎬', name: 'VINCENT', type: 'unlocked',
+                  info: 'Cartes spéciales Pulp Fiction. Système de combat TCG.' },
+                { id: 'lumen', x: 35, y: 70, icon: '🕯️', name: 'LUMEN', type: 'hidden',
+                  info: 'Écrit plein de trucs. Narrateur des mondes cachés.' },
+                { id: 'grok', x: 65, y: 70, icon: '🧠', name: 'GROKÆN', type: 'unlocked',
+                  info: 'Système hexagonal et IA. Moteur de combat principal.' },
+                { id: 'urz', x: 50, y: 90, icon: '🐻', name: 'URZ-KÔM', type: 'locked',
+                  info: 'L\'ours dort encore. Effets quantiques à venir.' },
+                { id: 'walter', x: 10, y: 30, icon: '🔒', name: 'WALTER_SEC', type: 'hidden',
+                  info: 'Sécurité du système. Accès restreint niveau 3.' },
+                { id: 'museum', x: 90, y: 30, icon: '🏛️', name: 'MUSEUM', type: 'hidden',
+                  info: 'Archives complètes. Mémoire collective d\'AVALON.' }
+            ],
+            paths: [
+                { from: 'avalon', to: 'realgame', active: true },
+                { from: 'realgame', to: 'vincent', active: true },
+                { from: 'realgame', to: 'grok', active: true },
+                { from: 'avalon', to: 'memento', active: false },
+                { from: 'memento', to: 'lumen', active: false },
+                { from: 'grok', to: 'urz', active: false },
+                { from: 'avalon', to: 'walter', active: false },
+                { from: 'avalon', to: 'museum', active: false }
+            ]
+        };
+        
+        // Initialize Forest View
+        function initForest() {
+            const forestView = document.getElementById('forestView');
+            
+            // Create nodes
+            forestData.nodes.forEach(node => {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `tree-node ${node.type}`;
+                nodeEl.style.left = `${node.x}%`;
+                nodeEl.style.top = `${node.y}%`;
+                nodeEl.innerHTML = node.icon;
+                nodeEl.dataset.id = node.id;
+                nodeEl.title = node.name;
+                
+                nodeEl.addEventListener('click', () => selectNode(node));
+                forestView.appendChild(nodeEl);
+            });
+            
+            // Create paths
+            forestData.paths.forEach(path => {
+                const fromNode = forestData.nodes.find(n => n.id === path.from);
+                const toNode = forestData.nodes.find(n => n.id === path.to);
+                
+                const pathEl = document.createElement('div');
+                pathEl.className = `path-line ${path.active ? 'active' : ''}`;
+                
+                // Calculate path position and angle
+                const dx = (toNode.x - fromNode.x) * forestView.offsetWidth / 100;
+                const dy = (toNode.y - fromNode.y) * forestView.offsetHeight / 100;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                pathEl.style.left = `${fromNode.x}%`;
+                pathEl.style.top = `${fromNode.y}%`;
+                pathEl.style.width = `${length}px`;
+                pathEl.style.transform = `rotate(${angle}deg)`;
+                
+                forestView.appendChild(pathEl);
+            });
+            
+            // Add particles
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                forestView.appendChild(particle);
+            }
+        }
+        
+        // Select Node
+        function selectNode(node) {
+            const infoPanel = document.getElementById('infoPanel');
+            const infoTitle = document.getElementById('infoTitle');
+            const infoContent = document.getElementById('infoContent');
+            
+            infoTitle.textContent = node.name;
+            infoContent.textContent = node.info;
+            infoPanel.classList.add('active');
+            
+            // Console log
+            logToConsole(`> Accessing node: ${node.name}`);
+            
+            // Special actions
+            if (node.id === 'realgame') {
+                logToConsole('> Redirecting to v0gz.github.io/SpinForest...');
+                setTimeout(() => {
+                    window.open('https://v0gz.github.io/SpinForest', '_blank');
+                }, 1000);
+            }
+        }
+        
+        // Console Functions
+        function logToConsole(message) {
+            const output = document.getElementById('consoleOutput');
+            output.innerHTML += `\n${message}`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Menu Actions
+        document.querySelectorAll('.menu-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const action = icon.dataset.action;
+                
+                switch(action) {
+                    case 'home':
+                        logToConsole('> Returning to AVALON...');
+                        window.location.href = '/';
+                        break;
+                    case 'forest':
+                        logToConsole('> Already in Forest View');
+                        break;
+                    case 'hidden':
+                        toggleHiddenNodes();
+                        break;
+                    case 'night':
+                        toggleNightMode();
+                        break;
+                    case 'crypto':
+                        showCryptoInfo();
+                        break;
+                    case 'phone':
+                        showPhoneInterface();
+                        break;
+                    case 'console':
+                        toggleConsole();
+                        break;
+                    case 'backend':
+                        checkBackendStatus();
+                        break;
+                }
+            });
+        });
+        
+        // Toggle Hidden Nodes
+        function toggleHiddenNodes() {
+            const hiddenNodes = document.querySelectorAll('.tree-node.hidden');
+            hiddenNodes.forEach(node => {
+                node.classList.toggle('unlocked');
+            });
+            logToConsole('> Hidden nodes revealed');
+        }
+        
+        // Toggle Night Mode
+        function toggleNightMode() {
+            document.body.classList.toggle('night-mode');
+            logToConsole('> Night mode toggled');
+        }
+        
+        // Show Crypto Info
+        function showCryptoInfo() {
+            logToConsole('> CRYPTO FILES DETECTED:');
+            logToConsole('  - /AVALON/🏠 HOME/📚 MEMENTO/MEMOIRE_IMMEDIATE/');
+            logToConsole('  - /FLASH_VINCE_VEGA_LAUNCHER.hep');
+            logToConsole('  - /crypte.html (ENCRYPTED)');
+        }
+        
+        // Show Phone Interface
+        function showPhoneInterface() {
+            logToConsole('> PHONE INTERFACE: Vertical mode activated');
+            logToConsole('> Three tigers mode: 🐅🐅🐅');
+            logToConsole('> Simple icons loaded');
+        }
+        
+        // Toggle Console
+        function toggleConsole() {
+            const console = document.getElementById('secretConsole');
+            console.classList.toggle('active');
+        }
+        
+        // Check Backend Status
+        async function checkBackendStatus() {
+            logToConsole('> Checking backend status...');
+            try {
+                const response = await fetch('http://localhost:8082/health');
+                if (response.ok) {
+                    logToConsole('> Backend ONLINE (Port 8080)');
+                } else {
+                    logToConsole('> Backend OFFLINE - Running in standalone mode');
+                }
+            } catch (error) {
+                logToConsole('> Backend OFFLINE - Running in standalone mode');
+            }
+        }
+        
+        // Mode Selector
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const mode = btn.dataset.mode;
+                logToConsole(`> Switching to ${mode.toUpperCase()} mode`);
+                
+                if (mode === 'online') {
+                    checkBackendStatus();
+                } else if (mode === 'iso') {
+                    logToConsole('> ISO mode: Enhanced graphics enabled');
+                }
+            });
+        });
+        
+        // Console Input
+        document.getElementById('consoleInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const input = e.target.value;
+                logToConsole(`> ${input}`);
+                processCommand(input);
+                e.target.value = '';
+            }
+        });
+        
+        // Process Console Commands
+        function processCommand(cmd) {
+            const command = cmd.toLowerCase().trim();
+            
+            switch(command) {
+                case 'help':
+                    logToConsole('Available commands:');
+                    logToConsole('  help - Show this help');
+                    logToConsole('  clear - Clear console');
+                    logToConsole('  unlock - Unlock all nodes');
+                    logToConsole('  vincent - Show Vincent cards');
+                    logToConsole('  lumen - Show Lumen writings');
+                    logToConsole('  memento - Access Museum');
+                    break;
+                case 'clear':
+                    document.getElementById('consoleOutput').innerHTML = '> Console cleared\n> _';
+                    break;
+                case 'unlock':
+                    document.querySelectorAll('.tree-node').forEach(node => {
+                        node.classList.remove('hidden', 'locked');
+                        node.classList.add('unlocked');
+                    });
+                    logToConsole('> All nodes unlocked!');
+                    break;
+                case 'vincent':
+                    logToConsole('> Vincent Cards: Ezekiel 25:17, Royale with Cheese, Dance Contest, The Briefcase');
+                    break;
+                case 'lumen':
+                    logToConsole('> LUMEN writes: "The forest remembers everything..."');
+                    break;
+                case 'memento':
+                    logToConsole('> MUSEUM MEMENTO: Flash memories detected');
+                    logToConsole('> Access at: /AVALON/🏠 HOME/📚 MEMENTO/');
+                    break;
+                default:
+                    logToConsole('> Unknown command. Type "help" for available commands.');
+            }
+        }
+        
+        // Mobile Toggle
+        document.getElementById('mobileToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            initForest();
+            logToConsole('> Forest path initialized');
+            logToConsole('> Type "help" for commands');
+        });
+    </script>
+</body>
+</html>

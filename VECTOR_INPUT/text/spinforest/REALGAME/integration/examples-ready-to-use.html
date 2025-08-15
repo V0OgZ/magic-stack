@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Exemples Magie AVALON - Prêts à l'emploi</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1, h2 {
+            color: #9333ea;
+            text-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+        }
+        
+        .example-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .code-block {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #9333ea 0%, #6b21a8 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+        }
+        
+        .result-box {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+        }
+        
+        .error-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        .game-canvas {
+            border: 2px solid #4ecdc4;
+            background: #111;
+            margin: 20px 0;
+        }
+        
+        .status-bar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .copy-button {
+            float: right;
+            background: #4ecdc4;
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌀 Exemples Magie AVALON - Prêts à Copier-Coller !</h1>
+    <p>Backend doit être lancé sur <code>http://localhost:8082</code></p>
+    
+    <!-- Section 1: Combat -->
+    <div class="example-section">
+        <h2>⚔️ Système de Combat</h2>
+        <button class="copy-button" onclick="copyCode('combat-code')">📋 Copier</button>
+        
+        <div class="code-block" id="combat-code">
+// === SYSTÈME DE COMBAT COMPLET ===
+class CombatSystem {
+    constructor() {
+        this.magicClient = new AvalonMagicClient();
+    }
+    
+    async attack(attacker, target) {
+        const damage = this.calculateDamage(attacker, target);
+        const formula = `DAMAGE(${target.id}, ${damage})`;
+        
+        try {
+            const result = await this.magicClient.cast(formula, attacker.id);
+            
+            if (result.success) {
+                // Appliquer les dégâts
+                target.health -= damage;
+                
+                // Effets visuels
+                this.showDamageNumber(target, damage);
+                this.shakeEntity(target);
+                
+                // Vérifier la mort
+                if (target.health <= 0) {
+                    await this.handleDeath(target);
+                }
+                
+                return { success: true, damage };
+            }
+        } catch (error) {
+            console.error('Erreur d\'attaque:', error);
+            return { success: false, error };
+        }
+    }
+    
+    async heal(caster, target, amount) {
+        const formula = `HEAL(${target.id}, ${amount})`;
+        const result = await this.magicClient.cast(formula, caster.id);
+        
+        if (result.success) {
+            target.health = Math.min(target.health + amount, target.maxHealth);
+            this.showHealEffect(target, amount);
+        }
+        
+        return result;
+    }
+    
+    async castFireball(caster, position) {
+        // Boule de feu avec effet de zone
+        const formula = `CAST_SPELL(FIREBALL, @${position.x},${position.y})`;
+        const result = await this.magicClient.cast(formula, caster.id);
+        
+        if (result.success) {
+            // Trouver les ennemis dans la zone
+            const targets = this.getEntitiesInRadius(position, 3);
+            
+            // Appliquer les dégâts de zone
+            for (const target of targets) {
+                await this.attack(caster, target);
+            }
+            
+            // Effet visuel de boule de feu
+            this.createFireballEffect(position);
+        }
+        
+        return result;
+    }
+    
+    calculateDamage(attacker, target) {
+        const baseDamage = attacker.attackPower;
+        const defense = target.defense || 0;
+        const variance = Math.random() * 0.2 + 0.9; // 90-110%
+        
+        return Math.max(1, Math.floor((baseDamage - defense) * variance));
+    }
+    
+    showDamageNumber(entity, damage) {
+        // Créer un élément DOM pour afficher les dégâts
+        const damageText = document.createElement('div');
+        damageText.className = 'damage-number';
+        damageText.textContent = `-${damage}`;
+        damageText.style.position = 'absolute';
+        damageText.style.left = entity.x + 'px';
+        damageText.style.top = entity.y + 'px';
+        damageText.style.color = '#ff6b6b';
+        damageText.style.fontWeight = 'bold';
+        damageText.style.animation = 'float-up 1s ease-out';
+        
+        document.body.appendChild(damageText);
+        setTimeout(() => damageText.remove(), 1000);
+    }
+}
+
+// Utilisation
+const combat = new CombatSystem();
+const hero = { id: 'HERO_1', attackPower: 25, x: 100, y: 100 };
+const enemy = { id: 'GOBLIN_1', health: 50, defense: 5, x: 200, y: 100 };
+
+await combat.attack(hero, enemy);
+        </div>
+        
+        <button onclick="testCombat()">⚔️ Tester Combat</button>
+        <button onclick="testHeal()">💚 Tester Soin</button>
+        <button onclick="testFireball()">🔥 Tester Boule de Feu</button>
+        
+        <div id="combat-result" class="result-box"></div>
+    </div>
+    
+    <!-- Section 2: Portails BRISURE -->
+    <div class="example-section">
+        <h2>🌀 Portails BRISURE</h2>
+        <button class="copy-button" onclick="copyCode('portal-code')">📋 Copier</button>
+        
+        <div class="code-block" id="portal-code">
+// === SYSTÈME DE PORTAILS BRISURE ===
+class BrisurePortalSystem {
+    constructor() {
+        this.magicClient = new AvalonMagicClient();
+        this.portals = new Map();
+        this.energyCost = {
+            BRISURE: 25,
+            VORTEX: 40,
+            QUANTUM: 60
+        };
+    }
+    
+    async createPortal(type, position, player) {
+        // Vérifier l'énergie
+        if (player.brisureEnergy < this.energyCost[type]) {
+            return { 
+                success: false, 
+                message: `Énergie insuffisante ! Requis: ${this.energyCost[type]}` 
+            };
+        }
+        
+        const formula = `CREATE_PORTAL(${type}, @${position.x},${position.y})`;
+        
+        try {
+            const result = await this.magicClient.cast(
+                formula,
+                player.id,
+                null,
+                { energyCost: this.energyCost[type] }
+            );
+            
+            if (result.success) {
+                // Créer le portail
+                const portal = {
+                    id: `PORTAL_${Date.now()}`,
+                    type: type,
+                    position: position,
+                    owner: player.id,
+                    destination: null,
+                    active: true
+                };
+                
+                this.portals.set(portal.id, portal);
+                
+                // Consommer l'énergie
+                player.brisureEnergy -= this.energyCost[type];
+                
+                // Effet visuel
+                this.createPortalVisual(portal);
+                
+                return { success: true, portal };
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Erreur création portail:', error);
+            return { success: false, error };
+        }
+    }
+    
+    async linkPortals(portal1Id, portal2Id) {
+        const p1 = this.portals.get(portal1Id);
+        const p2 = this.portals.get(portal2Id);
+        
+        if (!p1 || !p2) {
+            return { success: false, message: 'Portail introuvable' };
+        }
+        
+        const formula = `LINK_PORTALS(${portal1Id}, ${portal2Id})`;
+        const result = await this.magicClient.cast(formula, 'SYSTEM');
+        
+        if (result.success) {
+            p1.destination = portal2Id;
+            p2.destination = portal1Id;
+            
+            // Effet visuel de connexion
+            this.showPortalLink(p1, p2);
+        }
+        
+        return result;
+    }
+    
+    async teleportThroughPortal(entity, portalId) {
+        const portal = this.portals.get(portalId);
+        
+        if (!portal || !portal.active) {
+            return { success: false, message: 'Portail inactif' };
+        }
+        
+        if (!portal.destination) {
+            return { success: false, message: 'Portail non connecté' };
+        }
+        
+        const destPortal = this.portals.get(portal.destination);
+        const formula = `TELEPORT_ENTITY(${entity.id}, @${destPortal.position.x},${destPortal.position.y})`;
+        
+        const result = await this.magicClient.cast(formula, entity.id);
+        
+        if (result.success) {
+            // Effet de téléportation
+            this.showTeleportEffect(entity.position, destPortal.position);
+            
+            // Déplacer l'entité
+            entity.position = { ...destPortal.position };
+        }
+        
+        return result;
+    }
+    
+    createPortalVisual(portal) {
+        const colors = {
+            BRISURE: '#9333ea',
+            VORTEX: '#ec4899',
+            QUANTUM: '#3b82f6'
+        };
+        
+        // Créer l'élément visuel du portail
+        const portalElement = document.createElement('div');
+        portalElement.className = 'portal';
+        portalElement.style.cssText = `
+            position: absolute;
+            left: ${portal.position.x - 25}px;
+            top: ${portal.position.y - 25}px;
+            width: 50px;
+            height: 50px;
+            border: 3px solid ${colors[portal.type]};
+            border-radius: 50%;
+            animation: portal-spin 2s linear infinite;
+            box-shadow: 0 0 20px ${colors[portal.type]};
+        `;
+        
+        document.getElementById('game-container').appendChild(portalElement);
+    }
+}
+
+// Utilisation
+const brisure = new BrisurePortalSystem();
+const player = { id: 'PLAYER_1', brisureEnergy: 100 };
+
+// Créer deux portails
+const portal1 = await brisure.createPortal('BRISURE', {x: 100, y: 100}, player);
+const portal2 = await brisure.createPortal('BRISURE', {x: 400, y: 300}, player);
+
+// Les connecter
+await brisure.linkPortals(portal1.portal.id, portal2.portal.id);
+
+// Téléporter
+await brisure.teleportThroughPortal(player, portal1.portal.id);
+        </div>
+        
+        <button onclick="testCreatePortal()">🌀 Créer Portail</button>
+        <button onclick="testLinkPortals()">🔗 Connecter Portails</button>
+        <button onclick="testTeleport()">✨ Téléporter</button>
+        
+        <div id="portal-result" class="result-box"></div>
+    </div>
+    
+    <!-- Section 3: Magie Quantique -->
+    <div class="example-section">
+        <h2>ψ Magie Quantique</h2>
+        <button class="copy-button" onclick="copyCode('quantum-code')">📋 Copier</button>
+        
+        <div class="code-block" id="quantum-code">
+// === SYSTÈME DE MAGIE QUANTIQUE ===
+class QuantumMagicSystem {
+    constructor() {
+        this.magicClient = new AvalonMagicClient();
+        this.quantumStates = new Map();
+    }
+    
+    async createQuantumSpell(action, delay, position, caster) {
+        // Générer un ID unique pour l'état quantique
+        const stateId = `ψ${Date.now()}`;
+        
+        // Créer la formule de superposition
+        const formula = `${stateId}: ⊙(Δt+${delay} @${position.x},${position.y} ⟶ ${action})`;
+        
+        try {
+            const result = await this.magicClient.cast(formula, caster.id);
+            
+            if (result.success && result.quantumState) {
+                // Stocker l'état quantique
+                this.quantumStates.set(stateId, {
+                    id: stateId,
+                    action: action,
+                    delay: delay,
+                    position: position,
+                    caster: caster.id,
+                    createdAt: Date.now(),
+                    status: 'SUPERPOSED'
+                });
+                
+                // Afficher l'état quantique
+                this.displayQuantumState(stateId, position);
+                
+                // Auto-effondrement après le délai
+                setTimeout(() => {
+                    this.collapseState(stateId);
+                }, delay * 1000);
+                
+                return { success: true, stateId, quantumState: result.quantumState };
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Erreur création état quantique:', error);
+            return { success: false, error };
+        }
+    }
+    
+    async collapseState(stateId) {
+        const state = this.quantumStates.get(stateId);
+        
+        if (!state || state.status !== 'SUPERPOSED') {
+            return { success: false, message: 'État non trouvé ou déjà effondré' };
+        }
+        
+        const formula = `${stateId}: †`;
+        
+        try {
+            const result = await this.magicClient.cast(formula, state.caster);
+            
+            if (result.success) {
+                // Marquer comme effondré
+                state.status = 'COLLAPSED';
+                
+                // Effet visuel d'effondrement
+                this.showCollapseEffect(state.position);
+                
+                // Retirer l'affichage quantique
+                this.removeQuantumDisplay(stateId);
+                
+                console.log(`État ${stateId} effondré ! Action: ${state.action}`);
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Erreur effondrement:', error);
+            return { success: false, error };
+        }
+    }
+    
+    async createQuantumInterference(state1Id, state2Id) {
+        const formula = `QUANTUM_INTERFERENCE(${state1Id}, ${state2Id})`;
+        
+        const result = await this.magicClient.cast(formula, 'QUANTUM_MAGE');
+        
+        if (result.success) {
+            // Créer un effet d'interférence visuel
+            const state1 = this.quantumStates.get(state1Id);
+            const state2 = this.quantumStates.get(state2Id);
+            
+            if (state1 && state2) {
+                this.showInterferenceEffect(state1.position, state2.position);
+            }
+        }
+        
+        return result;
+    }
+    
+    displayQuantumState(stateId, position) {
+        const marker = document.createElement('div');
+        marker.id = `quantum-${stateId}`;
+        marker.className = 'quantum-state';
+        marker.innerHTML = 'ψ';
+        marker.style.cssText = `
+            position: absolute;
+            left: ${position.x - 15}px;
+            top: ${position.y - 15}px;
+            width: 30px;
+            height: 30px;
+            color: #8b00ff;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 30px;
+            text-shadow: 0 0 10px #8b00ff;
+            animation: quantum-pulse 1s infinite;
+        `;
+        
+        document.getElementById('game-container').appendChild(marker);
+    }
+    
+    showCollapseEffect(position) {
+        // Créer une explosion de particules
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'quantum-particle';
+            particle.style.cssText = `
+                position: absolute;
+                left: ${position.x}px;
+                top: ${position.y}px;
+                width: 4px;
+                height: 4px;
+                background: #8b00ff;
+                border-radius: 50%;
+                animation: particle-explode 1s ease-out forwards;
+                --angle: ${Math.random() * 360}deg;
+                --distance: ${50 + Math.random() * 50}px;
+            `;
+            
+            document.getElementById('game-container').appendChild(particle);
+            setTimeout(() => particle.remove(), 1000);
+        }
+    }
+}
+
+// Utilisation
+const quantum = new QuantumMagicSystem();
+const mage = { id: 'QUANTUM_MAGE' };
+
+// Créer une invocation différée
+const dragonSummon = await quantum.createQuantumSpell(
+    'CREATE(CREATURE, Dragon, @200,200)',
+    5, // 5 secondes de délai
+    { x: 200, y: 200 },
+    mage
+);
+
+// Créer une attaque différée
+const delayedAttack = await quantum.createQuantumSpell(
+    'DAMAGE(BOSS_1, 100)',
+    3, // 3 secondes
+    { x: 300, y: 200 },
+    mage
+);
+
+// Forcer l'effondrement immédiat
+await quantum.collapseState(dragonSummon.stateId);
+        </div>
+        
+        <button onclick="testQuantumSpell()">ψ Créer État Quantique</button>
+        <button onclick="testCollapseQuantum()">† Effondrer État</button>
+        <button onclick="testQuantumInterference()">⚡ Interférence Quantique</button>
+        
+        <div id="quantum-result" class="result-box"></div>
+    </div>
+    
+    <!-- Section 4: Mini-jeu démo -->
+    <div class="example-section">
+        <h2>🎮 Mini-Jeu Complet</h2>
+        
+        <canvas id="gameCanvas" class="game-canvas" width="800" height="400"></canvas>
+        
+        <div class="status-bar">
+            <div>❤️ Vie: <span id="health">100</span></div>
+            <div>💎 Mana: <span id="mana">100</span></div>
+            <div>⚡ Énergie: <span id="energy">100</span></div>
+            <div>ψ États: <span id="quantum">0</span></div>
+        </div>
+        
+        <div>
+            <button onclick="game.castHeal()">💚 Soin (10 mana)</button>
+            <button onclick="game.castFireball()">🔥 Boule de Feu (20 mana)</button>
+            <button onclick="game.createPortal()">🌀 Portail (25 énergie)</button>
+            <button onclick="game.castQuantum()">ψ Sort Quantique (30 mana)</button>
+        </div>
+        
+        <div id="game-log" class="result-box" style="max-height: 200px; overflow-y: auto;"></div>
+    </div>
+    
+    <!-- Container pour les éléments du jeu -->
+    <div id="game-container" style="position: relative;"></div>
+
+    <!-- Import du client magique -->
+    <script src="magic-client.js"></script>
+    
+    <script>
+        // === CODE DE TEST ===
+        
+        // Test Combat
+        async function testCombat() {
+            const result = await AvalonMagic.client.cast(
+                'DAMAGE(TEST_ENEMY, 25)',
+                'TEST_PLAYER'
+            );
+            
+            document.getElementById('combat-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testHeal() {
+            const result = await AvalonMagic.client.cast(
+                'HEAL(TEST_PLAYER, 50)',
+                'TEST_PLAYER'
+            );
+            
+            document.getElementById('combat-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testFireball() {
+            const result = await AvalonMagic.client.cast(
+                'CAST_SPELL(FIREBALL, @200,200)',
+                'TEST_PLAYER'
+            );
+            
+            document.getElementById('combat-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        // Test Portails
+        let portalCount = 0;
+        async function testCreatePortal() {
+            const result = await AvalonMagic.client.cast(
+                `CREATE_PORTAL(BRISURE, @${100 + portalCount * 100},100)`,
+                'TEST_PLAYER'
+            );
+            portalCount++;
+            
+            document.getElementById('portal-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testLinkPortals() {
+            const result = await AvalonMagic.client.cast(
+                'LINK_PORTALS(PORTAL_1, PORTAL_2)',
+                'SYSTEM'
+            );
+            
+            document.getElementById('portal-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testTeleport() {
+            const result = await AvalonMagic.client.cast(
+                'TELEPORT_HERO(TEST_PLAYER, @400,300)',
+                'TEST_PLAYER'
+            );
+            
+            document.getElementById('portal-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        // Test Quantique
+        let quantumId = null;
+        async function testQuantumSpell() {
+            quantumId = `ψ${Date.now()}`;
+            const result = await AvalonMagic.client.cast(
+                `${quantumId}: ⊙(Δt+3 @300,300 ⟶ CREATE(CREATURE, Phoenix, @300,300))`,
+                'QUANTUM_MAGE'
+            );
+            
+            document.getElementById('quantum-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testCollapseQuantum() {
+            if (!quantumId) {
+                alert('Créez d\'abord un état quantique !');
+                return;
+            }
+            
+            const result = await AvalonMagic.client.cast(
+                `${quantumId}: †`,
+                'QUANTUM_MAGE'
+            );
+            
+            document.getElementById('quantum-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        async function testQuantumInterference() {
+            const result = await AvalonMagic.client.cast(
+                'QUANTUM_INTERFERENCE(ψ1, ψ2)',
+                'QUANTUM_MAGE'
+            );
+            
+            document.getElementById('quantum-result').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+        
+        // Fonction pour copier le code
+        function copyCode(elementId) {
+            const codeBlock = document.getElementById(elementId);
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Code copié dans le presse-papier !');
+            });
+        }
+        
+        // === MINI-JEU DÉMO ===
+        class MiniGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.player = {
+                    id: 'DEMO_PLAYER',
+                    x: 400,
+                    y: 200,
+                    health: 100,
+                    mana: 100,
+                    energy: 100
+                };
+                this.enemies = [
+                    { id: 'ENEMY_1', x: 100, y: 100, health: 50 },
+                    { id: 'ENEMY_2', x: 700, y: 300, health: 50 }
+                ];
+                this.quantumStates = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.render();
+                this.updateStatus();
+                
+                // Mise à jour du statut toutes les secondes
+                setInterval(() => this.updateStatus(), 1000);
+            }
+            
+            render() {
+                // Effacer
+                this.ctx.fillStyle = '#0a0a1a';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Grille
+                this.ctx.strokeStyle = '#222';
+                for (let x = 0; x < this.canvas.width; x += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                for (let y = 0; y < this.canvas.height; y += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Joueur
+                this.ctx.fillStyle = '#4ecdc4';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, this.player.y, 20, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Ennemis
+                this.ctx.fillStyle = '#ff6b6b';
+                this.enemies.forEach(enemy => {
+                    if (enemy.health > 0) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x, enemy.y, 15, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+                
+                requestAnimationFrame(() => this.render());
+            }
+            
+            async updateStatus() {
+                document.getElementById('health').textContent = this.player.health;
+                document.getElementById('mana').textContent = this.player.mana;
+                document.getElementById('energy').textContent = this.player.energy;
+                
+                try {
+                    const status = await AvalonMagic.client.getSystemStatus();
+                    this.quantumStates = status.activeQuantumStates || 0;
+                    document.getElementById('quantum').textContent = this.quantumStates;
+                } catch (e) {
+                    // Backend non disponible
+                }
+            }
+            
+            log(message) {
+                const log = document.getElementById('game-log');
+                log.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+                log.scrollTop = log.scrollHeight;
+            }
+            
+            async castHeal() {
+                if (this.player.mana < 10) {
+                    this.log('❌ Mana insuffisant !');
+                    return;
+                }
+                
+                try {
+                    const result = await AvalonMagic.client.cast(
+                        `HEAL(${this.player.id}, 20)`,
+                        this.player.id
+                    );
+                    
+                    if (result.success) {
+                        this.player.health = Math.min(100, this.player.health + 20);
+                        this.player.mana -= 10;
+                        this.log('💚 Soin lancé ! +20 PV');
+                    }
+                } catch (e) {
+                    this.log('❌ Erreur: Backend non disponible');
+                }
+            }
+            
+            async castFireball() {
+                if (this.player.mana < 20) {
+                    this.log('❌ Mana insuffisant !');
+                    return;
+                }
+                
+                const target = this.enemies.find(e => e.health > 0);
+                if (!target) {
+                    this.log('❌ Aucune cible !');
+                    return;
+                }
+                
+                try {
+                    const result = await AvalonMagic.client.cast(
+                        `DAMAGE(${target.id}, 30)`,
+                        this.player.id
+                    );
+                    
+                    if (result.success) {
+                        target.health -= 30;
+                        this.player.mana -= 20;
+                        this.log(`🔥 Boule de feu ! ${target.id} subit 30 dégâts`);
+                        
+                        if (target.health <= 0) {
+                            this.log(`💀 ${target.id} vaincu !`);
+                        }
+                    }
+                } catch (e) {
+                    this.log('❌ Erreur: Backend non disponible');
+                }
+            }
+            
+            async createPortal() {
+                if (this.player.energy < 25) {
+                    this.log('❌ Énergie BRISURE insuffisante !');
+                    return;
+                }
+                
+                try {
+                    const result = await AvalonMagic.client.cast(
+                        `CREATE_PORTAL(BRISURE, @${this.player.x},${this.player.y})`,
+                        this.player.id
+                    );
+                    
+                    if (result.success) {
+                        this.player.energy -= 25;
+                        this.log('🌀 Portail BRISURE créé !');
+                    }
+                } catch (e) {
+                    this.log('❌ Erreur: Backend non disponible');
+                }
+            }
+            
+            async castQuantum() {
+                if (this.player.mana < 30) {
+                    this.log('❌ Mana insuffisant !');
+                    return;
+                }
+                
+                try {
+                    const stateId = `ψ${Date.now()}`;
+                    const result = await AvalonMagic.client.cast(
+                        `${stateId}: ⊙(Δt+5 @${this.player.x},${this.player.y} ⟶ HEAL(${this.player.id}, 50))`,
+                        this.player.id
+                    );
+                    
+                    if (result.success) {
+                        this.player.mana -= 30;
+                        this.log(`ψ État quantique créé ! Soin dans 5 secondes...`);
+                    }
+                } catch (e) {
+                    this.log('❌ Erreur: Backend non disponible');
+                }
+            }
+        }
+        
+        // Initialiser le mini-jeu
+        const game = new MiniGame();
+        
+        // CSS pour les animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float-up {
+                from {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateY(-30px);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes portal-spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            @keyframes quantum-pulse {
+                0%, 100% { transform: scale(1); opacity: 0.8; }
+                50% { transform: scale(1.2); opacity: 1; }
+            }
+            
+            @keyframes particle-explode {
+                from {
+                    transform: translate(0, 0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translate(
+                        calc(cos(var(--angle)) * var(--distance)),
+                        calc(sin(var(--angle)) * var(--distance))
+                    );
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

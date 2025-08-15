@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Dark Fantasy Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #e0e0e0;
+            font-family: 'Garamond', 'Georgia', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+            perspective: 2000px;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        /* EFFET GLOBAL INDÉPENDANT - COUCHE DE FOND */
+        .global-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #0a0a0a 0%, #000000 100%);
+            z-index: -2;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* EFFET THERMIQUE/AMBIANCE GLOBAL */
+        .thermal-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(120, 100, 140, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(80, 60, 100, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(60, 40, 80, 0.05) 0%, transparent 70%);
+            animation: thermalShift 8s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes thermalShift {
+            0%, 100% { 
+                background-position: 0% 0%, 100% 100%, 50% 50%;
+                opacity: 0.6;
+            }
+            33% { 
+                background-position: 30% 20%, 70% 80%, 40% 60%;
+                opacity: 0.8;
+            }
+            66% { 
+                background-position: 70% 10%, 30% 90%, 60% 40%;
+                opacity: 0.7;
+            }
+        }
+
+        /* BRUME MYSTIQUE */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="fog"><feTurbulence baseFrequency="0.01" numOctaves="2"/><feColorMatrix values="0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.3 0"/></filter><rect width="100%" height="100%" filter="url(%23fog)"/></svg>');
+            opacity: 0.4;
+            animation: fogDrift 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fogDrift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+
+        /* CONTAINER */
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            padding: 30px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* RESPONSIVE DESIGN - FINI LE ZOOM 80% ! */
+        @media (max-width: 1600px) {
+            .cards-container {
+                gap: 20px;
+                padding: 25px;
+                max-width: 1200px;
+            }
+            
+            .card-container {
+                width: 240px;
+                height: 340px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .cards-container {
+                gap: 15px;
+                padding: 20px;
+                max-width: 1000px;
+            }
+            
+            .card-container {
+                width: 200px;
+                height: 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .cards-container {
+                gap: 12px;
+                padding: 15px;
+            }
+            
+            .card-container {
+                width: 180px;
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .cards-container {
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .card-container {
+                width: 160px;
+                height: 220px;
+            }
+        }
+
+        /* SYSTEM DE FLIP 3D - RETOURNEMENT DE CARTE ! 🃏 */
+        .card-container {
+            width: 280px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        /* EFFETS PAR CLASSE - RALENTIS ET PLUS FLUIDES ! 🎭 */
+        
+        /* TEMPOREL = FREEZE PROGRESSIF ❄️ */
+        .card-container[data-class*="Temporel"]:hover,
+        .card-container[data-class*="Temps"]:hover,
+        .card-container[data-class*="Stase"]:hover {
+            animation: freezeTransition 2.5s ease-in-out forwards;
+        }
+        
+        /* FEU/DRAGON = BURN PROGRESSIF 🔥 */
+        .card-container[data-class*="Feu"]:hover,
+        .card-container[data-class*="Dragon"]:hover,
+        .card-container[data-class*="Élémentaire"]:hover {
+            animation: burnTransition 2s ease-out forwards;
+        }
+        
+        /* MYSTIQUE/SORCIER = FLIP CLASSIQUE 🔄 */
+        .card-container[data-class*="Sorcier"]:hover,
+        .card-container[data-class*="Mystique"]:hover,
+        .card-container[data-class*="Maître"]:hover {
+            transform: rotateY(180deg);
+            transition: transform 1.2s ease-in-out;
+        }
+        
+        /* GUERRIER/COMBAT = SHATTER 💥 */
+        .card-container[data-class*="Guerrier"]:hover,
+        .card-container[data-class*="Protecteur"]:hover,
+        .card-container[data-class*="Combat"]:hover {
+            animation: shatterTransition 1.8s ease-out forwards;
+        }
+        
+        /* TECHNOMANCIEN = GLITCH DIGITAL ⚡ */
+        .card-container[data-class*="Technomancien"]:hover,
+        .card-container[data-class*="Digital"]:hover,
+        .card-container[data-class*="Consultant"]:hover {
+            animation: glitchTransition 2.2s ease-in-out forwards;
+        }
+        
+        /* ARTEFACT = ROTATION LENTE 🌀 */
+        .card-container[data-class*="Artefact"]:hover,
+        .card-container[data-class*="Objet"]:hover {
+            animation: artifactSpin 3.5s ease-in-out forwards;
+        }
+
+        /* FACES DE LA CARTE */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+        }
+
+        /* FACE AVANT - CARTE NORMALE AVEC STATS */
+        .card-front {
+            transform: rotateY(0deg);
+        }
+
+        /* FACE ARRIÈRE - JUSTE LA BELLE IMAGE ! */
+        .card-back {
+            transform: rotateY(180deg);
+            background-size: cover;
+            background-position: center;
+            border: 3px solid rgba(120, 100, 140, 0.6);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(120, 100, 140, 0.6);
+            overflow: hidden;
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(120, 100, 140, 0.2) 0%,
+                transparent 50%,
+                rgba(80, 60, 100, 0.2) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* DETAILS PANEL - AFFICHÉ AU CLICK+0.5s */
+        .card-details {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 400px;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(192, 160, 128, 0.6);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .card-details.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .details-image {
+            width: 300px;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .details-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .details-title {
+            font-size: 24px;
+            color: #c0a080;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .details-class {
+            font-size: 14px;
+            color: #8a7a9a;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .details-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-stat {
+            background: rgba(120, 100, 140, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(192, 160, 128, 0.3);
+        }
+
+        .detail-stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .detail-stat-label {
+            font-size: 12px;
+            color: #8a7a9a;
+            text-transform: uppercase;
+        }
+
+        .details-spell {
+            background: rgba(60, 40, 80, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(120, 100, 140, 0.5);
+            text-align: center;
+        }
+
+        .details-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: rgba(255, 0, 0, 0.3);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .details-close:hover {
+            background: rgba(255, 0, 0, 0.6);
+        }
+
+        /* LÉGENDE DES EFFETS - EN BAS À DROITE */
+        .effects-legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 12px;
+            border: 1px solid rgba(120, 100, 140, 0.5);
+            padding: 15px;
+            min-width: 200px;
+            z-index: 500;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .legend-title {
+            font-size: 14px;
+            color: #c0a080;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .legend-item {
+            font-size: 12px;
+            color: #8a7a9a;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(120, 100, 140, 0.1);
+            border: 1px solid rgba(120, 100, 140, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(120, 100, 140, 0.3);
+            color: #e0e0e0;
+            transform: translateX(5px);
+        }
+
+        /* BOUTON ACTIVATION AUDIO */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .audio-btn {
+            background: rgba(10, 10, 20, 0.9);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(120, 100, 140, 0.6);
+            border-radius: 12px;
+            color: #c0a080;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .audio-btn:hover {
+            background: rgba(120, 100, 140, 0.3);
+            border-color: rgba(192, 160, 128, 0.8);
+            color: #ffd700;
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(120, 100, 140, 0.4);
+        }
+
+        .audio-btn.active {
+            background: rgba(0, 150, 0, 0.3);
+            border-color: rgba(0, 255, 0, 0.6);
+            color: #00ff00;
+        }
+
+        .audio-btn.active:hover {
+            background: rgba(0, 200, 0, 0.4);
+        }
+
+        /* NOTIFICATION AUDIO */
+        .audio-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 150, 0, 0.9);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(0, 255, 0, 0.6);
+            border-radius: 15px;
+            color: #ffffff;
+            padding: 20px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .audio-notification.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* 🎭 ANIMATIONS SPÉCIALES PAR CLASSE 🎭 */
+        
+        /* ❄️ FREEZE - EFFET GEL PROGRESSIF */
+        @keyframes freezeTransition {
+            0% { 
+                transform: scale(1) rotateY(0deg);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            25% { 
+                transform: scale(1.05) rotateY(45deg);
+                filter: hue-rotate(180deg) brightness(1.2);
+                box-shadow: 0 0 50px rgba(100, 200, 255, 0.8);
+            }
+            50% {
+                transform: scale(1.1) rotateY(90deg);
+                filter: hue-rotate(240deg) brightness(0.8);
+                box-shadow: 
+                    0 0 80px rgba(100, 200, 255, 1),
+                    inset 0 0 30px rgba(200, 255, 255, 0.3);
+            }
+            100% { 
+                transform: scale(1.1) rotateY(180deg);
+                filter: hue-rotate(240deg) brightness(1.1);
+                box-shadow: 
+                    0 0 100px rgba(150, 255, 255, 0.9),
+                    inset 0 0 50px rgba(255, 255, 255, 0.2);
+            }
+        }
+        
+        /* 🔥 BURN - EFFET BRÛLURE PROGRESSIVE */
+        @keyframes burnTransition {
+            0% { 
+                transform: scale(1) rotateY(0deg);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            20% {
+                transform: scale(1.02) rotateY(30deg);
+                filter: hue-rotate(30deg) brightness(1.3);
+                box-shadow: 0 0 30px rgba(255, 100, 0, 0.6);
+            }
+            40% {
+                transform: scale(1.05) rotateY(60deg);
+                filter: hue-rotate(60deg) brightness(1.5);
+                box-shadow: 
+                    0 0 50px rgba(255, 150, 0, 0.8),
+                    inset 0 0 20px rgba(255, 100, 0, 0.4);
+            }
+            70% {
+                transform: scale(1.08) rotateY(120deg);
+                filter: hue-rotate(90deg) brightness(1.2);
+                box-shadow: 
+                    0 0 70px rgba(255, 50, 0, 1),
+                    inset 0 0 40px rgba(255, 200, 0, 0.3);
+            }
+            100% { 
+                transform: scale(1.1) rotateY(180deg);
+                filter: hue-rotate(45deg) brightness(1.4);
+                box-shadow: 
+                    0 0 90px rgba(255, 100, 50, 0.9),
+                    inset 0 0 60px rgba(255, 150, 0, 0.2);
+            }
+        }
+        
+        /* 💥 SHATTER - EFFET EXPLOSION/BRIS */
+        @keyframes shatterTransition {
+            0% { 
+                transform: scale(1) rotateY(0deg) rotateX(0deg);
+                filter: brightness(1);
+            }
+            15% {
+                transform: scale(1.1) rotateY(15deg) rotateX(5deg);
+                filter: brightness(1.5);
+                box-shadow: 0 0 40px rgba(255, 255, 100, 0.7);
+            }
+            30% {
+                transform: scale(0.95) rotateY(45deg) rotateX(-10deg);
+                filter: brightness(0.8) contrast(1.5);
+                box-shadow: 
+                    0 0 60px rgba(255, 255, 150, 0.9),
+                    inset 0 0 30px rgba(255, 255, 255, 0.3);
+            }
+            60% {
+                transform: scale(1.15) rotateY(120deg) rotateX(15deg);
+                filter: brightness(1.8) contrast(1.2);
+                box-shadow: 
+                    0 0 80px rgba(255, 255, 200, 1),
+                    inset 0 0 50px rgba(255, 255, 255, 0.4);
+            }
+            100% { 
+                transform: scale(1.1) rotateY(180deg) rotateX(0deg);
+                filter: brightness(1.3) contrast(1.1);
+                box-shadow: 
+                    0 0 100px rgba(255, 255, 150, 0.8),
+                    inset 0 0 40px rgba(255, 255, 255, 0.2);
+            }
+        }
+        
+        /* ⚡ GLITCH - EFFET DIGITAL */
+        @keyframes glitchTransition {
+            0% { 
+                transform: scale(1) rotateY(0deg);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            10% {
+                transform: scale(1.02) rotateY(10deg) skewX(2deg);
+                filter: hue-rotate(90deg) brightness(1.2);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            25% {
+                transform: scale(0.98) rotateY(45deg) skewX(-3deg);
+                filter: hue-rotate(180deg) brightness(0.9) saturate(2);
+                box-shadow: 
+                    -5px 0 0 rgba(255, 0, 255, 0.8),
+                    5px 0 0 rgba(0, 255, 255, 0.8);
+            }
+            50% {
+                transform: scale(1.05) rotateY(90deg) skewX(1deg);
+                filter: hue-rotate(270deg) brightness(1.6) saturate(1.5);
+                box-shadow: 
+                    -10px 0 0 rgba(255, 0, 255, 0.6),
+                    10px 0 0 rgba(0, 255, 255, 0.6),
+                    0 0 50px rgba(255, 255, 255, 0.4);
+            }
+            75% {
+                transform: scale(1.01) rotateY(135deg) skewX(-2deg);
+                filter: hue-rotate(45deg) brightness(1.1) saturate(1.8);
+                box-shadow: 
+                    -3px 0 0 rgba(255, 0, 255, 0.9),
+                    3px 0 0 rgba(0, 255, 255, 0.9);
+            }
+            100% { 
+                transform: scale(1.1) rotateY(180deg) skewX(0deg);
+                filter: hue-rotate(120deg) brightness(1.3) saturate(1.2);
+                box-shadow: 
+                    0 0 60px rgba(0, 255, 255, 0.7),
+                    inset 0 0 30px rgba(255, 0, 255, 0.3);
+            }
+        }
+        
+        /* 🌀 ARTIFACT SPIN - ROTATION LENTE D'ARTEFACT */
+        @keyframes artifactSpin {
+            0% { 
+                transform: scale(1) rotateY(0deg) rotateZ(0deg);
+                filter: brightness(1);
+            }
+            25% {
+                transform: scale(1.02) rotateY(45deg) rotateZ(90deg);
+                filter: brightness(1.2) hue-rotate(90deg);
+                box-shadow: 0 0 40px rgba(200, 150, 100, 0.6);
+            }
+            50% {
+                transform: scale(1.05) rotateY(90deg) rotateZ(180deg);
+                filter: brightness(1.4) hue-rotate(180deg);
+                box-shadow: 
+                    0 0 60px rgba(200, 150, 100, 0.8),
+                    inset 0 0 30px rgba(255, 200, 150, 0.3);
+            }
+            75% {
+                transform: scale(1.08) rotateY(135deg) rotateZ(270deg);
+                filter: brightness(1.1) hue-rotate(270deg);
+                box-shadow: 
+                    0 0 80px rgba(200, 150, 100, 1),
+                    inset 0 0 40px rgba(255, 200, 150, 0.4);
+            }
+            100% { 
+                transform: scale(1.1) rotateY(180deg) rotateZ(360deg);
+                filter: brightness(1.3) hue-rotate(360deg);
+                box-shadow: 
+                    0 0 100px rgba(200, 150, 100, 0.9),
+                    inset 0 0 50px rgba(255, 200, 150, 0.2);
+            }
+        }
+
+        /* BASE DE LA CARTE - VERRE SOMBRE */
+        .card-glass {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(20, 20, 30, 0.8) 0%,
+                rgba(10, 10, 20, 0.6) 50%,
+                rgba(30, 20, 40, 0.8) 100%
+            );
+            border: 1px solid rgba(100, 80, 120, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* RUNES ANCIENNES */
+        .ancient-runes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            opacity: 0.15;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 50px,
+                rgba(80, 60, 100, 0.1) 50px,
+                rgba(80, 60, 100, 0.1) 51px
+            );
+            animation: runeGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes runeGlow {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.25; }
+        }
+
+        /* REFLETS MÉTALLIQUES SUBTILS */
+        .metal-sheen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            background: linear-gradient(
+                105deg,
+                transparent 40%,
+                rgba(150, 130, 170, 0.1) 45%,
+                rgba(200, 180, 220, 0.15) 50%,
+                rgba(150, 130, 170, 0.1) 55%,
+                transparent 60%
+            );
+            background-size: 200% 200%;
+            animation: sheenMove 6s ease-in-out infinite;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes sheenMove {
+            0% { background-position: 120% 0%; }
+            100% { background-position: -20% 100%; }
+        }
+
+        /* PORTAIL DIMENSIONNEL */
+        .portal-effect {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(60, 40, 80, 0.8) 0%,
+                rgba(40, 30, 60, 0.6) 30%,
+                rgba(20, 20, 40, 0.4) 60%,
+                transparent 100%
+            );
+            animation: portalSpin 10s linear infinite;
+            filter: blur(1px);
+        }
+
+        @keyframes portalSpin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* CONTENU */
+        .card-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* NOM DU HÉROS */
+        .hero-title {
+            font-size: 20px;
+            font-weight: normal;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #c0a080;
+            text-shadow: 
+                0 0 20px rgba(192, 160, 128, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.8);
+            font-family: 'Cinzel', 'Garamond', serif;
+        }
+
+        /* CLASSE */
+        .hero-class {
+            font-size: 12px;
+            color: #8a7a9a;
+            margin-bottom: 20px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* AVATAR MYSTIQUE */
+        .hero-portrait {
+            width: 140px;
+            height: 140px;
+            margin: 10px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .portrait-frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(120, 100, 140, 0.4);
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(40, 30, 50, 0.6),
+                transparent 70%
+            );
+            animation: frameBreath 4s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes frameBreath {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .portrait-symbol {
+            font-size: 60px;
+            filter: 
+                drop-shadow(0 0 10px rgba(120, 100, 140, 0.6))
+                drop-shadow(0 0 20px rgba(80, 60, 100, 0.3));
+            animation: symbolFloat 5s ease-in-out infinite;
+        }
+
+        /* Image statique dans le portrait */
+        .image-layer {
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* OVERLAY FULL IMAGE AU HOVER */
+        .full-image-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 800px;
+            transform: translate(-50%, -50%) scale(0);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 100px rgba(120, 100, 140, 0.8),
+                0 0 200px rgba(80, 60, 100, 0.6);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid rgba(192, 160, 128, 0.6);
+        }
+
+        .full-image-overlay.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.95;
+        }
+
+        /* Backdrop flou */
+        .image-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .image-backdrop.show {
+            opacity: 1;
+        }
+
+        /* Effet hover de base désactivé - remplacé par .dark-card:hover */
+
+        /* EFFETS COOL SUR STATS AU HOVER */
+        .card-attributes {
+            transition: all 0.4s ease;
+        }
+
+        .attribute {
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .attribute:hover {
+            background: rgba(120, 100, 140, 0.2);
+            transform: translateY(-2px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(120, 100, 140, 0.4);
+        }
+
+        .attr-value {
+            transition: all 0.3s ease;
+        }
+
+        .attribute:hover .attr-value {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            animation: statOscillate 0.6s ease-in-out infinite;
+        }
+
+        /* PARTICULES MAGIQUES SUR STATS HOVER */
+        .attribute:hover::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent);
+            border-radius: 12px;
+            animation: particleBurst 0.8s ease-out;
+            z-index: -1;
+        }
+
+        @keyframes particleBurst {
+            0% { 
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes statOscillate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* FULLSCREEN SEULEMENT SUR PORTRAIT HOVER ! 🔥✨ */
+        .hero-portrait:hover {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 15px !important;
+            z-index: 50;
+            border: none !important;
+            margin: 0 !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 
+                0 0 30px rgba(120, 100, 140, 0.8),
+                inset 0 0 50px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .hero-portrait:hover .image-layer {
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            border-radius: 15px !important;
+            filter: brightness(1.1) saturate(1.2) !important;
+        }
+
+        .hero-portrait:hover .portrait-frame {
+            display: none !important;
+        }
+
+        /* STATS FLOTTENT SEULEMENT AU PORTRAIT HOVER ! */
+        .hero-portrait:hover ~ .card-attributes {
+            z-index: 100 !important;
+            background: rgba(10, 10, 20, 0.8) !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 10px !important;
+            padding: 8px !important;
+            border: 1px solid rgba(192, 160, 128, 0.6) !important;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8) !important;
+            transform: translateY(0) !important;
+            opacity: 0.95 !important;
+        }
+
+        .hero-portrait:hover ~ .spell-inscription {
+            z-index: 100 !important;
+            background: rgba(10, 10, 20, 0.7) !important;
+            backdrop-filter: blur(8px) !important;
+            border-radius: 8px !important;
+            padding: 5px 10px !important;
+            border: 1px solid rgba(120, 100, 140, 0.5) !important;
+            transform: translateY(0) !important;
+            opacity: 0.9 !important;
+        }
+
+        .hero-portrait:hover ~ .hero-title,
+        .hero-portrait:hover ~ .hero-class {
+            z-index: 100 !important;
+            text-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.9),
+                0 0 15px rgba(192, 160, 128, 0.8) !important;
+            opacity: 0.95 !important;
+        }
+
+        .dark-card:hover .hero-title,
+        .dark-card:hover .hero-class,
+        .dark-card:hover .spell-inscription {
+            text-shadow: 
+                0 0 15px rgba(192, 160, 128, 0.8),
+                0 0 30px rgba(120, 100, 140, 0.4);
+            transform: translateY(-5px);
+        }
+
+        /* OMBRES DYNAMIQUES */
+        .dark-card:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 10%;
+            right: 10%;
+            height: 40px;
+            background: radial-gradient(ellipse, rgba(0, 0, 0, 0.6), transparent);
+            filter: blur(15px);
+            animation: shadowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes shadowPulse {
+            0%, 100% { transform: scaleX(1); opacity: 0.6; }
+            50% { transform: scaleX(1.2); opacity: 0.8; }
+        }
+
+        @keyframes symbolFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
+        }
+
+        /* FORMULE MAGIQUE ANCIENNE */
+        .spell-inscription {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-top: 1px solid rgba(100, 80, 120, 0.2);
+            border-bottom: 1px solid rgba(100, 80, 120, 0.2);
+        }
+
+        .spell-text {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #9a8aaa;
+            opacity: 0.7;
+            text-transform: uppercase;
+            animation: spellReveal 8s ease-in-out infinite;
+        }
+
+        @keyframes spellReveal {
+            0%, 100% { opacity: 0.4; letter-spacing: 2px; }
+            50% { opacity: 0.9; letter-spacing: 3px; }
+        }
+
+        /* PARTICULES MYSTIQUES */
+        .mystic-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #9a8aaa;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleRise 6s infinite;
+        }
+
+        @keyframes particleRise {
+            0% {
+                transform: translateY(50px) translateX(0);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.6;
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-50px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        /* STATS GRAVÉES */
+        .card-attributes {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            right: 25px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .attribute {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(100, 80, 120, 0.2);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .attr-value {
+            font-size: 18px;
+            color: #c0a080;
+            text-shadow: 0 0 10px rgba(192, 160, 128, 0.3);
+        }
+
+        .attr-label {
+            font-size: 9px;
+            color: #7a6a8a;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ÉNERGIE SOMBRE */
+        .dark-energy {
+            position: absolute;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            top: -10px;
+            left: -10px;
+            border-radius: 15px;
+            opacity: 0;
+            background: radial-gradient(
+                circle at center,
+                transparent 30%,
+                rgba(80, 60, 100, 0.2) 70%,
+                rgba(60, 40, 80, 0.4) 100%
+            );
+            animation: energyPulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes energyPulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.02); }
+        }
+
+        /* TITRE DU JEU */
+        .game-title {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-family: 'Cinzel', 'Garamond', serif;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: #8a7a9a;
+            text-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(120, 100, 140, 0.3);
+            animation: titleGlow 6s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* PORTAILS VERS D'AUTRES MONDES */
+        .world-portal {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                rgba(60, 40, 80, 0.6),
+                rgba(80, 60, 100, 0.4),
+                rgba(100, 80, 120, 0.6),
+                rgba(60, 40, 80, 0.6)
+            );
+            animation: portalRotate 15s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes portalRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .portal-1 {
+            top: 20px;
+            right: 20px;
+        }
+
+        .portal-2 {
+            bottom: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- EFFETS GLOBAUX INDÉPENDANTS -->
+    <div class="global-background" id="globalBg"></div>
+    <div class="thermal-effect"></div>
+
+    <h1 class="game-title">Heroes of Time</h1>
+
+    <div class="cards-container" id="cardsRoot"></div>
+
+    <!-- DETAILS PANEL -->
+    <div class="card-details" id="cardDetails">
+        <button class="details-close" onclick="closeDetails()">×</button>
+        <div class="details-image" id="detailsImage"></div>
+        <div class="details-content">
+            <div class="details-title" id="detailsTitle"></div>
+            <div class="details-class" id="detailsClass"></div>
+            <div class="details-stats" id="detailsStats"></div>
+            <div class="details-spell" id="detailsSpell"></div>
+        </div>
+    </div>
+
+    <!-- LÉGENDE DES EFFETS PAR CLASSE -->
+    <div class="effects-legend">
+        <div class="legend-title">🎭 EFFETS PAR CLASSE</div>
+        <div class="legend-items">
+            <div class="legend-item">❄️ Temporel → Freeze</div>
+            <div class="legend-item">🔥 Feu → Burn</div>
+            <div class="legend-item">🔄 Sorcier → Flip</div>
+            <div class="legend-item">💥 Guerrier → Shatter</div>
+            <div class="legend-item">⚡ Tech → Glitch</div>
+            <div class="legend-item">🌀 Artefact → Spin</div>
+        </div>
+    </div>
+
+    <!-- BOUTON ACTIVATION AUDIO -->
+    <div class="audio-control">
+        <button id="audioToggle" class="audio-btn">🔇 ACTIVER AUDIO</button>
+    </div>
+
+    <!-- NOTIFICATION AUDIO -->
+    <div id="audioNotification" class="audio-notification">
+        🎵 Audio activé ! Survole les cartes ! 🎵
+    </div>
+
+    <!-- LIBRAIRIES AUDIO OPEN SOURCE -->
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+
+    <script>
+        // SYSTÈME DE CARTES MODERNE - SANS CLIGNOTEMENT ! 🔥
+        let holdTimer = null;
+        let isDetailsOpen = false;
+
+        // EFFET GLOBAL INDÉPENDANT - COUCHES SÉPARÉES 🌍
+        document.addEventListener('mousemove', (e) => {
+            const globalBg = document.getElementById('globalBg');
+            const container = document.getElementById('cardsRoot');
+            
+            // MOUVEMENT GLOBAL DU FOND - Indépendant ! 
+            const globalX = (e.clientX / window.innerWidth - 0.5) * 6;
+            const globalY = (e.clientY / window.innerHeight - 0.5) * 6;
+            
+            globalBg.style.transform = `
+                rotateY(${globalX * 0.5}deg) 
+                rotateX(${-globalY * 0.5}deg)
+            `;
+            
+            container.style.transform = `
+                rotateY(${globalX * 0.3}deg) 
+                rotateX(${-globalY * 0.3}deg)
+            `;
+        });
+
+        // PRÉCHARGEMENT DES IMAGES - PAS DE CLIGNOTEMENT ! 🖼️
+        function preloadImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        // PARTICULES MYSTIQUES
+        function createParticles(container) {
+            if (!container) return;
+            for (let i = 0; i < 5; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = (Math.random() * 6) + 's';
+                p.style.animationDuration = (5 + Math.random() * 3) + 's';
+                container.appendChild(p);
+            }
+        }
+
+        // AFFICHER DETAILS - PANEL LATÉRAL ! 📊
+        function showCardDetails(cardData) {
+            if (isDetailsOpen) return;
+            
+            isDetailsOpen = true;
+            const details = document.getElementById('cardDetails');
+            const image = document.getElementById('detailsImage');
+            const title = document.getElementById('detailsTitle');
+            const cls = document.getElementById('detailsClass');
+            const stats = document.getElementById('detailsStats');
+            const spell = document.getElementById('detailsSpell');
+            
+            // REMPLIR LES DONNÉES
+            image.style.backgroundImage = `url('${cardData.img}')`;
+            title.textContent = cardData.name;
+            cls.textContent = cardData.cls;
+            spell.textContent = cardData.spell;
+            
+            // STATS EN GRID
+            stats.innerHTML = `
+                <div class="detail-stat">
+                    <div class="detail-stat-value">${cardData.stats.a}</div>
+                    <div class="detail-stat-label">Puissance</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="detail-stat-value">${cardData.stats.b}</div>
+                    <div class="detail-stat-label">Magie</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="detail-stat-value">${cardData.stats.c}</div>
+                    <div class="detail-stat-label">Temps</div>
+                </div>
+            `;
+            
+            // ANIMATION D'OUVERTURE
+            details.classList.add('show');
+        }
+
+        // FERMER DETAILS
+        function closeDetails() {
+            isDetailsOpen = false;
+            document.getElementById('cardDetails').classList.remove('show');
+        }
+
+        // ÉCHAPPER POUR FERMER
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isDetailsOpen) {
+                closeDetails();
+            }
+        });
+
+        // DONNÉES DES CARTES - COLLECTION COMPLÈTE ! 🎴
+        const cardData = [
+          // 🔥 NOUVELLES CARTES J27 COLLECTION - MYTHIQUES ! 🔥
+          {id:'ANNA_SORCERESS', name:'Anna - Sorcière du Temps', cls:'Maîtresse Temporelle', img:'assets/CARTE_J27/3/Sorceress of Time and Power.png', spell:'TEMPORAL_POWER_NEXUS', stats:{a:35,b:40,c:45}},
+          {id:'CLAUDE_WIZARD', name:'Claude - Sorcier Plieur', cls:'Architecte Temporel', img:'assets/CARTE_J27/3/Time-Bending Wizard of Mystical Realms.png', spell:'COMPUTATIONAL_FOLD', stats:{a:30,b:45,c:50}},
+          {id:'ELDER_MERCHANT', name:'Marchand Temporel', cls:'Voleur d\'Objets Temporels', img:'assets/CARTE_J27/3/Elder Merchant and Glowing Hourglass.png', spell:'TEMPORAL_MARKETPLACE', stats:{a:15,b:35,c:50}},
+          
+          // 🎸💼 CHRISTIAN DOUBLE AGENT 🎸💼
+          {id:'CHRISTIAN_CONSULTANT', name:'Christian - Consultant McKinsey', cls:'Stratège Corporatif', img:'assets/CARTE_J27/Membre du Bureau (McKinsey mystique.png', spell:'QUANTUM_EXCEL', stats:{a:20,b:25,c:18}},
+          {id:'CHRISTIAN_GUITARISTE', name:'CHR-SINE - Guitariste Metal', cls:'Manipulateur Sonique', img:'assets/CARTE_J27/3/Guitarist of the Enchanted Winds.png', spell:'POWER_CHORD', stats:{a:28,b:15,c:12}},
+          
+          // 🎴 SÉRIE J27 COMPLÈTE 🎴
+          {id:'BOUTEILLE_CLINT', name:'Bouteille de Clint', cls:'Objet Non-Euclidien', img:'assets/CARTE_J27/Bouteille de Clint.png', spell:'GRAVITY_DEFIANCE', stats:{a:25,b:30,c:20}},
+          {id:'TESSERACT_PRISON', name:'Prison Tesseract', cls:'Technomancien 4D', img:'assets/CARTE_J27/Tesseract Prison par un Technomancien.png', spell:'HYPERCUBE_BINDING', stats:{a:40,b:35,c:30}},
+          
+          // ✨ SÉRIE J27/2 - PUISSANCES MAGIQUES ✨
+          {id:'WARRIOR_RADIANT', name:'Guerrier au Bouclier Radiant', cls:'Protecteur Lumineux', img:'assets/CARTE_J27/2/Warrior in Radiant Shield Barrier.png', spell:'RADIANT_BARRIER', stats:{a:32,b:20,c:18}},
+          {id:'FROZEN_TIME', name:'Figé dans le Temps', cls:'Maître de Stase', img:'assets/CARTE_J27/2/Frozen Beyond Time.png', spell:'TIME_FREEZE', stats:{a:18,b:35,c:42}},
+          {id:'SORCERER_PORTAL', name:'Sorcier au Portail', cls:'Gardien des Seuils', img:'assets/CARTE_J27/2/Sorcerer at the Portal\'s Edge.png', spell:'PORTAL_MASTERY', stats:{a:28,b:38,c:30}},
+          
+          // 🌟 SÉRIE J27/3 - HÉROS COSMIQUES 🌟  
+          {id:'GARDIEN_CELESTE', name:'Gardien Céleste', cls:'Protecteur Astral', img:'assets/CARTE_J27/3/Celestial Guardian of Light.png', spell:'ASTRAL_PROTECTION', stats:{a:30,b:35,c:25}},
+          {id:'PATTE_BASILIC', name:'Patte de Basilic', cls:'Artefact Temporel', img:'assets/CARTE_J27/3/Patte de Basilic_ Manipulation du Temps.png', spell:'TIME_MANIPULATION', stats:{a:18,b:25,c:35}},
+          {id:'QUANTUM_SURGE', name:'Surge Quantique', cls:'Explosion Réalité', img:'assets/CARTE_J27/3/Quantum Surge Spell Card Design.png', spell:'REALITY_BREAK', stats:{a:45,b:40,c:35}},
+          {id:'CHAMAN_ORC', name:'Chaman Orc Fureur', cls:'Invocateur Élémentaire', img:'assets/CARTE_J27/3/Orc Shaman and Elemental Fury.png', spell:'ELEMENTAL_SUMMON', stats:{a:26,b:22,c:8}},
+          
+          // 🔥 CARTES ADDITIONNELLES 🔥
+          {id:'FLAMES_FATE', name:'Flammes du Destin', cls:'Oracle de Feu', img:'assets/CARTE_J27/3/Flames of Fate.png', spell:'PROPHETIC_FLAMES', stats:{a:33,b:38,c:28}},
+          {id:'TECHNOMANCER_SHADOWS', name:'Technomancien Ombres', cls:'Manipulateur Digital', img:'assets/CARTE_J27/3/Technomancer and Shadow Duplicates.png', spell:'SHADOW_CLONE', stats:{a:25,b:35,c:30}},
+          
+          // 🏪 MARCHANDS SYSTÈME - GAMEPLAY RÉEL 🏪
+          {id:'VINCE_TRADER', name:'Vince - Trader Interstice', cls:'Courtier Dimensionnel', img:'assets/CARTE_J27/2/Dimensional Overrun - Paladin.png', spell:'DIMENSIONAL_TRADE', stats:{a:20,b:30,c:25}},
+          {id:'FORGERON_TEMPOREL', name:'Maître Forgeron des Âges', cls:'Artisan Temporal', img:'assets/CARTE_J27/Druide Shaman - Loup Esprit.png', spell:'TEMPORAL_FORGING', stats:{a:35,b:25,c:40}},
+          {id:'ALCHIMISTE_MARCHAND', name:'Grand Alchimiste Marchand', cls:'Maître Transmutations', img:'assets/CARTE_J27/Bouteille de Clint _ Serac.png', spell:'IMPOSSIBLE_ALCHEMY', stats:{a:18,b:45,c:20}},
+          {id:'RUNISTE_MARCHAND', name:'Vendeur Runes Vivantes', cls:'Scribe des Arcanes', img:'assets/CARTE_J27/Transformation géométrique - Paladins _ Orques.png', spell:'LIVING_RUNES', stats:{a:12,b:40,c:30}},
+          {id:'MARCHAND_ITINERANT', name:'Nomade Courants Temporels', cls:'Voyageur Inter-Époques', img:'assets/CARTE_J27/Tesseract Prison par un Technomancien.png', spell:'TEMPORAL_NOMADISM', stats:{a:15,b:20,c:35}}
+        ];
+
+        // RENDU DES CARTES - SYSTÈME MODERNE ! 🚀
+        async function renderCards() {
+            const container = document.getElementById('cardsRoot');
+            container.innerHTML = '';
+            
+            // PRÉCHARGEMENT EN PARALLÈLE
+            console.log('🖼️ Préchargement des images...');
+            await Promise.all(cardData.map(card => preloadImage(card.img)));
+            console.log('✅ Images préchargées !');
+            
+            // CRÉATION DES CARTES
+            cardData.forEach((card, index) => {
+                const cardElement = createCard(card, index);
+                container.appendChild(cardElement);
+            });
+            
+            console.log(`🎴 ${cardData.length} cartes créées !`);
+        }
+
+        // 🎵 SYSTÈME AUDIO OPEN SOURCE AVANCÉ ! 🎵
+        class AdvancedCardAudio {
+            constructor() {
+                this.sounds = new Map();
+                this.synth = null;
+                this.audioEnabled = false;
+                this.audioButton = null;
+                this.setupAudioButton();
+            }
+
+            setupAudioButton() {
+                this.audioButton = document.getElementById('audioToggle');
+                if (this.audioButton) {
+                    this.audioButton.addEventListener('click', () => {
+                        this.toggleAudio();
+                    });
+                }
+            }
+
+            async toggleAudio() {
+                if (!this.audioEnabled) {
+                    // ACTIVATION
+                    await this.initAudio();
+                    this.audioEnabled = true;
+                    this.audioButton.textContent = '🔊 AUDIO ACTIVÉ';
+                    this.audioButton.classList.add('active');
+                    
+                    // TEST SOUND
+                    this.playTestSound();
+                    
+                    // NOTIFICATION VISUELLE
+                    this.showNotification();
+                    
+                    console.log('🎵 Audio activé ! Survolez les cartes !');
+                } else {
+                    // DÉSACTIVATION
+                    this.audioEnabled = false;
+                    this.audioButton.textContent = '🔇 ACTIVER AUDIO';
+                    this.audioButton.classList.remove('active');
+                    console.log('🔇 Audio désactivé');
+                }
+            }
+
+            showNotification() {
+                const notification = document.getElementById('audioNotification');
+                if (notification) {
+                    notification.classList.add('show');
+                    
+                    // Cacher après 3 secondes
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3000);
+                }
+            }
+
+            playTestSound() {
+                if (this.synth) {
+                    this.synth.triggerAttackRelease(['C4', 'E4', 'G4'], '0.5');
+                }
+            }
+
+            async initAudio() {
+                // TONE.JS - Pour synthèse procédurale avancée
+                if (typeof Tone !== 'undefined') {
+                    await Tone.start();
+                    this.synth = new Tone.PolySynth().toDestination();
+                    console.log('🎹 Tone.js initialisé !');
+                }
+
+                // HOWLER.JS - Pour sons d'archives (FreeSound.org)
+                if (typeof Howl !== 'undefined') {
+                    this.loadFreeSounds();
+                    console.log('🔊 Howler.js initialisé !');
+                }
+            }
+
+            // 🎵 SONS RÉALISTES - FINI LE NINTENDO ! 🎵
+            loadFreeSounds() {
+                // ❄️ Sons cristallins et glacés plus réalistes
+                this.sounds.set('ice_crack', new Howl({
+                    src: ['https://freesound.org/data/previews/316/316847_4990298-lq.mp3'],
+                    volume: 0.4,
+                    rate: 0.8, // Plus grave
+                    onloaderror: () => this.createRealisticIceSound()
+                }));
+
+                // 🔥 Vrais sons de feu et explosion
+                this.sounds.set('fire_whoosh', new Howl({
+                    src: ['https://freesound.org/data/previews/249/249816_4404552-lq.mp3'],
+                    volume: 0.5,
+                    rate: 1.2, // Plus rapide et intense
+                    onloaderror: () => this.createRealisticFireSound()
+                }));
+
+                // 🔄 Magie plus mystérieuse
+                this.sounds.set('deep_magic', new Howl({
+                    src: ['https://freesound.org/data/previews/203/203557_3162775-lq.mp3'],
+                    volume: 0.4,
+                    rate: 0.7, // Plus profond
+                    onloaderror: () => this.createRealisticMagicSound()
+                }));
+
+                // ⚡ Vrais glitchs électroniques
+                this.sounds.set('electric_buzz', new Howl({
+                    src: ['https://freesound.org/data/previews/173/173859_2437358-lq.mp3'],
+                    volume: 0.3,
+                    rate: 1.5, // Plus aigu et nerveux
+                    onloaderror: () => this.createRealisticTechSound()
+                }));
+            }
+
+            // 🎼 EFFETS PROCÉDURAUX AVEC TONE.JS
+            playCardEffect(cardClass, action = 'hover') {
+                if (!this.audioEnabled) return; // Pas de son si audio désactivé
+                
+                const classKey = this.getClassKey(cardClass);
+
+                if (action === 'hover') {
+                    this.playHoverEffect(classKey);
+                } else if (action === 'activate') {
+                    this.playActivateEffect(classKey);
+                }
+            }
+
+            playHoverEffect(classKey) {
+                if (!this.synth) return;
+
+                switch (classKey) {
+                    case 'temporel':
+                        // ❄️ Sons glacés réalistes avec bruit blanc
+                        this.createCrystallineSound();
+                        if (this.sounds.has('ice_crack')) {
+                            this.sounds.get('ice_crack').play();
+                        }
+                        break;
+                    case 'feu':
+                        // 🔥 Crackling fire avec bruit filtré
+                        this.createFireCrackle();
+                        if (this.sounds.has('fire_whoosh')) {
+                            this.sounds.get('fire_whoosh').play();
+                        }
+                        break;
+                    case 'sorcier':
+                        // 🔄 Harmoniques mystiques complexes
+                        this.createMysticalHarmonics();
+                        if (this.sounds.has('deep_magic')) {
+                            this.sounds.get('deep_magic').play();
+                        }
+                        break;
+                    case 'guerrier':
+                        // 💥 Impact métallique réaliste
+                        this.createMetalClang();
+                        break;
+                    case 'technomancien':
+                        // ⚡ Buzz électronique réaliste
+                        this.createElectronicBuzz();
+                        if (this.sounds.has('electric_buzz')) {
+                            this.sounds.get('electric_buzz').play();
+                        }
+                        break;
+                    case 'artefact':
+                        // 🌀 Résonance profonde avec harmoniques
+                        this.createAncientResonance();
+                        break;
+                }
+            }
+
+            playActivateEffect(classKey) {
+                if (!this.synth) return;
+
+                switch (classKey) {
+                    case 'temporel':
+                        // ❄️ Freeze intense avec FreeSound
+                        if (this.sounds.has('temporel_freeze')) {
+                            this.sounds.get('temporel_freeze').play();
+                        }
+                        this.synth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1.0');
+                        break;
+                    case 'feu':
+                        // 🔥 Explosion de feu
+                        this.playFireBurst();
+                        break;
+                    case 'sorcier':
+                        // 🔄 Portail magique
+                        this.playMagicPortal();
+                        break;
+                    case 'guerrier':
+                        // 💥 Impact de guerre
+                        this.synth.triggerAttackRelease(['A1', 'A2'], '0.2');
+                        break;
+                    case 'technomancien':
+                        // ⚡ Overload digital
+                        this.playDigitalOverload();
+                        break;
+                    case 'artefact':
+                        // 🌀 Activation d'artefact
+                        this.playArtifactActivation();
+                        break;
+                }
+            }
+
+            // 🔥 EFFETS SPÉCIAUX COMPLEXES
+            playFireBurst() {
+                const now = Tone.now();
+                this.synth.triggerAttackRelease('G2', '0.05', now);
+                this.synth.triggerAttackRelease('D3', '0.1', now + 0.05);
+                this.synth.triggerAttackRelease('A3', '0.15', now + 0.1);
+            }
+
+            playMagicPortal() {
+                const notes = ['C4', 'E4', 'G4', 'B4', 'D5'];
+                notes.forEach((note, i) => {
+                    this.synth.triggerAttackRelease(note, '0.2', Tone.now() + i * 0.1);
+                });
+            }
+
+            playDigitalOverload() {
+                for (let i = 0; i < 5; i++) {
+                    const freq = 800 + Math.random() * 800;
+                    this.synth.triggerAttackRelease(Tone.Frequency(freq, 'hz'), '0.05', Tone.now() + i * 0.02);
+                }
+            }
+
+            playArtifactActivation() {
+                const chord = ['F3', 'A3', 'C4', 'F4'];
+                this.synth.triggerAttackRelease(chord, '2.0');
+            }
+
+            // 🎵 GÉNÉRATEURS DE SONS RÉALISTES - FINI LE NINTENDO ! 🎵
+
+            // ❄️ Son cristallin réaliste (pas juste des accords)
+            createCrystallineSound() {
+                if (!this.synth) return;
+                
+                // Bruit blanc filtré + harmoniques cristallines
+                const noise = new Tone.Noise("white").start();
+                const filter = new Tone.Filter(2000, "bandpass").toDestination();
+                const envelope = new Tone.AmplitudeEnvelope({
+                    attack: 0.01,
+                    decay: 0.3,
+                    sustain: 0.1,
+                    release: 0.8
+                });
+                
+                noise.connect(filter);
+                filter.connect(envelope);
+                envelope.triggerAttackRelease(0.6);
+                
+                // Harmoniques cristallines en plus
+                setTimeout(() => {
+                    this.synth.triggerAttackRelease(['C6', 'E6', 'G6'], '0.2');
+                    noise.stop();
+                }, 100);
+            }
+
+            // 🔥 Crépitement de feu réaliste
+            createFireCrackle() {
+                if (!this.synth) return;
+                
+                // Bruit brun filtré qui simule le feu
+                const noise = new Tone.Noise("brown").start();
+                const filter = new Tone.Filter(800, "lowpass").toDestination();
+                const tremolo = new Tone.Tremolo(4, 0.6).start();
+                
+                noise.connect(tremolo);
+                tremolo.connect(filter);
+                
+                // Crépitements aléatoires
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        this.synth.triggerAttackRelease(['G2', 'D3'], '0.05');
+                    }, i * 150 + Math.random() * 100);
+                }
+                
+                setTimeout(() => noise.stop(), 500);
+            }
+
+            // 🔄 Harmoniques mystiques complexes
+            createMysticalHarmonics() {
+                if (!this.synth) return;
+                
+                // Série d'harmoniques avec phasing
+                const notes = ['C4', 'E4', 'G4', 'B4', 'D5', 'F#5'];
+                const phaser = new Tone.Phaser({
+                    frequency: 0.5,
+                    octaves: 3,
+                    baseFrequency: 350
+                }).toDestination();
+                
+                const synthWithPhaser = this.synth.connect(phaser);
+                
+                notes.forEach((note, i) => {
+                    setTimeout(() => {
+                        this.synth.triggerAttackRelease(note, '0.3');
+                    }, i * 80);
+                });
+            }
+
+            // 💥 Clang métallique réaliste
+            createMetalClang() {
+                if (!this.synth) return;
+                
+                // Impact initial + résonance métallique
+                const metal = new Tone.MetalSynth({
+                    frequency: 200,
+                    envelope: {
+                        attack: 0.001,
+                        decay: 1.4,
+                        release: 0.2
+                    },
+                    harmonicity: 5.1,
+                    modulationIndex: 32,
+                    resonance: 4000,
+                    octaves: 1.5
+                }).toDestination();
+                
+                metal.triggerAttackRelease("C2", "8n");
+                
+                // Écho métallique
+                setTimeout(() => {
+                    metal.triggerAttackRelease("G1", "16n");
+                }, 200);
+            }
+
+            // ⚡ Buzz électronique réaliste
+            createElectronicBuzz() {
+                if (!this.synth) return;
+                
+                // FM synthesis pour le buzz électronique
+                const fmSynth = new Tone.FMSynth({
+                    harmonicity: 3,
+                    modulationIndex: 10,
+                    detune: 0,
+                    oscillator: {
+                        type: "square"
+                    },
+                    envelope: {
+                        attack: 0.01,
+                        decay: 0.01,
+                        sustain: 1,
+                        release: 0.5
+                    },
+                    modulation: {
+                        type: "sawtooth"
+                    },
+                    modulationEnvelope: {
+                        attack: 0.5,
+                        decay: 0.01,
+                        sustain: 1,
+                        release: 0.5
+                    }
+                }).toDestination();
+                
+                // Glitches aléatoires
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const freq = 300 + Math.random() * 800;
+                        fmSynth.triggerAttackRelease(freq, "32n");
+                    }, i * 50);
+                }
+            }
+
+            // 🌀 Résonance ancienne profonde
+            createAncientResonance() {
+                if (!this.synth) return;
+                
+                // Drone profond avec harmoniques
+                const reverb = new Tone.Reverb(4).toDestination();
+                const compressor = new Tone.Compressor().connect(reverb);
+                
+                // Drone de base
+                const drone = new Tone.Oscillator(55, "sawtooth").start();
+                const droneEnv = new Tone.AmplitudeEnvelope({
+                    attack: 0.5,
+                    decay: 0.5,
+                    sustain: 0.8,
+                    release: 2
+                });
+                
+                drone.connect(droneEnv);
+                droneEnv.connect(compressor);
+                droneEnv.triggerAttackRelease(3);
+                
+                // Harmoniques mystérieuses par-dessus
+                const harmonics = ['A2', 'E3', 'A3', 'C#4'];
+                harmonics.forEach((note, i) => {
+                    setTimeout(() => {
+                        this.synth.triggerAttackRelease(note, '1');
+                    }, i * 400);
+                });
+                
+                setTimeout(() => drone.stop(), 3000);
+            }
+
+            // Fallbacks réalistes
+            createRealisticIceSound() {
+                this.createCrystallineSound();
+            }
+
+            createRealisticFireSound() {
+                this.createFireCrackle();
+            }
+
+            createRealisticMagicSound() {
+                this.createMysticalHarmonics();
+            }
+
+            createRealisticTechSound() {
+                this.createElectronicBuzz();
+            }
+
+            getClassKey(cardClass) {
+                const classLower = cardClass.toLowerCase();
+                
+                if (classLower.includes('temporel') || classLower.includes('temps') || classLower.includes('stase')) return 'temporel';
+                if (classLower.includes('feu') || classLower.includes('dragon') || classLower.includes('élémentaire')) return 'feu';
+                if (classLower.includes('sorcier') || classLower.includes('mystique') || classLower.includes('maître')) return 'sorcier';
+                if (classLower.includes('guerrier') || classLower.includes('protecteur') || classLower.includes('combat')) return 'guerrier';
+                if (classLower.includes('technomancien') || classLower.includes('digital') || classLower.includes('consultant')) return 'technomancien';
+                if (classLower.includes('artefact') || classLower.includes('objet')) return 'artefact';
+                
+                return 'sorcier';
+            }
+        }
+
+        // INITIALISATION GLOBALE
+        const advancedAudio = new AdvancedCardAudio();
+
+        // INTÉGRATION AVEC LES CARTES EXISTANTES
+        function createCard(cardData, index) {
+            const container = document.createElement('div');
+            container.className = 'card-container';
+            container.dataset.cardId = cardData.id;
+            container.dataset.class = cardData.cls;
+            
+            // FACE AVANT - CARTE COMPLÈTE AVEC STATS
+            const front = document.createElement('div');
+            front.className = 'card-face card-front dark-card';
+            front.innerHTML = `
+                <div class="card-glass"></div>
+                <div class="ancient-runes"></div>
+                <div class="metal-sheen"></div>
+                <div class="dark-energy"></div>
+                <div class="portal-effect"></div>
+                <div class="world-portal portal-1"></div>
+                <div class="world-portal portal-2"></div>
+                <div class="card-content">
+                    <div class="hero-title">${cardData.name}</div>
+                    <div class="hero-class">${cardData.cls}</div>
+                    <div class="hero-portrait">
+                        <div class="portrait-frame"></div>
+                        <div class="image-layer" style="background-image:url('${cardData.img.replace(/'/g,"%27")}')"></div>
+                    </div>
+                    <div class="spell-inscription">
+                        <div class="mystic-particles"></div>
+                        <div class="spell-text">${cardData.spell}</div>
+                    </div>
+                    <div class="card-attributes">
+                        <div class="attribute">
+                            <div class="attr-value">${cardData.stats.a}</div>
+                            <div class="attr-label">Puissance</div>
+                        </div>
+                        <div class="attribute">
+                            <div class="attr-value">${cardData.stats.b}</div>
+                            <div class="attr-label">Magie</div>
+                        </div>
+                        <div class="attribute">
+                            <div class="attr-value">${cardData.stats.c}</div>
+                            <div class="attr-label">Temps</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // FACE ARRIÈRE - JUSTE LA BELLE IMAGE !
+            const back = document.createElement('div');
+            back.className = 'card-face card-back';
+            back.style.backgroundImage = `url('${cardData.img}')`;
+            
+            container.appendChild(front);
+            container.appendChild(back);
+            
+            // 🎵 ÉVÉNEMENTS AUDIO INTÉGRÉS
+            container.addEventListener('mouseenter', () => {
+                advancedAudio.playCardEffect(cardData.cls, 'hover');
+            });
+            
+            container.addEventListener('click', () => {
+                advancedAudio.playCardEffect(cardData.cls, 'activate');
+            });
+            
+            // PARTICULES MYSTIQUES
+            createParticles(front.querySelector('.mystic-particles'));
+            
+            // CLICK + 0.5s POUR DETAILS ! ⏱️
+            let pressTimer = null;
+            
+            container.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                pressTimer = setTimeout(() => {
+                    showCardDetails(cardData);
+                }, 500);
+            });
+            
+            container.addEventListener('mouseup', () => {
+                clearTimeout(pressTimer);
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                clearTimeout(pressTimer);
+            });
+            
+            // PRÉCHARGEMENT DE L'IMAGE
+            preloadImage(cardData.img);
+            
+            return container;
+        }
+
+        // INITIALISATION - SYSTÈME FLIP 3D + AUDIO ! 🃏🎵
+        renderCards();
+
+        console.log('🎭🎵 HEROES OF TIME - SYSTÈME AUDIOVISUEL V2.0 ! 🎵🎭');
+        console.log('');
+        console.log('🔘 POUR ENTENDRE LES SONS:');
+        console.log('   1. Clique sur "🔇 ACTIVER AUDIO" (en haut à droite)');
+        console.log('   2. Survole les cartes pour les effets sonores !');
+        console.log('');
+        console.log('🆕 NOUVEAUTÉS V2.0:');
+        console.log('   ✅ Sons RÉALISTES (fini le Nintendo !)');
+        console.log('   ✅ Effets RALENTIS (plus fluides)');
+        console.log('   ✅ Scroll RÉPARÉ (plus de blocage)');
+        console.log('   ✅ Responsive AMÉLIORÉ (plus besoin du zoom 80%)');
+        console.log('');
+        console.log('🎭 EFFETS PAR CLASSE:');
+        console.log('❄️ TEMPOREL → Freeze lent + Cristaux réalistes');
+        console.log('🔥 FEU/DRAGON → Burn fluide + Crépitements'); 
+        console.log('🔄 SORCIER/MYSTIQUE → Flip smooth + Harmoniques');
+        console.log('💥 GUERRIER → Shatter épique + Métal réaliste');
+        console.log('⚡ TECHNOMANCIEN → Glitch complexe + FM Synthesis');
+        console.log('🌀 ARTEFACT → Spin mystique + Drones profonds');
+        console.log('');
+        console.log('📚 TECH: Howler.js + Tone.js + FreeSound.org + Web Audio API');
+        console.log(`🎴 ${cardData.length} cartes avec audio cinématique prêtes !`);
+        console.log('');
+        console.log('🎵 CATÉGORIES DE SONS DISPONIBLES:');
+        console.log('   • Bruit blanc/brun filtré (glace, feu)');
+        console.log('   • FM Synthesis (électronique, tech)');
+        console.log('   • MetalSynth (impacts, métal)');
+        console.log('   • Harmoniques complexes (magie)');
+        console.log('   • Drones profonds (artefacts anciens)');
+        console.log('   • Effets temps réel (phaser, tremolo, reverb)');
+        console.log('   • Samples FreeSound.org (sons réels)');
+        
+        // AFFICHAGE DES TYPES DÉTECTÉS
+        const classTypes = new Set(cardData.map(card => card.cls));
+        console.log('🎯 Types détectés:', Array.from(classTypes));
+    </script>
+</body>
+</html>

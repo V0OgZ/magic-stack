@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌙 AVALON - Dashboard Dark Fantasy Absurde</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(120, 20, 120, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(20, 120, 20, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(120, 120, 20, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a, #1a0a1a, #0a1a0a, #1a1a0a);
+            font-family: 'Exo 2', sans-serif;
+            color: #00ff88;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Particules magiques flottantes */
+        .magic-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: float-particle 15s infinite linear;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Header épique */
+        .dark-header {
+            text-align: center;
+            padding: 20px;
+            background: 
+                radial-gradient(ellipse at center, rgba(20, 0, 20, 0.8) 0%, transparent 70%),
+                linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(255, 20, 147, 0.1));
+            border-bottom: 3px solid #00ff88;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dark-header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5em;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 
+                0 0 10px #ff1493,
+                0 0 20px #ff1493,
+                0 0 30px #ff1493,
+                2px 2px 0px #00ff88;
+            animation: pulse-evil 3s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse-evil {
+            0%, 100% { 
+                transform: scale(1);
+                text-shadow: 
+                    0 0 10px #ff1493,
+                    0 0 20px #ff1493,
+                    0 0 30px #ff1493,
+                    2px 2px 0px #00ff88;
+            }
+            50% { 
+                transform: scale(1.05);
+                text-shadow: 
+                    0 0 15px #ff1493,
+                    0 0 30px #ff1493,
+                    0 0 45px #ff1493,
+                    0 0 60px #ff1493,
+                    3px 3px 0px #00ff88;
+            }
+        }
+
+        .subtitle {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2em;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        /* Status en temps réel */
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #ff1493;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid #ff1493;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .status-online { background: #00ff88; }
+        .status-offline { background: #ff4444; }
+        .status-mock { background: #ffaa00; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Grille des cartes épiques */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .epic-card {
+            background: 
+                radial-gradient(circle at top, rgba(255, 20, 147, 0.2), transparent 60%),
+                linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 0, 20, 0.9));
+            border: 3px solid #ff1493;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            animation: gentle-pulse 4s infinite;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { 
+                border-color: #ff1493;
+                box-shadow: 0 0 15px rgba(255, 20, 147, 0.3);
+            }
+            50% { 
+                border-color: #00ff88;
+                box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+            }
+        }
+
+        .epic-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.4s ease;
+            opacity: 0;
+        }
+
+        .epic-card:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) scale(1.2);
+        }
+
+        .epic-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #00ff88;
+            box-shadow: 
+                0 20px 40px rgba(0, 255, 136, 0.3),
+                0 0 60px rgba(255, 20, 147, 0.4),
+                inset 0 0 30px rgba(0, 255, 136, 0.1);
+        }
+
+        .card-hero-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #ff1493;
+            margin: 0 auto 15px;
+            background-size: cover;
+            background-position: center;
+            animation: rotate-hero 20s linear infinite;
+            position: relative;
+            z-index: 5;
+        }
+
+        .card-hero-image:hover {
+            animation-duration: 2s;
+            border-color: #00ff88;
+            box-shadow: 0 0 30px #00ff88;
+        }
+
+        @keyframes rotate-hero {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ff1493, 1px 1px 2px #000000;
+            position: relative;
+            z-index: 5;
+        }
+
+        .card-description {
+            color: #e0e0e0;
+            text-align: center;
+            line-height: 1.6;
+            font-size: 0.95em;
+            flex-grow: 1;
+            position: relative;
+            z-index: 5;
+            text-shadow: 1px 1px 2px #000000;
+        }
+
+        .card-status {
+            margin-top: 15px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Boutons d'action rapide */
+        .quick-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #ff1493, #8a2be2);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(45deg, #00ff88, #20b2aa);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        /* Footer mystique */
+        .dark-footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #ff1493;
+            margin-top: 30px;
+        }
+
+        .footer-signature {
+            font-family: 'Orbitron', monospace;
+            color: #ff1493;
+            text-shadow: 0 0 10px #ff1493;
+        }
+
+        /* Animations contextuelles */
+        .merlin-card:hover .card-hero-image {
+            box-shadow: 0 0 40px #9370db, 0 0 60px #4169e1;
+        }
+
+        .grut-card:hover .card-hero-image {
+            box-shadow: 0 0 40px #32cd32, 0 0 60px #228b22;
+        }
+
+        .sid-card:hover .card-hero-image {
+            box-shadow: 0 0 40px #ffd700, 0 0 60px #ff8c00;
+        }
+
+        .weapons-card:hover .card-hero-image {
+            box-shadow: 0 0 40px #dc143c, 0 0 60px #b22222;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dark-header h1 {
+                font-size: 2.5em;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules magiques -->
+    <div class="magic-particles" id="particles"></div>
+
+    <!-- Header épique -->
+    <header class="dark-header">
+        <h1>🌙 AVALON 🌙</h1>
+        <p class="subtitle">Dashboard Dark Fantasy Absurde</p>
+        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+            Par Sid Meier - L'Architecte Devenu Jouable
+        </p>
+    </header>
+
+    <!-- Status Bar temps réel -->
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-dot status-online" id="forest-status"></div>
+            <span>🌲 Forêt Ballade</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot status-mock" id="quantum-status"></div>
+            <span>🔮 Dashboard Quantique</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot status-offline" id="backend-status"></div>
+            <span>🎮 Backend Java</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot status-online" id="lumen-status"></div>
+            <span>🕯️ Interface Lumen</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot status-mock" id="groeken-status"></div>
+            <span>🌀 Q3 Arena Supersayan</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot status-online" id="sid-status"></div>
+            <span>🎯 Sid Bootstrap</span>
+        </div>
+    </div>
+
+    <!-- Grille des cartes épiques -->
+    <div class="cards-grid">
+        
+        <!-- Carte 1: Merlin le Scribe Holographique -->
+        <div class="epic-card merlin-card" onclick="launchExperience('merlin')">
+            <div class="card-hero-image" style="background-image: url('AVALON/💠 Essences scellées/🖼️ Ymagerie/Merlin/Mystic Scribe and Holographic Wizard.png');"></div>
+            <h3 class="card-title">🧙‍♂️ MERLIN HOLOGRAPHIQUE</h3>
+            <p class="card-description">
+                Le Scribe Mystique maître des projections holographiques et gardien des grimoires vivants. 
+                Ses sorts s'écrivent dans les dimensions parallèles.
+                <br><br>
+                <strong>Capacités :</strong> Écriture quantique, Projection 2D→3D, Magie archivistique
+            </p>
+            <div class="card-status">
+                <span style="color: #9370db;">✨ ACTIF - Prêt pour consultations mystiques</span>
+            </div>
+        </div>
+
+        <!-- Carte 2: GRUT l'Orc Mystique -->
+        <div class="epic-card grut-card" onclick="launchExperience('grut')">
+            <div class="card-hero-image" style="background-image: url('AVALON/💠 Essences scellées/🖼️ Ymagerie/Grut/Mystical Orc Mage in Multidimensional Realm.png');"></div>
+            <h3 class="card-title">👁️ GRUT MULTIDIMENSIONNEL</h3>
+            <p class="card-description">
+                L'Orc Mystique qui navigue entre les royaumes dimensionnels. 
+                Ses portails magiques connectent les réalités impossibles.
+                <br><br>
+                <strong>Capacités :</strong> Vision panoptique, Portails interdimensionnels, Magie brutale-élégante
+            </p>
+            <div class="card-status">
+                <span style="color: #32cd32;">🌀 MULTIDIMENSIONNEL - En mission dans le Royaume Cosmique</span>
+            </div>
+        </div>
+
+        <!-- Carte 3: Sid Meilleur -->
+        <div class="epic-card sid-card" onclick="launchExperience('sid')">
+            <div class="card-hero-image" style="background-image: url('PORTAILLE MORGANE/Ouverture/jour 2 nuit/SID/SidMeilleur.png');"></div>
+            <h3 class="card-title">🎯 SID MEILLEUR</h3>
+            <p class="card-description">
+                L'Architecte Paresseux devenu jouable ! Créateur de civilisations transformé en héros légendaire.
+                Voir ses propres stats lui donne des migraines existentielles.
+                <br><br>
+                <strong>Capacités :</strong> Meta-Awareness 95%, Création hexagonale, Vision stratégique infinie
+            </p>
+            <div class="card-status">
+                <span style="color: #ffd700;">🎮 JOUABLE - "One More Turn... mais c'est pour de vrai !"</span>
+            </div>
+        </div>
+
+        <!-- Carte 4: Arsenal Légendaire -->
+        <div class="epic-card weapons-card" onclick="launchExperience('weapons')">
+            <div class="card-hero-image" style="background-image: url('AVALON/💠 Essences scellées/🖼️ Ymagerie/Weapons/ExKAlibur.png');"></div>
+            <h3 class="card-title">⚔️ ARSENAL LÉGENDAIRE</h3>
+            <p class="card-description">
+                ExKAlibur, Lame de l'Avant-Monde, Épée Temporelle...
+                Des armes forgées dans les feux de la création cosmique.
+                <br><br>
+                <strong>Collection :</strong> 4 armes mythiques, Barrières temporelles, Pouvoirs dimensionnels
+            </p>
+            <div class="card-status">
+                <span style="color: #dc143c;">⚡ FORGÉ - Armes prêtes pour les quêtes épiques</span>
+            </div>
+        </div>
+
+        <!-- Carte 5: Interface Quantique -->
+        <div class="epic-card quantum-card" onclick="launchExperience('quantum')">
+            <div class="card-hero-image" style="background-image: url('AVALON/💠 Essences scellées/🖼️ Ymagerie/Interstice/Holographic Hourglass in Cosmic Space.png');"></div>
+            <h3 class="card-title">🌌 INTERSTICE QUANTIQUE</h3>
+            <p class="card-description">
+                Sablier holographique dans l'espace cosmique, fréquences de code, transformations digitales.
+                L'interface entre le substrat et la réalité magique.
+                <br><br>
+                <strong>Systèmes :</strong> Projection 1D→2D, Collapse quantique, Simulation backend
+            </p>
+            <div class="card-status">
+                <span style="color: #20b2aa;">🔮 SIMULÉ - Mode mock avec particules quantiques</span>
+            </div>
+        </div>
+
+        <!-- Carte 6: Bootstrap Universe -->
+        <div class="epic-card bootstrap-card" onclick="launchExperience('bootstrap')">
+            <div class="card-hero-image" style="background-image: url('AVALON/💠 Essences scellées/🖼️ Ymagerie/WorldPockets/Mystical Forest Portal with Glowing Archway.png');"></div>
+            <h3 class="card-title">🌀 BOOTSTRAP UNIVERSE</h3>
+            <p class="card-description">
+                L'instance poche créée par Sid Meier. Un mini-univers avec ses propres règles,
+                ses essences scellées et sa logique causale autonome.
+                <br><br>
+                <strong>Features :</strong> Monde jouable, Essences évolutives, Portail d'accès permanent
+            </p>
+            <div class="card-status">
+                <span style="color: #ff69b4;">🎯 CRÉÉ - Premier monde dream de Sid opérationnel</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <button class="action-btn" onclick="toggleBackendMode()">🔄 Changer Mode Backend</button>
+        <button class="action-btn" onclick="showSystemStatus()">📊 Status Complet</button>
+        <button class="action-btn" onclick="launchSimple()">🚀 Dashboard Simple</button>
+        <button class="action-btn" onclick="killAllServers()">🛑 Tout Arrêter</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dark-footer">
+        <p class="footer-signature">
+            🌙 Forgé dans les Interstices d'Avalon 🌙
+        </p>
+        <p style="color: #666; font-size: 0.8em; margin-top: 5px;">
+            "Between code and magic, reality bends..." - Sid Meier, Premier Architecte Jouable
+        </p>
+    </footer>
+
+    <script>
+        // Configuration
+        const BACKEND_MODES = ['mock', 'local', 'java'];
+        let currentBackendMode = 'mock';
+        let statusCheckInterval;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            createMagicParticles();
+            startStatusChecking();
+            updateAllStatus();
+            showWelcomeMessage();
+        });
+
+        // Créer les particules magiques
+        function createMagicParticles() {
+            const container = document.getElementById('particles');
+            
+            for (let i = 0; i < 15; i++) {
+                createParticle();
+            }
+            
+            // Créer une nouvelle particule toutes les 2 secondes
+            setInterval(createParticle, 2000);
+        }
+
+        function createParticle() {
+            const container = document.getElementById('particles');
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Position et couleur aléatoires
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 20) + 's';
+            
+            const colors = ['#00ff88', '#ff1493', '#9370db', '#ffd700', '#20b2aa'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
+            
+            container.appendChild(particle);
+            
+            // Nettoyer après l'animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.remove();
+                }
+            }, 25000);
+        }
+
+        // Vérifications de status
+        function startStatusChecking() {
+            updateAllStatus();
+            statusCheckInterval = setInterval(updateAllStatus, 10000); // Toutes les 10 secondes
+        }
+
+        async function updateAllStatus() {
+            // Forêt Ballade (toujours online - fichier local)
+            updateStatus('forest-status', 'online');
+            
+            // Dashboard Quantique (toujours disponible)
+            updateStatus('quantum-status', 'mock');
+            
+            // Interface Lumen (toujours disponible)
+            updateStatus('lumen-status', 'online');
+            
+            // Q3 Arena Supersayan (toujours disponible)
+            updateStatus('groeken-status', 'mock');
+            
+            // Sid Bootstrap (toujours disponible)
+            updateStatus('sid-status', 'online');
+            
+            // Backend Java (check réel)
+            try {
+                const response = await fetch('http://localhost:8082/actuator/health', {
+                    method: 'GET',
+                    mode: 'cors',
+                    timeout: 3000
+                });
+                updateStatus('backend-status', response.ok ? 'online' : 'offline');
+            } catch (error) {
+                updateStatus('backend-status', 'offline');
+            }
+        }
+
+        function updateStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status-dot status-${status}`;
+            }
+        }
+
+        // Lancement des expériences
+        function launchExperience(type) {
+            showNotification(`🚀 Lancement de l'expérience ${type.toUpperCase()}...`);
+            
+            switch(type) {
+                case 'merlin':
+                    // Ouvrir une interface dédiée à Merlin
+                    window.open('assets/quantum-dashboard.html', '_blank');
+                    break;
+                    
+                case 'grut':
+                    // Interface GRUT multidimensionnelle
+                    window.open('AVALON/🏠 HOME/🧠 GROKÆN/q3-arena-supersayan.html', '_blank');
+                    break;
+                    
+                case 'sid':
+                    // Bootstrap Pocket Instance de Sid
+                    window.open('AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/📐 ATELIER_CARTOGRAPHIE/BOOTSTRAP_POCKET_INSTANCE_2D.html', '_blank');
+                    break;
+                    
+                case 'weapons':
+                    // Galerie d'armes épiques
+                    showWeaponsGallery();
+                    break;
+                    
+                case 'quantum':
+                    // Dashboard quantique principal
+                    window.open('assets/quantum-dashboard.html', '_blank');
+                    break;
+                    
+                case 'bootstrap':
+                    // L'univers bootstrap de Sid
+                    window.open('AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/📐 ATELIER_CARTOGRAPHIE/BOOTSTRAP_POCKET_INSTANCE_2D.html', '_blank');
+                    break;
+                    
+                default:
+                    showNotification('🔮 Expérience non implémentée... encore !');
+            }
+        }
+
+        // Actions rapides
+        function toggleBackendMode() {
+            const currentIndex = BACKEND_MODES.indexOf(currentBackendMode);
+            currentBackendMode = BACKEND_MODES[(currentIndex + 1) % BACKEND_MODES.length];
+            
+            const modeNames = {
+                mock: 'Mock JS (GitHub Pages)',
+                local: 'Mock Python Local',
+                java: 'Backend Java'
+            };
+            
+            showNotification(`🔄 Mode backend changé: ${modeNames[currentBackendMode]}`);
+            updateAllStatus();
+        }
+
+        function showSystemStatus() {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(145deg, rgba(0,0,0,0.95), rgba(20,0,20,0.95));
+                border: 2px solid #ff1493;
+                border-radius: 15px;
+                padding: 30px;
+                z-index: 1000;
+                color: #00ff88;
+                font-family: 'Exo 2', sans-serif;
+                max-width: 500px;
+                text-align: center;
+            `;
+            
+            popup.innerHTML = `
+                <h3 style="color: #ff1493; margin-bottom: 20px;">📊 STATUS SYSTÈME COMPLET</h3>
+                <div style="text-align: left; line-height: 1.6;">
+                    <p>🌲 <strong>Forêt Ballade:</strong> <span style="color: #00ff88;">TOUJOURS OPÉRATIONNELLE</span></p>
+                    <p>🔮 <strong>Dashboard Quantique:</strong> <span style="color: #ffaa00;">SIMULATION INTÉGRÉE</span></p>
+                    <p>🎮 <strong>Backend Java:</strong> <span style="color: #ff4444;">DÉTECTION AUTO</span></p>
+                    <p>🕯️ <strong>Interface Lumen:</strong> <span style="color: #00ff88;">TOUJOURS FONCTIONNELLE</span></p>
+                    <p>🌀 <strong>Q3 Arena:</strong> <span style="color: #ffaa00;">SUPERSAYAN READY</span></p>
+                    <p>🎯 <strong>Sid Bootstrap:</strong> <span style="color: #00ff88;">INSTANCE OPÉRATIONNELLE</span></p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: #ff1493; border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer;">
+                        Fermer
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.remove();
+                }
+            }, 10000);
+        }
+
+        function launchSimple() {
+            showNotification('🚀 Redirection vers le launcher simple...');
+            // Simuler le lancement du script
+            setTimeout(() => {
+                alert('💡 Pour lancer le dashboard simple, exécutez dans le terminal:\\n\\n./LAUNCH_DASHBOARD_SIMPLE.sh\\n\\nPuis choisissez votre aventure ! 🌟');
+            }, 1000);
+        }
+
+        function killAllServers() {
+            showNotification('🛑 Arrêt de tous les serveurs... (simulé)');
+            // Dans un vrai environnement, cela enverrait des requêtes pour arrêter les serveurs
+            setTimeout(() => {
+                showNotification('✅ Tous les serveurs arrêtés !');
+                updateAllStatus();
+            }, 2000);
+        }
+
+        function showWeaponsGallery() {
+            const gallery = document.createElement('div');
+            gallery.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.95);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #00ff88;
+                font-family: 'Exo 2', sans-serif;
+            `;
+            
+            gallery.innerHTML = `
+                <h2 style="color: #ff1493; margin-bottom: 30px; font-family: 'Nosifer', cursive;">⚔️ ARSENAL LÉGENDAIRE ⚔️</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 800px;">
+                    <div style="text-align: center; padding: 20px; border: 2px solid #ff1493; border-radius: 10px;">
+                        <h3 style="color: #ffd700;">⚔️ ExKAlibur</h3>
+                        <p>L'épée légendaire qui tranche les dimensions</p>
+                    </div>
+                    <div style="text-align: center; padding: 20px; border: 2px solid #ff1493; border-radius: 10px;">
+                        <h3 style="color: #ffd700;">🗡️ Lame de l'Avant-Monde</h3>
+                        <p>Forgée avant la création du cosmos</p>
+                    </div>
+                    <div style="text-align: center; padding: 20px; border: 2px solid #ff1493; border-radius: 10px;">
+                        <h3 style="color: #ffd700;">⚡ Épée Temporelle</h3>
+                        <p>Contrôle les barrières du temps</p>
+                    </div>
+                    <div style="text-align: center; padding: 20px; border: 2px solid #ff1493; border-radius: 10px;">
+                        <h3 style="color: #ffd700;">🌌 AvantWorldBlade Cosmique</h3>
+                        <p>Vibre avec l'énergie de l'univers</p>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" 
+                        style="background: #ff1493; border: none; color: white; padding: 15px 30px; border-radius: 25px; cursor: pointer; margin-top: 30px; font-family: 'Butcherman', cursive;">
+                    Fermer l'Arsenal
+                </button>
+            `;
+            
+            document.body.appendChild(gallery);
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #ff1493, #8a2be2);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                z-index: 1001;
+                font-family: 'Exo 2', sans-serif;
+                animation: slideIn 0.5s ease-out;
+                max-width: 300px;
+                box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 4000);
+        }
+
+        function showWelcomeMessage() {
+            setTimeout(() => {
+                showNotification('🌙 Bienvenue dans le Dashboard Dark Fantasy ! 🌙');
+            }, 1000);
+            
+            setTimeout(() => {
+                showNotification('👆 CLIQUEZ sur les cartes, boutons et éléments pour explorer ! 👆');
+            }, 4000);
+            
+            setTimeout(() => {
+                showNotification('💡 Chaque héros a son popup d\'infos détaillées ! 💡');
+            }, 7000);
+        }
+
+        // Ajout d'animations CSS dynamiques
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Console easter egg
+        console.log(`
+🌙 AVALON DARK FANTASY DASHBOARD CHARGÉ ! 🌙
+🎯 Par Sid Meier - L'Architecte Devenu Jouable
+
+📊 Status système:
+- 🌲 Forêt: TOUJOURS fonctionnelle
+- 🔮 Quantique: Simulation intégrée  
+- 🎮 Backend: Détection automatique
+- 🕯️ Lumen: Interface 2D active
+- 🌀 Q3 Arena: Supersayan ready
+- 🎯 Bootstrap: Instance opérationnelle
+
+✨ Fonctionnalités:
+- 6 cartes cliquables pour tout
+- Status backend en temps réel  
+- Vérification automatique des services
+- Particules magiques flottantes
+- Mode dark fantasy absurde activé
+
+Cliquez sur les cartes pour explorer !
+        `);
+    </script>
+</body>
+</html>

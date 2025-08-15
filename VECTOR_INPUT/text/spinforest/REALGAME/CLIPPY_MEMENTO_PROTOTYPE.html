@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📎🧙 Clippy-Memento - Assistant AVALON</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .demo-zone {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .demo-triggers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .trigger-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .trigger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        /* CLIPPY-MEMENTO ASSISTANT */
+        .clippy-memento {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            z-index: 1000;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .clippy-body {
+            width: 80px;
+            height: 100px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .clippy-shape {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #6366f1);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            animation: clippy-idle 3s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .clippy-eyes {
+            position: absolute;
+            top: 20px;
+            left: 15px;
+            width: 30px;
+            height: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .eye {
+            width: 8px;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            animation: blink 4s infinite;
+        }
+
+        .magic-particles {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: float-particle 2s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 30%; right: 15%; animation-delay: 0.5s; }
+        .particle:nth-child(3) { bottom: 20%; left: 10%; animation-delay: 1s; }
+        .particle:nth-child(4) { bottom: 10%; right: 20%; animation-delay: 1.5s; }
+
+        /* DIALOGUE BUBBLE */
+        .clippy-dialogue {
+            position: absolute;
+            bottom: 120px;
+            right: 0;
+            width: 350px;
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid #6366f1;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            transform: scale(0) translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .clippy-dialogue.show {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .dialogue-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .memento-avatar {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .dialogue-content {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .dialogue-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+            border-radius: 6px;
+            color: #a5b4fc;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        /* ANIMATIONS */
+        @keyframes clippy-idle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        @keyframes clippy-excited {
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-10px) scale(1.1); }
+            50% { transform: translateY(-15px) scale(1.05); }
+            75% { transform: translateY(-5px) scale(1.1); }
+        }
+
+        @keyframes clippy-thinking {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        @keyframes float-particle {
+            0%, 100% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-20px); }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0; }
+        }
+
+        /* USER LEVEL INDICATOR */
+        .user-level {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #a5b4fc;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .clippy-dialogue {
+                width: 280px;
+                right: -50px;
+            }
+            
+            .demo-triggers {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="user-level" id="userLevel">
+        👤 Niveau: Joueur (🟡 Initié)
+    </div>
+
+    <div class="demo-zone">
+        <div class="demo-header">
+            <h1>📎🧙 Clippy-Memento - Assistant AVALON</h1>
+            <p>Teste les différents déclencheurs contextuels</p>
+        </div>
+
+        <div class="demo-triggers">
+            <button class="trigger-btn" onclick="triggerHelp('portal_discovered')">
+                🌀 Découvrir un Portail
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('combat_start')">
+                ⚔️ Combat Imminent
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('sid_meier_meet')">
+                🎯 Rencontrer Sid Meier
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('inventory_full')">
+                🎒 Inventaire Plein
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('secret_area')">
+                🔮 Zone Secrète Découverte
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('api_error')">
+                🛠️ Erreur API (Mode Dev)
+            </button>
+            <button class="trigger-btn" onclick="switchUserLevel()">
+                👑 Changer Niveau Utilisateur
+            </button>
+            <button class="trigger-btn" onclick="triggerHelp('free_question')">
+                🤔 Poser une Question Libre
+            </button>
+        </div>
+    </div>
+
+    <!-- CLIPPY-MEMENTO ASSISTANT -->
+    <div class="clippy-memento" id="clippyMemento">
+        <div class="clippy-body">
+            <div class="clippy-shape">
+                <div class="clippy-eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+            </div>
+            <div class="magic-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </div>
+
+        <div class="clippy-dialogue" id="clippyDialogue">
+            <div class="dialogue-header">
+                <div class="memento-avatar">📎</div>
+                <div>
+                    <strong>Clippy-Memento</strong>
+                    <div style="font-size: 10px; color: #888;">Archiviste d'AVALON</div>
+                </div>
+            </div>
+            <div class="dialogue-content" id="dialogueContent">
+                Salut ! Je suis ton assistant AVALON ! Clique sur les boutons pour tester mes réactions contextuelles ! 🧙✨
+            </div>
+            <div class="dialogue-actions" id="dialogueActions">
+                <button class="action-btn" onclick="askQuestion()">🤔 Poser Question</button>
+                <button class="action-btn" onclick="explainMore()">📚 En Savoir +</button>
+                <button class="action-btn" onclick="closeDialogue()">❌ Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // État global
+        let currentUserLevel = 'player';
+        let isDialogueOpen = false;
+        let currentContext = null;
+
+        // Niveaux utilisateur
+        const userLevels = {
+            'player': { name: 'Joueur', icon: '👤', color: '🟡', security: 'Initié' },
+            'mage': { name: 'Mage', icon: '🧙', color: '🟠', security: 'Adepte' },
+            'dev': { name: 'Dev', icon: '🛠️', color: '🔴', security: 'Confidentiel' },
+            'vincent': { name: 'Vincent', icon: '👑', color: '⚫', security: 'Ultra-Secret' }
+        };
+
+        // Base de données de réponses contextuelles
+        const contextualResponses = {
+            'portal_discovered': {
+                player: {
+                    message: "📎 Wow ! Tu viens de découvrir un portail mystérieux ! Ces passages magiques permettent de voyager entre les dimensions. Celui-ci semble ancien... peut-être lié à Morgana ? 🌀✨",
+                    actions: ['🗺️ Où mène-t-il ?', '⚠️ C\'est dangereux ?', '📚 Histoire portails']
+                },
+                mage: {
+                    message: "🔮 Portail détecté ! Type: DIMENSIONAL, Énergie: Moyenne. Configuration Morgana probable. Activation via sort PORTAL_OPEN ou interaction directe. Prudence recommandée - destination inconnue. ⚡",
+                    actions: ['⚙️ Voir APIs Portail', '🔍 Analyser Énergie', '📋 Check Logs']
+                },
+                dev: {
+                    message: "⚙️ Portail Object détecté:\n```\ntype: 'DIMENSIONAL'\nactivation: 'magic_spell'\ndestination: 'unknown'\nAPI: /api/portal/activate\n```\nVoir portal-system.js ligne 64-109",
+                    actions: ['🔧 Debug Code', '📊 Performance', '📝 Documentation']
+                }
+            },
+            'combat_start': {
+                player: {
+                    message: "📎 Combat imminent ! 🗡️ Conseil tactique : observe bien ton ennemi avant d'attaquer. Utilise tes sorts au bon moment et n'oublie pas ton inventaire ! Tu peux y arriver ! ⚔️✨",
+                    actions: ['💡 Conseils Combat', '🎒 Check Inventaire', '🔮 Sorts Dispo']
+                },
+                mage: {
+                    message: "⚔️ Combat initialisé ! Système TCG activé. Calcul probabilités en cours... Recommandation : Sort défensif puis attaque combo. Mana suffisant pour 3 rounds. 🧙‍♂️",
+                    actions: ['📊 Stats Ennemi', '🎯 Stratégie Opti', '⚡ Gestion Mana']
+                },
+                dev: {
+                    message: "🛠️ Combat Module Init:\n- TCG Engine: active\n- Turn Manager: ready\n- AI Difficulty: moderate\n- API: /api/combat/start\nDebug console disponible.",
+                    actions: ['🐛 Debug Console', '📈 Performance', '⚙️ Config Combat']
+                }
+            },
+            'sid_meier_meet': {
+                player: {
+                    message: "📎 Incroyable ! Tu rencontres Sid Meier, l'Architecte Paresseux ! 🎯 Il est arrivé dans AVALON via le Portail de Morgana lors de l'Événement CHEVRON 7. Créateur légendaire de civilisations entières ! ✨",
+                    actions: ['🎮 Ses Capacités ?', '🌀 Comment arrivé ?', '💬 Parler à Sid']
+                },
+                mage: {
+                    message: "🎯 Sid Meier détecté ! Héros Tier LÉGENDAIRE, Level 30. Capacités : Création Civilisation, Hexagone Fondamental, Œil Probabiliste. Spécialité : Transformation terrain + invocation unités historiques. 🏛️",
+                    actions: ['📋 Fiche Complète', '⚡ Ses Sorts', '🤝 Collaboration ?']
+                },
+                dev: {
+                    message: "👨‍💻 Sid Meier Hero Object:\n- ID: sid-meier-architecte\n- Class: STRATEGE_TEMPOREL\n- JSON: /essences/heroes/strategists/\n- Special: meta-awareness=95\nOrigin: Paradoxe Historiographique",
+                    actions: ['📄 Voir JSON', '🔧 Edit Stats', '📊 Balancing']
+                }
+            },
+            'secret_area': {
+                player: {
+                    message: "📎 Zone secrète découverte ! 🔮 Mes archives indiquent que cet endroit contient des mystères anciens... Attention aux gardiens magiques ! Explore prudemment, des trésors t'attendent ! ✨💎",
+                    actions: ['⚠️ Quels dangers ?', '💰 Quels trésors ?', '🗺️ Autres secrets ?']
+                },
+                mage: {
+                    message: "🔮 Zone classifiée ADEPTE détectée ! Contenu : Artefacts Tier 6+, Grimoires avancés, Entités gardiens. Classification sécurité : CONFIDENTIEL. Accès autorisé niveau mage. 🛡️",
+                    actions: ['🔒 Voir Classification', '📚 Grimoires Dispo', '👻 Entités Info']
+                }
+            },
+            'api_error': {
+                dev: {
+                    message: "🛠️ Erreur API détectée !\n```\nError: 503 Service Unavailable\nEndpoint: /api/world-state/collapse\nStack trace disponible...\n```\nSuggestion : Vérifier Backend Rust port 3001",
+                    actions: ['📊 Voir Logs', '🔄 Restart Service', '🐛 Debug Stack']
+                }
+            },
+            'free_question': {
+                player: {
+                    message: "📎 Je suis là pour répondre à tes questions sur AVALON ! 🧙✨ Tu peux me demander l'histoire des héros, des infos sur les quêtes, des conseils de gameplay, ou des explications sur les mécaniques ! Que veux-tu savoir ?",
+                    actions: ['🧙 Héros d\'AVALON', '🗺️ Zones à explorer', '⚔️ Mécaniques combat']
+                }
+            }
+        };
+
+        // Animations
+        function animateClippy(animation) {
+            const clippy = document.querySelector('.clippy-shape');
+            clippy.style.animation = `${animation} 1s ease-in-out`;
+            
+            setTimeout(() => {
+                clippy.style.animation = 'clippy-idle 3s ease-in-out infinite';
+            }, 1000);
+        }
+
+        // Déclencher aide contextuelle
+        function triggerHelp(context) {
+            currentContext = context;
+            const userLevel = currentUserLevel === 'vincent' ? 'dev' : currentUserLevel;
+            const response = contextualResponses[context]?.[userLevel] || contextualResponses[context]?.player;
+            
+            if (!response) {
+                showDialogue("📎 Désolé, je n'ai pas d'information spécifique sur ce contexte pour ton niveau actuel. Essaie de passer en mode supérieur ! 🤔", ['🆙 Niveau Supérieur']);
+                return;
+            }
+
+            // Animation selon contexte
+            if (context.includes('combat')) animateClippy('clippy-excited');
+            else if (context.includes('error')) animateClippy('clippy-thinking');
+            else animateClippy('clippy-excited');
+
+            // Afficher réponse
+            showDialogue(response.message, response.actions);
+        }
+
+        // Afficher dialogue
+        function showDialogue(message, actions = []) {
+            const dialogue = document.getElementById('clippyDialogue');
+            const content = document.getElementById('dialogueContent');
+            const actionsContainer = document.getElementById('dialogueActions');
+
+            content.innerHTML = message;
+            
+            // Actions personnalisées
+            actionsContainer.innerHTML = '';
+            actions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.textContent = action;
+                btn.onclick = () => handleAction(action);
+                actionsContainer.appendChild(btn);
+            });
+
+            // Actions par défaut
+            const defaultActions = ['🤔 Autre Question', '❌ Fermer'];
+            defaultActions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.textContent = action;
+                btn.onclick = () => handleAction(action);
+                actionsContainer.appendChild(btn);
+            });
+
+            dialogue.classList.add('show');
+            isDialogueOpen = true;
+        }
+
+        // Gérer actions
+        function handleAction(action) {
+            if (action.includes('Fermer')) {
+                closeDialogue();
+            } else if (action.includes('Question')) {
+                triggerHelp('free_question');
+            } else {
+                // Action contextuelle
+                showDialogue(`📎 "${action}" - Fonctionnalité en développement ! Cette action sera bientôt connectée au Vector DB pour des réponses personnalisées ! 🚀`, []);
+            }
+        }
+
+        // Fermer dialogue
+        function closeDialogue() {
+            document.getElementById('clippyDialogue').classList.remove('show');
+            isDialogueOpen = false;
+        }
+
+        // Changer niveau utilisateur
+        function switchUserLevel() {
+            const levels = Object.keys(userLevels);
+            const currentIndex = levels.indexOf(currentUserLevel);
+            const nextIndex = (currentIndex + 1) % levels.length;
+            currentUserLevel = levels[nextIndex];
+            
+            const level = userLevels[currentUserLevel];
+            document.getElementById('userLevel').innerHTML = 
+                `${level.icon} Niveau: ${level.name} (${level.color} ${level.security})`;
+            
+            animateClippy('clippy-excited');
+            showDialogue(`📎 Niveau changé ! Tu es maintenant ${level.icon} ${level.name} avec accès ${level.color} ${level.security}. Mes réponses vont s'adapter à ton nouveau niveau ! ✨`, []);
+        }
+
+        // Actions rapides
+        function askQuestion() {
+            triggerHelp('free_question');
+        }
+
+        function explainMore() {
+            if (currentContext) {
+                const nextLevel = currentUserLevel === 'player' ? 'mage' : 'dev';
+                showDialogue(`📎 Pour en savoir plus sur "${currentContext}", passe au niveau ${userLevels[nextLevel].name} ! Ou pose-moi une question spécifique ! 🧙‍♂️`, []);
+            } else {
+                askQuestion();
+            }
+        }
+
+        // Click sur Clippy
+        document.getElementById('clippyMemento').onclick = function() {
+            if (!isDialogueOpen) {
+                triggerHelp('free_question');
+            }
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation d'accueil après 2 secondes
+            setTimeout(() => {
+                animateClippy('clippy-excited');
+                showDialogue("📎🧙 Salut ! Je suis Clippy-Memento, ton assistant personnel d'AVALON ! Je combine l'aide contextuelle de Clippy avec la sagesse de Memento l'Archiviste. Teste les boutons pour voir mes différentes réactions ! ✨", []);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

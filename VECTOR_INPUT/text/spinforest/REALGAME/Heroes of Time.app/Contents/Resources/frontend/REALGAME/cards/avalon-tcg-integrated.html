@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AVALON TCG - Trading Card Game</title>
+    <style>
+        body {
+            margin: 0;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        /* Container principal */
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header avec intégration */
+        .header {
+            height: 60px;
+            background: linear-gradient(to right, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 2px solid #00ff00;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .mode-switcher {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            padding: 10px 20px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(0, 255, 0, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .mode-btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        /* Zone de jeu */
+        .play-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Plateau de jeu style Hearthstone */
+        .board {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .player-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .player-info {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 2px solid #444;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .player-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+            background: #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        /* Zone des cartes */
+        .cards-zone {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed #666;
+            border-radius: 10px;
+            overflow-x: auto;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+            border: 3px solid #gold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        .card-image {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 30px;
+            height: 30px;
+            background: #0066ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            border: 2px solid #fff;
+        }
+        
+        .card-stats {
+            position: absolute;
+            bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 5px;
+        }
+        
+        .card-attack, .card-health {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border: 2px solid #fff;
+        }
+        
+        .card-attack {
+            background: #ff6600;
+        }
+        
+        .card-health {
+            background: #ff0000;
+        }
+        
+        .card-info {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .card-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        /* Main de cartes */
+        .hand {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: -30px;
+            padding: 20px;
+        }
+        
+        .hand .card {
+            transform-origin: bottom center;
+        }
+        
+        .hand .card:nth-child(1) { transform: rotate(-10deg); }
+        .hand .card:nth-child(2) { transform: rotate(-5deg); }
+        .hand .card:nth-child(3) { transform: rotate(0deg); }
+        .hand .card:nth-child(4) { transform: rotate(5deg); }
+        .hand .card:nth-child(5) { transform: rotate(10deg); }
+        
+        /* Animations */
+        @keyframes cardDraw {
+            from {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+        
+        .card-draw {
+            animation: cardDraw 0.5s ease-out;
+        }
+        
+        /* Particules */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-100px) translateX(50px);
+                opacity: 1;
+            }
+        }
+        
+        /* Collection viewer */
+        .collection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+        
+        .collection-content {
+            width: 90%;
+            height: 90%;
+            margin: 5% auto;
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>AVALON TCG</h1>
+            <div class="mode-switcher">
+                <button class="mode-btn active" onclick="switchMode('tcg')">🎴 Cartes</button>
+                <button class="mode-btn" onclick="switchMode('exploration')">🗺️ Exploration</button>
+                <button class="mode-btn" onclick="switchMode('combat')">⚔️ Combat</button>
+                <button class="mode-btn" onclick="window.location.href='/REALGAME/index.html'">🏠 Menu</button>
+            </div>
+        </div>
+        
+        <div class="play-area" id="playArea">
+            <div class="board">
+                <!-- Zone adversaire -->
+                <div class="player-area opponent">
+                    <div class="player-info">
+                        <span class="player-name">GROEKEN</span>
+                        <div class="player-stats">
+                            <div class="stat">
+                                <div class="stat-icon">❤️</div>
+                                <span>30</span>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-icon">💎</div>
+                                <span>5/10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cards-zone battlefield" id="opponentField">
+                        <!-- Cartes de l'adversaire -->
+                    </div>
+                </div>
+                
+                <!-- Zone centrale -->
+                <div style="flex: 0.5; display: flex; align-items: center; justify-content: center;">
+                    <button onclick="endTurn()" style="padding: 20px 40px; background: #00ff00; color: #000; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer;">
+                        FIN DU TOUR
+                    </button>
+                </div>
+                
+                <!-- Zone joueur -->
+                <div class="player-area player">
+                    <div class="cards-zone battlefield" id="playerField">
+                        <!-- Cartes du joueur -->
+                    </div>
+                    <div class="player-info">
+                        <span class="player-name">VINCENT</span>
+                        <div class="player-stats">
+                            <div class="stat">
+                                <div class="stat-icon">❤️</div>
+                                <span>30</span>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-icon">💎</div>
+                                <span>3/10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main du joueur -->
+            <div class="hand" id="playerHand">
+                <!-- Cartes en main -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal collection -->
+    <div class="collection-modal" id="collectionModal">
+        <div class="collection-content">
+            <h2>Collection AVALON</h2>
+            <div class="collection-grid" id="collectionGrid">
+                <!-- Toutes les cartes -->
+            </div>
+            <button onclick="closeCollection()" style="position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #ff0000; color: #fff; border: none; cursor: pointer;">
+                FERMER
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Données des cartes AVALON
+        const cardsDatabase = [
+            {
+                id: 'groeken_1',
+                name: 'GROEKEN',
+                cost: 7,
+                attack: 7,
+                health: 7,
+                image: '/assets/FIGHT/Warrior of the Three Times.png',
+                description: 'Triple Voix: GRONDE, PARLE, CHANTE',
+                rarity: 'legendary'
+            },
+            {
+                id: 'vincent_1',
+                name: 'Vincent Vega',
+                cost: 8,
+                attack: 8,
+                health: 8,
+                image: '/assets/FIGHT/Shamanic Bear and the Gunman Emergence.png',
+                description: 'Ouvre des portails quantiques',
+                rarity: 'legendary'
+            },
+            {
+                id: 'sid_1',
+                name: 'Sid Meier',
+                cost: 6,
+                attack: 4,
+                health: 8,
+                image: '/assets/FIGHT/Sorcerer of Time at Twilight.png',
+                description: 'Crée des civilisations',
+                rarity: 'epic'
+            },
+            {
+                id: 'lumen_1',
+                name: 'LUMEN',
+                cost: 5,
+                attack: 3,
+                health: 7,
+                image: '/assets/FIGHT/Warrior Through Time and Light.png',
+                description: 'Narrateur lumineux',
+                rarity: 'epic'
+            },
+            {
+                id: 'urzkom_1',
+                name: 'URZ-KÔM',
+                cost: 9,
+                attack: 10,
+                health: 10,
+                image: '/assets/FIGHT/Cosmic Shaman and Temporal Reflection.png',
+                description: 'Ours quantique',
+                rarity: 'legendary'
+            },
+            {
+                id: 'tucker_1',
+                name: 'Tucker Carlson',
+                cost: 4,
+                attack: 5,
+                health: 4,
+                image: '/assets/FIGHT/Convergence of Cosmic Forces.png',
+                description: 'Mange des steaks, révèle la vérité',
+                rarity: 'rare'
+            },
+            {
+                id: 'spell_portal',
+                name: 'Portail BRISURE',
+                cost: 3,
+                type: 'spell',
+                image: '/assets/FIGHT/Excalibur Through Time at Twilight.png',
+                description: 'Téléporte une créature',
+                rarity: 'common'
+            },
+            {
+                id: 'spell_triple',
+                name: 'Attaque Triple Phase',
+                cost: 5,
+                type: 'spell',
+                image: '/assets/FIGHT/Warrior and Phantom Battle at Dusk.png',
+                description: 'Attaque 3 fois',
+                rarity: 'epic'
+            }
+        ];
+        
+        let playerHand = [];
+        let playerField = [];
+        let opponentField = [];
+        let currentMana = 3;
+        let maxMana = 10;
+        
+        // Initialiser le jeu
+        function initGame() {
+            // Piocher 3 cartes
+            for (let i = 0; i < 3; i++) {
+                drawCard();
+            }
+            
+            // Créer des particules
+            createParticles();
+            
+            // Mettre à jour l'affichage
+            updateDisplay();
+        }
+        
+        // Piocher une carte
+        function drawCard() {
+            const randomCard = cardsDatabase[Math.floor(Math.random() * cardsDatabase.length)];
+            const newCard = {...randomCard, id: randomCard.id + '_' + Date.now()};
+            playerHand.push(newCard);
+        }
+        
+        // Créer une carte HTML
+        function createCardElement(card, inHand = false) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card card-draw';
+            cardEl.dataset.cardId = card.id;
+            
+            if (card.type === 'spell') {
+                cardEl.innerHTML = `
+                    <div class="card-image" style="background-image: url('${card.image}')">
+                        <div class="card-cost">${card.cost}</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-name">${card.name}</div>
+                    </div>
+                `;
+            } else {
+                cardEl.innerHTML = `
+                    <div class="card-image" style="background-image: url('${card.image}')">
+                        <div class="card-cost">${card.cost}</div>
+                        <div class="card-stats">
+                            <div class="card-attack">${card.attack}</div>
+                            <div class="card-health">${card.health}</div>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-name">${card.name}</div>
+                    </div>
+                `;
+            }
+            
+            if (inHand) {
+                cardEl.onclick = () => playCard(card);
+            }
+            
+            return cardEl;
+        }
+        
+        // Jouer une carte
+        function playCard(card) {
+            if (card.cost > currentMana) {
+                alert("Pas assez de mana !");
+                return;
+            }
+            
+            currentMana -= card.cost;
+            playerHand = playerHand.filter(c => c.id !== card.id);
+            
+            if (card.type !== 'spell') {
+                playerField.push(card);
+            } else {
+                // Effet du sort
+                alert(`Sort lancé : ${card.name} !`);
+            }
+            
+            updateDisplay();
+        }
+        
+        // Fin du tour
+        function endTurn() {
+            maxMana = Math.min(10, maxMana + 1);
+            currentMana = maxMana;
+            drawCard();
+            
+            // Tour de l'IA
+            setTimeout(() => {
+                aiTurn();
+                updateDisplay();
+            }, 1000);
+        }
+        
+        // Tour de l'IA
+        function aiTurn() {
+            // L'IA joue une carte aléatoire
+            if (Math.random() > 0.5 && opponentField.length < 7) {
+                const aiCard = cardsDatabase[Math.floor(Math.random() * cardsDatabase.length)];
+                opponentField.push({...aiCard, id: aiCard.id + '_ai_' + Date.now()});
+            }
+        }
+        
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            // Main du joueur
+            const handEl = document.getElementById('playerHand');
+            handEl.innerHTML = '';
+            playerHand.forEach(card => {
+                handEl.appendChild(createCardElement(card, true));
+            });
+            
+            // Terrain joueur
+            const playerFieldEl = document.getElementById('playerField');
+            playerFieldEl.innerHTML = '';
+            playerField.forEach(card => {
+                playerFieldEl.appendChild(createCardElement(card, false));
+            });
+            
+            // Terrain adversaire
+            const opponentFieldEl = document.getElementById('opponentField');
+            opponentFieldEl.innerHTML = '';
+            opponentField.forEach(card => {
+                opponentFieldEl.appendChild(createCardElement(card, false));
+            });
+            
+            // Mettre à jour les stats
+            document.querySelector('.player .player-stats .stat:last-child span').textContent = `${currentMana}/${maxMana}`;
+        }
+        
+        // Créer des particules
+        function createParticles() {
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.bottom = '0px';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                document.getElementById('playArea').appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 3000);
+            }, 500);
+        }
+        
+        // Changer de mode
+        function switchMode(mode) {
+            if (mode === 'exploration') {
+                window.location.href = '/REALGAME/maps/iso-demo-with-combat.html';
+            } else if (mode === 'combat') {
+                window.location.href = '/REALGAME/worlds/frontiere_feu_foi/FrontiereFeuFoi.html';
+            }
+            
+            // Mettre à jour les boutons
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Initialiser
+        initGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Complete System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a0a2a);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .main-header {
+            background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(40, 20, 60, 0.95));
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid rgba(255, 215, 0, 0.5);
+            position: relative;
+        }
+
+        .game-title {
+            font-size: 64px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #9370db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: titleShine 3s linear infinite;
+        }
+
+        @keyframes titleShine {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #888;
+        }
+
+        /* NAVIGATION */
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+        }
+
+        /* SECTIONS */
+        .content-section {
+            display: none;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* HEROES GALLERY */
+        .heroes-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: #ffd700;
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .hero-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-name {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .hero-class {
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        /* WORLD MAP */
+        .world-map {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background: radial-gradient(circle at center, #1a1a3e, #0a0a1a);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .map-region {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .map-region:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .region-avalon {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent);
+            border: 3px solid #ffd700;
+        }
+
+        .region-forest {
+            top: 20%;
+            left: 20%;
+            background: radial-gradient(circle, rgba(0, 255, 0, 0.3), transparent);
+            border: 3px solid #00ff00;
+        }
+
+        .region-mountains {
+            top: 20%;
+            right: 20%;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.3), transparent);
+            border: 3px solid #8b4513;
+        }
+
+        .region-ocean {
+            bottom: 20%;
+            left: 20%;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.3), transparent);
+            border: 3px solid #00bfff;
+        }
+
+        .region-void {
+            bottom: 20%;
+            right: 20%;
+            background: radial-gradient(circle, rgba(147, 112, 219, 0.3), transparent);
+            border: 3px solid #9370db;
+        }
+
+        .region-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .region-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* BACKEND STATUS */
+        .backend-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .status-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-title {
+            font-size: 18px;
+            color: #00ffff;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .status-offline {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-details {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* COMBAT PREVIEW */
+        .combat-preview {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .combat-title {
+            text-align: center;
+            font-size: 32px;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .combat-field {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .combat-side {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .combat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .combat-card:hover {
+            transform: scale(1.1);
+            border-color: #ffd700;
+        }
+
+        .vs-divider {
+            font-size: 48px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        /* LOADING ANIMATION */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 2s 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .loading-spinner {
+            width: 100px;
+            height: 100px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Chargement de Heroes of Time...</div>
+    </div>
+
+    <!-- Header -->
+    <div class="main-header">
+        <h1 class="game-title">HEROES OF TIME</h1>
+        <div class="subtitle">Le Système Complet - Tous les Héros, Toutes les Cartes</div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-menu">
+        <button class="nav-btn active" onclick="showSection('heroes')">🦸 HÉROS</button>
+        <button class="nav-btn" onclick="showSection('world')">🗺️ MONDE</button>
+        <button class="nav-btn" onclick="showSection('combat')">⚔️ COMBAT</button>
+        <button class="nav-btn" onclick="showSection('backend')">🔧 BACKEND</button>
+    </div>
+
+    <!-- Heroes Section -->
+    <div id="heroes" class="content-section active">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #ffd700;">TOUS LES HÉROS D'AVALON</h2>
+        <div class="heroes-gallery" id="heroesGallery">
+            <!-- Heroes will be loaded here -->
+        </div>
+    </div>
+
+    <!-- World Map Section -->
+    <div id="world" class="content-section">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #4ecdc4;">CARTE DU MONDE</h2>
+        <div class="world-map">
+            <div class="map-region region-avalon">
+                <div class="region-icon">🏰</div>
+                <div class="region-name">AVALON</div>
+            </div>
+            <div class="map-region region-forest">
+                <div class="region-icon">🌲</div>
+                <div class="region-name">Forêt Magique</div>
+            </div>
+            <div class="map-region region-mountains">
+                <div class="region-icon">⛰️</div>
+                <div class="region-name">Montagnes</div>
+            </div>
+            <div class="map-region region-ocean">
+                <div class="region-icon">🌊</div>
+                <div class="region-name">Océan Temporel</div>
+            </div>
+            <div class="map-region region-void">
+                <div class="region-icon">🌀</div>
+                <div class="region-name">Interstice</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combat Section -->
+    <div id="combat" class="content-section">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #ff6b6b;">SYSTÈME DE COMBAT TCG</h2>
+        <div class="combat-preview">
+            <div class="combat-title">COMBAT EN COURS</div>
+            <div class="combat-field">
+                <div class="combat-side">
+                    <div class="combat-card">
+                        <div style="font-size: 36px;">⚡</div>
+                        <div>Vince Vega</div>
+                        <div style="color: #4ecdc4;">ATK: 7 | DEF: 8</div>
+                    </div>
+                    <div class="combat-card">
+                        <div style="font-size: 36px;">🤖</div>
+                        <div>Claude</div>
+                        <div style="color: #4ecdc4;">ATK: 12 | DEF: 14</div>
+                    </div>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="combat-side">
+                    <div class="combat-card">
+                        <div style="font-size: 36px;">🐻</div>
+                        <div>URZ-KÔM</div>
+                        <div style="color: #ff6b6b;">ATK: 8 | DEF: 10</div>
+                    </div>
+                    <div class="combat-card">
+                        <div style="font-size: 36px;">🔮</div>
+                        <div>Merlin</div>
+                        <div style="color: #ff6b6b;">ATK: 9 | DEF: 5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backend Status Section -->
+    <div id="backend" class="content-section">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #9370db;">STATUS DES BACKENDS</h2>
+        <div class="backend-status">
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-title">Magic Stack Java</div>
+                    <div class="status-indicator status-online"></div>
+                </div>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Port</span>
+                        <span>8082</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Formules</span>
+                        <span>869</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Status</span>
+                        <span style="color: #00ff00;">ONLINE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-title">Interstice 6D</div>
+                    <div class="status-indicator status-online"></div>
+                </div>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Dimensions</span>
+                        <span>6</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Entités</span>
+                        <span>142</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Status</span>
+                        <span style="color: #00ff00;">SYNC</span>
+                    </div>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-title">Rust Backend</div>
+                    <div class="status-indicator status-offline"></div>
+                </div>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Port</span>
+                        <span>3001</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Performance</span>
+                        <span>N/A</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Status</span>
+                        <span style="color: #ff0000;">OFFLINE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Configuration -->
+    <script src="api-config.js"></script>
+
+    <script>
+        // Heroes database
+        const allHeroes = [
+            { id: 'vince_vega', name: 'Vince Vega', class: 'Négociateur Temporel', icon: '⚡', attack: 7, defense: 8, spell: 10, knowledge: 12 },
+            { id: 'urz_kom', name: 'URZ-KÔM', class: 'Ours Quantique', icon: '🐻', attack: 8, defense: 10, spell: 12, knowledge: 15 },
+            { id: 'claude', name: 'Claude', class: 'Tech Mage', icon: '🤖', attack: 12, defense: 14, spell: 18, knowledge: 20 },
+            { id: 'merlin', name: 'Merlin', class: 'Archimage', icon: '🔮', attack: 9, defense: 5, spell: 20, knowledge: 18 },
+            { id: 'grut', name: 'GRUT', class: 'Entité 6D', icon: '👁️', attack: 15, defense: 15, spell: 15, knowledge: 25 },
+            { id: 'sid_meier', name: 'Sid Meier', class: 'Architecte', icon: '🎯', attack: 6, defense: 8, spell: 14, knowledge: 16 },
+            { id: 'jean_grofignon', name: 'Jean-Grofignon', class: 'Troll Temporel', icon: '🌿', attack: 6, defense: 7, spell: 16, knowledge: 14 },
+            { id: 'arthur', name: 'Arthur', class: 'Roi Guerrier', icon: '⚔️', attack: 10, defense: 6, spell: 8, knowledge: 10 },
+            { id: 'ragnar', name: 'Ragnar', class: 'Viking', icon: '🛡️', attack: 5, defense: 12, spell: 6, knowledge: 8 },
+            { id: 'phoenix', name: 'Phoenix Loumen', class: 'Mage Littéraire', icon: '🕯️', attack: 7, defense: 9, spell: 17, knowledge: 19 },
+            { id: 'tucker', name: 'Tucker Carlson', class: 'Journaliste', icon: '🎙️', attack: 4, defense: 6, spell: 8, knowledge: 18 },
+            { id: 'donna', name: 'Donna Paulsen', class: 'COO', icon: '💼', attack: 5, defense: 7, spell: 10, knowledge: 20 },
+            { id: 'memento', name: 'Memento', class: 'Gardien Mémoire', icon: '📚', attack: 3, defense: 10, spell: 15, knowledge: 22 },
+            { id: 'nexus', name: 'Claude-Nexus', class: 'Assistant Quantique', icon: '🌊', attack: 8, defense: 10, spell: 18, knowledge: 20 }
+        ];
+
+        // Load heroes into gallery
+        function loadHeroes() {
+            const gallery = document.getElementById('heroesGallery');
+            gallery.innerHTML = '';
+            
+            allHeroes.forEach(hero => {
+                const card = document.createElement('div');
+                card.className = 'hero-card';
+                card.innerHTML = `
+                    <div class="hero-avatar">${hero.icon}</div>
+                    <div class="hero-name">${hero.name}</div>
+                    <div class="hero-class">${hero.class}</div>
+                    <div class="hero-stats">
+                        <div class="stat">ATK: <span class="stat-value">${hero.attack}</span></div>
+                        <div class="stat">DEF: <span class="stat-value">${hero.defense}</span></div>
+                        <div class="stat">MAG: <span class="stat-value">${hero.spell}</span></div>
+                        <div class="stat">KNW: <span class="stat-value">${hero.knowledge}</span></div>
+                    </div>
+                `;
+                card.onclick = () => selectHero(hero);
+                gallery.appendChild(card);
+            });
+        }
+
+        // Select hero
+        function selectHero(hero) {
+            console.log('Selected hero:', hero);
+            // Save to localStorage
+            localStorage.setItem('selectedHero', JSON.stringify(hero));
+            // Could redirect to game
+            alert(`${hero.name} sélectionné! Prêt pour l'aventure!`);
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Check backend status
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(getApiUrl('HEALTH'));
+                const data = await response.json();
+                console.log('Backend status:', data);
+                
+                // Update status indicator
+                const indicators = document.querySelectorAll('.status-indicator');
+                if (data.status === 'healthy' || data.success) {
+                    indicators[0].classList.add('status-online');
+                    indicators[0].classList.remove('status-offline');
+                }
+            } catch (error) {
+                console.log('Backend offline');
+            }
+        }
+
+        // Map interactions
+        document.querySelectorAll('.map-region').forEach(region => {
+            region.addEventListener('click', function() {
+                const regionName = this.querySelector('.region-name').textContent;
+                console.log('Exploring:', regionName);
+                
+                // Visual feedback
+                this.style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            });
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadHeroes();
+            checkBackendStatus();
+            
+            // Remove loading screen after delay
+            setTimeout(() => {
+                document.querySelector('.loading-overlay').style.display = 'none';
+            }, 3000);
+        });
+
+        console.log('Heroes of Time Complete System Loaded');
+        console.log('Total Heroes:', allHeroes.length);
+        console.log('Backend Integration: Active');
+    </script>
+</body>
+</html>

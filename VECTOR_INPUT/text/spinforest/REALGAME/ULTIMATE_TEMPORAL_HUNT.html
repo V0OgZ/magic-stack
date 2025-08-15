@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎯⚡ ULTIMATE TEMPORAL HUNT ⚡🎯</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(circle at center, #0a0014, #000000);
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            height: 100vh;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        #huntCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: transparent;
+            z-index: 1;
+        }
+        
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            filter: blur(1px);
+        }
+        
+        .hud {
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .hud * {
+            pointer-events: auto;
+        }
+        
+        #topHUD {
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        #bottomHUD {
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .panel {
+            background: rgba(10, 0, 30, 0.9);
+            border: 2px solid #8A2BE2;
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+        }
+        
+        .hunt-status {
+            width: 320px;
+        }
+        
+        .player-stats {
+            width: 280px;
+        }
+        
+        .mode-selector {
+            width: 400px;
+        }
+        
+        .weapons-panel {
+            width: 350px;
+        }
+        
+        h2 {
+            color: #E0B0FF;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(224, 176, 255, 0.5);
+        }
+        
+        .stat-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(138, 43, 226, 0.2);
+            border-radius: 6px;
+            border: 1px solid rgba(138, 43, 226, 0.5);
+        }
+        
+        .stat-value {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .health-bar, .mana-bar, .ammo-bar {
+            width: 150px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF4500, #FF6347);
+            transition: width 0.3s;
+        }
+        
+        .mana-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0080FF, #00BFFF);
+            transition: width 0.3s;
+        }
+        
+        .ammo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transition: width 0.3s;
+        }
+        
+        .mode-button {
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border: 2px solid #8A2BE2;
+            color: white;
+            padding: 12px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        
+        .mode-button:hover {
+            background: linear-gradient(45deg, #9932CC, #6A0DAD);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .mode-button.active {
+            background: linear-gradient(45deg, #FF6347, #DC143C);
+            border-color: #FF6347;
+            box-shadow: 0 0 25px rgba(255, 99, 71, 0.8);
+        }
+        
+        .weapon-button {
+            background: linear-gradient(45deg, #2E8B57, #228B22);
+            border: 2px solid #32CD32;
+            color: white;
+            padding: 15px;
+            margin: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: calc(50% - 10px);
+            text-align: center;
+        }
+        
+        .weapon-button:hover {
+            background: linear-gradient(45deg, #3CB371, #90EE90);
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .weapon-button.selected {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-color: #FFD700;
+            color: #000;
+        }
+        
+        .timeline-display {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #8A2BE2;
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(90deg, #FF4500, #FFD700, #32CD32, #00BFFF, #8A2BE2);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 80%;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+            transition: left 0.3s;
+        }
+        
+        .target-counter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .target-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .target-alive { background: #FF4500; }
+        .target-dead { background: #333; color: #666; }
+        .target-special { background: #FFD700; color: #000; }
+        
+        .crosshair {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #00FF00;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 15;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #00FF00;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .kill-feed {
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            width: 300px;
+            z-index: 12;
+            pointer-events: none;
+        }
+        
+        .kill-message {
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 4px solid #FFD700;
+            font-weight: bold;
+            animation: slideIn 0.5s, fadeOut 0.5s 2.5s;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        
+        .power-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(138, 43, 226, 0.3), transparent);
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .power-overlay.active {
+            opacity: 1;
+            animation: powerPulse 0.5s infinite;
+        }
+        
+        @keyframes powerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .score-popup {
+            position: absolute;
+            z-index: 20;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 10px #FFD700;
+            pointer-events: none;
+            animation: scoreFloat 1s ease-out;
+        }
+        
+        @keyframes scoreFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+        }
+        
+        .mini-map {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 8px;
+            z-index: 11;
+        }
+        
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+        }
+        
+        .start-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #8A2BE2;
+            text-shadow: 0 0 30px #8A2BE2;
+            margin-bottom: 30px;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 30px #8A2BE2; }
+            50% { text-shadow: 0 0 50px #8A2BE2, 0 0 70px #9932CC; }
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border: 3px solid #8A2BE2;
+            color: white;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        
+        .start-button:hover {
+            background: linear-gradient(45deg, #9932CC, #6A0DAD);
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.8);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran de démarrage -->
+    <div id="startScreen" class="start-screen">
+        <div class="start-title">🎯⚡ ULTIMATE TEMPORAL HUNT ⚡🎯</div>
+        <p style="font-size: 18px; margin-bottom: 30px; color: #E0B0FF;">
+            Chassez à travers les dimensions temporelles<br>
+            Affrontez IA, joueurs et entités quantiques
+        </p>
+        <button class="start-button" onclick="startHunt()">🚀 DÉMARRER LA CHASSE</button>
+        <button class="start-button" onclick="showInstructions()">📖 INSTRUCTIONS</button>
+    </div>
+
+    <!-- Canvas pour particules -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <!-- Canvas principal -->
+    <canvas id="huntCanvas"></canvas>
+    
+    <!-- Réticule -->
+    <div id="crosshair" class="crosshair"></div>
+    
+    <!-- Mini-carte -->
+    <canvas id="miniMap" class="mini-map"></canvas>
+    
+    <!-- Overlay de pouvoir -->
+    <div id="powerOverlay" class="power-overlay"></div>
+    
+    <!-- Feed des kills -->
+    <div id="killFeed" class="kill-feed"></div>
+    
+    <!-- HUD supérieur -->
+    <div id="topHUD" class="hud">
+        <div class="panel hunt-status">
+            <h2>🎯 CHASSE ACTIVE</h2>
+            <div class="stat-bar">
+                <span>Mode:</span>
+                <span class="stat-value" id="currentMode">SOLO TRAINING</span>
+            </div>
+            <div class="stat-bar">
+                <span>Phase:</span>
+                <span class="stat-value" id="huntPhase">TRAQUE</span>
+            </div>
+            <div class="stat-bar">
+                <span>Score:</span>
+                <span class="stat-value" id="huntScore">0</span>
+            </div>
+            <div class="stat-bar">
+                <span>Combo:</span>
+                <span class="stat-value" id="comboCounter">×1</span>
+            </div>
+            
+            <div class="timeline-display">
+                <div>Timeline: <span id="timelineLabel">PRÉSENT</span></div>
+                <div class="timeline-bar">
+                    <div class="timeline-marker" id="timelineMarker"></div>
+                </div>
+            </div>
+            
+            <div class="target-counter" id="targetCounter"></div>
+        </div>
+        
+        <div class="panel player-stats">
+            <h2>⚡ CHASSEUR</h2>
+            <div class="stat-bar">
+                <span>Santé:</span>
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill"></div>
+                </div>
+                <span class="stat-value" id="healthValue">100</span>
+            </div>
+            <div class="stat-bar">
+                <span>Mana:</span>
+                <div class="mana-bar">
+                    <div class="mana-fill" id="manaFill"></div>
+                </div>
+                <span class="stat-value" id="manaValue">100</span>
+            </div>
+            <div class="stat-bar">
+                <span>Munitions:</span>
+                <div class="ammo-bar">
+                    <div class="ammo-fill" id="ammoFill"></div>
+                </div>
+                <span class="stat-value" id="ammoValue">∞</span>
+            </div>
+            <div class="stat-bar">
+                <span>Niveau:</span>
+                <span class="stat-value" id="playerLevel">1</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- HUD inférieur -->
+    <div id="bottomHUD" class="hud">
+        <div class="panel mode-selector">
+            <h2>🎮 MODES DE CHASSE</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                <button class="mode-button active" onclick="setHuntMode('solo')" data-mode="solo">
+                    🎯 SOLO<br>TRAINING
+                </button>
+                <button class="mode-button" onclick="setHuntMode('ai_vs_ai')" data-mode="ai_vs_ai">
+                    🤖 AI vs AI<br>SPECTACLE
+                </button>
+                <button class="mode-button" onclick="setHuntMode('pvp')" data-mode="pvp">
+                    ⚔️ PVP<br>PURE
+                </button>
+                <button class="mode-button" onclick="setHuntMode('pvp_agents')" data-mode="pvp_agents">
+                    🎭 PVP +<br>AGENTS
+                </button>
+                <button class="mode-button" onclick="setHuntMode('multiplayer_ai')" data-mode="multiplayer_ai">
+                    🌍 MULTI<br>vs AI
+                </button>
+                <button class="mode-button" onclick="setHuntMode('survival')" data-mode="survival">
+                    💀 SURVIVAL<br>HELL
+                </button>
+            </div>
+        </div>
+        
+        <div class="panel weapons-panel">
+            <h2>🔫 ARSENAL TEMPOREL</h2>
+            <div style="display: flex; flex-wrap: wrap;">
+                <button class="weapon-button selected" onclick="selectWeapon('plasma')" data-weapon="plasma">
+                    ⚡ PLASMA<br>CANNON
+                </button>
+                <button class="weapon-button" onclick="selectWeapon('temporal')" data-weapon="temporal">
+                    ⏰ TEMPORAL<br>RIFLE
+                </button>
+                <button class="weapon-button" onclick="selectWeapon('quantum')" data-weapon="quantum">
+                    🌀 QUANTUM<br>DISRUPTOR
+                </button>
+                <button class="weapon-button" onclick="selectWeapon('reality')" data-weapon="reality">
+                    🌈 REALITY<br>SHAPER
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button class="mode-button" onclick="activatePower('timefreeze')" style="width: 48%; margin: 1%;">
+                    ⏸️ TIME FREEZE
+                </button>
+                <button class="mode-button" onclick="activatePower('multikill')" style="width: 48%; margin: 1%;">
+                    💥 MULTI-KILL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🎯 SYSTÈME DE CHASSE TEMPORELLE ULTIME
+        class UltimateTemporalHunt {
+            constructor() {
+                this.canvas = document.getElementById('huntCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particleCanvas = document.getElementById('particleCanvas');
+                this.particleCtx = this.particleCanvas.getContext('2d');
+                this.miniCanvas = document.getElementById('miniMap');
+                this.miniCtx = this.miniCanvas.getContext('2d');
+                
+                this.setupCanvas();
+                
+                // État du jeu
+                this.gameState = {
+                    mode: 'solo',
+                    phase: 'hunting',
+                    score: 0,
+                    combo: 1,
+                    level: 1,
+                    timeline: 0, // -3 à +3
+                    player: {
+                        x: this.canvas.width / 2,
+                        y: this.canvas.height / 2,
+                        health: 100,
+                        maxHealth: 100,
+                        mana: 100,
+                        maxMana: 100,
+                        ammo: 999,
+                        maxAmmo: 999,
+                        weapon: 'plasma',
+                        powers: []
+                    },
+                    targets: [],
+                    agents: [],
+                    particles: [],
+                    powerActive: false
+                };
+                
+                // Configuration des armes
+                this.weapons = {
+                    plasma: { damage: 25, speed: 15, color: '#00FFFF', sound: 'plasma.wav' },
+                    temporal: { damage: 40, speed: 10, color: '#FFD700', sound: 'temporal.wav' },
+                    quantum: { damage: 60, speed: 8, color: '#9400D3', sound: 'quantum.wav' },
+                    reality: { damage: 100, speed: 5, color: '#FF1493', sound: 'reality.wav' }
+                };
+                
+                // Types de cibles
+                this.targetTypes = {
+                    ai_hunter: { hp: 80, speed: 3, color: '#FF4500', points: 100, ai: 'aggressive' },
+                    temporal_echo: { hp: 50, speed: 5, color: '#FFD700', points: 150, ai: 'evasive' },
+                    quantum_entity: { hp: 120, speed: 2, color: '#9400D3', points: 200, ai: 'unpredictable' },
+                    player_shadow: { hp: 100, speed: 4, color: '#32CD32', points: 300, ai: 'smart' },
+                    time_wraith: { hp: 200, speed: 1, color: '#8B0000', points: 500, ai: 'boss' }
+                };
+                
+                this.mouse = { x: 0, y: 0 };
+                this.keys = new Set();
+                this.shots = [];
+                
+                this.initializeTargets();
+                this.setupEventListeners();
+                this.startGameLoop();
+                
+                console.log('🎯 Ultimate Temporal Hunt initialized!');
+            }
+            
+            setupCanvas() {
+                const resize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.particleCanvas.width = window.innerWidth;
+                    this.particleCanvas.height = window.innerHeight;
+                    this.miniCanvas.width = 200;
+                    this.miniCanvas.height = 150;
+                };
+                resize();
+                window.addEventListener('resize', resize);
+            }
+            
+            initializeTargets() {
+                const types = Object.keys(this.targetTypes);
+                const targetCount = {
+                    solo: 8,
+                    ai_vs_ai: 12,
+                    pvp: 6,
+                    pvp_agents: 10,
+                    multiplayer_ai: 15,
+                    survival: 20
+                }[this.gameState.mode];
+                
+                for (let i = 0; i < targetCount; i++) {
+                    this.spawnTarget(types[Math.floor(Math.random() * types.length)]);
+                }
+                
+                this.updateTargetCounter();
+            }
+            
+            spawnTarget(type) {
+                const config = this.targetTypes[type];
+                const target = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: type,
+                    x: Math.random() * (this.canvas.width - 100) + 50,
+                    y: Math.random() * (this.canvas.height - 100) + 50,
+                    vx: (Math.random() - 0.5) * config.speed,
+                    vy: (Math.random() - 0.5) * config.speed,
+                    hp: config.hp,
+                    maxHp: config.hp,
+                    color: config.color,
+                    points: config.points,
+                    ai: config.ai,
+                    size: 20,
+                    lastAction: 0,
+                    timeline: Math.floor(Math.random() * 7) - 3, // -3 à +3
+                    phaseShift: Math.random() * Math.PI * 2
+                };
+                
+                this.gameState.targets.push(target);
+                return target;
+            }
+            
+            setupEventListeners() {
+                // Souris
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouse.x = e.clientX - rect.left;
+                    this.mouse.y = e.clientY - rect.top;
+                    this.updateCrosshair();
+                });
+                
+                this.canvas.addEventListener('click', (e) => {
+                    this.shoot();
+                });
+                
+                // Clavier
+                document.addEventListener('keydown', (e) => {
+                    this.keys.add(e.key.toLowerCase());
+                    this.handleKeyPress(e.key.toLowerCase());
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys.delete(e.key.toLowerCase());
+                });
+            }
+            
+            handleKeyPress(key) {
+                switch(key) {
+                    case '1': this.setHuntMode('solo'); break;
+                    case '2': this.setHuntMode('ai_vs_ai'); break;
+                    case '3': this.setHuntMode('pvp'); break;
+                    case '4': this.setHuntMode('pvp_agents'); break;
+                    case '5': this.setHuntMode('multiplayer_ai'); break;
+                    case '6': this.setHuntMode('survival'); break;
+                    case 'q': this.selectWeapon('plasma'); break;
+                    case 'w': this.selectWeapon('temporal'); break;
+                    case 'e': this.selectWeapon('quantum'); break;
+                    case 'r': this.selectWeapon('reality'); break;
+                    case 'f': this.activatePower('timefreeze'); break;
+                    case 'g': this.activatePower('multikill'); break;
+                    case 'arrowleft': this.shiftTimeline(-1); break;
+                    case 'arrowright': this.shiftTimeline(1); break;
+                }
+            }
+            
+            updateCrosshair() {
+                const crosshair = document.getElementById('crosshair');
+                crosshair.style.left = this.mouse.x + 'px';
+                crosshair.style.top = this.mouse.y + 'px';
+            }
+            
+            shoot() {
+                const weapon = this.weapons[this.gameState.player.weapon];
+                if (this.gameState.player.ammo <= 0) return;
+                
+                // Consommer munitions (sauf si infini)
+                if (this.gameState.player.ammo !== 999) {
+                    this.gameState.player.ammo--;
+                }
+                
+                // Créer projectile
+                const shot = {
+                    x: this.gameState.player.x,
+                    y: this.gameState.player.y,
+                    targetX: this.mouse.x,
+                    targetY: this.mouse.y,
+                    speed: weapon.speed,
+                    damage: weapon.damage,
+                    color: weapon.color,
+                    weapon: this.gameState.player.weapon,
+                    timeline: this.gameState.timeline
+                };
+                
+                // Calculer direction
+                const dx = shot.targetX - shot.x;
+                const dy = shot.targetY - shot.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                shot.vx = (dx / dist) * shot.speed;
+                shot.vy = (dy / dist) * shot.speed;
+                
+                this.shots.push(shot);
+                
+                // Effets visuels
+                this.createMuzzleFlash();
+                this.consumeMana(10);
+                
+                // Son
+                this.playSound(weapon.sound);
+            }
+            
+            createMuzzleFlash() {
+                for (let i = 0; i < 10; i++) {
+                    this.gameState.particles.push({
+                        x: this.gameState.player.x,
+                        y: this.gameState.player.y,
+                        vx: (Math.random() - 0.5) * 20,
+                        vy: (Math.random() - 0.5) * 20,
+                        life: 0.3,
+                        maxLife: 0.3,
+                        color: this.weapons[this.gameState.player.weapon].color,
+                        size: Math.random() * 5 + 2
+                    });
+                }
+            }
+            
+            updateTargets() {
+                this.gameState.targets.forEach(target => {
+                    // IA selon le type
+                    this.updateTargetAI(target);
+                    
+                    // Mouvement
+                    target.x += target.vx;
+                    target.y += target.vy;
+                    
+                    // Rebond sur les bords
+                    if (target.x < 0 || target.x > this.canvas.width) target.vx *= -1;
+                    if (target.y < 0 || target.y > this.canvas.height) target.vy *= -1;
+                    
+                    // Garder dans les limites
+                    target.x = Math.max(0, Math.min(this.canvas.width, target.x));
+                    target.y = Math.max(0, Math.min(this.canvas.height, target.y));
+                });
+            }
+            
+            updateTargetAI(target) {
+                const now = Date.now();
+                if (now - target.lastAction < 100) return; // Throttle IA
+                
+                const player = this.gameState.player;
+                const dx = player.x - target.x;
+                const dy = player.y - target.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                switch(target.ai) {
+                    case 'aggressive':
+                        // Foncer vers le joueur
+                        if (dist > 100) {
+                            target.vx += (dx / dist) * 0.5;
+                            target.vy += (dy / dist) * 0.5;
+                        }
+                        break;
+                        
+                    case 'evasive':
+                        // Fuir le joueur
+                        if (dist < 200) {
+                            target.vx -= (dx / dist) * 0.3;
+                            target.vy -= (dy / dist) * 0.3;
+                        }
+                        break;
+                        
+                    case 'unpredictable':
+                        // Mouvement chaotique
+                        if (Math.random() < 0.1) {
+                            target.vx = (Math.random() - 0.5) * 6;
+                            target.vy = (Math.random() - 0.5) * 6;
+                        }
+                        break;
+                        
+                    case 'smart':
+                        // Stratégie avancée
+                        if (dist < 150 && Math.random() < 0.3) {
+                            // Téléportation courte
+                            target.x += (Math.random() - 0.5) * 100;
+                            target.y += (Math.random() - 0.5) * 100;
+                        }
+                        break;
+                        
+                    case 'boss':
+                        // Comportement de boss
+                        if (Math.random() < 0.05) {
+                            this.spawnTarget('ai_hunter'); // Spawne des adds
+                        }
+                        break;
+                }
+                
+                // Limiter vitesse
+                const speed = Math.sqrt(target.vx * target.vx + target.vy * target.vy);
+                const maxSpeed = this.targetTypes[target.type].speed;
+                if (speed > maxSpeed) {
+                    target.vx = (target.vx / speed) * maxSpeed;
+                    target.vy = (target.vy / speed) * maxSpeed;
+                }
+                
+                target.lastAction = now;
+            }
+            
+            updateShots() {
+                this.shots = this.shots.filter(shot => {
+                    // Mouvement
+                    shot.x += shot.vx;
+                    shot.y += shot.vy;
+                    
+                    // Vérifier collisions avec targets
+                    for (let target of this.gameState.targets) {
+                        const dx = shot.x - target.x;
+                        const dy = shot.y - target.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < target.size) {
+                            this.hitTarget(target, shot);
+                            return false; // Supprimer le projectile
+                        }
+                    }
+                    
+                    // Supprimer si hors écran
+                    return shot.x > 0 && shot.x < this.canvas.width && 
+                           shot.y > 0 && shot.y < this.canvas.height;
+                });
+            }
+            
+            hitTarget(target, shot) {
+                // Dégâts
+                target.hp -= shot.damage;
+                
+                // Effets d'impact
+                this.createImpactEffect(target.x, target.y, shot.color);
+                
+                // Feedback score
+                this.showScorePopup(target.x, target.y, shot.damage);
+                
+                if (target.hp <= 0) {
+                    this.killTarget(target);
+                }
+            }
+            
+            killTarget(target) {
+                // Score
+                const points = target.points * this.gameState.combo;
+                this.gameState.score += points;
+                this.gameState.combo = Math.min(this.gameState.combo + 1, 10);
+                
+                // Message de kill
+                this.showKillMessage(target);
+                
+                // Effets de mort
+                this.createDeathEffect(target.x, target.y, target.color);
+                
+                // Supprimer la cible
+                const index = this.gameState.targets.indexOf(target);
+                if (index > -1) {
+                    this.gameState.targets.splice(index, 1);
+                }
+                
+                // Respawn selon le mode
+                if (this.gameState.mode !== 'survival') {
+                    setTimeout(() => {
+                        const types = Object.keys(this.targetTypes);
+                        this.spawnTarget(types[Math.floor(Math.random() * types.length)]);
+                        this.updateTargetCounter();
+                    }, 2000);
+                }
+                
+                this.updateTargetCounter();
+                this.updateUI();
+            }
+            
+            createImpactEffect(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    this.gameState.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 15,
+                        vy: (Math.random() - 0.5) * 15,
+                        life: 0.5,
+                        maxLife: 0.5,
+                        color: color,
+                        size: Math.random() * 4 + 1
+                    });
+                }
+            }
+            
+            createDeathEffect(x, y, color) {
+                for (let i = 0; i < 30; i++) {
+                    this.gameState.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 25,
+                        vy: (Math.random() - 0.5) * 25,
+                        life: 1,
+                        maxLife: 1,
+                        color: color,
+                        size: Math.random() * 6 + 2
+                    });
+                }
+            }
+            
+            updateParticles() {
+                this.gameState.particles = this.gameState.particles.filter(particle => {
+                    particle.life -= 0.016; // ~60fps
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vx *= 0.98; // Friction
+                    particle.vy *= 0.98;
+                    return particle.life > 0;
+                });
+            }
+            
+            render() {
+                // Clear
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Grille temporelle
+                this.renderTemporalGrid();
+                
+                // Targets
+                this.gameState.targets.forEach(target => this.renderTarget(target));
+                
+                // Shots
+                this.shots.forEach(shot => this.renderShot(shot));
+                
+                // Joueur
+                this.renderPlayer();
+                
+                // Particules sur canvas séparé
+                this.renderParticles();
+                
+                // Mini-map
+                this.renderMiniMap();
+            }
+            
+            renderTemporalGrid() {
+                const time = Date.now() * 0.001;
+                this.ctx.save();
+                this.ctx.globalAlpha = 0.1;
+                this.ctx.strokeStyle = '#8A2BE2';
+                this.ctx.lineWidth = 1;
+                
+                const gridSize = 100;
+                const offsetX = (time * 20) % gridSize;
+                const offsetY = (time * 30) % gridSize;
+                
+                for (let x = -offsetX; x < this.canvas.width + gridSize; x += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = -offsetY; y < this.canvas.height + gridSize; y += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.restore();
+            }
+            
+            renderTarget(target) {
+                const time = Date.now() * 0.001;
+                
+                this.ctx.save();
+                
+                // Effet timeline
+                const timelineDiff = Math.abs(target.timeline - this.gameState.timeline);
+                this.ctx.globalAlpha = Math.max(0.3, 1 - timelineDiff * 0.2);
+                
+                // Effet de phase pour entités quantiques
+                if (target.type === 'quantum_entity') {
+                    this.ctx.globalAlpha *= 0.7 + 0.3 * Math.sin(time * 3 + target.phaseShift);
+                }
+                
+                // Corps principal
+                this.ctx.fillStyle = target.color;
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.lineWidth = 2;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(target.x, target.y, target.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // Barre de vie
+                if (target.hp < target.maxHp) {
+                    const barWidth = target.size * 2;
+                    const barHeight = 4;
+                    const barX = target.x - barWidth / 2;
+                    const barY = target.y - target.size - 10;
+                    
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                    
+                    this.ctx.fillStyle = target.hp / target.maxHp > 0.3 ? '#00FF00' : '#FF0000';
+                    this.ctx.fillRect(barX, barY, barWidth * (target.hp / target.maxHp), barHeight);
+                }
+                
+                // Indicateur timeline
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = '12px Orbitron';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(target.timeline.toString(), target.x, target.y - target.size - 20);
+                
+                this.ctx.restore();
+            }
+            
+            renderShot(shot) {
+                this.ctx.save();
+                this.ctx.globalAlpha = 0.9;
+                this.ctx.fillStyle = shot.color;
+                this.ctx.shadowBlur = 20;
+                this.ctx.shadowColor = shot.color;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(shot.x, shot.y, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Traînée
+                this.ctx.globalAlpha = 0.3;
+                this.ctx.strokeStyle = shot.color;
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(shot.x, shot.y);
+                this.ctx.lineTo(shot.x - shot.vx * 3, shot.y - shot.vy * 3);
+                this.ctx.stroke();
+                
+                this.ctx.restore();
+            }
+            
+            renderPlayer() {
+                this.ctx.save();
+                this.ctx.fillStyle = '#00FFFF';
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.lineWidth = 3;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(this.gameState.player.x, this.gameState.player.y, 15, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // Indicateur d'arme
+                const weapon = this.weapons[this.gameState.player.weapon];
+                this.ctx.fillStyle = weapon.color;
+                this.ctx.beginPath();
+                this.ctx.arc(this.gameState.player.x, this.gameState.player.y, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+            
+            renderParticles() {
+                this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
+                
+                this.gameState.particles.forEach(particle => {
+                    this.particleCtx.save();
+                    this.particleCtx.globalAlpha = particle.life / particle.maxLife;
+                    this.particleCtx.fillStyle = particle.color;
+                    this.particleCtx.shadowBlur = 10;
+                    this.particleCtx.shadowColor = particle.color;
+                    
+                    this.particleCtx.beginPath();
+                    this.particleCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.particleCtx.fill();
+                    
+                    this.particleCtx.restore();
+                });
+            }
+            
+            renderMiniMap() {
+                this.miniCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.miniCtx.fillRect(0, 0, 200, 150);
+                
+                const scaleX = 200 / this.canvas.width;
+                const scaleY = 150 / this.canvas.height;
+                
+                // Joueur
+                this.miniCtx.fillStyle = '#00FFFF';
+                this.miniCtx.fillRect(
+                    this.gameState.player.x * scaleX - 2,
+                    this.gameState.player.y * scaleY - 2,
+                    4, 4
+                );
+                
+                // Targets
+                this.gameState.targets.forEach(target => {
+                    this.miniCtx.fillStyle = target.color;
+                    this.miniCtx.fillRect(
+                        target.x * scaleX - 1,
+                        target.y * scaleY - 1,
+                        2, 2
+                    );
+                });
+            }
+            
+            startGameLoop() {
+                const loop = () => {
+                    this.update();
+                    this.render();
+                    requestAnimationFrame(loop);
+                };
+                loop();
+            }
+            
+            update() {
+                if (document.getElementById('startScreen').style.display !== 'none') return;
+                
+                this.updateTargets();
+                this.updateShots();
+                this.updateParticles();
+                this.updatePlayer();
+                this.updateUI();
+            }
+            
+            updatePlayer() {
+                // Mouvement WASD
+                const speed = 5;
+                if (this.keys.has('w') || this.keys.has('z')) this.gameState.player.y -= speed;
+                if (this.keys.has('s')) this.gameState.player.y += speed;
+                if (this.keys.has('a') || this.keys.has('q')) this.gameState.player.x -= speed;
+                if (this.keys.has('d')) this.gameState.player.x += speed;
+                
+                // Limites
+                this.gameState.player.x = Math.max(20, Math.min(this.canvas.width - 20, this.gameState.player.x));
+                this.gameState.player.y = Math.max(20, Math.min(this.canvas.height - 20, this.gameState.player.y));
+                
+                // Régénération
+                if (this.gameState.player.health < this.gameState.player.maxHealth) {
+                    this.gameState.player.health += 0.1;
+                }
+                if (this.gameState.player.mana < this.gameState.player.maxMana) {
+                    this.gameState.player.mana += 0.5;
+                }
+            }
+            
+            updateUI() {
+                // Stats
+                document.getElementById('huntScore').textContent = this.gameState.score;
+                document.getElementById('comboCounter').textContent = '×' + this.gameState.combo;
+                document.getElementById('healthValue').textContent = Math.floor(this.gameState.player.health);
+                document.getElementById('manaValue').textContent = Math.floor(this.gameState.player.mana);
+                document.getElementById('ammoValue').textContent = this.gameState.player.ammo === 999 ? '∞' : this.gameState.player.ammo;
+                
+                // Barres
+                document.getElementById('healthFill').style.width = (this.gameState.player.health / this.gameState.player.maxHealth * 100) + '%';
+                document.getElementById('manaFill').style.width = (this.gameState.player.mana / this.gameState.player.maxMana * 100) + '%';
+                document.getElementById('ammoFill').style.width = this.gameState.player.ammo === 999 ? '100%' : (this.gameState.player.ammo / this.gameState.player.maxAmmo * 100) + '%';
+                
+                // Timeline
+                const timelinePos = ((this.gameState.timeline + 3) / 6) * 100;
+                document.getElementById('timelineMarker').style.left = timelinePos + '%';
+                
+                const timelineLabels = ['PASSÉ-3', 'PASSÉ-2', 'PASSÉ-1', 'PRÉSENT', 'FUTUR+1', 'FUTUR+2', 'FUTUR+3'];
+                document.getElementById('timelineLabel').textContent = timelineLabels[this.gameState.timeline + 3];
+            }
+            
+            updateTargetCounter() {
+                const counter = document.getElementById('targetCounter');
+                counter.innerHTML = '';
+                
+                this.gameState.targets.forEach((target, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'target-dot target-alive';
+                    dot.style.background = target.color;
+                    dot.textContent = i + 1;
+                    dot.title = target.type;
+                    counter.appendChild(dot);
+                });
+            }
+            
+            showKillMessage(target) {
+                const feed = document.getElementById('killFeed');
+                const message = document.createElement('div');
+                message.className = 'kill-message';
+                message.innerHTML = `💀 ${target.type.toUpperCase()} ÉLIMINÉ<br>+${target.points * this.gameState.combo} points`;
+                
+                feed.appendChild(message);
+                
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 3000);
+            }
+            
+            showScorePopup(x, y, damage) {
+                const popup = document.createElement('div');
+                popup.className = 'score-popup';
+                popup.textContent = '+' + damage;
+                popup.style.left = x + 'px';
+                popup.style.top = y + 'px';
+                
+                document.body.appendChild(popup);
+                
+                setTimeout(() => {
+                    if (popup.parentNode) {
+                        popup.parentNode.removeChild(popup);
+                    }
+                }, 1000);
+            }
+            
+            consumeMana(amount) {
+                this.gameState.player.mana = Math.max(0, this.gameState.player.mana - amount);
+            }
+            
+            playSound(filename) {
+                // Son factice pour l'instant
+                console.log('🔊 Playing sound:', filename);
+            }
+            
+            // Méthodes publiques
+            setHuntMode(mode) {
+                this.gameState.mode = mode;
+                document.getElementById('currentMode').textContent = mode.toUpperCase();
+                
+                // Reset combo
+                this.gameState.combo = 1;
+                
+                // Mettre à jour boutons
+                document.querySelectorAll('.mode-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.mode === mode) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // Réinitialiser targets
+                this.gameState.targets = [];
+                this.initializeTargets();
+                
+                console.log('🎮 Mode changed to:', mode);
+            }
+            
+            selectWeapon(weapon) {
+                this.gameState.player.weapon = weapon;
+                
+                document.querySelectorAll('.weapon-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (btn.dataset.weapon === weapon) {
+                        btn.classList.add('selected');
+                    }
+                });
+                
+                console.log('🔫 Weapon selected:', weapon);
+            }
+            
+            shiftTimeline(direction) {
+                this.gameState.timeline = Math.max(-3, Math.min(3, this.gameState.timeline + direction));
+                this.updateUI();
+                console.log('⏰ Timeline shifted to:', this.gameState.timeline);
+            }
+            
+            activatePower(power) {
+                switch(power) {
+                    case 'timefreeze':
+                        this.gameState.powerActive = true;
+                        document.getElementById('powerOverlay').classList.add('active');
+                        
+                        // Ralentir les targets
+                        this.gameState.targets.forEach(target => {
+                            target.vx *= 0.1;
+                            target.vy *= 0.1;
+                        });
+                        
+                        setTimeout(() => {
+                            this.gameState.powerActive = false;
+                            document.getElementById('powerOverlay').classList.remove('active');
+                            
+                            // Restaurer vitesse
+                            this.gameState.targets.forEach(target => {
+                                target.vx /= 0.1;
+                                target.vy /= 0.1;
+                            });
+                        }, 3000);
+                        
+                        this.consumeMana(50);
+                        break;
+                        
+                    case 'multikill':
+                        // Tir multiple
+                        for (let i = 0; i < 8; i++) {
+                            setTimeout(() => {
+                                if (this.gameState.targets.length > 0) {
+                                    const target = this.gameState.targets[Math.floor(Math.random() * this.gameState.targets.length)];
+                                    this.mouse.x = target.x;
+                                    this.mouse.y = target.y;
+                                    this.shoot();
+                                }
+                            }, i * 100);
+                        }
+                        
+                        this.consumeMana(30);
+                        break;
+                }
+            }
+        }
+        
+        // Instance globale
+        let hunt;
+        
+        // Fonctions globales pour les boutons
+        function startHunt() {
+            document.getElementById('startScreen').style.display = 'none';
+            hunt = new UltimateTemporalHunt();
+        }
+        
+        function showInstructions() {
+            alert(`🎯 ULTIMATE TEMPORAL HUNT - INSTRUCTIONS
+
+🎮 CONTRÔLES:
+• WASD/ZQSD - Déplacement
+• Souris - Visée
+• Clic - Tir
+• Flèches ←→ - Changer timeline
+• 1-6 - Modes de chasse
+• QWER - Sélection armes
+• F - Time Freeze
+• G - Multi-Kill
+
+🎯 MODES:
+• SOLO - Entraînement personnel
+• AI vs AI - Spectacle d'IA
+• PVP - Combat joueur vs joueur
+• PVP+AGENTS - Combat avec IA alliées
+• MULTI vs AI - Multijoueur contre IA
+• SURVIVAL - Survie sans respawn
+
+🏆 OBJECTIF:
+Éliminez les cibles temporelles pour gagner des points!
+Combo kills augmentent le score!`);
+        }
+        
+        function setHuntMode(mode) {
+            if (hunt) hunt.setHuntMode(mode);
+        }
+        
+        function selectWeapon(weapon) {
+            if (hunt) hunt.selectWeapon(weapon);
+        }
+        
+        function activatePower(power) {
+            if (hunt) hunt.activatePower(power);
+        }
+        
+        console.log('🎯⚡ ULTIMATE TEMPORAL HUNT LOADED! ⚡🎯');
+        console.log('Vincent, prépare-toi pour une chasse épique! 🚀');
+    </script>
+</body>
+</html>

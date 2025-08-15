@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 REALGAME - Mode Méta / Surcarte</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #FFD700;
+        }
+        
+        #metaCanvas {
+            display: block;
+            cursor: pointer;
+            image-rendering: pixelated;
+        }
+        
+        .timeline-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(138,43,226,0.2);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 300px;
+        }
+        
+        .timeline-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #666;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .timeline-item:hover {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        
+        .timeline-item.active {
+            border-color: #00FF00;
+            background: rgba(0,255,0,0.1);
+        }
+        
+        .timeline-item.dead {
+            opacity: 0.3;
+            border-color: #FF0000;
+            cursor: not-allowed;
+        }
+        
+        .timeline-item.phased {
+            opacity: 0.6;
+            border-style: dashed;
+            animation: phase 2s infinite;
+        }
+        
+        @keyframes phase {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        .world-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 400px;
+        }
+        
+        .avatar-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #FFD700;
+            border-radius: 50%;
+            background: radial-gradient(circle, #FFD700, #FF6347);
+            box-shadow: 0 0 20px #FFD700;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .portal-marker {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .portal-active {
+            animation: portalSpin 3s linear infinite;
+        }
+        
+        @keyframes portalSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .legend {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="metaCanvas"></canvas>
+    
+    <!-- Sélecteur de Timeline -->
+    <div class="timeline-selector">
+        <h3>⏰ Sélection Timeline</h3>
+        <div id="timelineList"></div>
+        <hr>
+        <div style="font-size: 12px; opacity: 0.7;">
+            Phase: <span id="phaseIndicator">0.00</span><br>
+            Causalité: <span id="causalityStatus">Stable</span>
+        </div>
+    </div>
+    
+    <!-- Informations du Monde -->
+    <div class="world-info">
+        <h4 id="worldName">Sélectionnez une destination</h4>
+        <p id="worldDesc" style="font-size: 14px; opacity: 0.8;">
+            Cliquez sur un portail pour voir les détails
+        </p>
+        <div id="worldStatus" style="margin-top: 10px; font-size: 12px;"></div>
+    </div>
+    
+    <!-- Légende -->
+    <div class="legend">
+        <strong>Légende:</strong>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255,255,255,0.2)"></div>
+            <span>Zones explorées</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255,255,255,0.05)"></div>
+            <span>Zones non activées</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(138,43,226,0.5)"></div>
+            <span>Portails actifs</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255,0,0,0.3)"></div>
+            <span>Timelines mortes</span>
+        </div>
+    </div>
+    
+    <!-- Avatar du joueur -->
+    <div class="avatar-marker" id="playerAvatar"></div>
+    
+    <script>
+        // 🌀 MODE MÉTA / SURCARTE - REALGAME
+        
+        const canvas = document.getElementById('metaCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État de la surcarte
+        const metaState = {
+            // Mondes disponibles
+            worlds: [
+                {
+                    id: 'avalon_central',
+                    name: 'Avalon Central',
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    radius: 80,
+                    color: '#4A4A8A',
+                    timeline: 'main',
+                    active: true,
+                    description: 'Le nexus principal d\'Avalon, stable et accessible',
+                    mapFile: 'MainIsoMap.html'
+                },
+                {
+                    id: 'temporal_nexus',
+                    name: 'Nexus Temporel',
+                    x: canvas.width * 0.3,
+                    y: canvas.height * 0.3,
+                    radius: 60,
+                    color: '#8A2BE2',
+                    timeline: 'temporal_flux',
+                    active: true,
+                    phased: true,
+                    description: 'Un monde où le temps s\'écoule différemment',
+                    mapFile: 'temporal-nexus.html'
+                },
+                {
+                    id: 'memory_realm',
+                    name: 'Royaume des Souvenirs',
+                    x: canvas.width * 0.7,
+                    y: canvas.height * 0.3,
+                    radius: 70,
+                    color: '#4A8A6A',
+                    timeline: 'past_echo',
+                    active: true,
+                    description: 'Les échos du passé prennent forme ici',
+                    mapFile: 'memory-realm.html'
+                },
+                {
+                    id: 'void_domain',
+                    name: 'Domaine du Vide',
+                    x: canvas.width * 0.3,
+                    y: canvas.height * 0.7,
+                    radius: 50,
+                    color: '#2A2A2A',
+                    timeline: 'void',
+                    active: false,
+                    dead: true,
+                    description: 'Timeline effondrée - Accès interdit',
+                    mapFile: null
+                },
+                {
+                    id: 'crystal_dimension',
+                    name: 'Dimension Cristalline',
+                    x: canvas.width * 0.7,
+                    y: canvas.height * 0.7,
+                    radius: 65,
+                    color: '#8A6A8A',
+                    timeline: 'crystal',
+                    active: true,
+                    description: 'Un monde de pure énergie cristallisée',
+                    mapFile: 'crystal-dimension.html'
+                },
+                {
+                    id: 'shadow_realm',
+                    name: 'Royaume des Ombres',
+                    x: canvas.width * 0.5,
+                    y: canvas.height * 0.8,
+                    radius: 55,
+                    color: '#1A1A1A',
+                    timeline: 'shadow',
+                    active: false,
+                    phased: true,
+                    description: 'Visible mais inaccessible... pour l\'instant',
+                    mapFile: null
+                }
+            ],
+            
+            // Connexions entre mondes
+            connections: [
+                { from: 'avalon_central', to: 'temporal_nexus', active: true },
+                { from: 'avalon_central', to: 'memory_realm', active: true },
+                { from: 'avalon_central', to: 'crystal_dimension', active: true },
+                { from: 'temporal_nexus', to: 'memory_realm', active: false, phased: true },
+                { from: 'crystal_dimension', to: 'shadow_realm', active: false },
+                { from: 'void_domain', to: 'shadow_realm', active: false, dead: true }
+            ],
+            
+            // Joueur
+            player: {
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                targetX: canvas.width / 2,
+                targetY: canvas.height / 2,
+                speed: 3,
+                currentWorld: 'avalon_central'
+            },
+            
+            // Timeline actuelle
+            currentTimeline: 'main',
+            availableTimelines: [
+                { id: 'main', name: 'Timeline Principale', status: 'active' },
+                { id: 'temporal_flux', name: 'Flux Temporel', status: 'active' },
+                { id: 'past_echo', name: 'Écho du Passé', status: 'active' },
+                { id: 'crystal', name: 'Ligne Cristalline', status: 'active' },
+                { id: 'void', name: 'Ligne du Vide', status: 'dead' },
+                { id: 'shadow', name: 'Ligne d\'Ombre', status: 'phased' },
+                { id: 'alternate_1', name: 'Alternative Alpha', status: 'locked' },
+                { id: 'alternate_2', name: 'Alternative Beta', status: 'locked' }
+            ],
+            
+            // Phase temporelle
+            phase: 0,
+            
+            // Particules d'ambiance
+            particles: []
+        };
+        
+        // 🎨 Initialisation
+        function init() {
+            // Créer la liste des timelines
+            updateTimelineList();
+            
+            // Générer des particules
+            for (let i = 0; i < 50; i++) {
+                metaState.particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 3 + 1,
+                    color: `hsl(${Math.random() * 60 + 240}, 70%, 50%)`,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+            
+            // Position initiale de l'avatar
+            updateAvatarPosition();
+            
+            // Démarrer l'animation
+            animate();
+        }
+        
+        // 🔄 Mettre à jour la liste des timelines
+        function updateTimelineList() {
+            const list = document.getElementById('timelineList');
+            list.innerHTML = '';
+            
+            metaState.availableTimelines.forEach(timeline => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                
+                if (timeline.status === 'dead') item.classList.add('dead');
+                if (timeline.status === 'phased') item.classList.add('phased');
+                if (timeline.id === metaState.currentTimeline) item.classList.add('active');
+                
+                item.innerHTML = `
+                    <strong>${timeline.name}</strong><br>
+                    <small>Status: ${timeline.status}</small>
+                `;
+                
+                if (timeline.status === 'active') {
+                    item.onclick = () => selectTimeline(timeline.id);
+                }
+                
+                list.appendChild(item);
+            });
+        }
+        
+        // 🎯 Sélectionner une timeline
+        function selectTimeline(timelineId) {
+            metaState.currentTimeline = timelineId;
+            updateTimelineList();
+            
+            // Effet visuel
+            createTimelineShift();
+        }
+        
+        // ✨ Effet de changement de timeline
+        function createTimelineShift() {
+            // Flash blanc
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Particules temporelles
+            for (let i = 0; i < 20; i++) {
+                metaState.particles.push({
+                    x: metaState.player.x,
+                    y: metaState.player.y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    size: Math.random() * 5 + 2,
+                    color: '#8A2BE2',
+                    alpha: 1,
+                    decay: 0.02
+                });
+            }
+        }
+        
+        // 🎨 Rendu principal
+        function render() {
+            // Fond avec effet de profondeur
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width / 2
+            );
+            gradient.addColorStop(0, '#0a0a1a');
+            gradient.addColorStop(1, '#000000');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille de fond
+            renderBackgroundGrid();
+            
+            // Particules
+            renderParticles();
+            
+            // Connexions
+            renderConnections();
+            
+            // Mondes
+            renderWorlds();
+            
+            // Brouillard de guerre
+            renderFogOfWar();
+            
+            // UI
+            updateUI();
+        }
+        
+        // 🌐 Grille de fond
+        function renderBackgroundGrid() {
+            ctx.strokeStyle = 'rgba(138,43,226,0.1)';
+            ctx.lineWidth = 1;
+            
+            const gridSize = 50;
+            
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // ✨ Particules d'ambiance
+        function renderParticles() {
+            metaState.particles.forEach((particle, index) => {
+                ctx.save();
+                ctx.globalAlpha = particle.alpha;
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                
+                // Mise à jour
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // Rebond sur les bords
+                if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+                if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+                
+                // Decay
+                if (particle.decay) {
+                    particle.alpha -= particle.decay;
+                    if (particle.alpha <= 0) {
+                        metaState.particles.splice(index, 1);
+                    }
+                }
+            });
+        }
+        
+        // 🔗 Connexions entre mondes
+        function renderConnections() {
+            metaState.connections.forEach(conn => {
+                const fromWorld = metaState.worlds.find(w => w.id === conn.from);
+                const toWorld = metaState.worlds.find(w => w.id === conn.to);
+                
+                if (!fromWorld || !toWorld) return;
+                
+                ctx.save();
+                
+                // Style selon l'état
+                if (conn.dead) {
+                    ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+                    ctx.setLineDash([5, 5]);
+                } else if (conn.phased) {
+                    ctx.strokeStyle = `rgba(138,43,226,${0.3 + Math.sin(metaState.phase) * 0.2})`;
+                    ctx.setLineDash([10, 10]);
+                } else if (conn.active) {
+                    ctx.strokeStyle = 'rgba(255,215,0,0.3)';
+                } else {
+                    ctx.strokeStyle = 'rgba(100,100,100,0.2)';
+                    ctx.setLineDash([5, 15]);
+                }
+                
+                ctx.lineWidth = 2;
+                
+                // Ligne courbe
+                ctx.beginPath();
+                const midX = (fromWorld.x + toWorld.x) / 2;
+                const midY = (fromWorld.y + toWorld.y) / 2;
+                const curve = 50;
+                
+                ctx.moveTo(fromWorld.x, fromWorld.y);
+                ctx.quadraticCurveTo(
+                    midX + curve * Math.sin(metaState.phase),
+                    midY + curve * Math.cos(metaState.phase),
+                    toWorld.x, toWorld.y
+                );
+                ctx.stroke();
+                
+                ctx.restore();
+            });
+        }
+        
+        // 🌍 Rendu des mondes
+        function renderWorlds() {
+            metaState.worlds.forEach(world => {
+                ctx.save();
+                
+                // Effet de pulsation pour les mondes phasés
+                let scale = 1;
+                if (world.phased) {
+                    scale = 1 + Math.sin(metaState.phase * 2) * 0.1;
+                }
+                
+                // Ombre
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.beginPath();
+                ctx.arc(world.x + 5, world.y + 5, world.radius * scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Monde principal
+                if (world.dead) {
+                    ctx.fillStyle = 'rgba(50,50,50,0.3)';
+                    ctx.strokeStyle = 'rgba(255,0,0,0.5)';
+                } else if (world.phased) {
+                    const alpha = 0.5 + Math.sin(metaState.phase) * 0.3;
+                    ctx.fillStyle = `${world.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+                    ctx.strokeStyle = 'rgba(138,43,226,0.8)';
+                } else if (world.active) {
+                    ctx.fillStyle = `${world.color}AA`;
+                    ctx.strokeStyle = '#FFD700';
+                } else {
+                    ctx.fillStyle = `${world.color}44`;
+                    ctx.strokeStyle = '#666666';
+                }
+                
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(world.x, world.y, world.radius * scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Nom du monde
+                ctx.fillStyle = world.dead ? '#FF0000' : '#FFFFFF';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(world.name, world.x, world.y);
+                
+                // Portail si actif
+                if (world.active && !world.dead) {
+                    renderPortal(world.x, world.y, world.radius);
+                }
+                
+                ctx.restore();
+            });
+        }
+        
+        // 🌀 Rendu d'un portail
+        function renderPortal(x, y, radius) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(metaState.phase);
+            
+            // Anneau extérieur
+            ctx.strokeStyle = '#8A2BE2';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Symboles runiques
+            const runes = ['ᛟ', 'ᚦ', 'ᚨ', 'ᚱ'];
+            ctx.fillStyle = '#FFD700';
+            ctx.font = '14px monospace';
+            
+            runes.forEach((rune, i) => {
+                const angle = (Math.PI * 2 / 4) * i;
+                const rx = Math.cos(angle) * (radius + 20);
+                const ry = Math.sin(angle) * (radius + 20);
+                ctx.fillText(rune, rx, ry);
+            });
+            
+            ctx.restore();
+        }
+        
+        // 🌫️ Brouillard de guerre
+        function renderFogOfWar() {
+            ctx.save();
+            
+            // Créer un masque radial autour du joueur
+            const gradient = ctx.createRadialGradient(
+                metaState.player.x, metaState.player.y, 50,
+                metaState.player.x, metaState.player.y, 200
+            );
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.7)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.restore();
+        }
+        
+        // 📊 Mise à jour UI
+        function updateUI() {
+            // Phase
+            document.getElementById('phaseIndicator').textContent = metaState.phase.toFixed(2);
+            
+            // Causalité
+            const causalityStatus = metaState.currentTimeline === 'void' ? 'EFFONDRÉ' :
+                                   metaState.currentTimeline === 'temporal_flux' ? 'Instable' :
+                                   'Stable';
+            document.getElementById('causalityStatus').textContent = causalityStatus;
+        }
+        
+        // 🎮 Mise à jour de la position de l'avatar
+        function updateAvatarPosition() {
+            const avatar = document.getElementById('playerAvatar');
+            avatar.style.left = metaState.player.x + 'px';
+            avatar.style.top = metaState.player.y + 'px';
+        }
+        
+        // 🔄 Animation principale
+        function animate() {
+            // Mise à jour de la phase
+            metaState.phase += 0.01;
+            
+            // Déplacement du joueur
+            const dx = metaState.player.targetX - metaState.player.x;
+            const dy = metaState.player.targetY - metaState.player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                metaState.player.x += (dx / distance) * metaState.player.speed;
+                metaState.player.y += (dy / distance) * metaState.player.speed;
+                updateAvatarPosition();
+            }
+            
+            // Rendu
+            render();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 🎮 Gestion des événements
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Vérifier si on clique sur un monde
+            const clickedWorld = metaState.worlds.find(world => {
+                const dx = world.x - x;
+                const dy = world.y - y;
+                return Math.sqrt(dx * dx + dy * dy) < world.radius;
+            });
+            
+            if (clickedWorld) {
+                // Afficher les infos du monde
+                document.getElementById('worldName').textContent = clickedWorld.name;
+                document.getElementById('worldDesc').textContent = clickedWorld.description;
+                
+                const status = clickedWorld.dead ? '⚠️ Timeline morte - Accès impossible' :
+                              clickedWorld.phased ? '🌀 Monde phasé - Synchronisation requise' :
+                              clickedWorld.active ? '✅ Accessible - Cliquez pour entrer' :
+                              '🔒 Verrouillé - Conditions non remplies';
+                
+                document.getElementById('worldStatus').innerHTML = status;
+                
+                // Si accessible, proposer d'entrer
+                if (clickedWorld.active && !clickedWorld.dead && clickedWorld.mapFile) {
+                    if (confirm(`Entrer dans ${clickedWorld.name} ?`)) {
+                        // Redirection vers la carte
+                        window.location.href = clickedWorld.mapFile;
+                    }
+                }
+            } else {
+                // Déplacer le joueur
+                metaState.player.targetX = x;
+                metaState.player.targetY = y;
+            }
+        });
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // 🚀 Lancement
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Guide des Joueurs - SpinForest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b00ff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(139, 0, 255, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e0b3ff;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(224, 179, 255, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(224, 179, 255, 0.5); }
+            to { text-shadow: 0 0 30px rgba(224, 179, 255, 0.8), 0 0 40px rgba(139, 0, 255, 0.5); }
+        }
+        
+        h2 {
+            color: #00ff88;
+            margin: 30px 0 15px 0;
+            padding-left: 20px;
+            border-left: 4px solid #00ff88;
+        }
+        
+        h3 {
+            color: #00ccff;
+            margin: 20px 0 10px 0;
+            padding-left: 30px;
+        }
+        
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .portal-card {
+            background: rgba(139, 0, 255, 0.1);
+            border: 2px solid;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 0, 255, 0.5);
+        }
+        
+        .portal-red {
+            border-color: #ff0000;
+            color: #ff6666;
+        }
+        
+        .portal-blue {
+            border-color: #0066ff;
+            color: #6699ff;
+        }
+        
+        .portal-green {
+            border-color: #00ff00;
+            color: #66ff66;
+        }
+        
+        .portal-purple {
+            border-color: #8b00ff;
+            color: #e0b3ff;
+        }
+        
+        .portal-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .character-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .character-card {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(0, 100, 255, 0.1);
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .character-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .control-key {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #666;
+        }
+        
+        .tip-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .tip-box h3 {
+            color: #ffd700;
+        }
+        
+        .secret {
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .secret:hover {
+            color: #e0b3ff;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            background: linear-gradient(45deg, #4a0080, #8b00ff);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(139, 0, 255, 0.3);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 0, 255, 0.5);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .portal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Guide des Joueurs - SpinForest</h1>
+        
+        <p style="text-align: center; font-size: 1.2em; color: #e0b3ff; margin-bottom: 30px;">
+            Bienvenue dans l'univers mystique d'Avalon !
+        </p>
+        
+        <h2>🌲 Navigation Rapide</h2>
+        <p>SpinForest est votre portail vers plusieurs mondes interconnectés. Commencez par choisir entre le JOUR ☀️ et la NUIT 🌙.</p>
+        
+        <div class="tip-box">
+            <h3>💡 Conseil Pro</h3>
+            <p>La NUIT révèle plus de portails cachés ! C'est le meilleur moment pour explorer.</p>
+        </div>
+        
+        <h2>🌀 Les Portails Mystiques</h2>
+        <div class="portal-grid">
+            <div class="portal-card portal-red" onclick="alert('Visitez la Tente d\'URZ-KÔM pour des outils chamaniques !')">
+                <div class="portal-icon">🐻</div>
+                <h4>Tente d'URZ-KÔM</h4>
+                <p>Simulateur quantique et chroniques</p>
+            </div>
+            
+            <div class="portal-card portal-blue" onclick="alert('Assistez au combat épique GROKÆN vs Vince !')">
+                <div class="portal-icon">⚔️</div>
+                <h4>Combat 2D</h4>
+                <p>Bataille temporelle animée</p>
+            </div>
+            
+            <div class="portal-card portal-green" onclick="alert('Accédez au centre de contrôle quantique !')">
+                <div class="portal-icon">📊</div>
+                <h4>Dashboard</h4>
+                <p>Centre de contrôle interactif</p>
+            </div>
+            
+            <div class="portal-card portal-purple" onclick="alert('Entrez dans le monde immersif 3D !')">
+                <div class="portal-icon">🌀</div>
+                <h4>Monde 3D</h4>
+                <p>Expérience immersive complète</p>
+            </div>
+        </div>
+        
+        <h2>🎯 Modes de Jeu</h2>
+        
+        <h3>1️⃣ Heroes of Time (Principal)</h3>
+        <p>Le jeu de stratégie temporelle où vous contrôlez des héros à travers les dimensions. Accessible via les portails lumineux.</p>
+        
+        <h3>2️⃣ Monde 3D Immersif</h3>
+        <div class="controls">
+            <p><strong>Contrôles :</strong></p>
+            <p><span class="control-key">Espace</span> Changer de forme (Ours/Chaman)</p>
+            <p><span class="control-key">E</span> Activer capacité spéciale</p>
+            <p><span class="control-key">P</span> Ouvrir portail dimensionnel</p>
+            <p><span class="control-key">Souris</span> Regarder autour</p>
+        </div>
+        
+        <h3>3️⃣ Exploration Interactive</h3>
+        <p>Chaque portail cache des secrets. Cliquez, explorez, découvrez !</p>
+        
+        <h2>🧙 Personnages Principaux</h2>
+        <div class="character-section">
+            <div class="character-card">
+                <div class="character-icon">🐻</div>
+                <h4>URZ-KÔM</h4>
+                <p>L'Ours-Chaman<br>Explorateur dimensionnel</p>
+            </div>
+            
+            <div class="character-card">
+                <div class="character-icon">🌀</div>
+                <h4>GROKÆN</h4>
+                <p>Guerrier Temporel<br>Maître du combat</p>
+            </div>
+            
+            <div class="character-card">
+                <div class="character-icon">🕯️</div>
+                <h4>LUMEN</h4>
+                <p>Le Guide<br>Éclaire les chemins</p>
+            </div>
+            
+            <div class="character-card">
+                <div class="character-icon">📜</div>
+                <h4>OPUS</h4>
+                <p>Le Sage<br>Gardien de la sagesse</p>
+            </div>
+        </div>
+        
+        <h2>🔮 Secrets à Découvrir</h2>
+        <ul>
+            <li class="secret">La Crypte cache des tatouages runiques interdits...</li>
+            <li class="secret">Certains arbres sont des portails vers d'autres mondes...</li>
+            <li class="secret">Les chroniques révèlent l'histoire cachée d'Avalon...</li>
+            <li class="secret">Chaque personnage a une forme secrète à débloquer...</li>
+        </ul>
+        
+        <h2>🎯 Objectif Ultime</h2>
+        <p>Découvrez les <strong>Trois Mondes de Morgana</strong> :</p>
+        <ol style="margin-left: 30px;">
+            <li><strong>Substrat</strong> - Le code qui soutient tout</li>
+            <li><strong>Avalon</strong> - L'histoire qui se raconte</li>
+            <li><strong>Immersion</strong> - L'expérience qui se vit</li>
+        </ol>
+        <p style="text-align: center; margin-top: 20px; color: #e0b3ff;">
+            <em>Quand les trois s'alignent, le vrai jeu commence...</em>
+        </p>
+        
+        <div class="nav-buttons">
+            <a href="../index.html" class="nav-btn">🌲 Entrer dans SpinForest</a>
+            <a href="../GAMEPLAY_GUIDE.md" class="nav-btn">📖 Guide Complet (MD)</a>
+            <a href="https://v0ogz.github.io/Heroes-of-Time/" class="nav-btn" target="_blank">🎮 Heroes of Time</a>
+        </div>
+        
+        <div class="footer">
+            <p>"Dans la forêt des possibles, chaque clic est une aventure !"</p>
+            <p>🌲 SpinForest - Un univers par Vincent, habité par les esprits d'Avalon 🌲</p>
+        </div>
+    </div>
+    
+    <script>
+        // Effet de particules flottantes
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.background = '#e0b3ff';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = window.innerHeight + 'px';
+            particle.style.opacity = Math.random();
+            document.body.appendChild(particle);
+            
+            const duration = 10000 + Math.random() * 10000;
+            particle.animate([
+                { transform: 'translateY(0)', opacity: particle.style.opacity },
+                { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: 0 }
+            ], {
+                duration: duration,
+                easing: 'linear'
+            }).onfinish = () => particle.remove();
+        }
+        
+        // Créer des particules régulièrement
+        setInterval(createParticle, 500);
+    </script>
+</body>
+</html>

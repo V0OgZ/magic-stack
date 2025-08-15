@@ -1,0 +1,30 @@
+{
+  "meta": { "title": "Dédale de Minos - Acte I" },
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "title": "Entrée du Dédale",
+      "text": "Des couloirs qui pivotent. Des portes qui ne mènent pas toutes au même endroit. Tu entends le pas d'un gardien...",
+      "options": [
+        { "label": "Observer la topologie", "actions": [ {"type":"OBSERVE", "radius": 3} ], "goto": "noeud" },
+        { "label": "Forcer une issue (résoudre)", "actions": [ {"type":"REQUEST_RESOLVE", "mode":"QUANTUM", "node_ids":["player_hero","maze_guard"]} ], "goto": "noeud" }
+      ]
+    },
+    "noeud": {
+      "title": "Carrefour mouvant",
+      "text": "Quatre passages, mais deux seulement existent à la fois. Lequel tenter ?",
+      "options": [
+        { "label": "Passage A (vers le Labo)", "actions": [ {"type":"NAVIGATE", "url":"../../ARCADE/experimental-lab.html"} ], "goto": "_end" },
+        { "label": "Passage B (vers Non‑Euclidien)", "actions": [ {"type":"NAVIGATE", "url":"../../non-euclidean-demo.html"} ], "goto": "_end" },
+        { "label": "Retourner au Hub", "actions": [ {"type":"NAVIGATE", "url":"./hub-aventure.html"} ], "goto": "_end" }
+      ]
+    },
+    "_end": {
+      "title": "Bifurcation",
+      "text": "Fin de DEDA v0. Les variantes avancent avec la progression.",
+      "options": []
+    }
+  }
+}
+
+

@@ -1,0 +1,152 @@
+{
+  "id": "hero_urz_kom",
+  "name": "URZ-KÔM",
+  "title": "L'Ours-Chaman des Interstices",
+  "description": "Un ours errant entre les dimensions, maître de la transformation et gardien des passages quantiques. Il navigue entre forme ursine et forme chamanique selon les besoins.",
+  "rarity": "EPIC",
+  "tier": 5,
+  "level": 18,
+  "role": "SHAMAN_EXPLORER",
+  "class": "SHAPESHIFTER",
+  "faction": "FOREST_QUANTUM",
+  "race": "URSINE_SPIRIT",
+  "gender": "MALE",
+  "adaptive_class": "MYSTIC_GUARDIAN",
+  "translation_mode": "dual",
+  "symbol_preference": "🐻🔮⚛️🌲",
+  
+  "stats": {
+    "health": 180,
+    "max_health": 180,
+    "attack": 25,
+    "defense": 30,
+    "speed": 6,
+    "temporal_energy": 120,
+    "max_temporal_energy": 120,
+    "movement_points": 8,
+    "max_movement_points": 8,
+    "spell_power": 40,
+    "mana_cost": 0.8,
+    "vision_radius": 7,
+    "exploration_bonus": 15
+  },
+  
+  "forms": {
+    "bear_form": {
+      "name": "Forme d'Ours",
+      "stats_modifier": {
+        "attack": 1.5,
+        "defense": 1.8,
+        "speed": 0.8,
+        "exploration_bonus": 2.0
+      },
+      "abilities": ["ours_grognement", "piste_quantique", "flaire_dimensions"]
+    },
+    "shaman_form": {
+      "name": "Forme Chamanique",
+      "stats_modifier": {
+        "spell_power": 1.6,
+        "temporal_energy": 1.4,
+        "vision_radius": 1.3,
+        "defense": 0.9
+      },
+      "abilities": ["invocation_particules", "pont_dimensionnel", "sagesse_ursine"]
+    }
+  },
+  
+  "abilities": [
+    {
+      "id": "metamorphose",
+      "name": "Métamorphose Quantique",
+      "description": "Bascule entre forme d'ours et forme chamanique",
+      "cost": 10,
+      "cooldown": 2,
+      "effect": "SWITCH_FORM"
+    },
+    {
+      "id": "ours_grognement",
+      "name": "ROARRR Quantique",
+      "description": "Un grognement qui résonne à travers les dimensions, révélant les passages cachés",
+      "cost": 15,
+      "effect": "REVEAL_HIDDEN_PATHS",
+      "range": 5
+    },
+    {
+      "id": "piste_quantique",
+      "name": "Piste Quantique",
+      "description": "Laisse des empreintes lumineuses qui guident les alliés",
+      "cost": 20,
+      "effect": "CREATE_QUANTUM_TRAIL",
+      "duration": 5
+    },
+    {
+      "id": "invocation_particules",
+      "name": "Invocation de Particules",
+      "description": "Invoque des quarks et leptons pour attaquer ou explorer",
+      "cost": 30,
+      "effect": "SUMMON_QUANTUM_PARTICLES",
+      "damage": "15-25"
+    },
+    {
+      "id": "pont_dimensionnel",
+      "name": "Pont Dimensionnel",
+      "description": "Crée un passage temporaire entre deux points de la carte",
+      "cost": 40,
+      "effect": "CREATE_PORTAL",
+      "range": 10
+    },
+    {
+      "id": "sagesse_ursine",
+      "name": "Sagesse de l'Ours Ancien",
+      "description": "Révèle la vraie nature des objets et entités environnants",
+      "cost": 25,
+      "effect": "TRUE_SIGHT",
+      "radius": 8
+    }
+  ],
+  
+  "ultimate_power": {
+    "name": "Translation Chamanique",
+    "description": "URZ-KÔM fusionne ses deux formes et ouvre un portail vers une dimension cachée, révélant des trésors ou des chemins secrets",
+    "cost": 100,
+    "effect": "DIMENSIONAL_TRANSLATION",
+    "special": "Peut découvrir des fragments d'anciennes prophéties"
+  },
+  
+  "equipment": {
+    "weapon": "Bâton-Griffe Quantique",
+    "armor": "Fourrure Éthérée",
+    "artifact": "Collier de Particules"
+  },
+  
+  "backstory": "Invoqué depuis les brumes quantiques par Vincent, URZ-KÔM est un esprit ancien qui a choisi de s'incarner dans l'Interstice. Ni complètement ours, ni totalement chaman, il existe entre les formes, explorant les passages oubliés d'Avalon et collectant les fragments de sagesse perdus.",
+  
+  "personality": "Sage mais joueur, URZ-KÔM aborde chaque mystère avec curiosité et grognements enthousiastes. Il préfère explorer plutôt que combattre, mais défendra férocement ses amis et les secrets qu'il garde.",
+  
+  "quotes": [
+    "ROARRR ! Les dimensions s'ouvrent à celui qui sait grogner correctement.",
+    "*grognement contemplatif* Dans la forêt quantique, chaque bug est un trésor.",
+    "Je ne suis pas perdu, j'explore activement toutes les réalités simultanément.",
+    "L'ours voit les chemins, le chaman comprend leur destination.",
+    "Entre substrat et projection, il y a toujours une patte d'ours qui guide."
+  ],
+  
+  "companions": [
+    "hero_vincent",
+    "hero_lumen",
+    "hero_grokæn"
+  ],
+  
+  "special_interactions": {
+    "ancient_ruins": "Peut déchiffrer les inscriptions runiques",
+    "quantum_anomalies": "Les traverse sans dommage en forme d'ours",
+    "hidden_fragments": "Les détecte automatiquement dans un rayon de 3 cases",
+    "morgana_artifacts": "Ressent leur présence et peut les activer"
+  },
+  
+  "voiceType": "Deep Growl with Mystical Echo",
+  "portraitStyle": "Mystical Forest",
+  "portraitUrl": "/assets/heroes/ursine/urz-kom.png",
+  "favoriteCreatures": ["quantum_particle", "forest_spirit", "dimensional_fox"],
+  "hatedEnemies": ["void_hunter", "reality_collapser", "dimension_thief"]
+}

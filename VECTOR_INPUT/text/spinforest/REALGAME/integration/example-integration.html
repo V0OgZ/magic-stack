@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 REALGAME + Moteur Unifié - Démo d'Intégration</title>
+    <style>
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .game-area {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        canvas {
+            border: 2px solid #4ecdc4;
+            background: #111;
+        }
+        
+        .controls {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #9333ea;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .spell-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #9333ea 0%, #6b21a8 100%);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .spell-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+        }
+        
+        .status {
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .log {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        
+        .log-success { color: #4ecdc4; }
+        .log-error { color: #ff6b6b; }
+        .log-quantum { color: #9333ea; }
+        .log-damage { color: #ffa500; }
+        .log-heal { color: #00ff00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 REALGAME + Moteur Unifié AVALON</h1>
+        <p>Démonstration de l'intégration du backend Spring Boot avec le jeu</p>
+        
+        <div class="game-area">
+            <div>
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+                <div class="log" id="gameLog"></div>
+            </div>
+            
+            <div class="controls">
+                <h3>🎮 Contrôles Magiques</h3>
+                
+                <h4>Actions Simples</h4>
+                <button class="spell-button" onclick="castSpell('teleport')">
+                    📍 Téléportation (Click sur la carte)
+                </button>
+                <button class="spell-button" onclick="castSpell('heal')">
+                    💚 Soin (+50 PV)
+                </button>
+                <button class="spell-button" onclick="castSpell('fireball')">
+                    🔥 Boule de Feu
+                </button>
+                
+                <h4>Magie Quantique</h4>
+                <button class="spell-button" onclick="castSpell('quantum_attack')">
+                    ψ Attaque Quantique Différée
+                </button>
+                <button class="spell-button" onclick="castSpell('superposition')">
+                    ⊙ Créer Superposition
+                </button>
+                <button class="spell-button" onclick="collapseQuantum()">
+                    † Effondrer États Quantiques
+                </button>
+                
+                <h4>Portails BRISURE</h4>
+                <button class="spell-button" onclick="castSpell('brisure_portal')">
+                    🌀 Créer Portail BRISURE
+                </button>
+                
+                <h4>Commandes Spéciales</h4>
+                <button class="spell-button" onclick="castSpell('grofi_fusion')">
+                    🌲 GROFI: Fusion avec la Forêt
+                </button>
+                <button class="spell-button" onclick="castSpell('grut_scan')">
+                    👁️ GRUT: Scan Panoptique
+                </button>
+                
+                <div class="status">
+                    <h4>📊 État du Système</h4>
+                    <div>États Quantiques: <span id="quantumCount">0</span></div>
+                    <div>Stress Quantique: <span id="quantumStress">0.0</span></div>
+                    <div>Backend: <span id="backendStatus">🔴 Déconnecté</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import du client magique -->
+    <script src="magic-client.js"></script>
+    
+    <script>
+        // État du jeu simplifié
+        const game = {
+            canvas: document.getElementById('gameCanvas'),
+            ctx: null,
+            player: {
+                id: 'DEMO_PLAYER',
+                name: 'Héros',
+                x: 400,
+                y: 300,
+                health: 100,
+                maxHealth: 100,
+                sprite: '🎯'
+            },
+            enemies: [],
+            portals: [],
+            quantumStates: [],
+            selectedTarget: null
+        };
+        
+        // Initialisation
+        game.ctx = game.canvas.getContext('2d');
+        
+        // Gestion des clicks
+        game.canvas.addEventListener('click', (e) => {
+            const rect = game.canvas.getBoundingClientRect();
+            game.selectedTarget = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+            addLog('📍 Cible sélectionnée', 'log-success');
+        });
+        
+        // Fonctions de jeu
+        game.findEntity = function(id) {
+            if (id === game.player.id || id === game.player.name) {
+                return game.player;
+            }
+            return game.enemies.find(e => e.id === id || e.name === id);
+        };
+        
+        game.removeEntity = function(entity) {
+            const index = game.enemies.indexOf(entity);
+            if (index > -1) {
+                game.enemies.splice(index, 1);
+            }
+        };
+        
+        // Initialiser quelques ennemis
+        game.enemies = [
+            { id: 'GOBLIN_1', name: 'Gobelin', x: 200, y: 200, health: 30, sprite: '👺' },
+            { id: 'DRAGON_1', name: 'Dragon', x: 600, y: 400, health: 100, sprite: '🐉' }
+        ];
+        
+        // Fonctions de sorts
+        async function castSpell(spellType) {
+            const adapter = window.AvalonMagic.adapter;
+            
+            let target = null;
+            if (spellType === 'teleport' && game.selectedTarget) {
+                target = game.selectedTarget;
+            } else if (['fireball', 'quantum_attack'].includes(spellType) && game.enemies.length > 0) {
+                target = game.enemies[0]; // Cible le premier ennemi
+            }
+            
+            addLog(`🎯 Lancement: ${spellType}`, 'log-quantum');
+            
+            try {
+                const result = await adapter.castGameSpell(spellType, game.player, target);
+                
+                if (result.success) {
+                    addLog(`✅ ${result.message || 'Sort lancé avec succès !'}`, 'log-success');
+                    updateStatus();
+                } else {
+                    addLog(`❌ ${result.message || 'Échec du sort'}`, 'log-error');
+                }
+            } catch (error) {
+                addLog(`❌ Erreur: ${error.message}`, 'log-error');
+                addLog('💡 Assurez-vous que le backend est lancé sur localhost:8082', 'log-error');
+            }
+        }
+        
+        async function collapseQuantum() {
+            if (game.quantumStates.length === 0) {
+                addLog('⚠️ Aucun état quantique actif', 'log-error');
+                return;
+            }
+            
+            const state = game.quantumStates[0];
+            addLog(`† Effondrement de ${state.id}`, 'log-quantum');
+            
+            try {
+                await window.AvalonMagic.client.collapseQuantumState(state.id);
+                game.quantumStates.shift();
+                addLog('✅ État quantique effondré !', 'log-success');
+            } catch (error) {
+                addLog(`❌ Erreur: ${error.message}`, 'log-error');
+            }
+        }
+        
+        // Mise à jour du statut
+        async function updateStatus() {
+            try {
+                const status = await window.AvalonMagic.client.getSystemStatus();
+                if (status) {
+                    document.getElementById('quantumCount').textContent = status.activeQuantumStates || 0;
+                    document.getElementById('quantumStress').textContent = (status.systemQuantumStress || 0).toFixed(1);
+                    document.getElementById('backendStatus').textContent = '🟢 Connecté';
+                }
+            } catch (error) {
+                document.getElementById('backendStatus').textContent = '🔴 Déconnecté';
+            }
+        }
+        
+        // Logs
+        function addLog(message, className = '') {
+            const log = document.getElementById('gameLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + className;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Rendu du jeu
+        function render() {
+            const ctx = game.ctx;
+            
+            // Effacer
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, game.canvas.width, game.canvas.height);
+            
+            // Grille
+            ctx.strokeStyle = '#222';
+            for (let x = 0; x < game.canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, game.canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < game.canvas.height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(game.canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Joueur
+            ctx.font = '30px Arial';
+            ctx.fillText(game.player.sprite, game.player.x - 15, game.player.y + 10);
+            
+            // Ennemis
+            game.enemies.forEach(enemy => {
+                ctx.fillText(enemy.sprite, enemy.x - 15, enemy.y + 10);
+                
+                // Barre de vie
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(enemy.x - 20, enemy.y - 30, 40, 4);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(enemy.x - 20, enemy.y - 30, 40 * (enemy.health / 100), 4);
+            });
+            
+            // Portails
+            game.portals.forEach(portal => {
+                ctx.strokeStyle = '#9333ea';
+                ctx.beginPath();
+                ctx.arc(portal.x, portal.y, 20, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+            
+            // États quantiques
+            ctx.fillStyle = '#9333ea';
+            ctx.font = '20px Arial';
+            game.quantumStates.forEach(state => {
+                ctx.fillText(state.sprite, state.x - 10, state.y + 5);
+            });
+            
+            requestAnimationFrame(render);
+        }
+        
+        // Adapter les méthodes visuelles
+        window.AvalonMagic.adapter.showDamageNumber = function(target, damage) {
+            addLog(`💥 ${target.name} subit ${damage} dégâts !`, 'log-damage');
+        };
+        
+        window.AvalonMagic.adapter.showHealNumber = function(target, amount) {
+            addLog(`💚 ${target.name} récupère ${amount} PV !`, 'log-heal');
+        };
+        
+        window.AvalonMagic.adapter.createTeleportEffect = function(x, y) {
+            addLog(`✨ Téléportation vers ${Math.round(x)}, ${Math.round(y)}`, 'log-success');
+        };
+        
+        // Démarrage
+        render();
+        updateStatus();
+        setInterval(updateStatus, 5000);
+        
+        addLog('🌀 Démo d\'intégration REALGAME + Moteur Unifié', 'log-success');
+        addLog('💡 Lancez le backend : cd avalon-backend && ./mvnw spring-boot:run', 'log-quantum');
+    </script>
+</body>
+</html>

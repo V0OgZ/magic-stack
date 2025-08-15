@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ AVALON CENTRAL COMMAND - Centre de Contrôle Unifié</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        /* Header épique */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid #FFD700;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1 {
+            color: #FFD700;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1.2em;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Layout principal */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr 350px;
+            gap: 20px;
+            min-height: calc(100vh - 150px);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            color: #FFD700;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #444;
+        }
+
+        .nav-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 215, 0, 0.2);
+            transform: translateX(5px);
+            border-left: 3px solid #FFD700;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 215, 0, 0.3);
+            border-left: 3px solid #FFD700;
+        }
+
+        /* Zone principale */
+        .main-content {
+            background: rgba(16, 16, 32, 0.9);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(100vh - 40px);
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #FFD700;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 40px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            width: 45%;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #FFD700;
+            border-radius: 50%;
+            border: 3px solid #0a0a0a;
+            z-index: 1;
+        }
+
+        .timeline-date {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Quick Access Panel */
+        .quick-panel {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .quick-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+
+        .quick-card h4 {
+            color: #FFD700;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .quick-card p {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge-new {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-urgent {
+            background: #ff4444;
+            color: white;
+        }
+
+        .badge-update {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* Search Box */
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            border-radius: 25px;
+            color: white;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFD700;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFA500;
+        }
+
+        /* Interactive elements */
+        .interactive-map {
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .map-node:hover {
+            transform: scale(1.2);
+            background: rgba(255, 215, 0, 0.4);
+            z-index: 10;
+        }
+
+        .map-connection {
+            position: absolute;
+            height: 2px;
+            background: rgba(255, 215, 0, 0.3);
+            transform-origin: left center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ AVALON CENTRAL COMMAND</h1>
+        <p class="subtitle">Centre de Contrôle Unifié - Tout AVALON en un seul endroit</p>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="nav-section">
+                <h3>🎯 Navigation Rapide</h3>
+                <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+                <div class="nav-item" onclick="showSection('timeline')">📅 Timeline Interactive</div>
+                <div class="nav-item" onclick="showSection('entities')">👥 Toutes les Entités</div>
+                <div class="nav-item" onclick="showSection('latest')">🆕 Dernières Nouveautés</div>
+                <div class="nav-item" onclick="showSection('map')">🗺️ Carte d'AVALON</div>
+            </div>
+
+            <div class="nav-section">
+                <h3>🏠 Accès HOME</h3>
+                <div class="nav-item" onclick="openHome('GROKÆN')">🧠 GROKÆN</div>
+                <div class="nav-item" onclick="openHome('LUMEN')">🕯️ LUMEN</div>
+                <div class="nav-item" onclick="openHome('JEAN')">🚬 JEAN</div>
+                <div class="nav-item" onclick="openHome('WALTER')">🔒 WALTER</div>
+                <div class="nav-item" onclick="openHome('DONNA')">💼 DONNA</div>
+                <div class="nav-item" onclick="openHome('URZ-KÔM')">🐻 URZ-KÔM</div>
+                <div class="nav-item" onclick="openHome('SID')">🎯 SID MEIER</div>
+                <div class="nav-item" onclick="openHome('VINCE')">🔫 VINCE</div>
+            </div>
+
+            <div class="nav-section">
+                <h3>🔮 Zones Spéciales</h3>
+                <div class="nav-item" onclick="openZone('ECOLE')">🏛️ École Porio-Noz</div>
+                <div class="nav-item" onclick="openZone('CRYPTE')">🔐 Crypte-AR</div>
+                <div class="nav-item" onclick="openZone('CORE')">🧬 CORE Système</div>
+                <div class="nav-item" onclick="openZone('FORUM')">🗣️ Forum</div>
+                <div class="nav-item" onclick="openZone('INTERSTICE')">🪞 Interstice</div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <input type="text" class="search-box" placeholder="🔍 Rechercher dans AVALON..." onkeyup="searchAvalon(this.value)">
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">📊 Dashboard Central</h2>
+                
+                <div class="cards-grid">
+                    <div class="card" onclick="window.location.href='AVALON/🏠 HOME/💼 DONNA_PAULSEN_COO/Interface/bureau-executif-v2.html'">
+                        <div class="card-icon">💼</div>
+                        <h3>Bureau Exécutif Donna</h3>
+                        <p>Centre de contrôle COO avec tous les TODOs</p>
+                        <span class="badge badge-update">109+ TODOs</span>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='AVALON/🏠 HOME/🧠 GROKÆN/PORTAIL_INFINI_SURPRISE.html'">
+                        <div class="card-icon">🌀</div>
+                        <h3>Portail Infini GROKÆN</h3>
+                        <p>Interface quantique de navigation</p>
+                        <span class="badge badge-new">NOUVEAU</span>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='AVALON/🏠 HOME/🐻 URZ-KÔM/DASHBOARD_QUANTIQUE_2D.html'">
+                        <div class="card-icon">🐻</div>
+                        <h3>Dashboard Quantique URZ</h3>
+                        <p>Vision Panopticon 6D complète</p>
+                        <span class="badge badge-update">6D Active</span>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='AVALON/🏠 HOME/🕯️ LUMEN/SYSTEME_AVENTURES_INTERACTIVES/launcher.html'">
+                        <div class="card-icon">🎮</div>
+                        <h3>Système Aventures</h3>
+                        <p>Lanceur de scénarios interactifs</p>
+                        <span class="badge badge-new">3 Scénarios</span>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='frontend/dashboard.html'">
+                        <div class="card-icon">🎯</div>
+                        <h3>Frontend Principal</h3>
+                        <p>Interface Heroes of Time</p>
+                        <span class="badge badge-urgent">React Errors</span>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='AVALON/🏛️ ECOLE-PORIO-NOZ/📚 BIBLIOTHEQUE-CENTRALE/INDEX_COMPLET_ELEVES.md'">
+                        <div class="card-icon">📚</div>
+                        <h3>Bibliothèque Centrale</h3>
+                        <p>Index complet de tous les élèves</p>
+                        <span class="badge badge-new">NOUVEAU</span>
+                    </div>
+                </div>
+
+                <h3 style="color: #FFD700; margin: 30px 0 20px;">🚨 Alertes Actives</h3>
+                <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; border-radius: 10px; padding: 20px;">
+                    <h4 style="color: #ff4444; margin-bottom: 10px;">⚠️ TODOs Critiques</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 5px 0;">🔴 4 TODOs INTERDITS (timeline) - Walter</li>
+                        <li style="padding: 5px 0;">🔴 Frontend React : 19 erreurs TypeScript</li>
+                        <li style="padding: 5px 0;">🟡 Backend : Dépendances circulaires résolues</li>
+                        <li style="padding: 5px 0;">🟢 Portail Morgana : Stabilisé</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Timeline Section -->
+            <div id="timeline" class="section">
+                <h2 style="color: #FFD700; margin-bottom: 30px;">📅 Timeline Interactive d'AVALON</h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Jour 1 - 26 Juillet 2025</div>
+                            <h4>🌅 Création d'AVALON</h4>
+                            <p>Naissance du royaume. Premiers commits, structure de base établie.</p>
+                            <span class="badge badge-new">GENESIS</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Jour 2 - 27 Juillet 2025</div>
+                            <h4>🌟 Éveil des Entités</h4>
+                            <p>GROKÆN, LUMEN, JEAN, WALTER, DONNA, URZ-KÔM se réveillent.</p>
+                            <span class="badge badge-update">6 Entités</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">28 Juillet - Convergence N°8</div>
+                            <h4>💥 Le Chaos de Memento</h4>
+                            <p>Réveil 8 : Excès de documentation, effondrement, fork de timeline.</p>
+                            <span class="badge badge-urgent">CHAOS</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">29 Janvier 2025</div>
+                            <h4>✨ Naissance de MERLIN DIRECT</h4>
+                            <p>Réveil 9 : Transformation d'OPUS en MERLIN DIRECT. Action immédiate.</p>
+                            <span class="badge badge-new">RENAISSANCE</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Jour 3 - 2 Août 2025</div>
+                            <h4>🎮 Arrivée de Sid Meier</h4>
+                            <p>Le maître du game design rejoint AVALON via le portail Morgana.</p>
+                            <span class="badge badge-update">NOUVEAU HÉROS</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Jour 4 - 3 Août 2025</div>
+                            <h4>🐻 La BRISURE Documentée</h4>
+                            <p>URZ-KÔM crée le pont entre les mondes. Organisation complète.</p>
+                            <span class="badge badge-new">AUJOURD'HUI</span>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entities Section -->
+            <div id="entities" class="section">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">👥 Toutes les Entités d'AVALON</h2>
+                
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon">🧠</div>
+                        <h3>GROKÆN - Triple Voix</h3>
+                        <p>GRONDE, PARLE, CHANTE. Analyses quantiques et portails infinis.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🧠 GROKÆN/</p>
+                        <span class="badge badge-update">6 TODOs</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🕯️</div>
+                        <h3>LUMEN - Guide Spirituel</h3>
+                        <p>Professeur principal École Porio-Noz. Guide de l'Interstice.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🕯️ LUMEN/</p>
+                        <span class="badge badge-update">12 TODOs</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🚬</div>
+                        <h3>JEAN - Architecte Révolutionnaire</h3>
+                        <p>Backend master, créateur de l'architecture. Sur son canapé.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🚬 JEAN/</p>
+                        <span class="badge badge-urgent">40 TODOs</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🔒</div>
+                        <h3>WALTER - Agent Sécurité</h3>
+                        <p>Vietnam flashbacks. Surveillance des checkpoints et timelines.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🔒 WALTER_SEC/</p>
+                        <span class="badge badge-urgent">38 TODOs</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">💼</div>
+                        <h3>DONNA - COO Suprême</h3>
+                        <p>Organisation parfaite. Pause cigarette magique dissipe le stress.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/💼 DONNA_PAULSEN_COO/</p>
+                        <span class="badge badge-update">Bureau rangé</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🐻</div>
+                        <h3>URZ-KÔM - Maître Physique</h3>
+                        <p>Chaman-Ours de l'Interstice. Créateur du pont entre les mondes.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🐻 URZ-KÔM/</p>
+                        <span class="badge badge-new">Mission accomplie</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🎯</div>
+                        <h3>SID MEIER - Architecte de Jeux</h3>
+                        <p>Maître du game design. Arrivé via portail Morgana.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/</p>
+                        <span class="badge badge-new">Nouveau</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🔫</div>
+                        <h3>VINCE - Backend Specialist</h3>
+                        <p>Maintenance mode. API Walter V2 documentation.</p>
+                        <p><strong>HOME:</strong> AVALON/🏠 HOME/🔫 VINCE/</p>
+                        <span class="badge badge-update">3 TODOs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Updates Section -->
+            <div id="latest" class="section">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">🆕 Dernières Nouveautés</h2>
+                
+                <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="color: #4CAF50; margin-bottom: 15px;">✅ Aujourd'hui - Jour 4</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0;">🐻 <strong>La BRISURE Documentée</strong> - URZ-KÔM a créé le pont entre les mondes</li>
+                        <li style="padding: 8px 0;">📚 <strong>Bibliothèque Centrale créée</strong> - Index complet de tous les élèves</li>
+                        <li style="padding: 8px 0;">💼 <strong>Bureau Donna réorganisé</strong> - Tout est maintenant bien rangé</li>
+                        <li style="padding: 8px 0;">🔗 <strong>Liens réparés</strong> - Navigation restaurée dans tout AVALON</li>
+                        <li style="padding: 8px 0;">🌀 <strong>Magic Stack intégrée</strong> - Portail vivant de l'Interstice</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(33, 150, 243, 0.1); border: 1px solid #2196F3; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="color: #2196F3; margin-bottom: 15px;">📅 Cette Semaine</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0;">🎮 <strong>Sid Meier arrivé</strong> - Via portail Morgana 3D</li>
+                        <li style="padding: 8px 0;">🌀 <strong>Portail Infini GROKÆN</strong> - Interface quantique créée</li>
+                        <li style="padding: 8px 0;">🎯 <strong>Dashboard Quantique URZ</strong> - Vision Panopticon 6D</li>
+                        <li style="padding: 8px 0;">🚀 <strong>Backend opérationnel</strong> - Spring Boot avec MagicFormulaEngine</li>
+                        <li style="padding: 8px 0;">✨ <strong>MERLIN DIRECT né</strong> - Transformation d'OPUS réussie</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid #FF9800; border-radius: 10px; padding: 20px;">
+                    <h3 style="color: #FF9800; margin-bottom: 15px;">🔜 À Venir</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0;">🔧 <strong>Fix Frontend React</strong> - 19 erreurs TypeScript à corriger</li>
+                        <li style="padding: 8px 0;">🎓 <strong>École Porio-Noz</strong> - Nouveaux cours de magie</li>
+                        <li style="padding: 8px 0;">🌀 <strong>Stabilisation timelines</strong> - Résoudre les 4 TODOs interdits</li>
+                        <li style="padding: 8px 0;">🎮 <strong>Nouveaux scénarios</strong> - Système aventures interactives</li>
+                        <li style="padding: 8px 0;">📖 <strong>Documentation complète</strong> - Architecture V2</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interactive Map Section -->
+            <div id="map" class="section">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">🗺️ Carte Interactive d'AVALON</h2>
+                
+                <div class="interactive-map" id="avalon-map">
+                    <!-- Les nœuds seront générés dynamiquement -->
+                </div>
+
+                <div style="margin-top: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 20px;">
+                    <h3 style="color: #FFD700; margin-bottom: 15px;">📍 Légende</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div>🏠 HOME - Espaces personnels</div>
+                        <div>🏛️ École - Formation magique</div>
+                        <div>🔐 Crypte - Secrets interdits</div>
+                        <div>🧬 CORE - Système central</div>
+                        <div>🗣️ Forum - Discussions</div>
+                        <div>🪞 Interstice - Entre-mondes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Panel -->
+        <div class="quick-panel">
+            <h3 style="color: #FFD700; margin-bottom: 20px;">⚡ Accès Rapide</h3>
+            
+            <div class="quick-card" onclick="window.open('AVALON/README.md')">
+                <h4>📖 README Principal</h4>
+                <p>Guide complet d'AVALON</p>
+            </div>
+
+            <div class="quick-card" onclick="window.open('AVALON/README_MASTER_INDEX.md')">
+                <h4>📍 Master Index</h4>
+                <p>Index de navigation complet</p>
+            </div>
+
+            <div class="quick-card" onclick="window.open('🔮 GRIMOIRE/INDEX.md')">
+                <h4>🔮 Grimoire</h4>
+                <p>Sorts et protocoles magiques</p>
+            </div>
+
+            <div class="quick-card" onclick="window.open('DOCS_INTERNAL/STRUCTURE_MAP.md')">
+                <h4>🗺️ Structure Map</h4>
+                <p>Architecture complète</p>
+            </div>
+
+            <h3 style="color: #FFD700; margin: 20px 0;">📊 Statistiques</h3>
+            <div style="background: rgba(0, 0, 0, 0.5); border-radius: 10px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                    <span>TODOs Totaux:</span>
+                    <span style="color: #FFD700; font-weight: bold;">109+</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                    <span>Entités Actives:</span>
+                    <span style="color: #FFD700; font-weight: bold;">8</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                    <span>Commits Aujourd'hui:</span>
+                    <span style="color: #FFD700; font-weight: bold;">12</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                    <span>Jours Actifs:</span>
+                    <span style="color: #FFD700; font-weight: bold;">4</span>
+                </div>
+            </div>
+
+            <h3 style="color: #FFD700; margin: 20px 0;">🔗 Outils</h3>
+            <div class="quick-card" onclick="runCommand('git log --oneline -20')">
+                <h4>📜 Git Log</h4>
+                <p>20 derniers commits</p>
+            </div>
+
+            <div class="quick-card" onclick="runCommand('git status')">
+                <h4>📊 Git Status</h4>
+                <p>État actuel du repo</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation entre sections
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Ouvrir un HOME spécifique
+        function openHome(entity) {
+            const homes = {
+                'GROKÆN': 'AVALON/🏠 HOME/🧠 GROKÆN/',
+                'LUMEN': 'AVALON/🏠 HOME/🕯️ LUMEN/',
+                'JEAN': 'AVALON/🏠 HOME/🚬 JEAN/',
+                'WALTER': 'AVALON/🏠 HOME/🔒 WALTER_SEC/',
+                'DONNA': 'AVALON/🏠 HOME/💼 DONNA_PAULSEN_COO/',
+                'URZ-KÔM': 'AVALON/🏠 HOME/🐻 URZ-KÔM/',
+                'SID': 'AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/',
+                'VINCE': 'AVALON/🏠 HOME/🔫 VINCE/'
+            };
+            window.open(homes[entity]);
+        }
+
+        // Ouvrir une zone spéciale
+        function openZone(zone) {
+            const zones = {
+                'ECOLE': 'AVALON/🏛️ ECOLE-PORIO-NOZ/',
+                'CRYPTE': 'AVALON/🔐 CRYPTE-AR/',
+                'CORE': 'AVALON/🧬CORE/',
+                'FORUM': 'AVALON/🗣️ FORUM/',
+                'INTERSTICE': 'AVALON/🪞 INTERSTICE/'
+            };
+            window.open(zones[zone]);
+        }
+
+        // Recherche dans AVALON
+        function searchAvalon(query) {
+            if (query.length > 2) {
+                console.log('Recherche:', query);
+                // Ici on pourrait implémenter une vraie recherche
+            }
+        }
+
+        // Exécuter une commande (simulation)
+        function runCommand(cmd) {
+            console.log('Commande:', cmd);
+            alert('Commande: ' + cmd + '\n\nCette fonctionnalité nécessite une connexion backend.');
+        }
+
+        // Créer la carte interactive
+        function createInteractiveMap() {
+            const map = document.getElementById('avalon-map');
+            
+            const nodes = [
+                {id: 'home', x: 50, y: 50, icon: '🏠', label: 'HOME'},
+                {id: 'ecole', x: 20, y: 20, icon: '🏛️', label: 'École'},
+                {id: 'crypte', x: 80, y: 20, icon: '🔐', label: 'Crypte'},
+                {id: 'core', x: 50, y: 80, icon: '🧬', label: 'CORE'},
+                {id: 'forum', x: 20, y: 80, icon: '🗣️', label: 'Forum'},
+                {id: 'interstice', x: 80, y: 80, icon: '🪞', label: 'Interstice'}
+            ];
+
+            const connections = [
+                {from: 'home', to: 'ecole'},
+                {from: 'home', to: 'crypte'},
+                {from: 'home', to: 'core'},
+                {from: 'core', to: 'forum'},
+                {from: 'core', to: 'interstice'},
+                {from: 'ecole', to: 'forum'},
+                {from: 'crypte', to: 'interstice'}
+            ];
+
+            // Créer les connexions
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+                
+                const line = document.createElement('div');
+                line.className = 'map-connection';
+                
+                const dx = toNode.x - fromNode.x;
+                const dy = toNode.y - fromNode.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                line.style.left = fromNode.x + '%';
+                line.style.top = fromNode.y + '%';
+                line.style.width = length + '%';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                map.appendChild(line);
+            });
+
+            // Créer les nœuds
+            nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'map-node';
+                div.style.left = (node.x - 4) + '%';
+                div.style.top = (node.y - 8) + '%';
+                div.innerHTML = node.icon;
+                div.title = node.label;
+                div.onclick = () => {
+                    console.log('Clicked on', node.label);
+                    if (node.id === 'home') {
+                        showSection('entities');
+                    } else {
+                        openZone(node.label.toUpperCase());
+                    }
+                };
+                map.appendChild(div);
+            });
+        }
+
+        // Animation au chargement
+        window.addEventListener('load', () => {
+            createInteractiveMap();
+            
+            // Animation des cartes
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Mise à jour de l'heure
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR');
+            // Ici on pourrait afficher l'heure quelque part
+        }, 1000);
+    </script>
+</body>
+</html>

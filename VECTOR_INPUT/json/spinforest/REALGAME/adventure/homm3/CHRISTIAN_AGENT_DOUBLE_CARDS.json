@@ -1,0 +1,257 @@
+{
+  "christian_agent_double_cards": {
+    "CHRISTIAN_CONSULTANT": {
+      "id": "CHRISTIAN_CONSULTANT",
+      "name": "Christian - Consultant McKinsey",
+      "class": "Stratège Corporatif",
+      "type": "HERO", 
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/Membre du Bureau (McKinsey mystique.png",
+      "description": "Consultant strategic solutions avec mallette mystérieuse. Capable de cadrer la réalité elle-même selon ses projections Excel quantiques.",
+      "real_power": {
+        "effect": "QUANTUM_EXCEL",
+        "projections_become_reality": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "CORPORATE_MATRIX_ADVANCED",
+          "targetType": "area",
+          "power": 85
+        }
+      },
+      "stats": {
+        "power": 20,
+        "magic": 25,
+        "time": 18,
+        "spatial": 22
+      },
+      "abilities": [
+        "Cadrage Stratégique (ψ_cadrage)",
+        "Excel Quantique",
+        "Mallette Noire Mystérieuse"
+      ],
+      "tier": 5,
+      "faction": "DOUBLE_AGENT",
+      "flavor_text": "Quand les projections Excel deviennent réalité, même la physique suit les KPI."
+    },
+
+    "CHRISTIAN_GUITARISTE": {
+      "id": "CHRISTIAN_GUITARISTE",
+      "name": "CHR-SINE - Guitariste Metal",
+      "class": "Manipulateur Sonique",
+      "type": "HERO",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/3/Guitarist of the Enchanted Winds.png",
+      "description": "Guitariste metal underground avec amplificateur quantique. Ses power chords déstabilisent la réalité moléculaire.",
+      "real_power": {
+        "effect": "POWER_CHORD",
+        "damage": 87.5,
+        "radius": 30,
+        "backend_call": "/api/causality/resolve",
+        "parameters": {
+          "center": "current_position",
+          "radius": 30,
+          "mode": "SONIC_DAMAGE",
+          "force": true
+        }
+      },
+      "stats": {
+        "power": 28,
+        "magic": 15,
+        "time": 12,
+        "spatial": 20
+      },
+      "abilities": [
+        "Power Chord (87.5 dmg)",
+        "Wall of Sound (60% absorb)",
+        "Déstabilisation Moléculaire"
+      ],
+      "tier": 5,
+      "faction": "DOUBLE_AGENT",
+      "flavor_text": "A_chord = √(2πf) × e^(iωt) × |amplitude⟩ - Les maths du metal."
+    },
+
+    "MALLETTE_NOIRE": {
+      "id": "MALLETTE_NOIRE",
+      "name": "Mallette Noire de Christian",
+      "class": "Artefact Corporatif",
+      "type": "ARTIFACT",
+      "rarity": "mythic",
+      "image": "assets/CARTE_CHRISTIAN/Mallette_Noire_McKinsey.png",
+      "description": "Mallette émettant un larsen inaudible (19.7 kHz). Contenu inconnu mais dangereux. 87% similaire aux mallettes McKinsey standard.",
+      "real_power": {
+        "effect": "DIMENSIONAL_TRACKING",
+        "frequency": "19.7kHz",
+        "backend_call": "/api/panopticon/world-state-graph",
+        "parameters": {
+          "track_all_entities": true,
+          "ultrasonic_scan": true
+        }
+      },
+      "stats": {
+        "power": 15,
+        "magic": 30,
+        "time": 25,
+        "spatial": 35
+      },
+      "abilities": [
+        "Larsen Inaudible",
+        "Tracking Dimensionnel", 
+        "Quantum-Locked"
+      ],
+      "tier": 5,
+      "faction": "MCKINSEY_TECH",
+      "flavor_text": "Jamais vu sans elle. Contenu : [DONNÉES EXPURGÉES]."
+    },
+
+    "FULL_DISTORTION": {
+      "id": "FULL_DISTORTION",
+      "name": "Full Distortion Breakdown",
+      "class": "Technique Ultime",
+      "type": "SPELL",
+      "rarity": "mythic",
+      "image": "assets/CARTE_CHRISTIAN/Full_Distortion_Breakdown.png",
+      "description": "Reset structurel par saturation sonique. Peut affecter la causalité locale dans un rayon de 50 mètres. DANGER MAXIMUM.",
+      "real_power": {
+        "effect": "CAUSAL_RESET",
+        "radius": 50,
+        "cooldown": 300,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "FULL_DISTORTION_BREAKDOWN",
+          "targetType": "area",
+          "power": 150,
+          "causal_risk": true
+        }
+      },
+      "stats": {
+        "power": 35,
+        "magic": 20,
+        "time": 30,
+        "spatial": 25
+      },
+      "abilities": [
+        "Reset Structurel",
+        "Saturation Sonique",
+        "Affect Causalité"
+      ],
+      "tier": 6,
+      "faction": "SONIC_CHAOS",
+      "flavor_text": "Ω_breakdown : Quand la saturation devient révolution.",
+      "warning": "⚠️ PEUT AFFECTER LA CAUSALITÉ LOCALE - UTILISER AVEC PRÉCAUTION"
+    },
+
+    "WALL_OF_SOUND": {
+      "id": "WALL_OF_SOUND",
+      "name": "Wall of Sound",
+      "class": "Défense Sonique",
+      "type": "SPELL",
+      "rarity": "rare",
+      "image": "assets/CARTE_CHRISTIAN/Wall_Of_Sound.png", 
+      "description": "Barrière défensive saturée qui absorbe 60% des dégâts entrants pendant 3 tours. Le son devient bouclier.",
+      "real_power": {
+        "effect": "SONIC_BARRIER",
+        "absorption": 60,
+        "duration": 180,
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "sonic_barrier",
+          "absorption_rate": 0.6,
+          "duration": 180
+        }
+      },
+      "stats": {
+        "power": 8,
+        "magic": 22,
+        "time": 15,
+        "spatial": 18
+      },
+      "abilities": [
+        "Absorption 60%",
+        "Barrière Saturée",
+        "Durée 3 tours"
+      ],
+      "tier": 4,
+      "faction": "DEFENSIVE_SOUND",
+      "flavor_text": "Quand le volume devient armure, les décibels deviennent points de vie."
+    },
+
+    "DOUBLE_IDENTITY": {
+      "id": "DOUBLE_IDENTITY",
+      "name": "Identité Double",
+      "class": "Capacité Passive",
+      "type": "SPELL",
+      "rarity": "legendary",
+      "image": "assets/CARTE_CHRISTIAN/Double_Identity.png",
+      "description": "Permet de passer entre Mode Consultant et Mode Guitariste. Compartimentalisation parfaite des deux identités.",
+      "real_power": {
+        "effect": "IDENTITY_SWITCH",
+        "modes": ["consultant", "guitariste"],
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "dual_identity",
+          "switch_cooldown": 60
+        }
+      },
+      "stats": {
+        "power": 18,
+        "magic": 18,
+        "time": 20,
+        "spatial": 16
+      },
+      "abilities": [
+        "Switch Identité",
+        "Compartimentalisation",
+        "Double Skillset"
+      ],
+      "tier": 5,
+      "faction": "DOUBLE_AGENT",
+      "flavor_text": "ψ_total = α|consultant⟩ + β|musicien⟩ + γ|agent_double⟩"
+    }
+  },
+
+  "metadata": {
+    "character": "Christian - Le Stratège Amplifié",
+    "alias": "CHR-SINE",
+    "classification": "AGENT DOUBLE CONFIRMÉ",
+    "threat_level": "🟠 ÉLEVÉ",
+    "collection": "CHRISTIAN_AGENT_DOUBLE",
+    "total_cards": 6,
+    "tier_range": "4-6", 
+    "faction": "DOUBLE_AGENT",
+    "related_to": "Vincent Vega (beau-frère)",
+    "artist_notes": "Style corporate + metal underground, mallette mystérieuse, guitare modifiée"
+  },
+
+  "strategic_notes": {
+    "strengths": [
+      "Intelligence stratégique exceptionnelle",
+      "Capacité compartimentalisation parfaite", 
+      "Passion authentique musique (couverture solide)",
+      "Charisme naturel (dangereux négociation)"
+    ],
+    "weaknesses": [
+      "Attachement familial (exploitable via Vince)",
+      "Ego surdimensionné mode consultant",
+      "Dépendance mallette (jamais vu sans)",
+      "Pattern prévisible jour/nuit"
+    ],
+    "activation_scenarios": {
+      "mckinsey_sleeper": 45,
+      "independent_double": 35,
+      "manipulated_victim": 20
+    }
+  },
+
+  "gameplay_integration": {
+    "unlock_condition": "Complete Vincent Vega questline",
+    "activation_method": "Family connection event",
+    "deck_synergy": "Corporate + Metal hybrid strategies",
+    "power_combinations": [
+      "CHRISTIAN_CONSULTANT + MALLETTE_NOIRE: Corporate Matrix Boost",
+      "CHRISTIAN_GUITARISTE + FULL_DISTORTION: Ultimate Sonic Devastation",
+      "DOUBLE_IDENTITY + WALL_OF_SOUND: Tactical Identity Switch"
+    ]
+  }
+}

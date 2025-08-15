@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Complete Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Garamond', 'Georgia', serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* MAP 2D ISOMÉTRIQUE */
+        #gameMap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a0d1a 0%, #0d0d1a 100%);
+            overflow: auto;
+        }
+
+        .map-container {
+            position: relative;
+            width: 2000px;
+            height: 2000px;
+            transform: rotateX(60deg) rotateZ(45deg);
+            transform-style: preserve-3d;
+            margin: 200px;
+        }
+
+        /* TUILES ISOMÉTRIQUES */
+        .tile {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tile-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(100, 80, 120, 0.2);
+        }
+
+        .tile-grass {
+            background: linear-gradient(135deg, #1a2f1a 0%, #2a3f2a 100%);
+        }
+
+        .tile-stone {
+            background: linear-gradient(135deg, #3a3a4a 0%, #2a2a3a 100%);
+        }
+
+        .tile-water {
+            background: linear-gradient(135deg, #1a2a4a 0%, #2a3a5a 100%);
+            animation: waterFlow 3s linear infinite;
+        }
+
+        .tile-portal {
+            background: radial-gradient(circle, rgba(120, 80, 160, 0.8), rgba(60, 40, 80, 0.4));
+            animation: portalGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes waterFlow {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.1); }
+            100% { filter: brightness(1); }
+        }
+
+        @keyframes portalGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(120, 80, 160, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(120, 80, 160, 0.8); }
+        }
+
+        .tile:hover {
+            transform: translateZ(5px);
+            filter: brightness(1.2);
+        }
+
+        /* HÉROS SUR LA MAP */
+        .hero-token {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            transform: translateZ(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: move;
+            z-index: 100;
+        }
+
+        .hero-sprite {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200, 180, 150, 0.9), rgba(150, 130, 100, 0.6));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 
+                0 0 20px rgba(200, 180, 150, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.5);
+            animation: heroFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .hero-token.moving {
+            animation: heroMove 0.5s ease-out;
+        }
+
+        @keyframes heroMove {
+            0% { transform: scale(1) translateZ(20px); }
+            50% { transform: scale(1.1) translateZ(30px); }
+            100% { transform: scale(1) translateZ(20px); }
+        }
+
+        /* CRÉATURES ET OBJETS */
+        .map-entity {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            transform: translateZ(15px);
+            transition: all 0.3s;
+        }
+
+        .entity-creature {
+            background: radial-gradient(circle, rgba(255, 100, 100, 0.8), rgba(150, 50, 50, 0.4));
+            border-radius: 50%;
+            animation: creaturePulse 2s ease-in-out infinite;
+        }
+
+        .entity-treasure {
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8), rgba(184, 134, 11, 0.4));
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            animation: treasureShine 3s linear infinite;
+        }
+
+        @keyframes creaturePulse {
+            0%, 100% { transform: translateZ(15px) scale(1); }
+            50% { transform: translateZ(18px) scale(1.05); }
+        }
+
+        @keyframes treasureShine {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+            100% { filter: brightness(1); }
+        }
+
+        /* BROUILLARD DE CAUSALITÉ */
+        .fog-of-causality {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(
+                circle at var(--hero-x, 50%) var(--hero-y, 50%),
+                transparent 200px,
+                rgba(10, 10, 20, 0.7) 400px,
+                rgba(10, 10, 20, 0.95) 600px
+            );
+            mix-blend-mode: multiply;
+        }
+
+        /* TIMELINE UI */
+        .timeline-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 60px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(100, 80, 120, 0.3);
+            border-radius: 30px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .timeline-track {
+            width: 100%;
+            height: 40px;
+            background: rgba(40, 40, 60, 0.5);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(120, 100, 140, 0.9), rgba(80, 60, 100, 0.6));
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-flow {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(120, 100, 140, 0.2),
+                transparent
+            );
+            animation: timeFlow 5s linear infinite;
+        }
+
+        @keyframes timeFlow {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        /* HUD */
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 120px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(100, 80, 120, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* STATS DU HÉROS */
+        .hero-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            color: #c0a080;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #8a7a9a;
+            text-transform: uppercase;
+        }
+
+        /* INVENTAIRE */
+        .inventory {
+            display: flex;
+            gap: 10px;
+        }
+
+        .inventory-slot {
+            width: 60px;
+            height: 60px;
+            background: rgba(40, 40, 60, 0.5);
+            border: 1px solid rgba(100, 80, 120, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .inventory-slot:hover {
+            background: rgba(60, 60, 80, 0.6);
+            transform: scale(1.05);
+        }
+
+        .inventory-slot.has-item {
+            background: rgba(80, 60, 100, 0.4);
+            box-shadow: 0 0 10px rgba(120, 100, 140, 0.5);
+        }
+
+        /* ACTIONS */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(100, 80, 120, 0.6), rgba(80, 60, 100, 0.4));
+            border: 1px solid rgba(120, 100, 140, 0.5);
+            border-radius: 8px;
+            color: #c0a080;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(135deg, rgba(120, 100, 140, 0.7), rgba(100, 80, 120, 0.5));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(120, 100, 140, 0.3);
+        }
+
+        /* MODE COMBAT TCG */
+        #combatMode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            z-index: 2000;
+            animation: combatEnter 0.5s ease-out;
+        }
+
+        @keyframes combatEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .combat-arena {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .combat-field {
+            width: 90%;
+            max-width: 1200px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(40, 30, 50, 0.9), rgba(20, 20, 30, 0.95));
+            border: 2px solid rgba(120, 100, 140, 0.5);
+            border-radius: 20px;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .combat-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* CARTES DE COMBAT */
+        .combat-card {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, rgba(30, 30, 40, 0.9), rgba(20, 20, 30, 0.8));
+            border: 2px solid rgba(100, 80, 120, 0.4);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .combat-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(120, 100, 140, 0.5);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-size: 12px;
+            text-align: center;
+            color: #c0a080;
+            margin-bottom: 5px;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .card-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-stat-value {
+            font-size: 16px;
+            color: #e0c080;
+            font-weight: bold;
+        }
+
+        .card-stat-label {
+            font-size: 8px;
+            color: #8a7a9a;
+        }
+
+        /* EFFETS TEMPORELS */
+        .temporal-effect {
+            position: absolute;
+            pointer-events: none;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(120, 100, 200, 0.6), transparent);
+            animation: temporalPulse 2s ease-out forwards;
+        }
+
+        @keyframes temporalPulse {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* MESSAGE SYSTÈME */
+        .system-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid rgba(120, 100, 140, 0.5);
+            border-radius: 10px;
+            color: #c0a080;
+            font-size: 18px;
+            text-align: center;
+            display: none;
+            z-index: 3000;
+            animation: messageAppear 0.5s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- MAP PRINCIPALE -->
+    <div id="gameMap">
+        <div class="map-container" id="mapContainer"></div>
+        <div class="fog-of-causality"></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline-bar">
+        <div class="timeline-track">
+            <div class="timeline-flow"></div>
+            <div class="timeline-marker">⏰</div>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hero-stats">
+            <div class="stat-display">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-value" id="health">100</div>
+                <div class="stat-label">Vie</div>
+            </div>
+            <div class="stat-display">
+                <div class="stat-icon">✨</div>
+                <div class="stat-value" id="mana">50</div>
+                <div class="stat-label">Mana</div>
+            </div>
+            <div class="stat-display">
+                <div class="stat-icon">⚔️</div>
+                <div class="stat-value" id="attack">15</div>
+                <div class="stat-label">Attaque</div>
+            </div>
+            <div class="stat-display">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-value" id="defense">12</div>
+                <div class="stat-label">Défense</div>
+            </div>
+            <div class="stat-display">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="temporal">10</div>
+                <div class="stat-label">Temporel</div>
+            </div>
+        </div>
+
+        <div class="inventory">
+            <div class="inventory-slot" data-slot="1"></div>
+            <div class="inventory-slot" data-slot="2"></div>
+            <div class="inventory-slot" data-slot="3"></div>
+            <div class="inventory-slot" data-slot="4"></div>
+            <div class="inventory-slot" data-slot="5"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn" onclick="castSpell()">Lancer Sort</button>
+            <button class="action-btn" onclick="useItem()">Utiliser Objet</button>
+            <button class="action-btn" onclick="timeShift()">Saut Temporel</button>
+            <button class="action-btn" onclick="openPortal()">Ouvrir Portail</button>
+        </div>
+    </div>
+
+    <!-- MODE COMBAT TCG -->
+    <div id="combatMode">
+        <div class="combat-arena">
+            <h2 style="color: #c0a080; margin-bottom: 20px;">COMBAT TEMPOREL</h2>
+            <div class="combat-field">
+                <div class="combat-zone" id="enemyZone">
+                    <!-- Cartes ennemies -->
+                </div>
+                <div class="combat-zone" id="playerZone">
+                    <!-- Cartes joueur -->
+                </div>
+            </div>
+            <button class="action-btn" onclick="endCombat()" style="margin-top: 20px;">Terminer Combat</button>
+        </div>
+    </div>
+
+    <!-- MESSAGE SYSTÈME -->
+    <div class="system-message" id="systemMessage"></div>
+
+    <script src="api-config.js"></script>
+    <script>
+        // État du jeu
+        const gameState = {
+            hero: {
+                x: 5,
+                y: 5,
+                health: 100,
+                mana: 50,
+                attack: 15,
+                defense: 12,
+                temporal: 10,
+                inventory: [],
+                level: 1,
+                xp: 0
+            },
+            map: {
+                width: 20,
+                height: 20,
+                tiles: []
+            },
+            entities: [],
+            inCombat: false,
+            timeline: 0
+        };
+
+        // Génération de la map
+        function generateMap() {
+            const container = document.getElementById('mapContainer');
+            container.innerHTML = '';
+            
+            for (let y = 0; y < gameState.map.height; y++) {
+                for (let x = 0; x < gameState.map.width; x++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.style.left = `${x * 60}px`;
+                    tile.style.top = `${y * 60}px`;
+                    tile.dataset.x = x;
+                    tile.dataset.y = y;
+                    
+                    const face = document.createElement('div');
+                    face.className = 'tile-face';
+                    
+                    // Type de tuile aléatoire
+                    const rand = Math.random();
+                    if (rand < 0.7) {
+                        face.classList.add('tile-grass');
+                    } else if (rand < 0.85) {
+                        face.classList.add('tile-stone');
+                    } else if (rand < 0.95) {
+                        face.classList.add('tile-water');
+                    } else {
+                        face.classList.add('tile-portal');
+                    }
+                    
+                    tile.appendChild(face);
+                    tile.addEventListener('click', () => moveHero(x, y));
+                    container.appendChild(tile);
+                }
+            }
+            
+            // Ajouter le héros
+            const hero = document.createElement('div');
+            hero.className = 'hero-token';
+            hero.id = 'heroToken';
+            hero.innerHTML = '<div class="hero-sprite">🧙‍♂️</div>';
+            container.appendChild(hero);
+            updateHeroPosition();
+            
+            // Ajouter des entités
+            generateEntities();
+        }
+
+        // Génération d'entités
+        function generateEntities() {
+            const container = document.getElementById('mapContainer');
+            
+            // Créatures
+            for (let i = 0; i < 5; i++) {
+                const creature = document.createElement('div');
+                creature.className = 'map-entity entity-creature';
+                creature.innerHTML = '👹';
+                creature.style.left = `${Math.floor(Math.random() * gameState.map.width) * 60 + 15}px`;
+                creature.style.top = `${Math.floor(Math.random() * gameState.map.height) * 60 + 15}px`;
+                creature.addEventListener('click', () => startCombat());
+                container.appendChild(creature);
+            }
+            
+            // Trésors
+            for (let i = 0; i < 8; i++) {
+                const treasure = document.createElement('div');
+                treasure.className = 'map-entity entity-treasure';
+                treasure.innerHTML = '💎';
+                treasure.style.left = `${Math.floor(Math.random() * gameState.map.width) * 60 + 15}px`;
+                treasure.style.top = `${Math.floor(Math.random() * gameState.map.height) * 60 + 15}px`;
+                treasure.addEventListener('click', collectTreasure);
+                container.appendChild(treasure);
+            }
+        }
+
+        // Déplacement du héros
+        function moveHero(x, y) {
+            if (gameState.inCombat) return;
+            
+            const dx = Math.abs(x - gameState.hero.x);
+            const dy = Math.abs(y - gameState.hero.y);
+            
+            // Vérifier la distance (max 3 cases)
+            if (dx <= 3 && dy <= 3) {
+                gameState.hero.x = x;
+                gameState.hero.y = y;
+                updateHeroPosition();
+                
+                // Effet temporel
+                createTemporalEffect(x * 60 + 30, y * 60 + 30);
+                
+                // Mise à jour du brouillard
+                updateFogOfCausality();
+            } else {
+                showMessage("Trop loin pour se déplacer!");
+            }
+        }
+
+        // Mise à jour position héros
+        function updateHeroPosition() {
+            const hero = document.getElementById('heroToken');
+            hero.style.left = `${gameState.hero.x * 60 + 10}px`;
+            hero.style.top = `${gameState.hero.y * 60 + 10}px`;
+            hero.classList.add('moving');
+            setTimeout(() => hero.classList.remove('moving'), 500);
+        }
+
+        // Mise à jour du brouillard de causalité
+        function updateFogOfCausality() {
+            const fog = document.querySelector('.fog-of-causality');
+            fog.style.setProperty('--hero-x', `${(gameState.hero.x / gameState.map.width) * 100}%`);
+            fog.style.setProperty('--hero-y', `${(gameState.hero.y / gameState.map.height) * 100}%`);
+        }
+
+        // Démarrer un combat
+        function startCombat() {
+            gameState.inCombat = true;
+            document.getElementById('combatMode').style.display = 'flex';
+            
+            // Générer les cartes de combat
+            generateCombatCards();
+            showMessage("Combat Temporel Engagé!");
+        }
+
+        // Générer les cartes de combat
+        function generateCombatCards() {
+            const playerZone = document.getElementById('playerZone');
+            const enemyZone = document.getElementById('enemyZone');
+            
+            playerZone.innerHTML = '';
+            enemyZone.innerHTML = '';
+            
+            // Cartes du joueur
+            const playerCards = [
+                { name: 'Héros', icon: '🧙‍♂️', attack: gameState.hero.attack, defense: gameState.hero.defense },
+                { name: 'Sort Temporel', icon: '⏳', attack: 8, defense: 5 },
+                { name: 'Bouclier', icon: '🛡️', attack: 3, defense: 15 }
+            ];
+            
+            playerCards.forEach(card => {
+                const cardEl = createCombatCard(card);
+                playerZone.appendChild(cardEl);
+            });
+            
+            // Cartes ennemies
+            const enemyCards = [
+                { name: 'Monstre', icon: '👹', attack: 12, defense: 8 },
+                { name: 'Ombre', icon: '👤', attack: 10, defense: 10 }
+            ];
+            
+            enemyCards.forEach(card => {
+                const cardEl = createCombatCard(card);
+                enemyZone.appendChild(cardEl);
+            });
+        }
+
+        // Créer une carte de combat
+        function createCombatCard(data) {
+            const card = document.createElement('div');
+            card.className = 'combat-card';
+            card.innerHTML = `
+                <div class="card-icon">${data.icon}</div>
+                <div class="card-name">${data.name}</div>
+                <div class="card-stats">
+                    <div class="card-stat">
+                        <div class="card-stat-value">${data.attack}</div>
+                        <div class="card-stat-label">ATK</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-value">${data.defense}</div>
+                        <div class="card-stat-label">DEF</div>
+                    </div>
+                </div>
+            `;
+            card.addEventListener('click', () => playCard(card));
+            return card;
+        }
+
+        // Jouer une carte
+        function playCard(card) {
+            card.style.animation = 'cardActivate 0.5s';
+            setTimeout(() => {
+                card.style.animation = '';
+            }, 500);
+        }
+
+        // Terminer le combat
+        function endCombat() {
+            gameState.inCombat = false;
+            document.getElementById('combatMode').style.display = 'none';
+            
+            // Gagner de l'XP
+            gameState.hero.xp += 50;
+            updateStats();
+            showMessage("Victoire! +50 XP");
+        }
+
+        // Collecter un trésor
+        function collectTreasure(e) {
+            e.target.remove();
+            
+            // Ajouter à l'inventaire
+            const slot = document.querySelector('.inventory-slot:not(.has-item)');
+            if (slot) {
+                slot.innerHTML = '💎';
+                slot.classList.add('has-item');
+                gameState.hero.inventory.push('treasure');
+            }
+            
+            showMessage("Trésor collecté!");
+        }
+
+        // Lancer un sort
+        function castSpell() {
+            if (gameState.hero.mana >= 10) {
+                gameState.hero.mana -= 10;
+                updateStats();
+                createTemporalEffect(
+                    gameState.hero.x * 60 + 30,
+                    gameState.hero.y * 60 + 30
+                );
+                showMessage("Sort Temporel lancé!");
+            } else {
+                showMessage("Pas assez de mana!");
+            }
+        }
+
+        // Utiliser un objet
+        function useItem() {
+            const item = document.querySelector('.inventory-slot.has-item');
+            if (item) {
+                item.innerHTML = '';
+                item.classList.remove('has-item');
+                gameState.hero.health = Math.min(100, gameState.hero.health + 20);
+                updateStats();
+                showMessage("Objet utilisé! +20 PV");
+            }
+        }
+
+        // Saut temporel
+        function timeShift() {
+            if (gameState.hero.temporal >= 5) {
+                gameState.hero.temporal -= 5;
+                gameState.timeline += 10;
+                updateStats();
+                
+                // Effet visuel
+                document.body.style.animation = 'timeShift 1s';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 1000);
+                
+                showMessage("Saut temporel effectué!");
+            }
+        }
+
+        // Ouvrir un portail
+        function openPortal() {
+            const x = Math.floor(Math.random() * gameState.map.width);
+            const y = Math.floor(Math.random() * gameState.map.height);
+            gameState.hero.x = x;
+            gameState.hero.y = y;
+            updateHeroPosition();
+            updateFogOfCausality();
+            showMessage("Portail ouvert vers une nouvelle zone!");
+        }
+
+        // Créer un effet temporel
+        function createTemporalEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'temporal-effect';
+            effect.style.left = `${x - 50}px`;
+            effect.style.top = `${y - 50}px`;
+            document.getElementById('mapContainer').appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 2000);
+        }
+
+        // Mise à jour des stats
+        function updateStats() {
+            document.getElementById('health').textContent = gameState.hero.health;
+            document.getElementById('mana').textContent = gameState.hero.mana;
+            document.getElementById('attack').textContent = gameState.hero.attack;
+            document.getElementById('defense').textContent = gameState.hero.defense;
+            document.getElementById('temporal').textContent = gameState.hero.temporal;
+        }
+
+        // Afficher un message
+        function showMessage(text) {
+            const msg = document.getElementById('systemMessage');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 2000);
+        }
+
+        // Animation de saut temporel
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes timeShift {
+                0% { filter: hue-rotate(0deg) brightness(1); }
+                50% { filter: hue-rotate(180deg) brightness(1.5); }
+                100% { filter: hue-rotate(360deg) brightness(1); }
+            }
+            
+            @keyframes cardActivate {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2) rotateZ(5deg); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            if (gameState.inCombat) return;
+            
+            let newX = gameState.hero.x;
+            let newY = gameState.hero.y;
+            
+            switch(e.key) {
+                case 'ArrowUp': newY--; break;
+                case 'ArrowDown': newY++; break;
+                case 'ArrowLeft': newX--; break;
+                case 'ArrowRight': newX++; break;
+                case ' ': castSpell(); return;
+                case 'e': useItem(); return;
+                case 't': timeShift(); return;
+                case 'p': openPortal(); return;
+            }
+            
+            if (newX >= 0 && newX < gameState.map.width && 
+                newY >= 0 && newY < gameState.map.height) {
+                moveHero(newX, newY);
+            }
+        });
+
+        // Connexion au backend
+        async function connectToBackend() {
+            try {
+                const response = await fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.HEALTH);
+                if (response.ok) {
+                    console.log('Backend Magic Stack connecté!');
+                    showMessage('Connexion au Multivers établie!');
+                }
+            } catch (error) {
+                console.log('Backend non disponible, mode local');
+            }
+        }
+
+        // Initialisation
+        function init() {
+            generateMap();
+            updateStats();
+            updateFogOfCausality();
+            connectToBackend();
+            
+            // Animation de la timeline
+            setInterval(() => {
+                gameState.timeline++;
+                const marker = document.querySelector('.timeline-marker');
+                marker.style.left = `${(gameState.timeline % 100)}%`;
+            }, 100);
+            
+            showMessage("Bienvenue dans Heroes of Time!");
+        }
+
+        // Lancer le jeu
+        init();
+
+        console.log('HEROES OF TIME - JEU COMPLET');
+        console.log('Contrôles: Flèches pour bouger, Espace pour sort, E pour objet, T pour saut temporel, P pour portail');
+    </script>
+</body>
+</html>

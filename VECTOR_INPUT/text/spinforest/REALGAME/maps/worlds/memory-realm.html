@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Royaume des Souvenirs - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a2e;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+        #memoryCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #memory-ui {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #e8d5b7;
+            background: rgba(74, 138, 106, 0.4);
+            padding: 15px;
+            border: 2px solid #4A8A6A;
+            border-radius: 10px;
+            max-width: 300px;
+        }
+        .memory-fragment {
+            position: absolute;
+            color: #e8d5b7;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeInOut 8s infinite;
+            pointer-events: none;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
+        }
+        .echo-button {
+            background: #4A8A6A;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .echo-button:hover {
+            background: #5A9A7A;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="memoryCanvas"></canvas>
+    <div id="memory-ui">
+        <h3>📜 Royaume des Souvenirs</h3>
+        <p>Fragments collectés: <span id="fragments">0</span>/12</p>
+        <p>Mémoire active: <span id="active-memory">Aucune</span></p>
+        <div>
+            <button class="echo-button" onclick="activateEcho('past')">🕰️ Écho du Passé</button>
+            <button class="echo-button" onclick="activateEcho('future')">⏳ Vision du Futur</button>
+        </div>
+        <div id="memory-log"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('memoryCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // État du Royaume des Souvenirs
+        const memoryRealm = {
+            width: 45,
+            height: 45,
+            tileSize: 30,
+            tiles: [],
+            memories: [],
+            fragments: [],
+            activeEcho: null,
+            collectedFragments: 0,
+            portals: [
+                { x: 5, y: 5, to: 'avalon_central', memory: 'La fondation d\'Avalon' },
+                { x: 40, y: 40, to: 'temporal_nexus', memory: 'La fracture temporelle' },
+                { x: 22, y: 10, to: 'crystal_dimension', memory: 'Les cristaux perdus' }
+            ]
+        };
+
+        // Souvenirs flottants
+        const floatingMemories = [
+            "Je me souviens du jour où le temps s'est brisé...",
+            "Les héros d'antan marchaient ici...",
+            "Memento... pourquoi as-tu fait cela?",
+            "Le prix de l'éternité est l'oubli...",
+            "Douze fragments pour douze destinées...",
+            "L'archimage savait-il ce qui arriverait?",
+            "Les échos résonnent encore...",
+            "Certains souvenirs sont mieux oubliés...",
+            "La tour était si haute qu'elle touchait le temps...",
+            "Nous étions unis, avant la fracture...",
+            "Le Chat sourit, même dans les souvenirs...",
+            "L'algorithme de l'oubli progresse..."
+        ];
+
+        // Initialisation de la carte
+        function initMemoryRealm() {
+            // Génération des tuiles avec différents types de souvenirs
+            for (let y = 0; y < memoryRealm.height; y++) {
+                memoryRealm.tiles[y] = [];
+                for (let x = 0; x < memoryRealm.width; x++) {
+                    const memoryType = Math.random();
+                    let type;
+                    if (memoryType < 0.3) type = 'forgotten';
+                    else if (memoryType < 0.6) type = 'fading';
+                    else if (memoryType < 0.85) type = 'clear';
+                    else type = 'vivid';
+                    
+                    memoryRealm.tiles[y][x] = {
+                        type: type,
+                        intensity: Math.random(),
+                        memory: null
+                    };
+                }
+            }
+
+            // Placement des fragments de mémoire
+            for (let i = 0; i < 12; i++) {
+                memoryRealm.fragments.push({
+                    x: Math.random() * memoryRealm.width,
+                    y: Math.random() * memoryRealm.height,
+                    collected: false,
+                    memory: `Fragment ${i + 1}: ${floatingMemories[i]}`,
+                    glow: 0
+                });
+            }
+
+            // Créer des souvenirs flottants
+            setInterval(createFloatingMemory, 3000);
+        }
+
+        // Création de souvenirs flottants
+        function createFloatingMemory() {
+            const memory = document.createElement('div');
+            memory.className = 'memory-fragment';
+            memory.textContent = floatingMemories[Math.floor(Math.random() * floatingMemories.length)];
+            memory.style.left = Math.random() * window.innerWidth + 'px';
+            memory.style.top = Math.random() * window.innerHeight + 'px';
+            memory.style.animationDelay = Math.random() * 4 + 's';
+            document.body.appendChild(memory);
+            
+            setTimeout(() => memory.remove(), 8000);
+        }
+
+        // Rendu principal
+        function render() {
+            // Fond avec effet de brume mémorielle
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Effet de particules de souvenirs
+            const time = Date.now() * 0.0005;
+            ctx.save();
+            ctx.globalAlpha = 0.05;
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = '#e8d5b7';
+                const x = (Math.sin(time + i * 0.5) + 1) * canvas.width / 2;
+                const y = (Math.cos(time * 0.7 + i * 0.3) + 1) * canvas.height / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 2 + Math.sin(time + i) * 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Calcul des offsets pour centrer la carte
+            const offsetX = (canvas.width - memoryRealm.width * memoryRealm.tileSize) / 2;
+            const offsetY = (canvas.height - memoryRealm.height * memoryRealm.tileSize) / 2;
+
+            // Rendu des tuiles de mémoire
+            for (let y = 0; y < memoryRealm.height; y++) {
+                for (let x = 0; x < memoryRealm.width; x++) {
+                    const tile = memoryRealm.tiles[y][x];
+                    ctx.save();
+                    
+                    // Couleur selon le type de souvenir
+                    switch(tile.type) {
+                        case 'forgotten':
+                            ctx.fillStyle = `rgba(30, 30, 50, ${0.3 + tile.intensity * 0.2})`;
+                            break;
+                        case 'fading':
+                            ctx.fillStyle = `rgba(74, 138, 106, ${0.4 + tile.intensity * 0.3})`;
+                            break;
+                        case 'clear':
+                            ctx.fillStyle = `rgba(232, 213, 183, ${0.2 + tile.intensity * 0.3})`;
+                            break;
+                        case 'vivid':
+                            ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + tile.intensity * 0.4})`;
+                            break;
+                    }
+                    
+                    // Effet d'écho actif
+                    if (memoryRealm.activeEcho) {
+                        const wave = Math.sin(time * 2 + x * 0.1 + y * 0.1) * 0.2;
+                        ctx.globalAlpha = Math.max(0.1, ctx.globalAlpha + wave);
+                    }
+                    
+                    ctx.fillRect(
+                        offsetX + x * memoryRealm.tileSize,
+                        offsetY + y * memoryRealm.tileSize,
+                        memoryRealm.tileSize - 1,
+                        memoryRealm.tileSize - 1
+                    );
+                    ctx.restore();
+                }
+            }
+
+            // Rendu des fragments de mémoire
+            memoryRealm.fragments.forEach((fragment, index) => {
+                if (!fragment.collected) {
+                    ctx.save();
+                    fragment.glow = (fragment.glow + 0.02) % (Math.PI * 2);
+                    const glowIntensity = (Math.sin(fragment.glow) + 1) / 2;
+                    
+                    ctx.shadowBlur = 20 + glowIntensity * 20;
+                    ctx.shadowColor = '#FFD700';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.globalAlpha = 0.7 + glowIntensity * 0.3;
+                    
+                    // Symbole de fragment
+                    ctx.font = '20px Georgia';
+                    ctx.fillText('✦', 
+                        offsetX + fragment.x * memoryRealm.tileSize - 10,
+                        offsetY + fragment.y * memoryRealm.tileSize + 5
+                    );
+                    ctx.restore();
+                }
+            });
+
+            // Rendu des portails mémoriels
+            memoryRealm.portals.forEach(portal => {
+                ctx.save();
+                ctx.strokeStyle = '#4A8A6A';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#4A8A6A';
+                
+                // Cercles concentriques pour les portails
+                for (let i = 0; i < 3; i++) {
+                    ctx.globalAlpha = 1 - i * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(
+                        offsetX + portal.x * memoryRealm.tileSize,
+                        offsetY + portal.y * memoryRealm.tileSize,
+                        15 + i * 10 + Math.sin(time * 2 + i) * 3,
+                        0, Math.PI * 2
+                    );
+                    ctx.stroke();
+                }
+                
+                // Texte du souvenir
+                ctx.fillStyle = '#e8d5b7';
+                ctx.font = '12px Georgia';
+                ctx.globalAlpha = 0.8;
+                ctx.fillText(portal.memory,
+                    offsetX + portal.x * memoryRealm.tileSize - 50,
+                    offsetY + portal.y * memoryRealm.tileSize - 40
+                );
+                ctx.restore();
+            });
+
+            requestAnimationFrame(render);
+        }
+
+        // Activation des échos temporels
+        function activateEcho(type) {
+            memoryRealm.activeEcho = type;
+            document.getElementById('active-memory').textContent = 
+                type === 'past' ? 'Écho du Passé' : 'Vision du Futur';
+            
+            // Révéler des souvenirs cachés
+            if (type === 'past') {
+                memoryRealm.tiles.forEach(row => {
+                    row.forEach(tile => {
+                        if (tile.type === 'forgotten') {
+                            tile.type = 'fading';
+                        }
+                    });
+                });
+            } else {
+                // Vision du futur - montrer les conséquences
+                const log = document.getElementById('memory-log');
+                log.innerHTML = '<p style="color: #FFD700;">Vision: Les fragments unis révéleront la vérité...</p>';
+            }
+            
+            setTimeout(() => {
+                memoryRealm.activeEcho = null;
+                document.getElementById('active-memory').textContent = 'Aucune';
+            }, 10000);
+        }
+
+        // Gestion des clics pour collecter les fragments
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const offsetX = (canvas.width - memoryRealm.width * memoryRealm.tileSize) / 2;
+            const offsetY = (canvas.height - memoryRealm.height * memoryRealm.tileSize) / 2;
+            
+            // Vérifier les fragments
+            memoryRealm.fragments.forEach(fragment => {
+                if (!fragment.collected) {
+                    const fx = offsetX + fragment.x * memoryRealm.tileSize;
+                    const fy = offsetY + fragment.y * memoryRealm.tileSize;
+                    const dist = Math.sqrt((x - fx) ** 2 + (y - fy) ** 2);
+                    
+                    if (dist < 30) {
+                        fragment.collected = true;
+                        memoryRealm.collectedFragments++;
+                        document.getElementById('fragments').textContent = memoryRealm.collectedFragments;
+                        
+                        const log = document.getElementById('memory-log');
+                        log.innerHTML = `<p>${fragment.memory}</p>` + log.innerHTML;
+                        
+                        if (memoryRealm.collectedFragments === 12) {
+                            log.innerHTML = '<p style="color: #FFD700; font-weight: bold;">Tous les fragments réunis! La vérité se révèle...</p>' + log.innerHTML;
+                        }
+                    }
+                }
+            });
+            
+            // Vérifier les portails
+            memoryRealm.portals.forEach(portal => {
+                const px = offsetX + portal.x * memoryRealm.tileSize;
+                const py = offsetY + portal.y * memoryRealm.tileSize;
+                const dist = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+                
+                if (dist < 40) {
+                    console.log(`Voyage vers ${portal.to} à travers le souvenir: ${portal.memory}`);
+                    window.location.href = portal.to === 'avalon_central' ? '../main/MainIsoMap.html' : `${portal.to}.html`;
+                }
+            });
+        });
+
+        // Initialisation
+        initMemoryRealm();
+        render();
+    </script>
+</body>
+</html>

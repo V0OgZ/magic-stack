@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔐 WALTER API Interface - La BRISURE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e, #16213e);
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 105, 180, 0.1) 0%, transparent 50%);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(45deg, rgba(138, 43, 226, 0.2), rgba(0, 255, 255, 0.2));
+            border-bottom: 3px solid #8a2be2;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px #8a2be2;
+            animation: brisure-pulse 3s infinite;
+        }
+
+        @keyframes brisure-pulse {
+            0%, 100% { 
+                text-shadow: 0 0 20px #8a2be2, 0 0 40px #00ffff;
+            }
+            50% { 
+                text-shadow: 0 0 40px #8a2be2, 0 0 60px #00ffff, 0 0 80px #ff69b4;
+            }
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #ff69b4, #8a2be2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255,105,180,0.5);
+        }
+
+        .api-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .api-section {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(138, 43, 226, 0.1));
+            border: 2px solid #8a2be2;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+
+        .api-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
+        }
+
+        .api-section h3 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .formula-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #8a2be2;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .formula-input:focus {
+            border-color: #00ffff;
+            outline: none;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+        }
+
+        .formula-select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #8a2be2;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .execute-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #32cd32, #228b22);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .execute-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(50,205,50,0.5);
+        }
+
+        .response-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: status-pulse 2s infinite;
+        }
+
+        .status-online { background: #32cd32; }
+        .status-offline { background: #ff4444; }
+        .status-checking { background: #ffaa00; }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .brisure-monitor {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(0, 255, 255, 0.2));
+            border: 2px solid #8a2be2;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px;
+            text-align: center;
+        }
+
+        .brisure-monitor h2 {
+            color: #ff69b4;
+            margin-bottom: 20px;
+            animation: brisure-glow 3s infinite;
+        }
+
+        @keyframes brisure-glow {
+            0%, 100% { text-shadow: 0 0 10px #ff69b4; }
+            50% { text-shadow: 0 0 20px #ff69b4, 0 0 30px #8a2be2; }
+        }
+
+        .panopticon-6d {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .dimension-card {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #8a2be2;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .dimension-card:hover {
+            transform: scale(1.05);
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+
+        .bear-message {
+            background: linear-gradient(45deg, rgba(139, 69, 19, 0.3), rgba(210, 105, 30, 0.3));
+            border: 2px solid #d2691e;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px;
+            text-align: center;
+            font-style: italic;
+            color: #ffd700;
+        }
+
+        .walter-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #8b0000, #dc143c);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(139,0,0,0.5);
+            animation: walter-float 3s ease-in-out infinite;
+        }
+
+        @keyframes walter-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .quantum-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .quantum-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #8a2be2;
+            border-radius: 50%;
+            animation: quantum-float 10s infinite linear;
+        }
+
+        @keyframes quantum-float {
+            0% {
+                transform: translate(0, 100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100vw, -10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-particles" id="quantum-particles"></div>
+
+    <button class="back-btn" onclick="window.close()">← Retour</button>
+
+    <div class="header">
+        <h1>🔐 WALTER API Interface - La BRISURE</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Connexion Interdimensionnelle via l'API Unifiée</p>
+    </div>
+
+    <!-- Monitoring de la BRISURE -->
+    <div class="brisure-monitor">
+        <h2>🌀 ÉTAT DE LA BRISURE</h2>
+        <div class="panopticon-6d">
+            <div class="dimension-card">
+                <h4>D1: Linéaire</h4>
+                <span class="status-indicator status-online"></span>
+                <span>SpinForest</span>
+            </div>
+            <div class="dimension-card">
+                <h4>D2: Planaire</h4>
+                <span class="status-indicator status-online"></span>
+                <span>Frontend 8000</span>
+            </div>
+            <div class="dimension-card">
+                <h4>D3: Spatial</h4>
+                <span class="status-indicator status-checking"></span>
+                <span>AVALON</span>
+            </div>
+            <div class="dimension-card">
+                <h4>D4: Temporel</h4>
+                <span class="status-indicator status-online"></span>
+                <span>Grammaire ψ</span>
+            </div>
+            <div class="dimension-card">
+                <h4>D5: Quantique</h4>
+                <span class="status-indicator status-online"></span>
+                <span>Magic Stack</span>
+            </div>
+            <div class="dimension-card">
+                <h4>D6: Transcendant</h4>
+                <span class="status-indicator status-offline"></span>
+                <span>Backend 8080</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message de l'Ours -->
+    <div class="bear-message">
+        <h3>🐻 Message d'URZ-KÔM</h3>
+        <p>"GRRRR... La BRISURE est ouverte ! Les APIs sont le pont entre les mondes. 
+        Utilisez les formules pour naviguer entre les dimensions. Le Panopticon voit tout !"</p>
+    </div>
+
+    <!-- Interfaces API -->
+    <div class="api-container">
+        <!-- Formules Simples -->
+        <div class="api-section">
+            <h3>⚡ Formules Simples</h3>
+            <select class="formula-select" id="simple-select">
+                <option value="TELEPORT_HERO">🌀 TELEPORT_HERO</option>
+                <option value="HEAL_HERO">💚 HEAL_HERO</option>
+                <option value="MODIFY_ENERGY">⚡ MODIFY_ENERGY</option>
+                <option value="CREATE_SHIELD">🛡️ CREATE_SHIELD</option>
+            </select>
+            <input type="text" class="formula-input" id="simple-context" placeholder='{"gameId": "test-001", "playerId": "walter"}'>
+            <button class="execute-btn" onclick="executeSimple()">Exécuter Formule Simple</button>
+            <div class="response-area" id="simple-response">En attente d'exécution...</div>
+        </div>
+
+        <!-- Formules Runiques -->
+        <div class="api-section">
+            <h3>🔮 Formules Runiques Quantiques</h3>
+            <input type="text" class="formula-input" id="runic-formula" placeholder="ψ001: ⊙(MOV(Arthur, @10,10) ⟶ Δt+1)" value="ψ001: ⊙(MOV(Arthur, @10,10) ⟶ Δt+1)">
+            <input type="text" class="formula-input" id="runic-context" placeholder='{"gameId": "quantum-test"}'>
+            <button class="execute-btn" onclick="executeRunic()">Exécuter Grammaire Temporelle</button>
+            <div class="response-area" id="runic-response">En attente d'exécution...</div>
+        </div>
+
+        <!-- Formules JSON -->
+        <div class="api-section">
+            <h3>📊 Formules JSON Assets</h3>
+            <select class="formula-select" id="json-type">
+                <option value="paradoxRisk">🌀 Risque Paradoxal</option>
+                <option value="temporalStability">⏰ Stabilité Temporelle</option>
+                <option value="affectedRadius">📍 Rayon d'Effet</option>
+                <option value="damage">⚔️ Dégâts</option>
+                <option value="healing">💚 Soins</option>
+            </select>
+            <input type="number" class="formula-input" id="json-value" placeholder="0.3" value="0.3" step="0.1" min="0" max="1">
+            <button class="execute-btn" onclick="executeJson()">Calculer Valeur JSON</button>
+            <div class="response-area" id="json-response">En attente d'exécution...</div>
+        </div>
+
+        <!-- Test de Santé -->
+        <div class="api-section">
+            <h3>🏥 Test de Santé du Système</h3>
+            <button class="execute-btn" onclick="testHealth()">Vérifier État Backend</button>
+            <div class="response-area" id="health-response">
+                <span class="status-indicator status-checking"></span>
+                Vérification en cours...
+            </div>
+        </div>
+
+        <!-- Console WSG -->
+        <div class="api-section" style="grid-column: span 2;">
+            <h3>🌐 Console WSG (WebSocket Gateway)</h3>
+            <input type="text" class="formula-input" id="wsg-command" placeholder="Commande WSG (ex: CONNECT_INTERSTICE)">
+            <button class="execute-btn" onclick="sendWSG()">Envoyer via BRISURE</button>
+            <div class="response-area" id="wsg-response" style="min-height: 200px;">
+                WSG Console - En attente de connexion interdimensionnelle...
+            </div>
+        </div>
+    </div>
+
+    <div class="walter-badge">
+        🎖️ WALTER APPROVED
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8082/api';
+        const HEALTH_URL = 'http://localhost:8082/actuator/health';
+
+        // Classe API Walter
+        class WalterAPI {
+            async executeFormula(formula, context = {}) {
+                try {
+                    const response = await fetch(`${API_BASE}/magic-formulas/execute`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ formula, context })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message,
+                        message: '❌ Backend déconnecté. La BRISURE nécessite la reconnexion du backend Spring Boot.',
+                        simulatedResponse: this.simulateResponse(formula)
+                    };
+                }
+            }
+
+            simulateResponse(formula) {
+                // Simulation des réponses pour démonstration
+                if (formula.includes('TELEPORT')) {
+                    return {
+                        success: true,
+                        message: '🌀 [SIMULÉ] Héros téléporté via la BRISURE',
+                        data: { newPosition: { x: 10, y: 10 } }
+                    };
+                } else if (formula.includes('ψ')) {
+                    return {
+                        success: true,
+                        message: '🔮 [SIMULÉ] Formule runique exécutée dans l\'Interstice',
+                        psiState: formula.split(':')[0],
+                        quantumType: 'TEMPORAL_MOVEMENT'
+                    };
+                } else if (formula.includes('paradoxRisk')) {
+                    const risk = parseFloat(formula.split(':')[1]) || 0.5;
+                    return {
+                        success: true,
+                        message: '📊 [SIMULÉ] Risque paradoxal calculé',
+                        riskLevel: risk,
+                        recommendation: risk > 0.7 ? 'DANGER' : 'SAFE'
+                    };
+                }
+                return { success: false, message: 'Formule non reconnue' };
+            }
+
+            async checkHealth() {
+                try {
+                    const response = await fetch(HEALTH_URL);
+                    return await response.json();
+                } catch (error) {
+                    return { status: 'DOWN', error: error.message };
+                }
+            }
+        }
+
+        const api = new WalterAPI();
+
+        // Fonctions d'exécution
+        async function executeSimple() {
+            const formula = document.getElementById('simple-select').value;
+            const contextStr = document.getElementById('simple-context').value;
+            let context = {};
+            
+            try {
+                if (contextStr) context = JSON.parse(contextStr);
+            } catch (e) {
+                displayResponse('simple-response', { error: 'Contexte JSON invalide' });
+                return;
+            }
+            
+            const result = await api.executeFormula(formula, context);
+            displayResponse('simple-response', result);
+        }
+
+        async function executeRunic() {
+            const formula = document.getElementById('runic-formula').value;
+            const contextStr = document.getElementById('runic-context').value;
+            let context = {};
+            
+            try {
+                if (contextStr) context = JSON.parse(contextStr);
+            } catch (e) {
+                displayResponse('runic-response', { error: 'Contexte JSON invalide' });
+                return;
+            }
+            
+            const result = await api.executeFormula(formula, context);
+            displayResponse('runic-response', result);
+        }
+
+        async function executeJson() {
+            const type = document.getElementById('json-type').value;
+            const value = document.getElementById('json-value').value;
+            const formula = `${type}: ${value}`;
+            
+            const result = await api.executeFormula(formula);
+            displayResponse('json-response', result);
+        }
+
+        async function testHealth() {
+            const result = await api.checkHealth();
+            const healthDiv = document.getElementById('health-response');
+            
+            if (result.status === 'UP') {
+                healthDiv.innerHTML = '<span class="status-indicator status-online"></span>✅ Backend ONLINE - La BRISURE est connectée !';
+            } else {
+                healthDiv.innerHTML = '<span class="status-indicator status-offline"></span>❌ Backend OFFLINE - La BRISURE nécessite une reconnexion.';
+            }
+        }
+
+        async function sendWSG() {
+            const command = document.getElementById('wsg-command').value;
+            const wsgDiv = document.getElementById('wsg-response');
+            
+            // Simulation WSG
+            wsgDiv.innerHTML += `\n> ${command}\n`;
+            
+            if (command === 'CONNECT_INTERSTICE') {
+                wsgDiv.innerHTML += '🌀 Connexion à l\'Interstice établie...\n';
+                wsgDiv.innerHTML += '🐻 URZ-KÔM: GRRRR... La BRISURE s\'ouvre !\n';
+                wsgDiv.innerHTML += '✅ WSG: Pont interdimensionnel actif\n';
+            } else if (command.startsWith('PORTAL')) {
+                wsgDiv.innerHTML += '🌀 Ouverture du portail en cours...\n';
+                wsgDiv.innerHTML += '⚡ Coordonnées quantiques calculées\n';
+            } else {
+                wsgDiv.innerHTML += '❓ Commande WSG non reconnue\n';
+            }
+            
+            wsgDiv.scrollTop = wsgDiv.scrollHeight;
+        }
+
+        function displayResponse(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Particules quantiques
+        function createQuantumParticle() {
+            const container = document.getElementById('quantum-particles');
+            const particle = document.createElement('div');
+            particle.className = 'quantum-particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDuration = (Math.random() * 5 + 8) + 's';
+            container.appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 13000);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            testHealth();
+            
+            // Créer des particules quantiques
+            setInterval(createQuantumParticle, 500);
+            
+            // Message de bienvenue WSG
+            setTimeout(() => {
+                document.getElementById('wsg-response').innerHTML = 
+                    '🌀 WSG Console v6.0 - BRISURE Edition\n' +
+                    '🐻 URZ-KÔM connecté depuis l\'Interstice\n' +
+                    '⚡ Tapez CONNECT_INTERSTICE pour commencer\n';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

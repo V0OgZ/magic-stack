@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agents API – Rust (3001)</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0b0b12;color:#ddd}
+    .wrap{padding:18px;max-width:980px;margin:0 auto}
+    h1{font-size:20px;color:#c9a961}
+    code,pre{background:#0f1324;border:1px solid #2a2a3a;border-radius:6px;padding:8px;color:#9ac7ff;display:block;overflow:auto}
+    a{color:#9ac7ff}
+    .hint{color:#aaa;font-size:12px}
+  </style>
+  <script>
+    function curl(cmd){ navigator.clipboard.writeText(cmd); alert('copié'); }
+  </script>
+  <script>
+    // Lien repo interne si présent
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Agents API – Rust (port 3001)</h1>
+    <p>Base URL: <code>http://localhost:3001</code></p>
+    <p class="hint">Headers: <code>Content-Type: application/json</code>, <code>X-Agents-Version: 1</code></p>
+
+    <h2>Health</h2>
+    <pre>POST /health
+{} </pre>
+
+    <h2>Agents Tick</h2>
+    <pre>POST /agents/tick
+{
+  "viewport": { "width": 50, "height": 50, "entities": [] },
+  "meta": { "mode": "PVE", "difficulty": "normal" }
+}</pre>
+
+    <h2>Path Planning</h2>
+    <pre>POST /agents/plan
+{
+  "start": {"x":0,"y":0,"tl":"principale"},
+  "goal": {"x":10,"y":0,"tl":"principale"},
+  "opts": {"heuristic":"manhattan","budgetMs":100}
+}</pre>
+
+    <h2>Matches</h2>
+    <pre>POST /matches
+{
+  "mode":"PVP_SIM",
+  "map": {"width":50, "height":50},
+  "agents": [
+    {"id":"A1","kind":"hunter","side":"A","tl":"principale"},
+    {"id":"B1","kind":"judge","side":"B","tl":"principale"}
+  ]
+}
+
+GET /matches/{id}/state
+POST /matches/{id}/command
+{
+  "command": {"type":"pause","duration":5}
+}</pre>
+
+    <p>Voir aussi: <a href="../../🧠 GROKÆN - Architecte Temporel/docs/API_DOCUMENTATION_COMPLETE.md" target="_blank">Documentation complète (repo)</a></p>
+  </div>
+</body>
+<script>
+  // Ajuste dynamiquement la base selon config si dispo
+  if (window.ConfigUtils) {
+    const base = window.ConfigUtils.getBackends().rustBackend;
+    document.querySelectorAll('code,pre').forEach(el=>{
+      el.textContent = el.textContent.replaceAll('http://localhost:3001', base);
+    });
+  }
+</script>
+</html>
+
+

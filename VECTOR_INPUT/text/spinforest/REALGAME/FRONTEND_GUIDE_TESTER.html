@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔮 FRONTEND GUIDE TESTER - Magic Stack APIs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a0a2e, #16213e);
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(138, 43, 226, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #8A2BE2;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #8A2BE2;
+            border-radius: 12px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .panel h2 {
+            color: #E0B0FF;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .online { background: #00FF00; }
+        .offline { background: #FF0000; }
+        .pending { background: #FFD700; }
+        
+        .api-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+        
+        .api-section h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .endpoint {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 4px solid #8A2BE2;
+            font-size: 12px;
+        }
+        
+        .endpoint-method {
+            color: #00FFFF;
+            font-weight: bold;
+        }
+        
+        .endpoint-path {
+            color: #FFD700;
+        }
+        
+        .endpoint-desc {
+            color: #E0E0E0;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border: 2px solid #8A2BE2;
+            color: white;
+            padding: 8px 12px;
+            margin: 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(45deg, #9932CC, #6A0DAD);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            border-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .response-area {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 11px;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        
+        .log-success { background: rgba(0, 255, 0, 0.1); border-left: 3px solid #00FF00; }
+        .log-error { background: rgba(255, 0, 0, 0.1); border-left: 3px solid #FF0000; }
+        .log-info { background: rgba(0, 255, 255, 0.1); border-left: 3px solid #00FFFF; }
+        .log-warning { background: rgba(255, 215, 0, 0.1); border-left: 3px solid #FFD700; }
+        
+        .scenario-panel {
+            grid-column: 1 / -1;
+            background: rgba(138, 43, 226, 0.2);
+            border: 2px solid #8A2BE2;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .scenario-card {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(138, 43, 226, 0.5);
+        }
+        
+        .scenario-card h4 {
+            color: #E0B0FF;
+            margin-bottom: 10px;
+        }
+        
+        .scenario-card p {
+            font-size: 11px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        
+        .input-group {
+            margin: 8px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #E0B0FF;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 6px;
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #8A2BE2;
+            color: white;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 11px;
+        }
+        
+        .timeline-display {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(90deg, #FF4500, #FFD700, #32CD32, #00BFFF, #8A2BE2);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 80%;
+            background: #fff;
+            box-shadow: 0 0 8px #fff;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+        
+        .stat-value {
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #E0E0E0;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮⚡ FRONTEND GUIDE TESTER ⚡🔮</h1>
+            <p>Testing Magic Stack APIs (Rust + Java) - Based on SURFACE Documentation</p>
+            <div style="margin-top: 15px;">
+                <span class="status-indicator online"></span>Java Backend (8082): ONLINE
+                <span class="status-indicator offline" style="margin-left: 20px;"></span>Rust Backend (3001): OFFLINE (Linux binary)
+            </div>
+        </div>
+        
+        <!-- Endpoints disponibles -->
+        <div class="panel">
+            <h2>🔥 JAVA BACKEND APIs (ACTIVE)</h2>
+            
+            <div class="api-section">
+                <h3>⚡ Magic Engine</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">GET</span> <span class="endpoint-path">/api/magic/health</span>
+                    <div class="endpoint-desc">Status + 869 formules chargées</div>
+                    <button class="test-button" onclick="testMagicHealth()">TEST</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/magic/cast</span>
+                    <div class="endpoint-desc">Lancer sort temporel</div>
+                    <button class="test-button" onclick="testMagicCast()">FIREBALL</button>
+                    <button class="test-button" onclick="testTeleport()">TELEPORT</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/magic/shift</span>
+                    <div class="endpoint-desc">Décalage temporel</div>
+                    <button class="test-button" onclick="testTimeShift()">TIME SHIFT</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/magic/fork</span>
+                    <div class="endpoint-desc">Fork de réalité</div>
+                    <button class="test-button" onclick="testRealityFork()">FORK REALITY</button>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h3>🌀 Interstice 6D</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/interstice/search</span>
+                    <div class="endpoint-desc">Recherche 6D spatiotemporelle</div>
+                    <button class="test-button" onclick="testIntersticeSearch()">SEARCH 6D</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">GET</span> <span class="endpoint-path">/api/magic/formulas</span>
+                    <div class="endpoint-desc">Liste 869 formules</div>
+                    <button class="test-button" onclick="testFormulaList()">LIST FORMULAS</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Endpoints futurs Rust -->
+        <div class="panel">
+            <h2>🦀 RUST BACKEND APIs (PENDING)</h2>
+            
+            <div class="api-section" style="opacity: 0.5;">
+                <h3>🧭 Pathfinding Temporel</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/agents/plan</span>
+                    <div class="endpoint-desc">Pathfinding avec inversion temps</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+            </div>
+            
+            <div class="api-section" style="opacity: 0.5;">
+                <h3>👁️ Observation/Collapse</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/world-state/collapse</span>
+                    <div class="endpoint-desc">Observer pour dissiper incertitude</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/causality/resolve</span>
+                    <div class="endpoint-desc">Résolution collisions causales</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+            </div>
+            
+            <div class="api-section" style="opacity: 0.5;">
+                <h3>🗺️ Map Generation 6D</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/map/generate</span>
+                    <div class="endpoint-desc">Génération carte avec biomes</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/api/map/init</span>
+                    <div class="endpoint-desc">Init entités 6D + fenêtres temporelles</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+            </div>
+            
+            <div class="api-section" style="opacity: 0.5;">
+                <h3>🎭 Agent Control</h3>
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/agents/fork</span>
+                    <div class="endpoint-desc">Doubles temporels</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/agents/control</span>
+                    <div class="endpoint-desc">Contrôle joueur vs IA</div>
+                    <button class="test-button" disabled>PENDING macOS</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs et réponses -->
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>📊 API RESPONSES & LOGS</h2>
+            <div id="responseArea" class="response-area">
+                <div class="log-entry log-info">🔮 Frontend Guide Tester initialized</div>
+                <div class="log-entry log-info">⚡ Ready to test Magic Stack APIs!</div>
+                <div class="log-entry log-warning">🦀 Rust Backend offline - waiting for macOS binary from SURFACE</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scénarios de test -->
+    <div class="scenario-panel">
+        <h2>🎯 SCÉNARIOS DE TEST (Documentation SURFACE)</h2>
+        
+        <div class="scenario-grid">
+            <div class="scenario-card">
+                <h4>🧭 Pathfinding Temporal</h4>
+                <p>Test navigation avec brouillard causal et inversion du temps</p>
+                
+                <div class="input-group">
+                    <label>Start Position:</label>
+                    <input type="text" id="pathStart" value="x:0, y:0, tl:principale">
+                </div>
+                <div class="input-group">
+                    <label>Goal Position:</label>
+                    <input type="text" id="pathGoal" value="x:20, y:0, tl:principale">
+                </div>
+                <div class="input-group">
+                    <label>Time Velocity:</label>
+                    <input type="number" id="timeVelocity" value="1" step="0.1" min="-2" max="2">
+                </div>
+                
+                <button class="test-button" onclick="simulatePathfinding()" style="width: 100%; margin-top: 10px;">
+                    🔮 SIMULER PATHFINDING
+                </button>
+            </div>
+            
+            <div class="scenario-card">
+                <h4>👁️ Observation Magique</h4>
+                <p>Observer une zone pour dissiper l'incertitude causale</p>
+                
+                <div class="input-group">
+                    <label>Center Position 6D:</label>
+                    <input type="text" id="obsCenter" value="x:10, y:0, z:0, t:5, c:0.7, psi:0.5">
+                </div>
+                <div class="input-group">
+                    <label>Radius:</label>
+                    <input type="number" id="obsRadius" value="30">
+                </div>
+                
+                <button class="test-button" onclick="simulateObservation()" style="width: 100%; margin-top: 10px;">
+                    👁️ SIMULER OBSERVATION
+                </button>
+            </div>
+            
+            <div class="scenario-card">
+                <h4>🗺️ Map Generation</h4>
+                <p>Générer carte avec biomes et fenêtres temporelles</p>
+                
+                <div class="input-group">
+                    <label>Map Size:</label>
+                    <input type="text" id="mapSize" value="48x36">
+                </div>
+                <div class="input-group">
+                    <label>Biomes:</label>
+                    <select id="biomeType">
+                        <option value="balanced">Équilibré</option>
+                        <option value="sea">Océanique</option>
+                        <option value="mountain">Montagneux</option>
+                        <option value="forest">Forestier</option>
+                    </select>
+                </div>
+                
+                <button class="test-button" onclick="simulateMapGen()" style="width: 100%; margin-top: 10px;">
+                    🗺️ SIMULER MAP GEN
+                </button>
+            </div>
+            
+            <div class="scenario-card">
+                <h4>⚔️ Résolution Causale</h4>
+                <p>Résoudre collision entre entités temporelles</p>
+                
+                <div class="input-group">
+                    <label>Entities:</label>
+                    <input type="text" id="entities" value="Rapidus, Rapidus_b, Lentus">
+                </div>
+                <div class="input-group">
+                    <label>Mode:</label>
+                    <select id="resolveMode">
+                        <option value="QUANTUM">Quantique</option>
+                        <option value="TCG">Combat de cartes</option>
+                    </select>
+                </div>
+                
+                <button class="test-button" onclick="simulateCausalResolve()" style="width: 100%; margin-top: 10px;">
+                    ⚔️ SIMULER RÉSOLUTION
+                </button>
+            </div>
+        </div>
+        
+        <!-- Stats temps réel -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="testCount">0</div>
+                <div class="stat-label">Tests Executés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">100%</div>
+                <div class="stat-label">Taux de Succès</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgLatency">--ms</div>
+                <div class="stat-label">Latence Moyenne</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_JAVA = 'http://localhost:8082';
+        const API_RUST = 'http://localhost:3001'; // Offline pour l'instant
+        
+        let testStats = {
+            count: 0,
+            successes: 0,
+            latencies: []
+        };
+        
+        // Fonction utilitaire pour les logs
+        function log(message, type = 'info') {
+            const responseArea = document.getElementById('responseArea');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            responseArea.appendChild(entry);
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+        
+        function updateStats() {
+            document.getElementById('testCount').textContent = testStats.count;
+            
+            const successRate = testStats.count > 0 ? 
+                Math.round((testStats.successes / testStats.count) * 100) : 100;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            const avgLatency = testStats.latencies.length > 0 ?
+                Math.round(testStats.latencies.reduce((a, b) => a + b, 0) / testStats.latencies.length) : 0;
+            document.getElementById('avgLatency').textContent = avgLatency + 'ms';
+        }
+        
+        async function makeRequest(url, method = 'GET', body = null) {
+            const startTime = Date.now();
+            testStats.count++;
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: body ? { 'Content-Type': 'application/json' } : {},
+                    body: body ? JSON.stringify(body) : null
+                });
+                
+                const data = await response.json();
+                const latency = Date.now() - startTime;
+                testStats.latencies.push(latency);
+                
+                if (response.ok) {
+                    testStats.successes++;
+                    log(`✅ ${method} ${url} - ${latency}ms`, 'success');
+                    log(JSON.stringify(data, null, 2), 'info');
+                } else {
+                    log(`❌ ${method} ${url} - ${response.status} ${response.statusText}`, 'error');
+                    log(JSON.stringify(data, null, 2), 'error');
+                }
+                
+                updateStats();
+                return data;
+            } catch (error) {
+                log(`💥 ${method} ${url} - ${error.message}`, 'error');
+                updateStats();
+                throw error;
+            }
+        }
+        
+        // Tests Java Backend
+        async function testMagicHealth() {
+            await makeRequest(`${API_JAVA}/api/magic/health`);
+        }
+        
+        async function testMagicCast() {
+            const body = {
+                targetX: 100,
+                targetY: 200,
+                targetZ: 50,
+                formula: "fire_ball_temporal",
+                power: 75
+            };
+            await makeRequest(`${API_JAVA}/api/magic/cast`, 'POST', body);
+        }
+        
+        async function testTeleport() {
+            const body = {
+                targetX: Math.random() * 500,
+                targetY: Math.random() * 500,
+                targetZ: Math.random() * 100,
+                formula: "teleport_hero_6d",
+                power: 60
+            };
+            await makeRequest(`${API_JAVA}/api/magic/cast`, 'POST', body);
+        }
+        
+        async function testTimeShift() {
+            const body = {
+                offset: 5,
+                timeline: "main",
+                position: {
+                    x: 0, y: 0, z: 0, t: 0, c: 0.7, psi: 0.8
+                }
+            };
+            await makeRequest(`${API_JAVA}/api/magic/shift`, 'POST', body);
+        }
+        
+        async function testRealityFork() {
+            const body = {
+                timeline: "main",
+                branches: 2
+            };
+            await makeRequest(`${API_JAVA}/api/magic/fork`, 'POST', body);
+        }
+        
+        async function testIntersticeSearch() {
+            const body = {
+                query: "temporal_artifact",
+                center: {
+                    x: 50, y: 100, z: 25, t: 0, c: 0.8, psi: 0.6
+                },
+                radius: 75
+            };
+            await makeRequest(`${API_JAVA}/api/interstice/search`, 'POST', body);
+        }
+        
+        async function testFormulaList() {
+            await makeRequest(`${API_JAVA}/api/magic/formulas`);
+        }
+        
+        // Simulations pour les APIs Rust (en attendant)
+        function simulatePathfinding() {
+            const start = document.getElementById('pathStart').value;
+            const goal = document.getElementById('pathGoal').value;
+            const timeVel = parseFloat(document.getElementById('timeVelocity').value);
+            
+            log(`🧭 SIMULATION: Pathfinding ${start} → ${goal}`, 'warning');
+            log(`Time velocity: ${timeVel} ${timeVel < 0 ? '(INVERSION TEMPORELLE!)' : ''}`, 'warning');
+            
+            // Simulation du résultat
+            setTimeout(() => {
+                const mockResult = {
+                    path: [
+                        {x: 0, y: 0, tl: "principale"},
+                        {x: 5, y: 1, tl: "principale"},
+                        {x: 12, y: 0, tl: "principale"},
+                        {x: 20, y: 0, tl: "principale"}
+                    ],
+                    cost: timeVel < 0 ? 25.5 : 18.2,
+                    ok: true,
+                    temporal_inversion: timeVel < 0
+                };
+                log(`✨ Pathfinding résultat simulé:`, 'success');
+                log(JSON.stringify(mockResult, null, 2), 'info');
+            }, 500);
+        }
+        
+        function simulateObservation() {
+            const center = document.getElementById('obsCenter').value;
+            const radius = document.getElementById('obsRadius').value;
+            
+            log(`👁️ SIMULATION: Observation ${center}, radius ${radius}`, 'warning');
+            
+            setTimeout(() => {
+                const mockResult = {
+                    observed_nodes: 12,
+                    uncertainty_reduced: 0.4,
+                    new_entities_revealed: ['temporal_wisp', 'quantum_crystal'],
+                    causal_stabilization: 0.75
+                };
+                log(`✨ Observation résultat simulé:`, 'success');
+                log(JSON.stringify(mockResult, null, 2), 'info');
+            }, 300);
+        }
+        
+        function simulateMapGen() {
+            const size = document.getElementById('mapSize').value;
+            const biome = document.getElementById('biomeType').value;
+            
+            log(`🗺️ SIMULATION: Map generation ${size}, biome ${biome}`, 'warning');
+            
+            setTimeout(() => {
+                const mockResult = {
+                    width: 48,
+                    height: 36,
+                    biomes: ['sea', 'mountain', 'forest', 'plain'],
+                    entities_created: 156,
+                    temporal_windows: [
+                        {start: 2, end: 8, period: 12},
+                        {start: 5, end: 15, period: 20}
+                    ],
+                    treasures_spawned: 23,
+                    creatures_spawned: 18
+                };
+                log(`✨ Map generation résultat simulé:`, 'success');
+                log(JSON.stringify(mockResult, null, 2), 'info');
+            }, 800);
+        }
+        
+        function simulateCausalResolve() {
+            const entities = document.getElementById('entities').value;
+            const mode = document.getElementById('resolveMode').value;
+            
+            log(`⚔️ SIMULATION: Résolution causale ${entities}, mode ${mode}`, 'warning');
+            
+            setTimeout(() => {
+                const mockResult = {
+                    mode: mode,
+                    involved: entities.split(', '),
+                    winner: 'Rapidus',
+                    resolution_type: mode === 'QUANTUM' ? 'probability_collapse' : 'card_battle',
+                    causal_impact: 0.6
+                };
+                log(`✨ Résolution causale résultat simulé:`, 'success');
+                log(JSON.stringify(mockResult, null, 2), 'info');
+            }, 400);
+        }
+        
+        // Auto-test au démarrage
+        window.onload = () => {
+            setTimeout(() => {
+                log('🔍 Testing Java Backend connection...', 'info');
+                testMagicHealth();
+            }, 1000);
+        };
+        
+        console.log('🔮 Frontend Guide Tester loaded!');
+        console.log('📋 Based on SURFACE documentation');
+        console.log('⚡ Java APIs ready, Rust APIs pending macOS binary');
+    </script>
+</body>
+</html>

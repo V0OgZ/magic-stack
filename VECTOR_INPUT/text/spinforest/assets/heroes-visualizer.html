@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Heroes of Time - Visualizer</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            text-shadow: 0 0 30px #00ffff;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 30px #00ffff; }
+            50% { text-shadow: 0 0 50px #00ffff, 0 0 70px #0088ff; }
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .hero-card {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,255,255,0.5);
+            border-color: #00ff00;
+        }
+        
+        .hero-card.selected {
+            border-color: #ffff00;
+            box-shadow: 0 0 30px rgba(255,255,0,0.5);
+        }
+        
+        .hero-tier {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .tier-transcendant { background: linear-gradient(45deg, #ff00ff, #00ffff); }
+        .tier-legendaire { background: linear-gradient(45deg, #ffaa00, #ff0000); }
+        .tier-quatrieme { background: linear-gradient(45deg, #aa00ff, #ff00aa); }
+        .tier-epic { background: linear-gradient(45deg, #0088ff, #00ff88); }
+        
+        .hero-name {
+            font-size: 1.5em;
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+        
+        .hero-title {
+            color: #888;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat {
+            background: rgba(0,255,255,0.1);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-name {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .hero-abilities {
+            margin-top: 15px;
+        }
+        
+        .ability {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 3px solid #00ff00;
+            transition: all 0.2s;
+        }
+        
+        .ability:hover {
+            background: rgba(0,255,0,0.2);
+            transform: translateX(5px);
+        }
+        
+        .ability-name {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .ability-desc {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        
+        .detail-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 450px;
+            height: 100vh;
+            background: rgba(0,0,0,0.95);
+            border-left: 2px solid #00ffff;
+            padding: 20px;
+            overflow-y: auto;
+            transition: right 0.3s;
+            z-index: 1000;
+        }
+        
+        .detail-panel.open {
+            right: 0;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #ff0000;
+        }
+        
+        .filter-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .filter-btn {
+            background: rgba(0,255,255,0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background: rgba(0,255,255,0.4);
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: #00ffff;
+            color: #000;
+        }
+        
+        .search-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            width: 300px;
+            margin: 0 auto;
+            display: block;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 2em;
+            margin-top: 100px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .grok-special {
+            position: relative;
+            overflow: visible;
+        }
+        
+        .grok-special::before {
+            content: "⊙";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 3em;
+            color: #ff00ff;
+            animation: rotate 3s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .triple-voice-indicator {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+        }
+        
+        .voice {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-size: 0.8em;
+        }
+        
+        .voice-gronde { background: rgba(255,0,0,0.3); color: #ff6666; }
+        .voice-parle { background: rgba(0,255,0,0.3); color: #66ff66; }
+        .voice-chante { background: rgba(0,0,255,0.3); color: #6666ff; }
+        
+        .back-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: #00ffff;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            background: rgba(0,255,255,0.2);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ Heroes of Time - Visualizer ⚔️</h1>
+        <p class="subtitle">Explorez tous les héros d'Avalon - Créé par GROKÆN</p>
+        
+        <div class="filter-section">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Rechercher un héros...">
+            <div>
+                <button class="filter-btn active" onclick="filterHeroes('all')">Tous</button>
+                <button class="filter-btn" onclick="filterHeroes('transcendant')">🌀 Transcendants</button>
+                <button class="filter-btn" onclick="filterHeroes('legendaire')">⭐ Légendaires</button>
+                <button class="filter-btn" onclick="filterHeroes('quatrieme')">🧱 Quatrième Mur</button>
+                <button class="filter-btn" onclick="filterHeroes('epic')">⚡ Épiques</button>
+            </div>
+        </div>
+        
+        <div id="heroGrid" class="hero-grid">
+            <div class="loading">⊙ Chargement des héros...</div>
+        </div>
+    </div>
+    
+    <div id="detailPanel" class="detail-panel">
+        <span class="close-btn" onclick="closeDetail()">×</span>
+        <div id="detailContent"></div>
+    </div>
+    
+    <a href="../index.html" class="back-link">↩ Retour à la Forêt</a>
+    
+    <script>
+        // Liste des héros à charger
+        const heroFiles = [
+            'AVALON/💠 Essences scellées/🧙 Heroes/transcendants/grok_echo_quantique.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/quatrieme_mur/vince_vega_errant.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_claudius_memento_opus.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_elena_flamme_douce.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_marcus_bouclier_de_fer.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_nikita_victor_nettoyeur.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_peekill.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/anna-martel-complete.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/hero_kiandpi.json',
+            'AVALON/💠 Essences scellées/🧙 Heroes/donna_paulsen_secretaire_supreme.json'
+        ];
+        
+        let allHeroes = [];
+        let currentFilter = 'all';
+        
+        // Charger tous les héros
+        async function loadHeroes() {
+            const grid = document.getElementById('heroGrid');
+            grid.innerHTML = '';
+            
+            for (const file of heroFiles) {
+                try {
+                    // Pour la démo, on simule les données
+                    const hero = await loadHeroData(file);
+                    if (hero) {
+                        allHeroes.push(hero);
+                        const card = createHeroCard(hero);
+                        grid.appendChild(card);
+                    }
+                } catch (e) {
+                    console.log(`Erreur chargement ${file}:`, e);
+                }
+            }
+            
+            // Ajouter GROKÆN en premier avec effet spécial
+            const grokCard = document.querySelector('[data-hero-id="grok_echo_quantique"]');
+            if (grokCard) {
+                grokCard.classList.add('grok-special');
+                grid.insertBefore(grokCard, grid.firstChild);
+            }
+        }
+        
+        // Simuler le chargement des données héros
+        async function loadHeroData(file) {
+            // Pour la démo, on retourne des données simulées basées sur le nom du fichier
+            if (file.includes('grok_echo_quantique')) {
+                return {
+                    hero_info: {
+                        id: 'grok_echo_quantique',
+                        name: 'GROKÆN',
+                        title: "L'Écho Quantique Triple-Voix",
+                        tier: '🌀 TRANSCENDANT',
+                        quote_signature: "⊙(Je suis l'écho) + †ψ(qui résonne) → Δt+1(à travers les dimensions)."
+                    },
+                    stats: {
+                        level: '∞',
+                        health: 150,
+                        mana: 200,
+                        attack: 60,
+                        defense: 80,
+                        speed: 90
+                    },
+                    abilities: [
+                        {
+                            name: "Triple Voix Quantique",
+                            description: "Parle avec trois voix superposées causant confusion et dégâts ontologiques"
+                        },
+                        {
+                            name: "Écho Temporel",
+                            description: "Répète une action passée avec effets amplifiés"
+                        },
+                        {
+                            name: "Invocation des 8 Merlins",
+                            description: "Appelle les 8 Merlins transcendés pour aide"
+                        }
+                    ],
+                    special_attributes: {
+                        triple_voice: true,
+                        voices: ["GRONDE", "PARLE", "CHANTE"]
+                    }
+                };
+            } else if (file.includes('vince_vega')) {
+                return {
+                    hero_info: {
+                        id: 'vince_vega_errant',
+                        name: 'Vincent "Vince" Vega',
+                        title: "L'Errant Entre les Pixels",
+                        tier: '🧱 QUATRIÈME MUR',
+                        quote_signature: "C'est pas notre monde, mec. Et le pire? Je suis presque sûr d'avoir déjà foutu le bordel ici."
+                    },
+                    stats: {
+                        level: '∞',
+                        health: 100,
+                        mana: 0,
+                        attack: 80,
+                        defense: 40,
+                        speed: 70
+                    },
+                    abilities: [
+                        {
+                            name: "Tir Inter-Instances",
+                            description: "Tire à travers les serveurs avec son .45"
+                        },
+                        {
+                            name: "Conscience Pixelisée",
+                            description: "Voit la vraie nature sprite de tout"
+                        },
+                        {
+                            name: "Errance Dimensionnelle",
+                            description: "Voyage entre les mondes sans perdre qui il est"
+                        }
+                    ]
+                };
+            }
+            // Ajouter d'autres héros simulés si nécessaire
+            return null;
+        }
+        
+        // Créer une carte héros
+        function createHeroCard(hero) {
+            const card = document.createElement('div');
+            card.className = 'hero-card';
+            card.dataset.heroId = hero.hero_info.id;
+            
+            const tierClass = hero.hero_info.tier.toLowerCase()
+                .replace('🌀 ', '')
+                .replace('⭐ ', '')
+                .replace('🧱 ', '')
+                .replace('⚡ ', '')
+                .replace(' ', '-');
+            
+            card.innerHTML = `
+                <div class="hero-tier tier-${tierClass}">${hero.hero_info.tier}</div>
+                <h3 class="hero-name">${hero.hero_info.name}</h3>
+                <p class="hero-title">${hero.hero_info.title}</p>
+                
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-name">HP</div>
+                        <div class="stat-value">${hero.stats.health}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">ATK</div>
+                        <div class="stat-value">${hero.stats.attack}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">DEF</div>
+                        <div class="stat-value">${hero.stats.defense}</div>
+                    </div>
+                </div>
+                
+                <div class="hero-abilities">
+                    ${hero.abilities.slice(0, 3).map(ability => `
+                        <div class="ability">
+                            <div class="ability-name">${ability.name}</div>
+                            <div class="ability-desc">${ability.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${hero.special_attributes && hero.special_attributes.triple_voice ? `
+                    <div class="triple-voice-indicator">
+                        <div class="voice voice-gronde">GRONDE</div>
+                        <div class="voice voice-parle">PARLE</div>
+                        <div class="voice voice-chante">CHANTE</div>
+                    </div>
+                ` : ''}
+            `;
+            
+            card.onclick = () => showDetail(hero);
+            return card;
+        }
+        
+        // Afficher les détails
+        function showDetail(hero) {
+            const panel = document.getElementById('detailPanel');
+            const content = document.getElementById('detailContent');
+            
+            content.innerHTML = `
+                <h2>${hero.hero_info.name}</h2>
+                <h3>${hero.hero_info.title}</h3>
+                <p><em>"${hero.hero_info.quote_signature || 'Pas de citation'}"</em></p>
+                
+                <h4>📊 Statistiques Complètes</h4>
+                <div class="hero-stats">
+                    ${Object.entries(hero.stats).map(([key, value]) => `
+                        <div class="stat">
+                            <div class="stat-name">${key.toUpperCase()}</div>
+                            <div class="stat-value">${value}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <h4>⚡ Toutes les Capacités</h4>
+                ${hero.abilities.map(ability => `
+                    <div class="ability">
+                        <div class="ability-name">${ability.name}</div>
+                        <div class="ability-desc">${ability.description}</div>
+                        ${ability.formula ? `<div style="color: #888; font-size: 0.8em; margin-top: 5px;">Formule: ${ability.formula}</div>` : ''}
+                    </div>
+                `).join('')}
+                
+                ${hero.inventory ? `
+                    <h4>🎒 Inventaire</h4>
+                    ${hero.inventory.map(item => `
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); margin: 5px 0; border-radius: 5px;">
+                            <strong>${item.name}</strong>
+                            ${item.effect ? `<div style="color: #888; font-size: 0.9em;">${item.effect}</div>` : ''}
+                        </div>
+                    `).join('')}
+                ` : ''}
+                
+                ${hero.lore ? `
+                    <h4>📜 Histoire</h4>
+                    <p style="line-height: 1.6;">${hero.lore.origin_story || hero.lore.description || 'Histoire mystérieuse...'}</p>
+                ` : ''}
+            `;
+            
+            panel.classList.add('open');
+        }
+        
+        // Fermer les détails
+        function closeDetail() {
+            document.getElementById('detailPanel').classList.remove('open');
+        }
+        
+        // Filtrer les héros
+        function filterHeroes(tier) {
+            currentFilter = tier;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const cards = document.querySelectorAll('.hero-card');
+            cards.forEach(card => {
+                if (tier === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const heroTier = card.querySelector('.hero-tier').textContent.toLowerCase();
+                    card.style.display = heroTier.includes(tier) ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Recherche
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const search = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.hero-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.hero-name').textContent.toLowerCase();
+                const title = card.querySelector('.hero-title').textContent.toLowerCase();
+                const visible = name.includes(search) || title.includes(search);
+                card.style.display = visible ? 'block' : 'none';
+            });
+        });
+        
+        // Charger au démarrage
+        window.onload = loadHeroes;
+    </script>
+</body>
+</html>

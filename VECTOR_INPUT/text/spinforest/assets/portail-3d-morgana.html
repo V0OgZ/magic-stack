@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 Portail 3D de Morgana - Monde Immersif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #4a0080 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s;
+        }
+        
+        .prophecy {
+            font-size: 1.2em;
+            color: #e0b3ff;
+            text-align: center;
+            max-width: 600px;
+            margin: 20px;
+            line-height: 1.6;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        #canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #8b00ff;
+            pointer-events: all;
+        }
+        
+        .control-btn {
+            background: #4a0080;
+            color: #fff;
+            border: 1px solid #8b00ff;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #6a00b0;
+            box-shadow: 0 0 10px #8b00ff;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8b00ff;
+            max-width: 300px;
+            pointer-events: all;
+        }
+        
+        .hero-status {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .dimension-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(74, 0, 128, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid #e0b3ff;
+            font-weight: bold;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .portal-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 30%, #8b00ff 70%, transparent 100%);
+            animation: portal-spin 10s linear infinite;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        
+        @keyframes portal-spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingScreen">
+        <h1 style="color: #e0b3ff; margin-bottom: 30px;">🌀 Portail de Morgana</h1>
+        <div class="prophecy">
+            "Le monde n'est pas un, ni deux, mais TROIS...<br>
+            Substrat, Avalon, et IMMERSION.<br>
+            Quand les trois s'alignent, le portail s'ouvre..."
+        </div>
+        <p style="margin-top: 30px; color: #8b00ff;">Chargement du monde immersif...</p>
+    </div>
+    
+    <canvas id="canvas3d"></canvas>
+    
+    <div id="ui-overlay">
+        <div class="info-panel">
+            <h3>🐻 URZ-KÔM - Mode Immersif</h3>
+            <div class="hero-status">
+                <div>Forme: <span id="currentForm">Ours</span></div>
+                <div>Énergie: <span id="energy">120/120</span></div>
+                <div>Dimension: <span id="dimension">Immersion</span></div>
+            </div>
+        </div>
+        
+        <div class="dimension-indicator">
+            DIMENSION 3: IMMERSION
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="toggleForm()">🔄 Changer Forme</button>
+            <button class="control-btn" onclick="activateAbility()">✨ Capacité</button>
+            <button class="control-btn" onclick="openPortal()">🌀 Ouvrir Portail</button>
+            <button class="control-btn" onclick="returnTo2D()">↩️ Retour 2D</button>
+        </div>
+    </div>
+    
+    <div class="portal-effect" id="portalEffect"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration 3D
+        let scene, camera, renderer;
+        let bearModel, shamanModel, currentModel;
+        let isOursForm = true;
+        let particles = [];
+        let portalActive = false;
+        
+        // Initialisation Three.js
+        function init3D() {
+            // Scène
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000033, 10, 100);
+            
+            // Caméra
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, 0);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('canvas3d'),
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Lumières
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x8b00ff, 1);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xe0b3ff, 0.5);
+            pointLight.position.set(-5, 5, -5);
+            scene.add(pointLight);
+            
+            // Sol mystique
+            const groundGeometry = new THREE.PlaneGeometry(50, 50);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a0033,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Créer URZ-KÔM (forme ours simplifiée)
+            createBearModel();
+            createShamanModel();
+            
+            // Particules quantiques
+            createQuantumParticles();
+            
+            // Arbres mystiques
+            createMysticTrees();
+            
+            // Cacher l'écran de chargement
+            setTimeout(() => {
+                const loading = document.getElementById('loadingScreen');
+                loading.style.opacity = '0';
+                setTimeout(() => loading.style.display = 'none', 1000);
+            }, 2000);
+            
+            // Animation
+            animate();
+        }
+        
+        function createBearModel() {
+            const bearGroup = new THREE.Group();
+            
+            // Corps
+            const bodyGeometry = new THREE.SphereGeometry(2, 32, 32);
+            const bodyMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a2511,
+                roughness: 0.9
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.scale.set(1.2, 1, 1);
+            bearGroup.add(body);
+            
+            // Tête
+            const headGeometry = new THREE.SphereGeometry(1, 32, 32);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.set(0, 1.5, 1);
+            bearGroup.add(head);
+            
+            // Aura mystique
+            const auraGeometry = new THREE.SphereGeometry(3, 32, 32);
+            const auraMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.2,
+                wireframe: true
+            });
+            const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+            bearGroup.add(aura);
+            
+            bearGroup.position.y = 1;
+            bearGroup.castShadow = true;
+            
+            bearModel = bearGroup;
+            currentModel = bearModel;
+            scene.add(bearModel);
+        }
+        
+        function createShamanModel() {
+            const shamanGroup = new THREE.Group();
+            
+            // Corps humanoïde
+            const bodyGeometry = new THREE.CylinderGeometry(0.5, 0.7, 3, 32);
+            const bodyMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2a1a5e,
+                roughness: 0.7
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            shamanGroup.add(body);
+            
+            // Tête
+            const headGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const headMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffdbac,
+                roughness: 0.8
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2;
+            shamanGroup.add(head);
+            
+            // Bâton chamanique
+            const staffGeometry = new THREE.CylinderGeometry(0.1, 0.1, 4, 16);
+            const staffMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b4513,
+                roughness: 0.9
+            });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(1, 0, 0);
+            staff.rotation.z = 0.2;
+            shamanGroup.add(staff);
+            
+            // Cristal au sommet du bâton
+            const crystalGeometry = new THREE.OctahedronGeometry(0.3);
+            const crystalMaterial = new THREE.MeshStandardMaterial({
+                color: 0x00ffff,
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.5
+            });
+            const crystal = new THREE.Mesh(crystalGeometry, crystalMaterial);
+            crystal.position.set(1.3, 2, 0);
+            shamanGroup.add(crystal);
+            
+            shamanGroup.position.y = 1.5;
+            shamanGroup.visible = false;
+            
+            shamanModel = shamanGroup;
+            scene.add(shamanModel);
+        }
+        
+        function createQuantumParticles() {
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 200;
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 30;
+                positions[i + 1] = Math.random() * 10;
+                positions[i + 2] = (Math.random() - 0.5) * 30;
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0x00ffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particleSystem);
+            particles.push(particleSystem);
+        }
+        
+        function createMysticTrees() {
+            const treePositions = [
+                [-10, 0, -10],
+                [10, 0, -10],
+                [-15, 0, 5],
+                [15, 0, 5]
+            ];
+            
+            treePositions.forEach(pos => {
+                const trunkGeometry = new THREE.CylinderGeometry(1, 1.5, 8, 8);
+                const trunkMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2d1810,
+                    roughness: 1
+                });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.set(pos[0], 4, pos[2]);
+                trunk.castShadow = true;
+                scene.add(trunk);
+                
+                // Feuillage luminescent
+                const foliageGeometry = new THREE.SphereGeometry(4, 16, 16);
+                const foliageMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x00ff88,
+                    emissive: 0x00ff88,
+                    emissiveIntensity: 0.2,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+                foliage.position.set(pos[0], 10, pos[2]);
+                scene.add(foliage);
+            });
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotation de l'aura
+            if (currentModel && currentModel.children[2]) {
+                currentModel.children[2].rotation.y += 0.01;
+            }
+            
+            // Animation des particules
+            particles.forEach(system => {
+                system.rotation.y += 0.001;
+                const positions = system.geometry.attributes.position.array;
+                for (let i = 1; i < positions.length; i += 3) {
+                    positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                }
+                system.geometry.attributes.position.needsUpdate = true;
+            });
+            
+            // Mouvement de la caméra
+            camera.position.x = Math.sin(Date.now() * 0.0005) * 15;
+            camera.position.z = Math.cos(Date.now() * 0.0005) * 15;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        function toggleForm() {
+            isOursForm = !isOursForm;
+            
+            if (isOursForm) {
+                bearModel.visible = true;
+                shamanModel.visible = false;
+                currentModel = bearModel;
+                document.getElementById('currentForm').textContent = 'Ours';
+            } else {
+                bearModel.visible = false;
+                shamanModel.visible = true;
+                currentModel = shamanModel;
+                document.getElementById('currentForm').textContent = 'Chaman';
+            }
+            
+            // Effet de transformation
+            const flash = new THREE.PointLight(0xffffff, 5, 10);
+            flash.position.copy(currentModel.position);
+            scene.add(flash);
+            
+            setTimeout(() => scene.remove(flash), 500);
+        }
+        
+        function activateAbility() {
+            const energy = document.getElementById('energy');
+            let currentEnergy = parseInt(energy.textContent.split('/')[0]);
+            
+            if (currentEnergy >= 20) {
+                currentEnergy -= 20;
+                energy.textContent = `${currentEnergy}/120`;
+                
+                // Effet visuel de capacité
+                const abilityGeometry = new THREE.RingGeometry(1, 5, 32);
+                const abilityMaterial = new THREE.MeshBasicMaterial({
+                    color: isOursForm ? 0xff6600 : 0x00ffff,
+                    transparent: true,
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                });
+                const abilityEffect = new THREE.Mesh(abilityGeometry, abilityMaterial);
+                abilityEffect.position.copy(currentModel.position);
+                abilityEffect.rotation.x = -Math.PI / 2;
+                scene.add(abilityEffect);
+                
+                // Animation d'expansion
+                const expandAnimation = setInterval(() => {
+                    abilityEffect.scale.x += 0.1;
+                    abilityEffect.scale.y += 0.1;
+                    abilityMaterial.opacity -= 0.02;
+                    
+                    if (abilityMaterial.opacity <= 0) {
+                        clearInterval(expandAnimation);
+                        scene.remove(abilityEffect);
+                    }
+                }, 50);
+            }
+        }
+        
+        function openPortal() {
+            if (!portalActive) {
+                portalActive = true;
+                const portal = document.getElementById('portalEffect');
+                portal.style.opacity = '1';
+                
+                // Créer un portail 3D
+                const portalGeometry = new THREE.TorusGeometry(5, 0.5, 16, 100);
+                const portalMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x8b00ff,
+                    emissive: 0x8b00ff,
+                    emissiveIntensity: 1,
+                    wireframe: true
+                });
+                const portal3D = new THREE.Mesh(portalGeometry, portalMaterial);
+                portal3D.position.set(0, 5, -10);
+                scene.add(portal3D);
+                
+                // Animation du portail
+                const portalAnimation = setInterval(() => {
+                    portal3D.rotation.z += 0.05;
+                    portal3D.rotation.y += 0.02;
+                }, 20);
+                
+                setTimeout(() => {
+                    clearInterval(portalAnimation);
+                    scene.remove(portal3D);
+                    portal.style.opacity = '0';
+                    portalActive = false;
+                    alert("Le portail vers les autres dimensions s'est refermé... pour l'instant.");
+                }, 5000);
+            }
+        }
+        
+        function returnTo2D() {
+            if (confirm("Retourner au monde 2D ?")) {
+                window.location.href = "index.html";
+            }
+        }
+        
+        // Gestion du redimensionnement
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    toggleForm();
+                    break;
+                case 'e':
+                case 'E':
+                    activateAbility();
+                    break;
+                case 'p':
+                case 'P':
+                    openPortal();
+                    break;
+            }
+        });
+        
+        // Initialisation
+        window.addEventListener('load', init3D);
+    </script>
+</body>
+</html>

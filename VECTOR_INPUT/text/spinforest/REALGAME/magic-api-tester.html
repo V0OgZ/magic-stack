@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔮 MAGIC API TESTER - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a0a1a, #2a1a3a);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(138, 43, 226, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #8A2BE2;
+        }
+        
+        .panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #8A2BE2;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .spell-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .spell-button {
+            background: linear-gradient(45deg, #8A2BE2, #9932CC);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spell-button:hover {
+            background: linear-gradient(45deg, #9932CC, #BA55D3);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .spell-button:active {
+            transform: translateY(0);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #E0B0FF;
+            font-weight: bold;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #8A2BE2;
+            color: white;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .position-6d {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-success { background: rgba(0, 255, 0, 0.1); border-left: 3px solid #00FF00; }
+        .log-error { background: rgba(255, 0, 0, 0.1); border-left: 3px solid #FF0000; }
+        .log-info { background: rgba(0, 255, 255, 0.1); border-left: 3px solid #00FFFF; }
+        .log-magic { background: rgba(138, 43, 226, 0.2); border-left: 3px solid #8A2BE2; }
+        
+        .status-bar {
+            grid-column: 1 / -1;
+            background: rgba(138, 43, 226, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #8A2BE2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background: #00FF00; }
+        .status-offline { background: #FF0000; }
+        
+        .formula-counter {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #FFD700;
+        }
+        
+        .dimension-display {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+        
+        .dimension-value {
+            display: inline-block;
+            background: rgba(138, 43, 226, 0.3);
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        .spell-result {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid #8A2BE2;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮⚡ MAGIC API TESTER ⚡🔮</h1>
+            <p>Testing Heroes of Time Magic Stack - 869 Formules Disponibles</p>
+        </div>
+        
+        <div class="panel">
+            <h2>🎯 SPELL CASTING</h2>
+            
+            <div class="spell-controls">
+                <button class="spell-button" onclick="castSpell('fire_ball_temporal')">
+                    🔥 FIREBALL<br>TEMPORAL
+                </button>
+                <button class="spell-button" onclick="castSpell('teleport_hero_6d')">
+                    🌀 TELEPORT<br>6D
+                </button>
+                <button class="spell-button" onclick="castSpell('time_freeze')">
+                    ⏸️ TIME<br>FREEZE
+                </button>
+                <button class="spell-button" onclick="castSpell('heal_quantum')">
+                    💚 QUANTUM<br>HEAL
+                </button>
+                <button class="spell-button" onclick="castSpell('reality_shift')">
+                    🌈 REALITY<br>SHIFT
+                </button>
+                <button class="spell-button" onclick="castSpell('dimensional_rift')">
+                    🕳️ DIMENSIONAL<br>RIFT
+                </button>
+            </div>
+            
+            <div class="input-group">
+                <label>Custom Formula:</label>
+                <input type="text" id="customFormula" placeholder="Ex: fire_ball_temporal" value="fire_ball_temporal">
+            </div>
+            
+            <div class="input-group">
+                <label>Power Level:</label>
+                <input type="range" id="powerLevel" min="1" max="100" value="50" oninput="updatePowerDisplay()">
+                <span id="powerDisplay">50</span>
+            </div>
+            
+            <h3>🌀 Position 6D</h3>
+            <div class="position-6d">
+                <div class="input-group">
+                    <label>X (Spatial):</label>
+                    <input type="number" id="posX" value="100">
+                </div>
+                <div class="input-group">
+                    <label>Y (Spatial):</label>
+                    <input type="number" id="posY" value="200">
+                </div>
+                <div class="input-group">
+                    <label>Z (Spatial):</label>
+                    <input type="number" id="posZ" value="50">
+                </div>
+                <div class="input-group">
+                    <label>T (Temporal):</label>
+                    <input type="number" id="posT" value="0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>C (Causal):</label>
+                    <input type="number" id="posC" value="0.8" step="0.1" min="0" max="1">
+                </div>
+                <div class="input-group">
+                    <label>Ψ (Quantum):</label>
+                    <input type="number" id="posPsi" value="0.5" step="0.1" min="-1" max="1">
+                </div>
+            </div>
+            
+            <button class="spell-button" onclick="castCustomSpell()" style="width: 100%; margin-top: 15px;">
+                ⚡ CAST CUSTOM SPELL ⚡
+            </button>
+            
+            <h3>🌟 Advanced Magic</h3>
+            <div class="spell-controls">
+                <button class="spell-button" onclick="temporalShift()">
+                    ⏰ TIME SHIFT
+                </button>
+                <button class="spell-button" onclick="realityFork()">
+                    🔄 REALITY FORK
+                </button>
+                <button class="spell-button" onclick="searchInterstice()">
+                    🔍 6D SEARCH
+                </button>
+                <button class="spell-button" onclick="getFormulas()">
+                    📖 LIST FORMULAS
+                </button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 MAGIC RESPONSE</h2>
+            
+            <div class="dimension-display">
+                <h4>🌀 Last Spell Position 6D:</h4>
+                <div id="lastPosition">
+                    <span class="dimension-value">X: --</span>
+                    <span class="dimension-value">Y: --</span>
+                    <span class="dimension-value">Z: --</span>
+                    <span class="dimension-value">T: --</span>
+                    <span class="dimension-value">C: --</span>
+                    <span class="dimension-value">Ψ: --</span>
+                </div>
+            </div>
+            
+            <div id="spellResult" class="spell-result">
+                Waiting for magic...
+            </div>
+            
+            <h3>📝 Magic Log</h3>
+            <div class="log-container" id="magicLog">
+                <div class="log-entry log-info">🔮 Magic API Tester initialized</div>
+                <div class="log-entry log-info">⚡ Ready to cast spells!</div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div>
+                <span class="status-indicator" id="apiStatus"></span>
+                <span id="statusText">Checking API...</span>
+            </div>
+            <div class="formula-counter">
+                <span id="formulaCount">--- Formulas Loaded</span>
+            </div>
+            <div>
+                <button class="spell-button" onclick="checkAPIHealth()">🔍 CHECK API</button>
+                <button class="spell-button" onclick="clearLog()">🗑️ CLEAR LOG</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8082';
+        let lastSpellResult = null;
+        
+        // Initialize
+        window.onload = () => {
+            checkAPIHealth();
+            getFormulas();
+        };
+        
+        function updatePowerDisplay() {
+            document.getElementById('powerDisplay').textContent = document.getElementById('powerLevel').value;
+        }
+        
+        async function checkAPIHealth() {
+            try {
+                log('Checking Magic API health...', 'info');
+                const response = await fetch(`${API_BASE}/api/magic/health`);
+                const data = await response.json();
+                
+                if (data.status === 'MAGICAL') {
+                    document.getElementById('apiStatus').className = 'status-indicator status-online';
+                    document.getElementById('statusText').textContent = 'API Magic Online';
+                    document.getElementById('formulaCount').textContent = `${data.formulas_loaded} Formulas Loaded`;
+                    log(`🔮 Magic API Online! ${data.formulas_loaded} formulas loaded`, 'success');
+                } else {
+                    throw new Error('API not magical');
+                }
+            } catch (error) {
+                document.getElementById('apiStatus').className = 'status-indicator status-offline';
+                document.getElementById('statusText').textContent = 'API Offline';
+                log(`❌ API Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function castSpell(formula) {
+            const position6D = getPosition6D();
+            const power = parseInt(document.getElementById('powerLevel').value);
+            
+            try {
+                log(`🔥 Casting ${formula} at power ${power}...`, 'magic');
+                
+                const response = await fetch(`${API_BASE}/api/magic/cast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: formula,
+                        power: power,
+                        targetX: position6D.x,
+                        targetY: position6D.y,
+                        targetZ: position6D.z
+                    })
+                });
+                
+                const result = await response.json();
+                displaySpellResult(result);
+                
+                if (result.success) {
+                    updateLastPosition(result.position6D);
+                    log(`✨ Spell cast successfully! ID: ${result.spellId}`, 'success');
+                } else {
+                    log(`💥 Spell failed: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Cast error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function castCustomSpell() {
+            const formula = document.getElementById('customFormula').value;
+            if (!formula) {
+                log('❌ Please enter a formula', 'error');
+                return;
+            }
+            await castSpell(formula);
+        }
+        
+        async function temporalShift() {
+            const position6D = getPosition6D();
+            
+            try {
+                log('⏰ Performing temporal shift...', 'magic');
+                
+                const response = await fetch(`${API_BASE}/api/magic/shift`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        offset: 5,
+                        timeline: 'main',
+                        position: position6D
+                    })
+                });
+                
+                const result = await response.json();
+                displaySpellResult(result);
+                
+                if (result.success) {
+                    updateLastPosition(result.shiftedPosition);
+                    log(`⏰ Time shifted! Causal change: ${result.originalPosition.c} → ${result.shiftedPosition.c}`, 'success');
+                } else {
+                    log(`💥 Time shift failed`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Shift error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function realityFork() {
+            try {
+                log('🔄 Forking reality...', 'magic');
+                
+                const response = await fetch(`${API_BASE}/api/magic/fork`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        timeline: 'main',
+                        branches: 2
+                    })
+                });
+                
+                const result = await response.json();
+                displaySpellResult(result);
+                
+                if (result.success) {
+                    log(`🌍 New world created! ID: ${result.newWorldId}`, 'success');
+                } else {
+                    log(`💥 Reality fork failed`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Fork error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function searchInterstice() {
+            const position6D = getPosition6D();
+            
+            try {
+                log('🔍 Searching 6D interstice...', 'magic');
+                
+                const response = await fetch(`${API_BASE}/api/interstice/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: 'temporal',
+                        center: position6D,
+                        radius: 100
+                    })
+                });
+                
+                const result = await response.json();
+                displaySpellResult(result);
+                
+                log(`🔍 Search completed! Found ${result.foundCount} entities`, 'success');
+            } catch (error) {
+                log(`❌ Search error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getFormulas() {
+            try {
+                const response = await fetch(`${API_BASE}/api/magic/formulas`);
+                const result = await response.json();
+                
+                log(`📖 ${result.count} formulas available in categories: ${result.categories.join(', ')}`, 'info');
+            } catch (error) {
+                log(`❌ Formula error: ${error.message}`, 'error');
+            }
+        }
+        
+        function getPosition6D() {
+            return {
+                x: parseFloat(document.getElementById('posX').value) || 0,
+                y: parseFloat(document.getElementById('posY').value) || 0,
+                z: parseFloat(document.getElementById('posZ').value) || 0,
+                t: parseFloat(document.getElementById('posT').value) || 0,
+                c: parseFloat(document.getElementById('posC').value) || 0.5,
+                psi: parseFloat(document.getElementById('posPsi').value) || 0.5
+            };
+        }
+        
+        function updateLastPosition(position6D) {
+            if (!position6D) return;
+            
+            const display = document.getElementById('lastPosition');
+            display.innerHTML = `
+                <span class="dimension-value">X: ${position6D.x?.toFixed(1) || '--'}</span>
+                <span class="dimension-value">Y: ${position6D.y?.toFixed(1) || '--'}</span>
+                <span class="dimension-value">Z: ${position6D.z?.toFixed(1) || '--'}</span>
+                <span class="dimension-value">T: ${position6D.t ? new Date(position6D.t * 1000).toLocaleTimeString() : '--'}</span>
+                <span class="dimension-value">C: ${position6D.c?.toFixed(3) || '--'}</span>
+                <span class="dimension-value">Ψ: ${position6D.psi?.toFixed(3) || '--'}</span>
+            `;
+        }
+        
+        function displaySpellResult(result) {
+            const container = document.getElementById('spellResult');
+            container.textContent = JSON.stringify(result, null, 2);
+            lastSpellResult = result;
+        }
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('magicLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('magicLog').innerHTML = '';
+            log('🗑️ Log cleared', 'info');
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1': castSpell('fire_ball_temporal'); e.preventDefault(); break;
+                    case '2': castSpell('teleport_hero_6d'); e.preventDefault(); break;
+                    case '3': castSpell('time_freeze'); e.preventDefault(); break;
+                    case '4': temporalShift(); e.preventDefault(); break;
+                    case '5': realityFork(); e.preventDefault(); break;
+                    case 'Enter': castCustomSpell(); e.preventDefault(); break;
+                }
+            }
+        });
+        
+        console.log('🔮 Magic API Tester ready!');
+        console.log('Keyboard shortcuts: Ctrl+1-5 for quick spells, Ctrl+Enter for custom');
+    </script>
+</body>
+</html>

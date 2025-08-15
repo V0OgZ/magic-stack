@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER INDEX - Heroes of Time - Toutes les Interfaces</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            font-size: 3em;
+        }
+        
+        .stats {
+            background: rgba(0,255,0,0.1);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .category {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #00ffff;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .category h2 {
+            color: #ffff00;
+            border-bottom: 2px solid #ffff00;
+            padding-bottom: 10px;
+        }
+        
+        .interface-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .interface-card {
+            background: rgba(0,100,200,0.1);
+            border: 1px solid #0088ff;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .interface-card:hover {
+            background: rgba(0,200,255,0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+        
+        .interface-card h3 {
+            color: #00ffff;
+            margin: 0 0 5px 0;
+            font-size: 0.9em;
+        }
+        
+        .interface-card .path {
+            color: #888;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        
+        .interface-card .description {
+            color: #00ff00;
+            font-size: 0.85em;
+        }
+        
+        .interface-card .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            margin-top: 5px;
+        }
+        
+        .status.working { background: #00ff00; color: #000; }
+        .status.partial { background: #ffff00; color: #000; }
+        .status.broken { background: #ff0000; color: #fff; }
+        .status.unknown { background: #666; color: #fff; }
+        
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            color: #00ff00;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .quick-link {
+            background: rgba(255,0,255,0.2);
+            border: 1px solid #ff00ff;
+            color: #ff00ff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .quick-link:hover {
+            background: rgba(255,0,255,0.5);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>MASTER INDEX - Heroes of Time</h1>
+    
+    <div class="stats">
+        <h2>STATISTIQUES TOTALES</h2>
+        <p>
+            <strong>203</strong> Interfaces HTML | 
+            <strong>80+</strong> Scripts JS | 
+            <strong>4</strong> APIs Node.js | 
+            <strong>1</strong> React Component |
+            <strong>869</strong> Formules Magiques
+        </p>
+    </div>
+    
+    <input type="text" class="search-box" placeholder="Rechercher une interface..." id="searchBox">
+    
+    <div class="quick-links">
+        <a href="#launchers" class="quick-link">Launchers</a>
+        <a href="#tcg" class="quick-link">TCG Combat</a>
+        <a href="#maps" class="quick-link">Cartes</a>
+        <a href="#panopticon" class="quick-link">Panopticon</a>
+        <a href="#apis" class="quick-link">APIs</a>
+        <a href="#ai" class="quick-link">IA GOAP</a>
+    </div>
+    
+    <div class="category" id="launchers">
+        <h2>🚀 LAUNCHERS PRINCIPAUX</h2>
+        <div class="interface-grid">
+            <div class="interface-card" onclick="window.open('REALGAME/index.html', '_blank')">
+                <h3>Launcher Principal</h3>
+                <div class="path">REALGAME/index.html</div>
+                <div class="description">Point d'entrée principal du jeu avec menu de sélection des modes</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/AVALON_MEGA_LAUNCHER.html', '_blank')">
+                <h3>Mega Launcher AVALON</h3>
+                <div class="path">REALGAME/AVALON_MEGA_LAUNCHER.html</div>
+                <div class="description">Version étendue avec tous les modes et options</div>
+                <span class="status partial">PARTIEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/heroes-of-time-complete.html', '_blank')">
+                <h3>Heroes Complete</h3>
+                <div class="path">REALGAME/heroes-of-time-complete.html</div>
+                <div class="description">Version complète intégrée avec backend</div>
+                <span class="status unknown">À TESTER</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('ULTIMATE_TCG_CARD_SYSTEM.html', '_blank')">
+                <h3>Ultimate TCG System</h3>
+                <div class="path">ULTIMATE_TCG_CARD_SYSTEM.html</div>
+                <div class="description">Système de cartes ultime avec toutes les mécaniques</div>
+                <span class="status unknown">À TESTER</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category" id="tcg">
+        <h2>⚔️ TCG COMBAT (15+ versions!)</h2>
+        <div class="interface-grid">
+            <div class="interface-card" onclick="window.open('REALGAME/AVALON-TCG/launcher.html', '_blank')">
+                <h3>TCG Launcher</h3>
+                <div class="path">REALGAME/AVALON-TCG/launcher.html</div>
+                <div class="description">Launcher spécifique pour le mode TCG</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/AVALON-TCG/tcg-battle-interface.html', '_blank')">
+                <h3>Battle Interface</h3>
+                <div class="path">REALGAME/AVALON-TCG/tcg-battle-interface.html</div>
+                <div class="description">Interface de combat TCG principale</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/AVALON-TCG/ui/hearthstone-visual-combat.html', '_blank')">
+                <h3>Hearthstone Style</h3>
+                <div class="path">REALGAME/AVALON-TCG/ui/hearthstone-visual-combat.html</div>
+                <div class="description">Combat style Hearthstone avec animations</div>
+                <span class="status partial">PARTIEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/vincent-card-battle-system.html', '_blank')">
+                <h3>Vincent Battle System</h3>
+                <div class="path">REALGAME/vincent-card-battle-system.html</div>
+                <div class="description">Système de combat personnalisé par Vincent</div>
+                <span class="status unknown">À TESTER</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category" id="maps">
+        <h2>🗺️ CARTES ET EXPLORATION</h2>
+        <div class="interface-grid">
+            <div class="interface-card" onclick="window.open('REALGAME/maps/main/MainIsoMap.html', '_blank')">
+                <h3>Carte ISO Principale</h3>
+                <div class="path">REALGAME/maps/main/MainIsoMap.html</div>
+                <div class="description">Carte isométrique style Heroes 3</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/maps/main/MetaSurcarte-v2.html', '_blank')">
+                <h3>Meta Surcarte V2</h3>
+                <div class="path">REALGAME/maps/main/MetaSurcarte-v2.html</div>
+                <div class="description">Vue meta des multivers</div>
+                <span class="status partial">PARTIEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/worlds/frontiere_feu_foi/FrontiereFeuFoi.html', '_blank')">
+                <h3>Frontière Feu & Foi</h3>
+                <div class="path">REALGAME/worlds/frontiere_feu_foi/FrontiereFeuFoi.html</div>
+                <div class="description">Monde jouable complet</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category" id="panopticon">
+        <h2>👁️ PANOPTICON (8 versions!)</h2>
+        <div class="interface-grid">
+            <div class="interface-card" onclick="window.open('assets/panopticon-6d-grut.html', '_blank')">
+                <h3>Panopticon 6D GRUT</h3>
+                <div class="path">assets/panopticon-6d-grut.html</div>
+                <div class="description">Vision 6D complète avec conscience</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('assets/panopticon-neuronal-lightning.html', '_blank')">
+                <h3>Neuronal Lightning</h3>
+                <div class="path">assets/panopticon-neuronal-lightning.html</div>
+                <div class="description">Visualisation neuronale avec éclairs</div>
+                <span class="status partial">PARTIEL</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('assets/panopticon-backend-integration.html', '_blank')">
+                <h3>Backend Integration</h3>
+                <div class="path">assets/panopticon-backend-integration.html</div>
+                <div class="description">Connecté aux backends Java/Rust</div>
+                <span class="status unknown">À TESTER</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category" id="apis">
+        <h2>🔌 APIS ET BACKENDS</h2>
+        <div class="interface-grid">
+            <div class="interface-card">
+                <h3>API Server Principal</h3>
+                <div class="path">REALGAME/api/server.js</div>
+                <div class="description">Serveur Node.js Express principal</div>
+                <span class="status working">PORT 3000</span>
+            </div>
+            
+            <div class="interface-card">
+                <h3>Backend Java</h3>
+                <div class="path">spells/stack/backends/java</div>
+                <div class="description">Spring Boot - 869 formules magiques</div>
+                <span class="status working">PORT 8082</span>
+            </div>
+            
+            <div class="interface-card">
+                <h3>Backend Rust</h3>
+                <div class="path">spells/stack/backends/rust</div>
+                <div class="description">Tokio/Axum - Q* Algorithm</div>
+                <span class="status working">PORT 3001</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category" id="ai">
+        <h2>🤖 IA ET SYSTÈMES</h2>
+        <div class="interface-grid">
+            <div class="interface-card">
+                <h3>GOAP System</h3>
+                <div class="path">REALGAME/ai/goap-system.js</div>
+                <div class="description">Goal-Oriented Action Planning pour IA</div>
+                <span class="status partial">PARTIEL</span>
+            </div>
+            
+            <div class="interface-card">
+                <h3>Q* 6D Engine</h3>
+                <div class="path">REALGAME/core/pathfinding/qstar-6d-engine.js</div>
+                <div class="description">Pathfinding en 6 dimensions</div>
+                <span class="status working">FONCTIONNEL</span>
+            </div>
+            
+            <div class="interface-card">
+                <h3>Chemistry Learning</h3>
+                <div class="path">REALGAME/ai/chemistry-learning-system.js</div>
+                <div class="description">Système d'apprentissage chimique</div>
+                <span class="status unknown">À TESTER</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category">
+        <h2>🎯 TOP 5 À LANCER MAINTENANT</h2>
+        <div class="interface-grid">
+            <div class="interface-card" onclick="window.open('REALGAME/index.html', '_blank')" style="border: 3px solid #00ff00;">
+                <h3>1. REALGAME Launcher</h3>
+                <div class="description">Commence ici - Menu principal</div>
+                <span class="status working">GO!</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/AVALON-TCG/launcher.html', '_blank')" style="border: 3px solid #00ff00;">
+                <h3>2. TCG Launcher</h3>
+                <div class="description">Pour jouer aux cartes</div>
+                <span class="status working">GO!</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('REALGAME/worlds/frontiere_feu_foi/FrontiereFeuFoi.html', '_blank')" style="border: 3px solid #00ff00;">
+                <h3>3. Frontière Feu Foi</h3>
+                <div class="description">Monde complet jouable</div>
+                <span class="status working">GO!</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('assets/panopticon-6d-grut.html', '_blank')" style="border: 3px solid #00ff00;">
+                <h3>4. Panopticon 6D</h3>
+                <div class="description">Vision 6D épique</div>
+                <span class="status working">GO!</span>
+            </div>
+            
+            <div class="interface-card" onclick="window.open('frontend/index.html', '_blank')" style="border: 3px solid #00ff00;">
+                <h3>5. Frontend Dashboard</h3>
+                <div class="description">Interface de contrôle</div>
+                <span class="status working">GO!</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Recherche simple
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const search = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.interface-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(search) ? 'block' : 'none';
+            });
+        });
+        
+        // Animation titre
+        const title = document.querySelector('h1');
+        setInterval(() => {
+            title.style.textShadow = `0 0 ${Math.random() * 30 + 10}px #00ffff`;
+        }, 500);
+        
+        console.log("MASTER INDEX LOADED");
+        console.log("203 HTML + 80 JS + 4 APIs");
+        console.log("Heroes of Time - 2026");
+    </script>
+</body>
+</html>

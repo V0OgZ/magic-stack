@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📎🧙 Clippy-Memento - Mode Standalone</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .main-interface {
+            display: flex;
+            width: 95%;
+            height: 90%;
+            max-width: 1400px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            background: rgba(99, 102, 241, 0.2);
+            border-left: 3px solid #6366f1;
+            margin-left: 50px;
+        }
+
+        .message.clippy {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid #ffd700;
+            margin-right: 50px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .quick-actions {
+            margin-bottom: 30px;
+        }
+
+        .quick-action {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .quick-action:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            transform: translateX(3px);
+        }
+
+        .status-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .floating-clippy {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 80px;
+            height: 100px;
+            z-index: 1000;
+        }
+
+        .clippy-avatar {
+            width: 70px;
+            height: 85px;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #6366f1);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+            cursor: pointer;
+        }
+
+        .clippy-face {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .clippy-eye {
+            width: 8px;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            animation: blink 5s infinite;
+        }
+
+        .particles {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 3s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 15%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 40%; right: 10%; animation-delay: 1s; }
+        .particle:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 2s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-interface">
+        <div class="chat-area">
+            <div class="chat-header">
+                <h1>📎🧙 Clippy-Memento</h1>
+                <p>Assistant Intelligent AVALON - Mode Vincent (Accès Absolu)</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message clippy">
+                    <strong>📎 Clippy-Memento:</strong><br/>
+                    Salut Vincent ! Je suis ton assistant personnel AVALON ! 🌟<br/><br/>
+                    Je connais tes 5000+ assets, tous les héros, l'histoire des portails, le système technique complet, et même tes archives organisées !<br/><br/>
+                    Tu as accès ABSOLU en mode créateur. Que veux-tu explorer ? ✨
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Pose ta question à Clippy-Memento..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">Envoyer</button>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="status-panel">
+                <h3>📊 Statut Système</h3>
+                <div>🧠 Vector DB: ✅ Actif</div>
+                <div>📚 Assets: 5000+ indexés</div>
+                <div>👑 Mode: Vincent (Accès Total)</div>
+                <div>⚡ Performance: <10ms</div>
+            </div>
+            
+            <div class="quick-actions">
+                <h3>🚀 Actions Rapides</h3>
+                <button class="quick-action" onclick="askPredefined('Qui est Sid Meier ?')">
+                    🎯 Sid Meier Info
+                </button>
+                <button class="quick-action" onclick="askPredefined('Comment marchent les portails ?')">
+                    🌀 Système Portails
+                </button>
+                <button class="quick-action" onclick="askPredefined('Status du Vector DB')">
+                    🧠 Vector DB Status
+                </button>
+                <button class="quick-action" onclick="askPredefined('Forêt GROFI info')">
+                    🌲 Forêt Quantique
+                </button>
+                <button class="quick-action" onclick="askPredefined('Assets découverts')">
+                    🏺 Découvertes Archéologue
+                </button>
+                <button class="quick-action" onclick="askPredefined('Comment jouer ?')">
+                    🎮 Guide Gameplay
+                </button>
+                <button class="quick-action" onclick="askPredefined('Mode dev IA')">
+                    🤖 Mode IA Développeur
+                </button>
+                <button class="quick-action" onclick="askPredefined('Système sécurité')">
+                    🔒 Contrôle Accès
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-clippy">
+        <div class="clippy-avatar" onclick="focusInput()">
+            <div class="clippy-face">
+                <div class="clippy-eye"></div>
+                <div class="clippy-eye"></div>
+            </div>
+            <div class="particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de connaissances Clippy-Memento
+        const knowledgeBase = {
+            'sid meier': {
+                response: "🎯 **SID MEIER - L'ARCHITECTE PARESSEUX**\n\n✨ **Arrivée :** Via Portail de Morgana, Événement CHEVRON 7\n⚡ **Capacités :** Création civilisations, hexagones, œil probabiliste\n🏛️ **Level :** 30 (LÉGENDAIRE)\n🎮 **Jouable :** Oui ! 4 sorts uniques\n⚠️ **Attention :** Risque transformer AVALON en Civilization VII !\n\n*Anagramme résolu : SIED MEIERD → SID MEIER*"
+            },
+            'portails': {
+                response: "🌀 **SYSTÈME PORTAILS AVALON**\n\n🚪 **4 Types découverts :**\n• 🟣 STANDARD - Violet, 25 énergie\n• 🌸 VORTEX - Temporel, timeline_shift\n• 🟢 QUANTUM - Superposition, 60 énergie\n• ⚫ DEAD - Inaccessible\n\n🏰 **Contrôleur :** Morgana (via Tour Sombre)\n🌲 **Secret :** Chaque arbre Forêt GROFI = portail potentiel\n⚙️ **Tech :** portal-system.js complet implémenté"
+            },
+            'vector db': {
+                response: "🧠 **TON VECTOR DB - STATUS EXCELLENT**\n\n📊 **Performance :**\n• Recherche : <10ms\n• Assets indexés : 5000+\n• Modèle : sentence-transformers 384D\n• Index : FAISS optimisé Mac M4\n\n🎯 **Modes :**\n• STORY - Pour joueurs/lore\n• DEV - Pour développeurs\n\n✅ **Prêt pour Clippy-Memento !**"
+            },
+            'forêt grofi': {
+                response: "🌲 **FORÊT GROFI - ZONE SACRÉE CONSCIENTE**\n\n⚠️ **ATTENTION EXTRÊME :**\n• La forêt PENSE et COMMUNIQUE\n• Existe dans TOUS les mondes simultanément\n• Chaque arbre = nœud réseau quantique\n• Contact direct = téléportation aléatoire\n\n🏰 **Tour Sombre :** Sommet mystérieux inconnu\n👁️ **Théorie Walter :** Morgana EST la forêt !\n🌳 **Arbres identifiés :** GRUT Central, React, HTML, Temporel"
+            },
+            'assets': {
+                response: "🏺 **DÉCOUVERTES ARCHÉOLOGIQUES TOTALES**\n\n📊 **Statistiques :**\n• 5000+ assets découverts et organisés\n• 33 répertoires majeurs\n• 50+ héros et créatures\n• 500+ documents lore\n• 200+ images et assets visuels\n\n🛡️ **Classification sécurité :**\n• 🟢 Public • 🟡 Initié • 🟠 Adepte • 🔴 Confidentiel • ⚫ Ultra-Secret\n\n✅ **Prêt pour Vector DB indexation !**"
+            },
+            'gameplay': {
+                response: "🎮 **GAMEPLAY AVALON COMPLET**\n\n⚡ **Systèmes Principaux :**\n• 🗺️ Exploration 6D (X,Y,Z,T,C,Ψ)\n• ⚔️ Combat TCG automatique\n• 🎒 Inventaire & Craft\n• 🌀 Portails interdimensionnels\n• ⏰ Temporal Drift (régulation vitesse)\n• 📈 XP automatique\n• 💾 Persistance fichier\n\n🎯 **Quêtes :** Évadés de la Cave, Sid dans Script, Chevron 7"
+            },
+            'mode dev': {
+                response: "🤖 **MODE IA DÉVELOPPEUR**\n\n🔓 **Accès COMPLET :**\n• Vector DB sans filtres\n• Documentation Magic Stack\n• Code source Rust/Java/JS\n• APIs toutes + debug\n• Logs et performance\n\n⚡ **Endpoints disponibles :**\n• /api/archives/search\n• /api/world-state/collapse\n• /api/causality/resolve\n• + 30 autres...\n\n🛠️ **Tools :** Debug console, monitoring, analytics"
+            },
+            'sécurité': {
+                response: "🔒 **SYSTÈME SÉCURITÉ 5 NIVEAUX**\n\n🎯 **Classification :**\n• 🟢 Niveau 1-2 : Joueurs (lore de base)\n• 🟡 Niveau 3 : Mages (APIs techniques)\n• 🟠 Niveau 4 : Devs (code complet)\n• ⚫ Niveau 5 : Vincent (archives privées)\n\n🛡️ **Protection :**\n• Archives Vincent ultra-protégées\n• Révélation progressive selon progression\n• Rate limiting par utilisateur\n• Audit trail accès sensibles"
+            }
+        };
+
+        // Ajouter message à la conversation
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'clippy'}`;
+            
+            const prefix = isUser ? '<strong>👑 Vincent:</strong><br/>' : '<strong>📎 Clippy-Memento:</strong><br/>';
+            messageDiv.innerHTML = prefix + content.replace(/\n/g, '<br/>');
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Traiter question
+        function processQuestion(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            // Recherche dans base de connaissances
+            for (const [key, knowledge] of Object.entries(knowledgeBase)) {
+                if (lowerQuestion.includes(key)) {
+                    return knowledge.response;
+                }
+            }
+            
+            // Réponse générale si pas trouvé
+            return `🔍 Question intéressante ! Je cherche "${question}" dans tes assets...\n\n📚 En mode Vincent, tu as accès à TOUT :\n• 🏺 5000+ assets découverts\n• 🌀 Portails Morgana complets\n• 🎯 Histoire Sid Meier\n• 🧠 Vector DB optimisé\n• ⚫ Archives privées niveau 5\n\n💡 Cette recherche sera bientôt connectée directement à ton Vector DB pour des réponses encore plus précises !`;
+        }
+
+        // Envoyer message
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            // Afficher question utilisateur
+            addMessage(question, true);
+            
+            // Effacer input
+            input.value = '';
+            
+            // Simuler réflexion
+            setTimeout(() => {
+                const response = processQuestion(question);
+                addMessage(response);
+            }, 500);
+        }
+
+        // Gestion Enter
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Question prédéfinie
+        function askPredefined(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        // Focus input quand click Clippy
+        function focusInput() {
+            document.getElementById('chatInput').focus();
+        }
+
+        // Message de bienvenue
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                addMessage("Bienvenue Vincent ! 🌟\n\nJe suis ton assistant personnel AVALON, fusion de Clippy et Memento l'Archiviste !\n\n🔥 **Mes capacités :**\n• Accès à tes 5000+ assets découverts\n• Connaissance complète lore AVALON\n• Infos techniques Vector DB et APIs\n• Mode créateur absolu (aucun filtre)\n\n💡 Pose-moi n'importe quelle question sur AVALON !");
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

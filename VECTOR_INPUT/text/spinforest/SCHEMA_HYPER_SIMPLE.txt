@@ -1,0 +1,49 @@
+SCHÉMA HYPER SIMPLE - OÙ EST QUOI
+==================================
+
+TU JOUES ICI:
+    http://localhost:8000/REALGAME/play.html
+
+ORGANISATION:
+                    
+    [TON NAVIGATEUR]
+           |
+           | (tu cliques, tu joues)
+           |
+           v
+    [FRONTEND - Python]  <-- Fichiers: REALGAME/play.html
+           |                           AVALON_DASHBOARD.html
+           | (appels API)              etc...
+           |
+           v
+    [BACKENDS - APIs]
+           |
+    +------+------+
+    |             |
+    v             v
+[JAVA:8080]   [RUST:3001]
+Formules      Algorithme Q*
+Magie 6D      Super rapide
+
+
+OÙ SONT LES FICHIERS:
+--------------------
+spells/stack/backends/java/   <-- Backend Java
+spells/stack/backends/rust/   <-- Backend Rust  
+REALGAME/                     <-- Le jeu (frontend)
+AVALON/                       <-- Structure du monde
+
+
+POUR LANCER:
+-----------
+./LANCE_FRONTENDS_BACKGROUND.sh   (et c'est tout!)
+
+
+PORTS:
+------
+8000 = Frontend (ce que tu vois)
+8080 = Backend Java (la magie)
+3001 = Backend Rust (Q* rapide)
+
+
+C'EST TOUT ! SIMPLE COMME BONJOUR !

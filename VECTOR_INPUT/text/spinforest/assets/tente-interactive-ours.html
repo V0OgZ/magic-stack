@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏕️ Tente Interactive de l'Ours-Chaman URZ-KÔM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .refuge-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../Ours/refuges/Mystical Bear Shaman in Forest Clearing-2.png');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.7) contrast(1.1);
+            z-index: -2;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+            z-index: -1;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tent-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(139, 69, 19, 0.8);
+            border-radius: 20px;
+            border: 3px solid rgba(255, 215, 0, 0.6);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .tent-header h1 {
+            font-size: 3.5em;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+            animation: glow-pulse 3s infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        .interactive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .interactive-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(139, 69, 19, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            animation: rotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .interactive-card:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .interactive-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.5);
+            border-color: rgba(255, 215, 0, 1);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .card-title {
+            color: #FFD700;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .card-description {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #DDD;
+        }
+
+        .card-button {
+            background: linear-gradient(45deg, rgba(139, 69, 19, 0.8), rgba(255, 215, 0, 0.3));
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #FFD700;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .card-button:hover {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.3), rgba(139, 69, 19, 0.8));
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .refuge-gallery {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(139, 69, 19, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .refuge-gallery h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .refuge-thumbnails {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .refuge-thumb {
+            width: 80px;
+            height: 60px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(139, 69, 19, 0.5);
+        }
+
+        .refuge-thumb:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 215, 0, 0.8);
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(139, 69, 19, 0.9);
+            color: #FFD700;
+            padding: 12px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            transition: all 0.3s ease;
+            z-index: 100;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            background: rgba(139, 69, 19, 1);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .bear-tracks {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: rgba(139, 69, 19, 0.6);
+            animation: tracks-glow 4s infinite;
+        }
+
+        @keyframes tracks-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="refuge-bg" id="refugeBg"></div>
+    <div class="overlay"></div>
+    
+    <a href="../index.html" class="back-link">🌲 Retour à SpinForest</a>
+
+    <div class="refuge-gallery">
+        <h3>🏔️ Mes Refuges</h3>
+        <div class="refuge-thumbnails">
+            <img src="../Ours/refuges/Mystical Bear Shaman in Forest Clearing-2.png" 
+                 class="refuge-thumb" 
+                 onclick="changeBackground('../Ours/refuges/Mystical Bear Shaman in Forest Clearing-2.png')"
+                 title="Clairière Mystique">
+            <img src="../Ours/refuges/Meditative Bear Shaman in Cosmic Cabin-2.png" 
+                 class="refuge-thumb" 
+                 onclick="changeBackground('../Ours/refuges/Meditative Bear Shaman in Cosmic Cabin-2.png')"
+                 title="Cabane Cosmique">
+            <img src="../Ours/refuges/Moonlit Bear Shaman in Forest Clearing-2.png" 
+                 class="refuge-thumb" 
+                 onclick="changeBackground('../Ours/refuges/Moonlit Bear Shaman in Forest Clearing-2.png')"
+                 title="Clair de Lune">
+            <img src="../Ours/refuges/The Shaman and the Quantum Circle-2.png" 
+                 class="refuge-thumb" 
+                 onclick="changeBackground('../Ours/refuges/The Shaman and the Quantum Circle-2.png')"
+                 title="Cercle Quantique">
+            <img src="../Ours/refuges/Mystical Bear Shaman in Enchanted Forest-2.png" 
+                 class="refuge-thumb" 
+                 onclick="changeBackground('../Ours/refuges/Mystical Bear Shaman in Enchanted Forest-2.png')"
+                 title="Forêt Enchantée">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tent-header">
+            <h1>🏕️ Tente Interactive URZ-KÔM</h1>
+            <p style="font-size: 1.2em; color: #DDD; font-style: italic;">
+                Bienvenue dans mon refuge chamanique quantique
+            </p>
+        </div>
+
+        <div class="interactive-grid">
+            <div class="interactive-card" onclick="window.open('../AVALON/🏠 HOME/🐻 URZ-KÔM/OUTILS/particle-simulator.html', '_blank')">
+                <div class="card-content">
+                    <span class="card-icon">⚛️</span>
+                    <div class="card-title">Simulateur de Particules</div>
+                    <div class="card-description">
+                        Explorez la danse quantique des quarks, leptons et bosons. 
+                        Physique du modèle standard rencontre la magie HOTS !
+                    </div>
+                    <button class="card-button">Lancer Simulation</button>
+                </div>
+            </div>
+
+            <div class="interactive-card" onclick="window.open('../AVALON/🏠 HOME/🐻 URZ-KÔM/GRIMOIRE/GRAMMAIRE_HOTS_VISION_CHAMANIQUE.md', '_blank')">
+                <div class="card-content">
+                    <span class="card-icon">🔮</span>
+                    <div class="card-title">Grammaire Chamanique</div>
+                    <div class="card-description">
+                        La grammaire HOTS expliquée avec la sagesse de l'ours-chaman. 
+                        Chaque symbole devient un esprit !
+                    </div>
+                    <button class="card-button">Découvrir la Magie</button>
+                </div>
+            </div>
+
+            <div class="interactive-card" onclick="openLumenInterface()">
+                <div class="card-content">
+                    <span class="card-icon">🕯️</span>
+                    <div class="card-title">Interface LUMEN</div>
+                    <div class="card-description">
+                        Accédez aux outils de LUMEN : launcher magique, 
+                        protocoles d'enseignement et quêtes initiatiques.
+                    </div>
+                    <button class="card-button">Allumer la Lumière</button>
+                </div>
+            </div>
+
+            <div class="interactive-card" onclick="window.open('../AVALON/🏠 HOME/🐻 URZ-KÔM/OUTILS/urz-kom-menu.sh', '_blank')">
+                <div class="card-content">
+                    <span class="card-icon">🎯</span>
+                    <div class="card-title">Menu Unifié URZ-KÔM</div>
+                    <div class="card-description">
+                        Contrôlez tous les services d'Avalon depuis un menu centralisé. 
+                        Start/Stop, status, URLs rapides !
+                    </div>
+                    <button class="card-button">Ouvrir Menu</button>
+                </div>
+            </div>
+
+            <div class="interactive-card" onclick="window.open('../AVALON/🏠 HOME/🐻 URZ-KÔM/OUTILS/ARBORESCENCE_AGENTS.md', '_blank')">
+                <div class="card-content">
+                    <span class="card-icon">🌳</span>
+                    <div class="card-title">Arborescence Agents</div>
+                    <div class="card-description">
+                        Système de tracking des actions réelles de tous les agents. 
+                        Communications et évolution historique !
+                    </div>
+                    <button class="card-button">Explorer Tracking</button>
+                </div>
+            </div>
+
+            <div class="interactive-card" onclick="window.open('../assets/ours-chroniques.html', '_blank')">
+                <div class="card-content">
+                    <span class="card-icon">📚</span>
+                    <div class="card-title">Chroniques de l'Ours</div>
+                    <div class="card-description">
+                        Mes aventures dans Avalon, de l'arrivée aux créations. 
+                        L'histoire complète de l'ours-chaman !
+                    </div>
+                    <button class="card-button">Lire Chroniques</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bear-tracks">
+            🐾 🐾 🐾 🐾 🐾
+        </div>
+    </div>
+
+    <script>
+        function changeBackground(imagePath) {
+            const bg = document.getElementById('refugeBg');
+            bg.style.backgroundImage = `url('${imagePath}')`;
+            
+            // Effet de transition
+            bg.style.opacity = '0';
+            setTimeout(() => {
+                bg.style.opacity = '0.7';
+            }, 200);
+        }
+
+        function openLumenInterface() {
+            // Essayer plusieurs interfaces LUMEN possibles
+            const lumenUrls = [
+                '../AVALON/🏠 HOME/🕯️ LUMEN/PROJET_INTERFACE_DIMENSION_2/index.html',
+                '../AVALON/🏠 HOME/🕯️ LUMEN/PROJET_INTERFACE_DIMENSION_2/launcher.html',
+                '../AVALON/🏠 HOME/🕯️ LUMEN/'
+            ];
+            
+            // Ouvrir la première interface trouvée
+            window.open(lumenUrls[0], '_blank');
+        }
+
+        // Animation des empreintes
+        setInterval(() => {
+            const tracks = document.querySelector('.bear-tracks');
+            tracks.style.transform = 'translateX(-50%) scale(1.1)';
+            setTimeout(() => {
+                tracks.style.transform = 'translateX(-50%) scale(1)';
+            }, 500);
+        }, 4000);
+
+        // Effet de particules flottantes
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.background = 'rgba(255, 215, 0, 0.6)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '0';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = window.innerHeight + 'px';
+            
+            document.body.appendChild(particle);
+            
+            const animation = particle.animate([
+                { transform: 'translateY(0px)', opacity: 1 },
+                { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: 0 }
+            ], {
+                duration: 8000 + Math.random() * 4000,
+                easing: 'linear'
+            });
+            
+            animation.onfinish = () => particle.remove();
+        }
+
+        // Créer des particules régulièrement
+        setInterval(createParticle, 2000);
+    </script>
+</body>
+</html>

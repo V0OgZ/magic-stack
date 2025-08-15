@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Magic Stack API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            text-shadow: 0 0 20px #8A2BE2;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .api-card {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .api-card:hover {
+            border-color: #FF1493;
+            box-shadow: 0 5px 20px rgba(138,43,226,0.3);
+        }
+        
+        .api-card h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .method {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .method.POST { background: #28a745; }
+        .method.GET { background: #007bff; }
+        
+        .endpoint {
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .description {
+            color: #ccc;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #FFD700;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #8A2BE2;
+            border-radius: 4px;
+            padding: 8px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #8A2BE2, #FF1493);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn:hover {
+            background: linear-gradient(45deg, #FF1493, #FFD700);
+            transform: translateY(-2px);
+        }
+        
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .response {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .response.success {
+            border-color: #28a745;
+        }
+        
+        .response.error {
+            border-color: #dc3545;
+        }
+        
+        .response pre {
+            color: #fff;
+            font-size: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .status-bar {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-dot.online { background: #28a745; box-shadow: 0 0 10px #28a745; }
+        .status-dot.offline { background: #dc3545; }
+        
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .clear-all {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .example-btn {
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 10px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #8A2BE2;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 MAGIC STACK API TESTER 🔮</h1>
+        
+        <!-- Barre de statut -->
+        <div class="status-bar">
+            <div class="server-status">
+                <div>
+                    <span class="status-dot" id="javaStatus"></span>
+                    Backend Java (8082): <span id="javaStatusText">Vérification...</span>
+                </div>
+                <div>
+                    <span class="status-dot" id="rustStatus"></span>
+                    Backend Rust (3001): <span id="rustStatusText">Vérification...</span>
+                </div>
+            </div>
+            <button class="clear-all" onclick="clearAllResponses()">🗑️ Clear All</button>
+        </div>
+        
+        <!-- Grid des APIs -->
+        <div class="api-grid">
+            <!-- 📚 DOCUMENTATION APIs -->
+            <div class="api-card">
+                <h3>📚 <span class="method GET">GET</span> Rust OpenAPI</h3>
+                <div class="endpoint">http://localhost:3001/openapi</div>
+                <div class="description">Spécification OpenAPI du backend Rust</div>
+                
+                <button class="test-btn" onclick="testDocAPI('rustOpenApi')">
+                    📚 Get Rust Spec
+                </button>
+                
+                <div class="response" id="rustOpenApiResponse"></div>
+            </div>
+            
+            <div class="api-card">
+                <h3>📚 <span class="method GET">GET</span> Java API Docs</h3>
+                <div class="endpoint">http://localhost:8082/api</div>
+                <div class="description">Documentation API du backend Java (869 formules)</div>
+                
+                <button class="test-btn" onclick="testDocAPI('javaApiDocs')">
+                    📚 Get Java Docs
+                </button>
+                
+                <div class="response" id="javaApiDocsResponse"></div>
+            </div>
+            
+            <div class="api-card">
+                <h3>🔄 <span class="method GET">GET</span> Aggregated APIs</h3>
+                <div class="endpoint">http://localhost:3001/openapi/all</div>
+                <div class="description">Agrégation Rust + Java (En développement par SURFACE)</div>
+                
+                <button class="test-btn" onclick="testDocAPI('aggregatedApi')">
+                    🔄 Get All Specs
+                </button>
+                
+                <div class="response" id="aggregatedApiResponse"></div>
+            </div>
+            
+            <!-- 🗺️ MAP GENERATION -->
+            <div class="api-card">
+                <h3>🗺️ <span class="method POST">POST</span> Map Generation</h3>
+                <div class="endpoint">http://localhost:3001/api/map/generate</div>
+                <div class="description">Génère une carte avec biomes continus</div>
+                
+                <div class="form-group">
+                    <label>Map Size (JSON):</label>
+                    <textarea id="mapGenerateBody" placeholder='{"size": {"width": 15, "height": 10}, "biomes": ["GRASSLAND", "FOREST", "MOUNTAIN"], "density": 0.7, "contiguity": 0.8, "seed": 12345}'></textarea>
+                    <button class="example-btn" onclick="fillExample('mapGenerateBody', 'mapGenerate')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('mapGenerate')">
+                    🧪 Générer Map
+                </button>
+                
+                <div class="response" id="mapGenerateResponse"></div>
+            </div>
+            
+            <!-- 🎭 MAP INIT -->
+            <div class="api-card">
+                <h3>🎭 <span class="method POST">POST</span> Map Initialize</h3>
+                <div class="endpoint">http://localhost:3001/api/map/init</div>
+                <div class="description">Place entités 6D sur la carte</div>
+                
+                <div class="form-group">
+                    <label>Map Data + Entities (JSON):</label>
+                    <textarea id="mapInitBody" placeholder='{"map_data": {"width": 10, "height": 8}, "entity_types": ["HERO", "MONSTER"], "spawn_density": 0.3}'></textarea>
+                    <button class="example-btn" onclick="fillExample('mapInitBody', 'mapInit')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('mapInit')">
+                    🎭 Initialize Entities
+                </button>
+                
+                <div class="response" id="mapInitResponse"></div>
+            </div>
+            
+            <!-- 🧭 PATHFINDING -->
+            <div class="api-card">
+                <h3>🧭 <span class="method POST">POST</span> A* Planning</h3>
+                <div class="endpoint">http://localhost:3001/agents/plan</div>
+                <div class="description">Pathfinding A* avec poids temporels</div>
+                
+                <div class="form-group">
+                    <label>Agent ID:</label>
+                    <input type="text" id="planAgentId" value="hero_1" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Start Position (x,y):</label>
+                    <input type="text" id="planStart" value="0,0" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Goal Position (x,y):</label>
+                    <input type="text" id="planGoal" value="5,5" />
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('plan')">
+                    🧭 Calculate Path
+                </button>
+                
+                <div class="response" id="planResponse"></div>
+            </div>
+            
+            <!-- ⚔️ COMBAT RESOLUTION -->
+            <div class="api-card">
+                <h3>⚔️ <span class="method POST">POST</span> Combat Resolution</h3>
+                <div class="endpoint">http://localhost:3001/api/causality/resolve</div>
+                <div class="description">Résolution combat QUANTUM/TCG</div>
+                
+                <div class="form-group">
+                    <label>Combat Mode:</label>
+                    <select id="combatMode">
+                        <option value="QUANTUM">🌀 Quantum Collapse</option>
+                        <option value="TCG">🎴 Trading Card Game</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Combat Data (JSON):</label>
+                    <textarea id="combatBody" placeholder='{"attacker": "hero_1", "defender": "monster_1", "mode": "QUANTUM"}'></textarea>
+                    <button class="example-btn" onclick="fillExample('combatBody', 'combat')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('combat')">
+                    ⚔️ Resolve Combat
+                </button>
+                
+                <div class="response" id="combatResponse"></div>
+            </div>
+            
+            <!-- 🌀 WORLD STATE COLLAPSE -->
+            <div class="api-card">
+                <h3>🌀 <span class="method POST">POST</span> World Collapse</h3>
+                <div class="endpoint">http://localhost:3001/api/world-state/collapse</div>
+                <div class="description">Collapse d'observation quantique</div>
+                
+                <div class="form-group">
+                    <label>Observer Position (x,y,z):</label>
+                    <input type="text" id="collapsePos" value="3,3,0" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Observation Data (JSON):</label>
+                    <textarea id="collapseBody" placeholder='{"observer": "player_1", "position": {"x": 3, "y": 3, "z": 0}, "observation_type": "DIRECT"}'></textarea>
+                    <button class="example-btn" onclick="fillExample('collapseBody', 'collapse')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('collapse')">
+                    🌀 Trigger Collapse
+                </button>
+                
+                <div class="response" id="collapseResponse"></div>
+            </div>
+            
+            <!-- 🎯 AGENT CONTROL -->
+            <div class="api-card">
+                <h3>🎯 <span class="method POST">POST</span> Agent Control</h3>
+                <div class="endpoint">http://localhost:3001/agents/control</div>
+                <div class="description">Contrôle agent (player/AI)</div>
+                
+                <div class="form-group">
+                    <label>Agent ID:</label>
+                    <input type="text" id="controlAgentId" value="hero_1" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Controller:</label>
+                    <select id="controllerType">
+                        <option value="PLAYER">👤 Player</option>
+                        <option value="AI">🤖 AI</option>
+                    </select>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('control')">
+                    🎯 Set Controller
+                </button>
+                
+                <div class="response" id="controlResponse"></div>
+            </div>
+            
+            <!-- 🔀 AGENT FORK -->
+            <div class="api-card">
+                <h3>🔀 <span class="method POST">POST</span> Agent Fork</h3>
+                <div class="endpoint">http://localhost:3001/agents/fork</div>
+                <div class="description">Fork identité d'agent</div>
+                
+                <div class="form-group">
+                    <label>Source Agent:</label>
+                    <input type="text" id="forkSourceId" value="hero_1" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Fork Data (JSON):</label>
+                    <textarea id="forkBody" placeholder='{"source_agent": "hero_1", "fork_type": "TEMPORAL", "timeline_offset": 5}'></textarea>
+                    <button class="example-btn" onclick="fillExample('forkBody', 'fork')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('fork')">
+                    🔀 Fork Agent
+                </button>
+                
+                <div class="response" id="forkResponse"></div>
+            </div>
+            
+            <!-- 🔗 AGENT MERGE -->
+            <div class="api-card">
+                <h3>🔗 <span class="method POST">POST</span> Agent Merge</h3>
+                <div class="endpoint">http://localhost:3001/agents/merge</div>
+                <div class="description">Merge identités d'agents</div>
+                
+                <div class="form-group">
+                    <label>Merge Data (JSON):</label>
+                    <textarea id="mergeBody" placeholder='{"primary_agent": "hero_1", "secondary_agent": "hero_1_fork", "merge_strategy": "DOMINANT"}'></textarea>
+                    <button class="example-btn" onclick="fillExample('mergeBody', 'merge')">📝 Exemple</button>
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('merge')">
+                    🔗 Merge Agents
+                </button>
+                
+                <div class="response" id="mergeResponse"></div>
+            </div>
+            
+            <!-- ✨ AGENT CAST -->
+            <div class="api-card">
+                <h3>✨ <span class="method POST">POST</span> Cast Spell</h3>
+                <div class="endpoint">http://localhost:3001/agents/cast</div>
+                <div class="description">Lancer sort via backend Java</div>
+                
+                <div class="form-group">
+                    <label>Spell Name:</label>
+                    <input type="text" id="castSpell" value="HEAL" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Caster:</label>
+                    <input type="text" id="castCaster" value="hero_1" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Target:</label>
+                    <input type="text" id="castTarget" value="ally_1" />
+                </div>
+                
+                <button class="test-btn" onclick="testAPI('cast')">
+                    ✨ Cast Spell
+                </button>
+                
+                <div class="response" id="castResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🚀 VARIABLES GLOBALES
+        const JAVA_BASE = 'http://localhost:8082';
+        const RUST_BASE = 'http://localhost:3001';
+        
+        // 📊 VÉRIFIER STATUT DES SERVEURS
+        async function checkServerStatus() {
+            // Java Backend
+            try {
+                const javaResponse = await fetch(`${JAVA_BASE}/actuator/health`, { method: 'GET' });
+                updateServerStatus('java', javaResponse.ok);
+            } catch (error) {
+                updateServerStatus('java', false);
+            }
+            
+            // Rust Backend  
+            try {
+                const rustResponse = await fetch(`${RUST_BASE}/openapi`, { method: 'GET' });
+                updateServerStatus('rust', rustResponse.ok);
+            } catch (error) {
+                updateServerStatus('rust', false);
+            }
+        }
+        
+        function updateServerStatus(server, isOnline) {
+            const statusDot = document.getElementById(`${server}Status`);
+            const statusText = document.getElementById(`${server}StatusText`);
+            
+            if (isOnline) {
+                statusDot.className = 'status-dot online';
+                statusText.textContent = 'EN LIGNE';
+                statusText.style.color = '#28a745';
+            } else {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'HORS LIGNE';
+                statusText.style.color = '#dc3545';
+            }
+        }
+        
+        // 📚 TESTER ENDPOINTS DE DOCUMENTATION
+        async function testDocAPI(docType) {
+            const button = document.querySelector(`[onclick="testDocAPI('${docType}')"]`);
+            const responseDiv = document.getElementById(`${docType}Response`);
+            
+            // UI Loading
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Loading...';
+            responseDiv.className = 'response';
+            responseDiv.innerHTML = '<pre>📡 Fetching documentation...</pre>';
+            
+            try {
+                const { url, options } = buildDocRequest(docType);
+                console.log('Loading documentation:', url);
+                
+                const response = await fetch(url, options);
+                const responseText = await response.text();
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+                
+                // Afficher réponse
+                const statusClass = response.ok ? 'success' : 'error';
+                responseDiv.className = `response ${statusClass}`;
+                responseDiv.innerHTML = `
+                    <div style="margin-bottom: 10px; color: ${response.ok ? '#28a745' : '#dc3545'};">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                    <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = button.getAttribute('data-original-text') || '📚 Get Docs';
+            }
+        }
+        
+        // 🔧 CONSTRUIRE REQUÊTE DOCUMENTATION
+        function buildDocRequest(docType) {
+            const baseOptions = {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            };
+            
+            switch (docType) {
+                case 'rustOpenApi':
+                    return {
+                        url: `${RUST_BASE}/openapi`,
+                        options: baseOptions
+                    };
+                    
+                case 'javaApiDocs':
+                    return {
+                        url: `${JAVA_BASE}/api`,
+                        options: baseOptions
+                    };
+                    
+                case 'aggregatedApi':
+                    return {
+                        url: `${RUST_BASE}/openapi/all`,
+                        options: baseOptions
+                    };
+                    
+                default:
+                    throw new Error(`Unknown doc type: ${docType}`);
+            }
+        }
+
+        // 🧪 TESTER UN ENDPOINT
+        async function testAPI(apiType) {
+            const button = document.querySelector(`[onclick="testAPI('${apiType}')"]`);
+            const responseDiv = document.getElementById(`${apiType}Response`);
+            
+            // UI Loading
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Testing...';
+            responseDiv.className = 'response';
+            responseDiv.innerHTML = '<pre>⏳ Sending request...</pre>';
+            
+            try {
+                const { url, options } = buildRequest(apiType);
+                console.log('Testing:', url, options);
+                
+                const response = await fetch(url, options);
+                const responseText = await response.text();
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+                
+                // Afficher réponse
+                const statusClass = response.ok ? 'success' : 'error';
+                responseDiv.className = `response ${statusClass}`;
+                responseDiv.innerHTML = `
+                    <div style="margin-bottom: 10px; color: ${response.ok ? '#28a745' : '#dc3545'};">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                    <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = button.getAttribute('data-original-text') || '🧪 Test';
+            }
+        }
+        
+        // 🔧 CONSTRUIRE REQUÊTE
+        function buildRequest(apiType) {
+            const baseOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            };
+            
+            switch (apiType) {
+                case 'mapGenerate':
+                    return {
+                        url: `${RUST_BASE}/api/map/generate`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('mapGenerateBody').value || getExampleData('mapGenerate')
+                        }
+                    };
+                    
+                case 'mapInit':
+                    return {
+                        url: `${RUST_BASE}/api/map/init`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('mapInitBody').value || getExampleData('mapInit')
+                        }
+                    };
+                    
+                case 'plan':
+                    const [startX, startY] = document.getElementById('planStart').value.split(',').map(n => parseInt(n));
+                    const [goalX, goalY] = document.getElementById('planGoal').value.split(',').map(n => parseInt(n));
+                    return {
+                        url: `${RUST_BASE}/agents/plan`,
+                        options: {
+                            ...baseOptions,
+                            body: JSON.stringify({
+                                agent_id: document.getElementById('planAgentId').value,
+                                start: { x: startX, y: startY },
+                                goal: { x: goalX, y: goalY },
+                                map_data: { width: 10, height: 10, terrain: [] },
+                                weights: { terrain: 1.0, distance: 1.0, temporal: 0.5 }
+                            })
+                        }
+                    };
+                    
+                case 'combat':
+                    const mode = document.getElementById('combatMode').value;
+                    return {
+                        url: `${RUST_BASE}/api/causality/resolve`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('combatBody').value || `{"attacker": "hero_1", "defender": "monster_1", "mode": "${mode}"}`
+                        }
+                    };
+                    
+                case 'collapse':
+                    return {
+                        url: `${RUST_BASE}/api/world-state/collapse`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('collapseBody').value || getExampleData('collapse')
+                        }
+                    };
+                    
+                case 'control':
+                    return {
+                        url: `${RUST_BASE}/agents/control`,
+                        options: {
+                            ...baseOptions,
+                            body: JSON.stringify({
+                                agent_id: document.getElementById('controlAgentId').value,
+                                controller: document.getElementById('controllerType').value
+                            })
+                        }
+                    };
+                    
+                case 'fork':
+                    return {
+                        url: `${RUST_BASE}/agents/fork`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('forkBody').value || getExampleData('fork')
+                        }
+                    };
+                    
+                case 'merge':
+                    return {
+                        url: `${RUST_BASE}/agents/merge`,
+                        options: {
+                            ...baseOptions,
+                            body: document.getElementById('mergeBody').value || getExampleData('merge')
+                        }
+                    };
+                    
+                case 'cast':
+                    return {
+                        url: `${RUST_BASE}/agents/cast`,
+                        options: {
+                            ...baseOptions,
+                            body: JSON.stringify({
+                                spell: document.getElementById('castSpell').value,
+                                caster: document.getElementById('castCaster').value,
+                                target: document.getElementById('castTarget').value
+                            })
+                        }
+                    };
+                    
+                default:
+                    throw new Error(`Unknown API type: ${apiType}`);
+            }
+        }
+        
+        // 📝 EXEMPLES DE DONNÉES
+        function getExampleData(apiType) {
+            const examples = {
+                mapGenerate: JSON.stringify({
+                    size: { width: 15, height: 10 },
+                    biomes: ["GRASSLAND", "FOREST", "MOUNTAIN", "WATER"],
+                    density: 0.7,
+                    contiguity: 0.8,
+                    seed: Math.floor(Math.random() * 1000000)
+                }, null, 2),
+                
+                mapInit: JSON.stringify({
+                    map_data: {
+                        width: 10,
+                        height: 8,
+                        terrain: ["GRASSLAND", "FOREST"]
+                    },
+                    entity_types: ["HERO", "MONSTER", "ARTIFACT"],
+                    spawn_density: 0.3,
+                    temporal_distribution: {
+                        timeline_variance: 5,
+                        causality_spread: 0.2,
+                        psi_randomness: 0.1
+                    }
+                }, null, 2),
+                
+                combat: JSON.stringify({
+                    attacker: "hero_1",
+                    defender: "monster_dragon",
+                    mode: "QUANTUM",
+                    position: { x: 5, y: 5, z: 0 }
+                }, null, 2),
+                
+                collapse: JSON.stringify({
+                    observer: "player_1",
+                    position: { x: 3, y: 3, z: 0 },
+                    observation_type: "DIRECT",
+                    timeline: 42
+                }, null, 2),
+                
+                fork: JSON.stringify({
+                    source_agent: "hero_1",
+                    fork_type: "TEMPORAL",
+                    timeline_offset: 5,
+                    position_offset: { x: 1, y: 0, z: 0 }
+                }, null, 2),
+                
+                merge: JSON.stringify({
+                    primary_agent: "hero_1",
+                    secondary_agent: "hero_1_fork",
+                    merge_strategy: "DOMINANT",
+                    merge_position: { x: 5, y: 5, z: 0 }
+                }, null, 2)
+            };
+            
+            return examples[apiType] || '{}';
+        }
+        
+        // 📝 REMPLIR EXEMPLE
+        function fillExample(elementId, apiType) {
+            document.getElementById(elementId).value = getExampleData(apiType);
+        }
+        
+        // 🗑️ CLEAR ALL RESPONSES
+        function clearAllResponses() {
+            document.querySelectorAll('.response').forEach(div => {
+                div.innerHTML = '';
+                div.className = 'response';
+            });
+        }
+        
+        // 🚀 INITIALISATION
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔮 Magic Stack API Tester Ready!');
+            
+            // Sauvegarder textes originaux des boutons
+            document.querySelectorAll('.test-btn').forEach(btn => {
+                btn.setAttribute('data-original-text', btn.textContent);
+            });
+            
+            // Vérifier statut serveurs
+            checkServerStatus();
+            
+            // Re-vérifier toutes les 30 secondes
+            setInterval(checkServerStatus, 30000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 AVALON TCG - Plateau de Jeu Amélioré</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Effets de fond temporels */
+        .temporal-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.2), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.2), transparent 50%);
+            animation: temporal-shift 20s ease-in-out infinite;
+        }
+
+        @keyframes temporal-shift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+
+        /* Container principal */
+        .game-container {
+            position: relative;
+            display: grid;
+            grid-template-rows: 80px 1fr 180px;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        /* Header avec infos joueurs */
+        .game-header {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            background: rgba(20, 20, 40, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 0 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .player-avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .player-stats {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .health-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .health {
+            color: #ff4757;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .mana-crystals {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        .mana-crystal {
+            width: 20px;
+            height: 20px;
+            background: #3742fa;
+            border-radius: 50%;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .mana-crystal.active {
+            opacity: 1;
+            box-shadow: 0 0 10px #3742fa;
+        }
+
+        /* Zone de combat centrale */
+        .battlefield {
+            display: grid;
+            grid-template-rows: 1fr 100px 1fr;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Indicateur de timeline */
+        .timeline-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-icon {
+            font-size: 20px;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Zones de créatures */
+        .creature-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            min-height: 150px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .creature-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .creature-zone.active::before {
+            opacity: 1;
+        }
+
+        /* Zone centrale de combat */
+        .combat-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .combat-animation {
+            position: absolute;
+            font-size: 48px;
+            animation: combat-clash 0.5s ease-out;
+        }
+
+        @keyframes combat-clash {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        /* Cartes */
+        .card {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+            border-color: #ffd700;
+        }
+
+        .card.selected {
+            border-color: #00ff88;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+            animation: selected-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes selected-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .card-cost {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 30px;
+            height: 30px;
+            background: #3742fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        .card-art {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .card-name {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .attack, .defense {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .attack { color: #ff4757; }
+        .defense { color: #5f27cd; }
+
+        /* Main du joueur */
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 15px 15px 0 0;
+            position: relative;
+        }
+
+        .hand-card {
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .hand-card:hover {
+            transform: translateY(-20px) scale(1);
+        }
+
+        /* Effets quantiques */
+        .quantum-effect {
+            position: absolute;
+            pointer-events: none;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.5), transparent);
+            animation: quantum-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes quantum-pulse {
+            0%, 100% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(2); opacity: 0.5; }
+        }
+
+        /* Boutons d'action */
+        .action-panel {
+            position: absolute;
+            bottom: 200px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            transform: translateX(-5px);
+        }
+
+        .btn-end-turn {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+
+        /* Log de partie */
+        .game-log {
+            position: absolute;
+            left: 20px;
+            bottom: 200px;
+            width: 300px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .log-entry {
+            padding: 5px;
+            margin: 5px 0;
+            font-size: 14px;
+            opacity: 0.8;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 0.8; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="temporal-background"></div>
+    
+    <div class="game-container">
+        <!-- Header avec infos joueurs -->
+        <div class="game-header">
+            <div class="player-info opponent">
+                <div class="player-avatar">🤖</div>
+                <div class="player-stats">
+                    <div class="health-bar">
+                        <span class="health" id="opponent-health">30 ❤️</span>
+                    </div>
+                    <div class="mana-crystals" id="opponent-mana">
+                        <div class="mana-crystal"></div>
+                        <div class="mana-crystal"></div>
+                        <div class="mana-crystal"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="turn-info">
+                <div class="turn-number" id="turn-number">Tour 1</div>
+                <div class="phase-indicator" id="phase">Phase: MAIN</div>
+            </div>
+            
+            <div class="player-info player">
+                <div class="player-stats">
+                    <div class="health-bar">
+                        <span class="health" id="player-health">30 ❤️</span>
+                    </div>
+                    <div class="mana-crystals" id="player-mana">
+                        <div class="mana-crystal active"></div>
+                        <div class="mana-crystal"></div>
+                        <div class="mana-crystal"></div>
+                    </div>
+                </div>
+                <div class="player-avatar">🐻</div>
+            </div>
+        </div>
+        
+        <!-- Champ de bataille -->
+        <div class="battlefield">
+            <div class="timeline-indicator">
+                <span class="timeline-icon">🌀</span>
+                <span id="timeline-text">Timeline: MAIN</span>
+            </div>
+            
+            <div class="creature-zone" id="opponent-board"></div>
+            
+            <div class="combat-zone" id="combat-zone"></div>
+            
+            <div class="creature-zone active" id="player-board"></div>
+        </div>
+        
+        <!-- Main du joueur -->
+        <div class="player-hand" id="player-hand"></div>
+        
+        <!-- Panneau d'actions -->
+        <div class="action-panel">
+            <button class="btn btn-end-turn" id="end-turn-btn">Fin de Tour</button>
+            <button class="btn" id="timeline-shift-btn">Shift Timeline 🌀</button>
+        </div>
+        
+        <!-- Log de partie -->
+        <div class="game-log" id="game-log">
+            <div class="log-entry">🎴 Bienvenue dans AVALON TCG !</div>
+            <div class="log-entry">🐻 URZ-KÔM entre en jeu...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../core/temporal-system.js"></script>
+    <script src="../core/card-engine.js"></script>
+    <script>
+        // Code de test pour l'interface
+        const testCards = [
+            { name: "URZ-KÔM", cost: 5, attack: 4, defense: 6, art: "🐻" },
+            { name: "Brisure", cost: 3, art: "🌀" },
+            { name: "Cristal", cost: 2, attack: 0, defense: 3, art: "💎" }
+        ];
+
+        // Ajouter des cartes de test à la main
+        const handElement = document.getElementById('player-hand');
+        testCards.forEach((card, i) => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card hand-card';
+            cardElement.innerHTML = `
+                <div class="card-cost">${card.cost}</div>
+                <div class="card-art">${card.art}</div>
+                <div class="card-name">${card.name}</div>
+                ${card.attack !== undefined ? `
+                    <div class="card-stats">
+                        <span class="attack">${card.attack}</span>
+                        <span class="defense">${card.defense}</span>
+                    </div>
+                ` : ''}
+            `;
+            handElement.appendChild(cardElement);
+        });
+
+        // Animation de test
+        document.getElementById('end-turn-btn').addEventListener('click', () => {
+            const log = document.getElementById('game-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = '⏭️ Fin du tour...';
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        });
+
+        console.log('🎴 AVALON TCG Enhanced Board Loaded!');
+    </script>
+</body>
+</html>

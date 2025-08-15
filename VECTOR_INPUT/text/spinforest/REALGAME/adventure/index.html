@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heroes of Time — Aventure</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="topbar">
+    <div class="brand">Heroes of Time — Mode Aventure</div>
+    <div class="status">
+      <span id="sJava" class="badge bad">Java</span>
+      <span id="sRust" class="badge bad">Rust</span>
+    </div>
+  </div>
+
+  <div id="layout">
+    <div id="left">
+      <div class="panel">
+        <div class="panel-title">Actions</div>
+        <button id="btnStart">Démarrer (Evadés de la cave)</button>
+        <button id="btnGenerate">Générer Carte 6D</button>
+        <button id="btnSpawn">Spawn Héros</button>
+        <button id="btnMove">Déplacer Héros</button>
+        <button id="btnCast">Lancer un Sort</button>
+        <button id="btnArena">Arène TCG</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Paramètres</div>
+        <label>time_velocity <span id="tvVal">1</span></label>
+        <input id="tv" type="range" min="-1" max="1" step="0.1" value="1" />
+        <button id="btnPlan">Planifier Trajet</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Infos Héros</div>
+        <div id="heroInfo">Aucun héros</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Progression</div>
+        <div style="font-size:12px;color:#bbb">Niveau: <span id="heroLevel">1</span></div>
+        <div style="height:10px;background:#1f2937;border:1px solid #334155;border-radius:4px;overflow:hidden;margin-top:6px;">
+          <div id="xpFill" style="height:100%;width:0%;background:#0ea5e9;"></div>
+        </div>
+        <div style="font-size:11px;color:#889;margin-top:4px">XP: <span id="heroXp">0</span> / <span id="heroXpNext">100</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Inventaire</div>
+        <div class="inv-grid" id="inventory"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Economie</div>
+        <button id="btnInvRefresh">Rafraîchir Inventaire</button>
+        <button id="btnCollect">Récolter (case courante)</button>
+        <button id="btnCraftPotion">Craft Potion (healing_minor)</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Journal</div>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+
+    <div id="center">
+      <canvas id="map" width="960" height="640"></canvas>
+    </div>
+
+    <div id="right">
+      <div class="panel">
+        <div class="panel-title">Etat du Monde (WSG)</div>
+        <button id="btnRefreshWSG">Rafraîchir</button>
+        <div id="wsgCount">0 noeuds</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../config.js"></script>
+  <script type="module">
+    import { AdventureController } from './homm3/map.js';
+    import { Homm3Map } from './homm3/tiles.js';
+    const back = (window.ConfigUtils ? ConfigUtils.getBackends() : { javaBackend:'http://localhost:8082', rustBackend:'http://localhost:3001' });
+    const log = (m)=>{ const d=document.createElement('div'); d.textContent=m; document.getElementById('log').prepend(d); };
+    const canvas = document.getElementById('map');
+    const ctl = new AdventureController(canvas, back, log);
+    const homm = new Homm3Map(canvas, 64);
+    document.getElementById('btnStart').onclick = ()=> ctl.initMap();
+    document.getElementById('btnGenerate').onclick = async ()=>{
+      try{
+        const r = await fetch(back.rustBackend + '/api/map/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({width:48,height:36,seed:Date.now()%100000})});
+        const map = await r.json();
+        homm.setBiomes(map.biomes);
+        log('Carte 6D générée');
+      }catch(e){ log('Génération FAIL'); }
+    };
+    document.getElementById('btnSpawn').onclick = ()=> ctl.spawnHero();
+    document.getElementById('btnMove').onclick = ()=> log('Cliquez sur la carte pour déplacer le héros');
+    document.getElementById('btnCast').onclick = async ()=>{
+      try{
+        let r = await fetch(back.javaBackend + '/api/magic/cast', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ formula:'ECHO_TEMPOREL', target:'self', power: 10 })});
+        if (!r.ok) {
+          r = await fetch(back.javaBackend + '/api/magic/cast', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ formula:'ECHO_TEMPOREL', parameters:{ target:'self', power: 10 } })});
+        }
+        if (r.ok) log('Sort exécuté'); else log('Cast FAIL');
+      }catch(e){ log('Cast: Java indisponible'); }
+    };
+    const tv = document.getElementById('tv');
+    const tvVal = document.getElementById('tvVal');
+    tv.addEventListener('input', ()=> tvVal.textContent = tv.value);
+
+    document.getElementById('btnArena').onclick = async ()=>{
+      try{
+        const r = await fetch(back.rustBackend + '/api/causality/resolve', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ node_ids:['Arthur','Enemy'], mode:'QUANTUM', seed: Date.now() })});
+        const rs = await r.json();
+        if (rs.started_match_id) log('Arène TCG '+rs.started_match_id); else if (rs.winner) log('Vainqueur '+rs.winner); else log('Pas de match');
+      }catch(e){ log('Arena: Rust indisponible'); }
+    };
+
+    // Planification: dessine un chemin via /agents/plan
+    document.getElementById('btnPlan').onclick = async ()=>{
+      try{
+        const start = {x:homm.hero.x, y:homm.hero.y, tl:'principale'};
+        const goal = {x: Math.min(homm.width-1, homm.hero.x+6), y:homm.hero.y, tl:'principale'};
+        const map = await fetch(back.rustBackend + '/api/map/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({width:homm.width,height:homm.height,seed:123})}).then(r=>r.json());
+        const body = { start, goal, map: { obstacles: map.obstacles, terrain: map.terrain, causal_c: map.causal_c }, agent: { speed_multiplier:1.0, alpha_causal:0.8, time_velocity: parseFloat(tv.value) } };
+        const r = await fetch(back.rustBackend + '/agents/plan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        const rs = await r.json();
+        if (rs.ok && Array.isArray(rs.path)) {
+          const ctx = canvas.getContext('2d');
+          ctx.strokeStyle = '#ffd700';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          rs.path.forEach((p,i)=>{ const cx=p.x*64+32, cy=p.y*64+32; if(i===0) ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy); });
+          ctx.stroke();
+          log('Trajet planifié');
+        } else {
+          log('Planification FAIL');
+        }
+      }catch(e){ log('Plan: Rust indisponible'); }
+    };
+
+    // Fog sync after move: hook simple sur click carte (observed local)
+    canvas.addEventListener('click', ()=>{
+      homm.markObserved(homm.hero.x, homm.hero.y, 2);
+    });
+
+    // Inventory preset (démo) → cast backend
+    const items=[
+      { id:'glasses_magic', name:'Lunettes Magiques', desc:'Révèle le brouillard', onUse: async()=>{
+        const center={x:homm.hero.x,y:homm.hero.y,z:0,t:Date.now(),c:1,psi:0.5};
+        await fetch(back.rustBackend + '/api/world-state/collapse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({center,radius:3,description:'glasses'})});
+        homm.markObserved(homm.hero.x,homm.hero.y,3); log('Brouillard dissipé');
+      }},
+      { id:'scroll_teleport', name:'Parchemin de Téléport', desc:'Téléporte le héros', onUse: async()=>{
+        const target={x:Math.min(homm.width-1,homm.hero.x+3),y:homm.hero.y,z:0};
+        let r=await fetch(back.javaBackend + '/api/magic/cast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formula:'TELEPORT',target:'self',power:10})});
+        if(!r.ok){ r=await fetch(back.javaBackend + '/api/magic/cast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formula:'TELEPORT',parameters:{target:'self',power:10}})}); }
+        if(r.ok){ homm.setHeroPosition(target.x,target.y); log('Téléportation effectuée'); } else { log('Téléportation FAIL'); }
+      }},
+      { id:'potion_heal', name:'Potion de Soin', desc:'Restaure la vie', onUse: async()=>{
+        let r=await fetch(back.javaBackend + '/api/magic/cast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formula:'HEAL',target:'self',power:20})});
+        if(!r.ok){ r=await fetch(back.javaBackend + '/api/magic/cast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formula:'HEAL',parameters:{target:'self',power:20}})}); }
+        if(r.ok) log('Soin appliqué'); else log('Soin FAIL');
+      }}
+    ];
+    const invEl=document.getElementById('inventory');
+    items.forEach(it=>{
+      const d=document.createElement('div'); d.className='inv-item'; d.innerHTML=`<div class="name">${it.name}</div><div class="desc">${it.desc}</div>`; d.onclick=it.onUse; invEl.appendChild(d);
+    });
+
+    // Economy wiring
+    async function refreshInventory(){
+      try{
+        const r = await fetch(back.rustBackend + '/api/economy/inventory');
+        if (!r.ok) throw new Error('inv fail');
+        const inv = await r.json();
+        log('Inventaire chargé');
+        // simple render: replace grid text with JSON length
+        // TODO: nicer UI; for now, just show count
+        document.getElementById('heroInfo').textContent = JSON.stringify(inv).slice(0,140)+'...';
+      }catch(e){ log('Inv FAIL'); }
+    }
+    document.getElementById('btnInvRefresh').onclick = refreshInventory;
+
+    document.getElementById('btnCollect').onclick = async ()=>{
+      try{
+        const spotId = `spot_${homm.hero.x}_${homm.hero.y}`;
+        const r = await fetch(back.rustBackend + '/api/economy/collect', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({spotId})});
+        const rs = await r.json();
+        if (r.ok) { log('Récolte OK'); refreshInventory(); } else { log('Récolte FAIL: '+JSON.stringify(rs)); }
+      }catch(e){ log('Collect FAIL'); }
+    };
+
+    document.getElementById('btnCraftPotion').onclick = async ()=>{
+      try{
+        const r = await fetch(back.rustBackend + '/api/craft/potion', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({recipeId:'healing_minor'})});
+        const rs = await r.json();
+        if (r.ok) { log('Craft OK'); refreshInventory(); } else { log('Craft FAIL: '+JSON.stringify(rs)); }
+      }catch(e){ log('Craft FAIL'); }
+    };
+
+    // Arcade postMessage handler
+    window.addEventListener('message', async (ev)=>{
+      const data = ev.data || {};
+      if (data.type === 'arcade:result'){
+        try{
+          const r = await fetch(back.rustBackend + '/api/economy/arcade-result', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({gameId:data.gameId,success:data.success,rewards:data.rewards||[]})});
+          if (r.ok) { log('Arcade rewards appliqués'); refreshInventory(); }
+        }catch(e){ log('Arcade result FAIL'); }
+      }
+    });
+
+    // Nearby (WSG)
+    async function pollNearby(){
+      try{
+        const url = `${back.rustBackend}/api/panopticon/world-state-graph/nearby?x=${homm.hero.x}&y=${homm.hero.y}&z=0&t=${Date.now()}&c=1&psi=0.5&radius=2`;
+        const r = await fetch(url);
+        if (r.ok){ const g = await r.json(); document.getElementById('wsgCount').textContent = (g.nodes?g.nodes.length:0)+' noeuds'; }
+      }catch(e){ /* ignore */ }
+    }
+    setInterval(pollNearby, 7000);
+    refreshInventory();
+
+    // Hero XP (Java 8082)
+    async function refreshHero(){
+      try{
+        const r = await fetch(back.javaBackend + '/api/hero/status?heroId=Arthur');
+        if(!r.ok) return; const h = await r.json();
+        document.getElementById('heroLevel').textContent = h.level||1;
+        document.getElementById('heroXp').textContent = h.xp||0;
+        document.getElementById('heroXpNext').textContent = h.xpNext||100;
+        const pct = Math.min(100, Math.floor(((h.xp||0)/(h.xpNext||100))*100));
+        document.getElementById('xpFill').style.width = pct+'%';
+      }catch(e){}
+    }
+    async function addXp(amount, source){
+      try{ await fetch(back.javaBackend + '/api/hero/add-xp', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({heroId:'Arthur', amount, source})}); refreshHero(); }catch(e){}
+    }
+    refreshHero();
+
+    // Hooks XP simples
+    // Après plan réussi
+    document.getElementById('btnPlan').addEventListener('click', ()=>{ setTimeout(()=>addXp(2,'plan'), 1000); });
+    // Après craft potion
+    document.getElementById('btnCraftPotion').addEventListener('click', ()=>{ setTimeout(()=>addXp(5,'craft_potion'), 1000); });
+    // Après récolte
+    document.getElementById('btnCollect').addEventListener('click', ()=>{ setTimeout(()=>addXp(3,'collect'), 1000); });
+  </script>
+</body>
+</html>
+
+

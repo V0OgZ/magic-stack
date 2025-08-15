@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌟 AVALON - Dimension 1→2 Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #000011, #001122, #000033);
+            color: #00ff00;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff88; }
+        }
+        
+        .portraits {
+            display: flex;
+            gap: 4rem;
+            margin: 2rem 0;
+        }
+        
+        .portrait {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 1rem;
+            border: 2px solid transparent;
+            border-radius: 10px;
+        }
+        
+        .portrait:hover {
+            border-color: #00ff00;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .portrait img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 3px solid #00ff00;
+            object-fit: cover;
+        }
+        
+        .portrait h3 {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .portrait p {
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000033, #000066);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .hourglass {
+            width: 300px;
+            height: 300px;
+            animation: spin 3s linear infinite;
+            margin-bottom: 2rem;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 2rem;
+            text-align: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .forest-path {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .forest-path:hover {
+            background: rgba(0, 50, 0, 0.9);
+            transform: scale(1.1);
+        }
+        
+        .controls {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        .btn {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #006600;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌟 AVALON DIMENSION 1→2 🌟</h1>
+        
+        <div class="portraits">
+            <div class="portrait" onclick="selectCharacter('vincent')">
+                <img src="../../../💠 Essences scellées/🖼️ Ymagerie/Interstice/Holographic Hourglass in Cosmic Space.png" alt="Vincent l'Ours" id="vincent-img">
+                <h3>🥤 Vincent "The Dude"</h3>
+                <p>Chemin de l'Ours Mystique</p>
+            </div>
+            
+            <div class="portrait" onclick="selectCharacter('loumen')">
+                <img src="../Le Magicien Lumen et son Grimoire.png" alt="Loumen et son Grimoire">
+                <h3>🕯️ Loumen/Erlin</h3>
+                <p>Merlin l'Enchanteur Éveillé</p>
+            </div>
+        </div>
+        
+        <div class="forest-path" onclick="enterForest()">
+            <h4>🌲 Chemin de la Forêt Quantique</h4>
+            <p>→ Vers Heroes of Time</p>
+        </div>
+        
+        <div class="controls">
+            <h4>🎮 Contrôles</h4>
+            <button class="btn" onclick="goToInterface()">🎯 Interface 2D Directe</button>
+            <button class="btn" onclick="showDemo()">🎬 Démo Auto-Play</button>
+        </div>
+    </div>
+    
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <img src="../../../💠 Essences scellées/🖼️ Ymagerie/Interstice/Holographic Hourglass in Cosmic Space.png" alt="Sablier Cosmique" class="hourglass">
+        <div class="loading-text">
+            <p>⏳ Ouverture des Portails Dimensionnels...</p>
+            <p id="loadingSubtext">Initialisation de la Magie Quantique</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedCharacter = null;
+        
+        function selectCharacter(character) {
+            selectedCharacter = character;
+            
+            // Mettre à jour l'image de Vincent avec l'ours si sélectionné
+            if (character === 'vincent') {
+                document.getElementById('vincent-img').src = '../../../../Ours/portrait/Misty Forest Shaman Bear-min.png';
+                showLoading('Éveil de l\'Ours Chaman de la Forêt...', () => {
+                    alert('🐻 Vincent l\'Ours s\'éveille dans la forêt mystique !');
+                });
+            } else if (character === 'loumen') {
+                showLoading('Activation des pouvoirs de Merlin...', () => {
+                    alert('🧙‍♂️ Loumen canalise la sagesse ancestrale !');
+                });
+            }
+        }
+        
+        function showLoading(text, callback) {
+            document.getElementById('loadingSubtext').textContent = text;
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                callback();
+            }, 3000);
+        }
+        
+        function enterForest() {
+            showLoading('Traversée de la Forêt Quantique...', () => {
+                // Simuler l'ouverture de Heroes of Time
+                const heroesWindow = window.open('about:blank', '_blank');
+                heroesWindow.document.write(`
+                    <html>
+                        <head><title>Heroes of Time - Portal</title></head>
+                        <body style="background: linear-gradient(45deg, #001122, #003344); color: #00ff00; text-align: center; padding: 4rem; font-family: 'Courier New', monospace;">
+                            <h1>🏰 HEROES OF TIME 🏰</h1>
+                            <h2>Portal d'accès depuis la Forêt Quantique</h2>
+                            <p>Connexion en cours avec le moteur temporel...</p>
+                            <div style="margin: 2rem; padding: 2rem; border: 2px solid #00ff00; background: rgba(0,0,0,0.5);">
+                                <p>⚠️ Le vrai Heroes of Time sera lancé ici</p>
+                                <p>En attendant, voici le portail d'accès</p>
+                            </div>
+                            <button onclick="window.close()" style="background: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 10px 20px;">← Retour à Avalon</button>
+                        </body>
+                    </html>
+                `);
+            });
+        }
+        
+        function goToInterface() {
+            showLoading('Projection vers la Dimension 2...', () => {
+                window.location.href = 'index.html';
+            });
+        }
+        
+        function showDemo() {
+            showLoading('Chargement des Scénarios Auto-Play...', () => {
+                window.location.href = 'index.html#auto-play';
+            });
+        }
+        
+        // Animation d'entrée
+        window.addEventListener('load', () => {
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.transition = 'all 1s ease';
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'scale(1)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

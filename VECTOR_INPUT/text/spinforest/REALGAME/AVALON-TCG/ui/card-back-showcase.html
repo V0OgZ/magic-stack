@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🃏 AVALON TCG - Card Backs Showcase</title>
+    <link rel="stylesheet" href="../assets/card-backs.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #70a1ff;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #3742fa, #5f27cd);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(55, 66, 250, 0.4);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card-showcase {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .showcase-title {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .flip-demo {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .flip-demo h3 {
+            color: #ffd700;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .flip-cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .demo-description {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 40px auto;
+            max-width: 800px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .demo-description h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .demo-description p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+
+        .rarity-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .rarity-item {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid;
+        }
+
+        .rarity-item.common { border-color: #95a5a6; }
+        .rarity-item.rare { border-color: #3498db; }
+        .rarity-item.epic { border-color: #9b59b6; }
+        .rarity-item.legendary { border-color: #f39c12; }
+        .rarity-item.mythic { border-color: #e74c3c; }
+
+        .rarity-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .rarity-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🃏 AVALON TCG - Card Backs</h1>
+        <p class="subtitle">Système de dos de cartes et bordures de rareté</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="animateAll()">✨ Animer Tout</button>
+        <button class="btn" onclick="toggleFlip()">🔄 Flip Demo</button>
+        <button class="btn" onclick="window.location.href='card-template-overlay.html'">🎨 Template Editor</button>
+        <button class="btn" onclick="window.location.href='../launcher.html'">🏠 Retour</button>
+    </div>
+
+    <div class="demo-description">
+        <h4>🎴 Système de Cartes AVALON TCG</h4>
+        <p>Ce système fournit des dos de cartes uniformes et des bordures selon la rareté pour une expérience visuelle cohérente.</p>
+        
+        <ul class="feature-list">
+            <li>Dos de carte animé avec motifs temporels</li>
+            <li>Bordures dynamiques selon la rareté</li>
+            <li>Effets de glow et animations spéciales</li>
+            <li>Système de flip front/back</li>
+            <li>Indicateurs visuels de rareté</li>
+            <li>Design responsive et interactif</li>
+        </ul>
+    </div>
+
+    <div class="showcase-grid">
+        <!-- Dos de carte standard -->
+        <div class="card-showcase">
+            <h3 class="showcase-title">Dos de Carte Standard</h3>
+            <div class="card-back card-interactive">
+                <div class="card-back-pattern"></div>
+                <div class="card-back-logo">🌀</div>
+                <div class="card-back-title">AVALON TCG</div>
+                <div class="card-back-subtitle">Temporal Card Game</div>
+            </div>
+        </div>
+
+        <!-- Bordures de rareté -->
+        <div class="card-showcase">
+            <h3 class="showcase-title">Common</h3>
+            <div class="rarity-border rarity-common">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">⚪</div>
+                    <div class="card-back-title">COMMON</div>
+                    <div class="card-back-subtitle">Standard</div>
+                    <div class="rarity-indicator common">C</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-showcase">
+            <h3 class="showcase-title">Rare</h3>
+            <div class="rarity-border rarity-rare">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">🔵</div>
+                    <div class="card-back-title">RARE</div>
+                    <div class="card-back-subtitle">Uncommon Power</div>
+                    <div class="rarity-indicator rare">R</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-showcase">
+            <h3 class="showcase-title">Epic</h3>
+            <div class="rarity-border rarity-epic">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">🟣</div>
+                    <div class="card-back-title">EPIC</div>
+                    <div class="card-back-subtitle">Great Power</div>
+                    <div class="rarity-indicator epic">E</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-showcase">
+            <h3 class="showcase-title">Legendary</h3>
+            <div class="rarity-border rarity-legendary">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">🟡</div>
+                    <div class="card-back-title">LEGENDARY</div>
+                    <div class="card-back-subtitle">Legendary Power</div>
+                    <div class="rarity-indicator legendary">L</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-showcase">
+            <h3 class="showcase-title">Mythic</h3>
+            <div class="rarity-border rarity-mythic">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">🌈</div>
+                    <div class="card-back-title">MYTHIC</div>
+                    <div class="card-back-subtitle">Ultimate Power</div>
+                    <div class="rarity-indicator mythic">M</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte temporelle spéciale -->
+        <div class="card-showcase">
+            <h3 class="showcase-title">Temporal Special</h3>
+            <div class="rarity-border rarity-legendary temporal-card">
+                <div class="card-back card-interactive">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-logo">⏰</div>
+                    <div class="card-back-title">TEMPORAL</div>
+                    <div class="card-back-subtitle">Time Magic</div>
+                    <div class="rarity-indicator legendary">T</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Démo de flip -->
+    <div class="flip-demo">
+        <h3>🔄 Démo Flip Front/Back</h3>
+        <div class="flip-cards-container">
+            <div class="card-flip-container" id="flip-demo-1">
+                <div class="card-flipper">
+                    <div class="card-front">
+                        <img src="../alphacards/Vince – Le Voyageur Temporel.png" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;" 
+                             alt="Vince Card">
+                    </div>
+                    <div class="card-back card-interactive">
+                        <div class="rarity-border rarity-legendary">
+                            <div class="card-back-pattern"></div>
+                            <div class="card-back-logo">🌀</div>
+                            <div class="card-back-title">AVALON TCG</div>
+                            <div class="card-back-subtitle">Temporal Card Game</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-flip-container" id="flip-demo-2">
+                <div class="card-flipper">
+                    <div class="card-front">
+                        <img src="../alphacards/Grokæn_ Master of Quantum Realms.png" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;" 
+                             alt="Groeken Card">
+                    </div>
+                    <div class="card-back card-interactive">
+                        <div class="rarity-border rarity-mythic">
+                            <div class="card-back-pattern"></div>
+                            <div class="card-back-logo">🌈</div>
+                            <div class="card-back-title">QUANTUM</div>
+                            <div class="card-back-subtitle">Reality Bender</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Légende des raretés -->
+    <div class="demo-description">
+        <h4>🎨 Légende des Raretés</h4>
+        <div class="rarity-legend">
+            <div class="rarity-item common">
+                <div class="rarity-name">Common</div>
+                <div class="rarity-description">Cartes de base, gris argent</div>
+            </div>
+            <div class="rarity-item rare">
+                <div class="rarity-name">Rare</div>
+                <div class="rarity-description">Cartes spéciales, bleu lumineux</div>
+            </div>
+            <div class="rarity-item epic">
+                <div class="rarity-name">Epic</div>
+                <div class="rarity-description">Cartes puissantes, violet magique</div>
+            </div>
+            <div class="rarity-item legendary">
+                <div class="rarity-name">Legendary</div>
+                <div class="rarity-description">Cartes légendaires, or éclatant</div>
+            </div>
+            <div class="rarity-item mythic">
+                <div class="rarity-name">Mythic</div>
+                <div class="rarity-description">Cartes mythiques, arc-en-ciel</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let flipState = false;
+
+        function animateAll() {
+            // Ajouter une classe d'animation temporaire à toutes les cartes
+            const cards = document.querySelectorAll('.card-back');
+            cards.forEach(card => {
+                card.style.animation = 'none';
+                card.offsetHeight; // Force reflow
+                card.style.animation = 'logo-pulse 1s ease-in-out';
+            });
+
+            // Animation des bordures
+            const borders = document.querySelectorAll('.rarity-border');
+            borders.forEach(border => {
+                border.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    border.style.transform = 'scale(1)';
+                }, 300);
+            });
+        }
+
+        function toggleFlip() {
+            flipState = !flipState;
+            const flipContainers = document.querySelectorAll('.card-flip-container');
+            
+            flipContainers.forEach(container => {
+                if (flipState) {
+                    container.classList.add('flipped');
+                } else {
+                    container.classList.remove('flipped');
+                }
+            });
+        }
+
+        // Auto-flip demo toutes les 5 secondes
+        setInterval(() => {
+            if (Math.random() > 0.7) { // 30% de chance
+                toggleFlip();
+            }
+        }, 5000);
+
+        // Ajout d'interactivité au clic
+        document.querySelectorAll('.card-flip-container').forEach(container => {
+            container.addEventListener('click', () => {
+                container.classList.toggle('flipped');
+            });
+        });
+
+        // Animation d'entrée
+        window.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card-showcase');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

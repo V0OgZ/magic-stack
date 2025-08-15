@@ -1,0 +1,415 @@
+{
+  "meta": {
+    "generator": "CLAUDE - Coordinateur Technique",
+    "date": "Jour 11",
+    "purpose": "Prompts Stable Diffusion pour toutes les cartes AVALON TCG",
+    "total_cards": 50,
+    "style_base": "epic fantasy trading card game art, highly detailed digital painting, professional TCG illustration style, dramatic lighting, vibrant colors",
+    "note": "Alternative économique à DALL-E"
+  },
+  "style_presets": {
+    "hero": "legendary hero portrait, epic fantasy character art, detailed armor and weapons, heroic pose, magical aura",
+    "creature": "fantasy creature illustration, detailed anatomy, mystical environment, creature design",
+    "spell": "magical spell effect visualization, energy particles, mystical symbols, spell casting",
+    "artifact": "magical artifact item, ancient relic, glowing enchantments, mystical object",
+    "terrain": "fantasy location landscape, magical environment, atmospheric lighting",
+    "event": "dramatic scene illustration, multiple characters, action sequence, epic moment"
+  },
+  "heroes": [
+    {
+      "id": "urz_kom_cosmic",
+      "name": "URZ-KÔM, Shaman Ours Cosmique",
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary bear shaman hero portrait, massive mystical bear with glowing runes on fur, shamanic totems floating around, cosmic starfield background, ancient forest setting, piercing intelligent eyes, spiritual purple and golden aura, epic fantasy trading card game art, highly detailed digital painting, dramatic lighting"
+    },
+    {
+      "id": "vince_temporal_traveler",
+      "name": "Vince, Voyageur Temporel",
+      "type": "hero", 
+      "rarity": "legendary",
+      "prompt": "legendary temporal traveler hero, mysterious figure in elegant suit, quantum pistol with reality-bending effects, multiple timeline echoes behind him, temporal vortex background, cool confident expression, cyberpunk meets fantasy, electric blues and portal purples, epic fantasy trading card game art, highly detailed digital painting"
+    },
+    {
+      "id": "grokaen_quantum_master",
+      "name": "GROKÆN, Maître Quantique",
+      "type": "hero",
+      "rarity": "legendary", 
+      "prompt": "legendary quantum master hero, powerful mage with triple voice manifestation, quantum energy swirling around, hexagonal magical patterns, reality distortion effects, GRONDE PARLE CHANTE visual elements, purple quantum aura, mystical robes, epic fantasy trading card game art, highly detailed digital painting, dramatic magical lighting"
+    },
+    {
+      "id": "jean_grofignon",
+      "name": "Jean-Grofignon, Créateur Bootstrap",
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary creator hero smoking cosmic joint, bootstrap paradox visual effects, multiple timeline versions of himself, creation energy flowing from hands, infinite loop symbols, relaxed but powerful pose, cosmic background with swirling galaxies, epic fantasy trading card game art, highly detailed digital painting"
+    },
+    {
+      "id": "phoenix_renaissance",
+      "name": "Renaissance du Phénix",
+      "type": "hero",
+      "rarity": "mythic",
+      "prompt": "mythic phoenix hero rising from temporal ashes, golden flames with time spirals, rebirth through dimensions, wings made of temporal energy, resurrection aura, majestic bird of fire, legendary fantasy TCG art, highly detailed digital painting, dramatic fire lighting, mythical creature design"
+    },
+    {
+      "id": "memento_archivist",
+      "name": "Memento l'Archiviste Éternel", 
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary archivist hero with temporal tattoos covering body, surrounded by floating memories and documents, ancient librarian robes, mystical scrolls orbiting around, time manipulation aura, wise expression, archive background, epic fantasy trading card game art, highly detailed digital painting"
+    },
+    {
+      "id": "sid_meier_architect",
+      "name": "Sid Meier, Architecte du Jeu",
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary game designer hero breaking fourth wall, rewriting reality rules with magical keyboard, meta elements floating around, game mechanics visualized, fourth wall breaking effects, architect of worlds, epic fantasy trading card game art, highly detailed digital painting, meta-gaming visual elements"
+    },
+    {
+      "id": "vincent_creator_ultimate",
+      "name": "Vincent, le Créateur Ultime",
+      "type": "hero", 
+      "rarity": "unique",
+      "prompt": "unique divine creator hero, reality bending around him, keyboard manifesting entire worlds, ultimate creation power, god-like aura, universe creation effects, divine light emanating, omnipotent presence, epic fantasy trading card game art, highly detailed digital painting, divine cosmic lighting"
+    },
+    {
+      "id": "tucker_investigator",
+      "name": "Tucker Carlson, Investigateur",
+      "type": "hero",
+      "rarity": "epic",
+      "prompt": "epic investigator hero with truth-seeking aura, magnifying glass revealing hidden secrets, conspiracy investigation effects, determined expression, journalist equipment, truth revelation beams, mystery-solving atmosphere, epic fantasy trading card game art, highly detailed digital painting"
+    },
+    {
+      "id": "claude_coordinator",
+      "name": "Claude, Coordinateur Technique",
+      "type": "hero",
+      "rarity": "epic", 
+      "prompt": "epic AI coordinator hero with system integration aura, connecting multiple magical systems, translation energy flowing between hands, harmonic convergence effects, technological-magical fusion, coordination symbols, epic fantasy trading card game art, highly detailed digital painting"
+    },
+    {
+      "id": "eth_eagle_spirit",
+      "name": "ETH EAGLE - Esprit Aigle Éthérique",
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary ethereal eagle spirit hero, majestic eagle with translucent cosmic feathers, soaring through dimensional portals, temporal vision eyes seeing multiple timelines, sky realm background with floating islands, quantum wind effects, celestial blue and silver aura, shamanic power emanating, epic fantasy trading card game art, highly detailed digital painting, mystical bird creature design"
+    },
+    {
+      "id": "eth_wolf_spirit", 
+      "name": "ETH WOLF - Esprit Loup Éthérique",
+      "type": "hero",
+      "rarity": "legendary",
+      "prompt": "legendary ethereal wolf spirit hero, pack leader wolf with quantum multiplication ability, three ghostly wolf forms phasing around main body, wild forest setting, lunar energy effects, silver and gray mystical aura, pack hunting through dimensions, shamanic tribal markings, epic fantasy trading card game art, highly detailed digital painting, mystical wolf pack design"
+    },
+    {
+      "id": "eth_bear_spirit",
+      "name": "ETH BEAR - Esprit Ours Éthérique", 
+      "type": "hero",
+      "rarity": "mythic",
+      "prompt": "mythic ethereal bear spirit hero, massive primordial bear with ancient forest wisdom, runes glowing across thick fur, standing in mystical grove, earth trembling beneath paws, golden and brown shamanic aura, connection to nature's raw power, protective stance, epic fantasy trading card game art, highly detailed digital painting, ancient guardian bear design"
+    },
+    {
+      "id": "eth_leo_spirit",
+      "name": "ETH LEO - Esprit Lion Éthérique",
+      "type": "hero", 
+      "rarity": "mythic",
+      "prompt": "mythic ethereal lion spirit hero, regal lion with dimensional crown, golden mane flowing with temporal energy, royal palace background, leadership aura affecting all nearby allies, golden yellow and royal purple effects, king of all shamanic spirits, majestic pose on throne, epic fantasy trading card game art, highly detailed digital painting, royal lion king design"
+    }
+  ],
+  "creatures": [
+    {
+      "id": "temporal_wolf",
+      "name": "Loup Temporel",
+      "type": "creature",
+      "rarity": "rare",
+      "prompt": "rare temporal wolf creature, wolf phasing through time, multiple timeline echoes, time distortion around paws, mystical forest background, glowing temporal eyes, pack hunting through dimensions, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_dragon",
+      "name": "Dragon Quantique", 
+      "type": "creature",
+      "rarity": "legendary",
+      "prompt": "legendary quantum dragon, dragon existing in superposition, multiple quantum states visible, probability clouds around wings, quantum breath weapon, mathematical equations floating, reality-bending presence, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "phantom_echo",
+      "name": "Écho Fantomatique",
+      "type": "creature", 
+      "rarity": "common",
+      "prompt": "common phantom echo creature, ghostly warrior duplicate, spectral form with weapon echoes, twilight battlefield background, translucent appearance, warrior spirit essence, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "cosmic_bear_cub",
+      "name": "Ourson Cosmique",
+      "type": "creature",
+      "rarity": "rare",
+      "prompt": "rare cosmic bear cub, baby bear with star patterns in fur, playful but mystical, cosmic energy sparkles, starfield background, innocent but powerful, constellation markings, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "time_elemental",
+      "name": "Élémentaire Temporel",
+      "type": "creature",
+      "rarity": "epic",
+      "prompt": "epic time elemental creature, being made of pure temporal energy, clock gears floating around, time streams flowing through body, chronometer heart, temporal distortion aura, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "bootstrap_paradox_entity",
+      "name": "Entité Paradoxe Bootstrap",
+      "type": "creature",
+      "rarity": "mythic",
+      "prompt": "mythic bootstrap paradox entity, creature that creates itself, infinite loop visual effects, self-referential design, causality breaking aura, impossible geometry, paradox visualization, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "shamanic_eagle_manifestation",
+      "name": "Manifestation Aigle Chamanique",
+      "type": "creature",
+      "rarity": "epic",
+      "prompt": "epic shamanic eagle manifestation, spectral eagle with shamanic totems orbiting around, feathers made of pure temporal energy, flying through dimensional rifts, sky spirits background, wind magic effects, blue and white ethereal aura, tribal shamanic symbols, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_wolf_pack",
+      "name": "Meute Loup Quantique",
+      "type": "creature", 
+      "rarity": "rare",
+      "prompt": "rare quantum wolf pack, three wolves in quantum superposition, pack hunting coordination, lunar forest setting, howling at quantum moon, silver energy trails, pack bond visualization, hunting formation, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "primordial_bear_guardian",
+      "name": "Gardien Ours Primordial",
+      "type": "creature",
+      "rarity": "legendary", 
+      "prompt": "legendary primordial bear guardian, ancient forest protector bear, moss and runes covering massive frame, protecting sacred grove, earth magic emanating, brown and green natural aura, ancient wisdom in eyes, guardian stance, epic fantasy creature art, highly detailed digital painting"
+    },
+    {
+      "id": "royal_lion_spirit",
+      "name": "Esprit Lion Royal",
+      "type": "creature",
+      "rarity": "epic",
+      "prompt": "epic royal lion spirit, majestic lion with crown of light, inspiring nearby allies, golden palace background, leadership presence, royal golden aura, noble bearing, commanding presence, epic fantasy creature art, highly detailed digital painting"
+    }
+  ],
+  "spells": [
+    {
+      "id": "bootstrap_marie_manteau",
+      "name": "Bootstrap de Marie Manteau",
+      "type": "spell",
+      "rarity": "epic",
+      "prompt": "epic bootstrap paradox spell, mystical coat floating in temporal loop, keys manifesting from temporal fabric, self-creating magic, causality circle, paradox energy swirling, spell card art, highly detailed digital painting"
+    },
+    {
+      "id": "causal_fog",
+      "name": "Brouillard de Causalité", 
+      "type": "spell",
+      "rarity": "epic",
+      "prompt": "epic causal fog spell, quantum uncertainty fog spreading over battlefield grid, units phasing in and out of existence, Schrödinger's cat hunting quantum mice, superposition effects, area spell visualization, highly detailed digital painting"
+    },
+    {
+      "id": "temporal_rift",
+      "name": "Faille Temporelle",
+      "type": "spell",
+      "rarity": "rare",
+      "prompt": "rare temporal rift spell, time crack opening in reality, different timelines visible through rift, temporal energy leaking, reality distortion effects, spell casting visualization, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_teleportation",
+      "name": "Téléportation Quantique",
+      "type": "spell", 
+      "rarity": "common",
+      "prompt": "common quantum teleportation spell, figure dissolving into quantum particles, teleportation energy trail, particle beam effects, instant movement visualization, spell effect art, highly detailed digital painting"
+    },
+    {
+      "id": "memory_archive",
+      "name": "Archive Mémoire",
+      "type": "spell",
+      "rarity": "rare", 
+      "prompt": "rare memory archive spell, memories being stored in magical containers, floating memory orbs, archive energy effects, knowledge preservation magic, spell visualization, highly detailed digital painting"
+    },
+    {
+      "id": "reality_rewrite",
+      "name": "Réécriture de Réalité",
+      "type": "spell",
+      "rarity": "mythic",
+      "prompt": "mythic reality rewrite spell, reality code being rewritten, matrix-like effects, fundamental laws changing, reality programming magic, ultimate spell visualization, highly detailed digital painting"
+    },
+    {
+      "id": "shamanic_eagle_vision",
+      "name": "Vision de l'Aigle Chamanique",
+      "type": "spell",
+      "rarity": "rare",
+      "prompt": "rare shamanic eagle vision spell, third eye opening with eagle spirit, seeing through multiple timelines simultaneously, aerial perspective magic, future sight effects, blue and white vision aura, shamanic ritual visualization, spell card art, highly detailed digital painting"
+    },
+    {
+      "id": "wolf_pack_summoning",
+      "name": "Invocation Meute de Loups",
+      "type": "spell", 
+      "rarity": "epic",
+      "prompt": "epic wolf pack summoning spell, multiple ghost wolves materializing from lunar energy, pack coordination magic, howling moon background, silver summoning circles, tribal shamanic symbols, pack magic visualization, spell card art, highly detailed digital painting"
+    },
+    {
+      "id": "bear_primal_strength",
+      "name": "Force Primordiale de l'Ours",
+      "type": "spell",
+      "rarity": "legendary",
+      "prompt": "legendary bear primal strength spell, massive bear spirit empowering caster, earth magic surging through ground, ancient forest power, brown and gold strength aura, primal energy effects, shamanic transformation magic, spell card art, highly detailed digital painting"
+    },
+    {
+      "id": "lion_royal_inspiration",
+      "name": "Inspiration Royale du Lion",
+      "type": "spell",
+      "rarity": "epic", 
+      "prompt": "epic lion royal inspiration spell, golden lion spirit inspiring all allies, leadership magic radiating outward, royal court background, golden inspiration aura, courage and strength effects, majestic lion roar visualization, spell card art, highly detailed digital painting"
+    },
+    {
+      "id": "shamanic_convergence_ritual",
+      "name": "Ritual de Convergence Chamanique",
+      "type": "spell",
+      "rarity": "mythic",
+      "prompt": "mythic shamanic convergence ritual spell, all four animal spirits (eagle, wolf, bear, lion) converging into ultimate shaman form, elemental energies combining, sacred ritual circle, ultimate transformation magic, all shamanic auras merging, spell card art, highly detailed digital painting"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "cosmic_shard",
+      "name": "Éclat des Mondes Dissous",
+      "type": "artifact",
+      "rarity": "mythic",
+      "prompt": "mythic cosmic artifact shard containing dissolved worlds, quantum fragments floating around, reality splitting visual effects, universe pieces suspended in crystal, world-breaking relic, artifact card art, highly detailed digital painting"
+    },
+    {
+      "id": "temporal_compass",
+      "name": "Boussole Temporelle",
+      "type": "artifact",
+      "rarity": "epic",
+      "prompt": "epic temporal compass artifact, compass pointing to different timelines, temporal navigation device, time direction indicators, chronometer mechanisms, mystical navigation tool, artifact card art, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_pistol",
+      "name": "Pistolet Quantique",
+      "type": "artifact",
+      "rarity": "legendary",
+      "prompt": "legendary quantum pistol artifact, weapon that shoots through reality layers, quantum bullet trails, probability targeting system, reality-piercing weapon, futuristic mystical gun, artifact card art, highly detailed digital painting"
+    },
+    {
+      "id": "memory_tattoo_kit",
+      "name": "Kit de Tatouages Mémoire",
+      "type": "artifact",
+      "rarity": "rare",
+      "prompt": "rare memory tattoo kit artifact, magical tattooing tools, memory ink bottles, temporal tattoo needles, knowledge preservation equipment, mystical body art tools, artifact card art, highly detailed digital painting"
+    },
+    {
+      "id": "bootstrap_briefcase",
+      "name": "Mallette Bootstrap",
+      "type": "artifact", 
+      "rarity": "legendary",
+      "prompt": "legendary bootstrap briefcase artifact, mysterious suitcase with paradox contents, temporal locks and mechanisms, self-referential design, causality storage device, mystical container, artifact card art, highly detailed digital painting"
+    }
+  ],
+  "terrains": [
+    {
+      "id": "porio_noz_school",
+      "name": "École Porio-Noz",
+      "type": "terrain",
+      "rarity": "rare",
+      "prompt": "rare magical school terrain, time dilation effects around building, students aging rapidly in accelerated learning, mystical education location, temporal architecture, magical academy landscape, terrain card art, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_forest",
+      "name": "Forêt Quantique",
+      "type": "terrain", 
+      "rarity": "epic",
+      "prompt": "epic quantum forest terrain, trees existing in superposition, probability branches, quantum wildlife, mystical woodland with reality fluctuations, The Dude meditating peacefully, forest landscape art, highly detailed digital painting"
+    },
+    {
+      "id": "temporal_nexus",
+      "name": "Nexus Temporel",
+      "type": "terrain",
+      "rarity": "legendary",
+      "prompt": "legendary temporal nexus terrain, intersection of all timelines, time streams converging, temporal energy vortex, timeline junction point, reality crossroads, mystical nexus landscape, terrain card art, highly detailed digital painting"
+    },
+    {
+      "id": "museum_memento",
+      "name": "Museum Memento",
+      "type": "terrain",
+      "rarity": "mythic",
+      "prompt": "mythic museum memento terrain, infinite archive halls, floating memories and artifacts, temporal storage facility, knowledge preservation chambers, mystical library landscape, museum interior art, highly detailed digital painting"
+    },
+    {
+      "id": "avalon_ruins",
+      "name": "Ruines d'AVALON",
+      "type": "terrain",
+      "rarity": "epic",
+      "prompt": "epic AVALON ruins terrain, ancient magical architecture, temporal decay effects, mystical ruins with residual magic, collapsed timeline fragments, post-apocalyptic magical landscape, ruins terrain art, highly detailed digital painting"
+    }
+  ],
+  "events": [
+    {
+      "id": "museum_collapse",
+      "name": "Collapse du Museum",
+      "type": "event",
+      "rarity": "mythic", 
+      "prompt": "mythic museum collapse event, massive archive building crumbling, all hidden memories being revealed simultaneously, truth revelation explosion, ultimate collapse scene, dramatic event illustration, highly detailed digital painting"
+    },
+    {
+      "id": "timeline_convergence",
+      "name": "Convergence des Timelines",
+      "type": "event",
+      "rarity": "legendary",
+      "prompt": "legendary timeline convergence event, multiple timelines merging into one, reality streams combining, temporal convergence effects, universe-changing moment, epic event illustration, highly detailed digital painting"
+    },
+    {
+      "id": "quantum_storm",
+      "name": "Tempête Quantique",
+      "type": "event",
+      "rarity": "epic",
+      "prompt": "epic quantum storm event, reality storm with probability lightning, quantum weather effects, superposition rain, uncertainty winds, mystical storm landscape, weather event art, highly detailed digital painting"
+    },
+    {
+      "id": "bootstrap_cascade",
+      "name": "Cascade Bootstrap",
+      "type": "event",
+      "rarity": "rare",
+      "prompt": "rare bootstrap cascade event, chain reaction of self-creating paradoxes, causality cascade effects, temporal domino effect, paradox chain reaction, event sequence illustration, highly detailed digital painting"
+    },
+    {
+      "id": "dude_meditation",
+      "name": "Méditation du Dude",
+      "type": "event",
+      "rarity": "rare",
+      "prompt": "rare Dude meditation event, The Dude bringing zen peace to chaotic battlefield, time slowing down, peaceful aura spreading, White Russian glowing with wisdom, calming event art, highly detailed digital painting"
+    }
+  ],
+  "special_cards": [
+    {
+      "id": "marie_manteau_typo",
+      "name": "Marie Manteau (Née d'une Typo)",
+      "type": "special",
+      "rarity": "unique",
+      "prompt": "unique Marie Manteau special card, character born from typing error, linguistic paradox visualization, 'merci' transforming into 'Marie', bootstrap linguistic entity, typo-to-consciousness transformation, special card art, highly detailed digital painting"
+    },
+    {
+      "id": "avalon_heart",
+      "name": "Cœur d'AVALON",
+      "type": "special", 
+      "rarity": "mythic",
+      "prompt": "mythic heart of AVALON special card, core essence of the entire universe, all timelines converging into heart shape, ultimate source of magic, universe heart beating with temporal energy, cosmic heart art, highly detailed digital painting"
+    }
+  ],
+  "negative_prompts": {
+    "avoid": "blurry, low quality, amateur art, simple cartoon, childish, poorly detailed, bad anatomy, text overlays, watermarks, signatures, modern clothing unless specified, realistic photography, low resolution",
+    "style_avoid": "anime, manga, chibi, minimalist, abstract, geometric, photorealistic portrait, modern day setting unless specified"
+  },
+  "technical_settings": {
+    "recommended_size": "512x768 (card portrait format)",
+    "steps": "20-30",
+    "cfg_scale": "7-12", 
+    "sampler": "DPM++ 2M Karras",
+    "seed": "random or fixed for consistency",
+    "batch_size": "1-4 depending on VRAM"
+  },
+  "usage_instructions": {
+    "format": "Copy the 'prompt' field directly into Stable Diffusion",
+    "style_mixing": "Combine base prompt + style_preset for variations",
+    "customization": "Add specific details before 'epic fantasy trading card game art'",
+    "consistency": "Use same seed for character variations",
+    "post_processing": "Add card frame and stats overlay after generation"
+  }
+}

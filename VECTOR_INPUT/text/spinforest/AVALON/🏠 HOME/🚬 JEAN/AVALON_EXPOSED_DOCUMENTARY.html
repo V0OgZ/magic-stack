@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVALON EXPOSED - La Vérité Interdite | Tucker Revelations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        .glitch {
+            position: relative;
+            color: #ff0000;
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff,
+                         0.025em 0.05em 0 #fffc00;
+            animation: glitch 725ms infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff, 0.025em 0.05em 0 #fffc00; }
+            14% { text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff, 0.025em 0.05em 0 #fffc00; }
+            15% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            49% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            50% { text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff, 0 -0.05em 0 #fffc00; }
+            99% { text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff, 0 -0.05em 0 #fffc00; }
+        }
+        
+        .section {
+            min-height: 100vh;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .intro {
+            background: radial-gradient(circle at center, #1a0000 0%, #000 100%);
+        }
+        
+        .evidence-box {
+            background: rgba(255,0,0,0.1);
+            border: 2px solid #ff0000;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 800px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; }
+            50% { border-color: #ff6666; box-shadow: 0 0 40px #ff6666; }
+        }
+        
+        .classified {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            border: 1px solid #0f0;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .classified::before {
+            content: "CLASSIFIED";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 5em;
+            opacity: 0.1;
+            color: #f00;
+        }
+        
+        .reveal-button {
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            margin: 20px;
+        }
+        
+        .reveal-button:hover {
+            background: #fff;
+            color: #ff0000;
+            box-shadow: 0 0 30px #ff0000;
+        }
+        
+        .timeline-locked {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .year-box {
+            background: #111;
+            border: 2px solid #666;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .year-box.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+        }
+        
+        .trinity-diagram {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            margin: 40px auto;
+        }
+        
+        .trinity-member {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .jean { background: #4a0080; top: 0; left: 50%; transform: translateX(-50%); }
+        .memento { background: #0066cc; bottom: 0; left: 0; }
+        .claudius { background: #cc6600; bottom: 0; right: 0; }
+        
+        .connection-line {
+            position: absolute;
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #ff00ff);
+            height: 2px;
+            transform-origin: left center;
+            animation: pulse-line 2s infinite;
+        }
+        
+        @keyframes pulse-line {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .live-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff0000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            animation: blink 1s infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .reality-forge {
+            width: 600px;
+            height: 400px;
+            margin: 40px auto;
+            position: relative;
+            border: 2px solid #00ff00;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                #001100 2px,
+                #001100 4px
+            );
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: quantum-move 3s infinite;
+        }
+        
+        @keyframes quantum-move {
+            0% { transform: translate(0, 0); opacity: 1; }
+            33% { transform: translate(300px, 200px); opacity: 0.5; }
+            66% { transform: translate(100px, 300px); opacity: 0.8; }
+            100% { transform: translate(0, 0); opacity: 1; }
+        }
+        
+        .warning {
+            background: repeating-linear-gradient(
+                45deg,
+                #ffff00,
+                #ffff00 10px,
+                #000000 10px,
+                #000000 20px
+            );
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5em;
+            margin: 30px 0;
+        }
+        
+        #viewer-count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border: 1px solid #fff;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="live-indicator">🔴 LIVE - EN DIRECT</div>
+    
+    <section class="section intro">
+        <h1 class="glitch">AVALON EXPOSED</h1>
+        <h2 style="font-size: 2em; margin: 20px 0;">LA VÉRITÉ INTERDITE</h2>
+        <p style="font-size: 1.5em;">Par Chucky Tarlson - Journaliste Interstitiel</p>
+        
+        <div class="evidence-box">
+            <h3>CE QU'ILS NE VEULENT PAS QUE VOUS SACHIEZ</h3>
+            <p>J'ai infiltré AVALON. J'ai découvert leurs secrets.</p>
+            <p>Ce que vous allez voir va changer votre perception de la réalité.</p>
+            <button class="reveal-button" onclick="revealTruth()">RÉVÉLER LA VÉRITÉ</button>
+        </div>
+    </section>
+    
+    <section class="section" id="christian-section" style="display: none;">
+        <h2 class="glitch">CHRISTIAN : L'AGENT DOUBLE</h2>
+        
+        <div class="evidence-box">
+            <h3>IDENTITÉ SECRÈTE CONFIRMÉE</h3>
+            <div class="classified">
+                <p>NOM : Christian [CENSURÉ]</p>
+                <p>ALIAS : Le Stratège Amplifié, CHR-SINE</p>
+                <p>STATUT : AGENT DOUBLE CONFIRMÉ</p>
+                <p>RELATION : Beau-frère de VINCE VEGA</p>
+                <p>MENACE : 🟠 ÉLEVÉ</p>
+            </div>
+            
+            <h4>DOUBLE VIE EXPOSÉE :</h4>
+            <ul style="text-align: left; max-width: 600px; margin: 20px auto;">
+                <li>JOUR : Consultant Strategic Solutions (Étage 42)</li>
+                <li>NUIT : Guitariste metal avec pouvoirs soniques</li>
+                <li>ÉQUIPEMENT : Mallette noire émettant 19.7 kHz</li>
+                <li>PROBABILITÉ AGENT McKINSEY : 78%</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            ⚠️ ATTENTION : CET HOMME EST DANS VOS FAMILLES ⚠️
+        </div>
+    </section>
+    
+    <section class="section" id="timeline-section" style="display: none;">
+        <h2 class="glitch">LES ANNÉES INTERDITES</h2>
+        
+        <div class="timeline-locked">
+            <div class="year-box locked">
+                <h3>1937</h3>
+                <p>ÉVÉNEMENT ORIGINEL</p>
+                <p>Tout a commencé ici</p>
+            </div>
+            <div class="year-box locked" style="border-color: #ff0000;">
+                <h3>2025</h3>
+                <p>ANNÉE ACTUELLE</p>
+                <p>POURQUOI VERROUILLÉE ?!</p>
+            </div>
+            <div class="year-box locked">
+                <h3>2031</h3>
+                <p>CATASTROPHE FUTURE ?</p>
+                <p>Que cache cette date ?</p>
+            </div>
+            <div class="year-box locked">
+                <h3>2040</h3>
+                <p>SINGULARITÉ ?</p>
+                <p>Point de non-retour</p>
+            </div>
+            <div class="year-box locked">
+                <h3>2080</h3>
+                <p>PROJET SECRET</p>
+                <p>Mentionné par Memento</p>
+            </div>
+            <div class="year-box locked">
+                <h3>2103</h3>
+                <p>FIN DES TEMPS ?</p>
+                <p>Reset universel ?</p>
+            </div>
+        </div>
+        
+        <div class="evidence-box">
+            <h3>QUESTION CRITIQUE</h3>
+            <p style="font-size: 1.5em; color: #ff0000;">
+                NOUS SOMMES EN 2025. POURQUOI CETTE ANNÉE EST-ELLE VERROUILLÉE ?
+            </p>
+        </div>
+    </section>
+    
+    <section class="section" id="trinity-section" style="display: none;">
+        <h2 class="glitch">LA TRINITÉ COSMIQUE</h2>
+        
+        <div class="trinity-diagram">
+            <div class="trinity-member jean">JEAN</div>
+            <div class="trinity-member memento">MEMENTO</div>
+            <div class="trinity-member claudius">CLAUDIUS</div>
+            <div class="connection-line" style="width: 200px; top: 60px; left: 100px; transform: rotate(60deg);"></div>
+            <div class="connection-line" style="width: 200px; bottom: 60px; left: 60px; transform: rotate(-30deg);"></div>
+            <div class="connection-line" style="width: 200px; bottom: 60px; right: 60px; transform: rotate(30deg);"></div>
+        </div>
+        
+        <div class="evidence-box">
+            <h3>POUVOIRS CONFIRMÉS</h3>
+            <ul style="text-align: left; max-width: 600px; margin: 20px auto;">
+                <li>+100% AMPLIFICATION de toutes actions</li>
+                <li>1400 MANA TOTAL (impossible normalement)</li>
+                <li>MULTIVERSE RESHAPE - Recréent la carte entière</li>
+                <li>REALITY OVERRIDE - Annulent toutes les règles</li>
+                <li>VISION OMNIVERSELLE - Voient TOUT</li>
+            </ul>
+        </div>
+    </section>
+    
+    <section class="section" id="forge-section" style="display: none;">
+        <h2 class="glitch">LA FORGE DES RÉALITÉS</h2>
+        
+        <div class="reality-forge">
+            <div class="quantum-particle" style="top: 50px; left: 50px;"></div>
+            <div class="quantum-particle" style="top: 100px; left: 200px; animation-delay: 1s;"></div>
+            <div class="quantum-particle" style="top: 200px; left: 100px; animation-delay: 2s;"></div>
+            
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <h3>MOTEUR TEMPOREL ACTIF</h3>
+                <p>États Quantiques : ψ</p>
+                <p>Superposition → Collapse → Réalité</p>
+            </div>
+        </div>
+        
+        <div class="classified" style="max-width: 800px; margin: 20px auto;">
+            <pre>
+public class PsiState {
+    // Crée des "futurs possibles"
+    // Les collapse en réalité
+    // MANIPULATION TEMPORELLE CONFIRMÉE
+}
+            </pre>
+        </div>
+        
+        <div class="warning">
+            ILS PEUVENT LITTÉRALEMENT PROGRAMMER VOTRE FUTUR !
+        </div>
+    </section>
+    
+    <section class="section" id="conclusion-section" style="display: none;">
+        <h2 class="glitch">LA VÉRITÉ EST RÉVÉLÉE</h2>
+        
+        <div class="evidence-box">
+            <h3>CE QU'ILS CACHENT :</h3>
+            <ul style="text-align: left; max-width: 600px; margin: 20px auto;">
+                <li>✓ Agent double dans la famille Vega</li>
+                <li>✓ Moteur temporel opérationnel</li>
+                <li>✓ 6 années verrouillées incluant 2025</li>
+                <li>✓ Trinité Cosmique avec pouvoirs divins</li>
+                <li>✓ Forge des Réalités active</li>
+                <li>✓ 8 Fondateurs secrets contrôlent tout</li>
+                <li>✓ Contact avec entités extérieures</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 50px;">
+            <h3 style="font-size: 2em; color: #ff0000;">VOUS CONNAISSEZ MAINTENANT LA VÉRITÉ</h3>
+            <p style="font-size: 1.5em; margin: 20px 0;">QU'ALLEZ-VOUS EN FAIRE ?</p>
+            
+            <button class="reveal-button" onclick="sharetruth()">PARTAGER LA VÉRITÉ</button>
+            <button class="reveal-button" onclick="joinResistance()">REJOINDRE LA RÉSISTANCE</button>
+        </div>
+    </section>
+    
+    <div id="viewer-count">
+        <span id="viewers">2,341,567</span> SPECTATEURS EN DIRECT
+    </div>
+    
+    <script>
+        let currentSection = 0;
+        const sections = ['christian-section', 'timeline-section', 'trinity-section', 'forge-section', 'conclusion-section'];
+        
+        function revealTruth() {
+            document.querySelector('.intro').style.display = 'none';
+            showNextSection();
+        }
+        
+        function showNextSection() {
+            if (currentSection < sections.length) {
+                document.getElementById(sections[currentSection]).style.display = 'flex';
+                currentSection++;
+                if (currentSection < sections.length) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: document.getElementById(sections[currentSection-1]).offsetTop,
+                            behavior: 'smooth'
+                        });
+                        setTimeout(showNextSection, 5000);
+                    }, 1000);
+                }
+            }
+        }
+        
+        function sharetruth() {
+            alert("TRANSMISSION INTERSTITIELLE ACTIVÉE - Partage en cours sur toutes les dimensions !");
+            window.open('https://twitter.com/intent/tweet?text=LA%20VÉRITÉ%20SUR%20AVALON%20EST%20RÉVÉLÉE%20!%20%23AvalonGate%20%23TuckerRevelations', '_blank');
+        }
+        
+        function joinResistance() {
+            alert("BIENVENUE DANS LA RÉSISTANCE - Votre conscience a été ajoutée au réseau quantique");
+        }
+        
+        // Simuler l'augmentation des viewers
+        setInterval(() => {
+            let viewers = parseInt(document.getElementById('viewers').textContent.replace(/,/g, ''));
+            viewers += Math.floor(Math.random() * 10000) + 5000;
+            document.getElementById('viewers').textContent = viewers.toLocaleString();
+        }, 3000);
+        
+        // Effet de glitch aléatoire
+        setInterval(() => {
+            const glitchElements = document.querySelectorAll('.glitch');
+            glitchElements.forEach(el => {
+                el.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+                setTimeout(() => {
+                    el.style.transform = 'translate(0, 0)';
+                }, 100);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

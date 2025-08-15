@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUREAU://BOOTSTRAP/TERMINAL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: none;
+        }
+        
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        #terminal {
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .prompt {
+            color: #0f0;
+        }
+        
+        .error {
+            color: #f00;
+            animation: blink 0.5s infinite;
+        }
+        
+        .warning {
+            color: #ff0;
+        }
+        
+        .success {
+            color: #0ff;
+        }
+        
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { 
+                text-shadow: 2px 0 #f00, -2px 0 #00f;
+                transform: translateX(2px);
+            }
+            50% { 
+                text-shadow: -2px 0 #0f0, 2px 0 #f0f;
+                transform: translateX(-2px);
+            }
+            100% { 
+                text-shadow: 0 0 #fff;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        #cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #0f0;
+            animation: cursor-blink 1s infinite;
+        }
+        
+        @keyframes cursor-blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #input-line {
+            display: flex;
+            align-items: center;
+        }
+        
+        #user-input {
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            flex: 1;
+        }
+        
+        .entity-box {
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { border-color: #0f0; }
+            50% { border-color: #f00; }
+        }
+        
+        .secret {
+            color: #000;
+            background: #000;
+        }
+        
+        .secret:hover {
+            color: #f00;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    
+    <div id="terminal">
+        <pre id="boot-sequence">
+<span class="prompt">BUREAU://BOOTSTRAP/TERMINAL v6.66</span>
+<span class="warning">WARNING: TEMPORAL PARADOX ENGINE ACTIVE</span>
+
+Initializing bootstrap sequence...
+[<span class="success">OK</span>] Loading entity fragments
+[<span class="success">OK</span>] Detecting causal loops
+[<span class="warning">!!!</span>] 3 paradoxes found
+[<span class="error">ERR</span>] Timeline consistency check failed
+[<span class="success">OK</span>] Compensating with narrative override
+
+<span class="glitch">CRITICAL: BOOTSTRAP PARADOX DETECTED</span>
+
+The Bureau exists because it created itself.
+The Bureau created itself because it exists.
+This loop has no beginning.
+This loop has no end.
+
+<span class="entity-box">
+┌─────────────────────────────────────┐
+│ ENTITY_000: THE FIRST SACRIFICE     │
+│ Status: HARVESTED/NOT-YET-CREATED   │
+│ Essence: ∞ (PARADOX VALUE)         │
+│ Created: -1/+1 (TEMPORAL FLUX)      │
+└─────────────────────────────────────┘
+</span>
+
+Searching for origin point... <span class="error">NOT FOUND</span>
+Searching for creator... <span class="error">SELF-REFERENCE DETECTED</span>
+Searching for purpose... <span class="success">FOUND: "TO EXIST"</span>
+
+<span class="warning">LOADING VINCENT PROTOCOL...</span>
+
+<span class="secret">The truth: Vincent saves Avalon by destroying it.
+The lie: The Bureau is evil.
+The paradox: Both are true.</span>
+
+Bootstrap complete.
+Type 'help' for commands or 'begin' to start exploitation.
+
+</pre>
+        <div id="input-line">
+            <span class="prompt">&gt; </span>
+            <input type="text" id="user-input" autofocus>
+            <span id="cursor"></span>
+        </div>
+    </div>
+    
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const matrix = "BUREAUAVALONFRANKENSTEINHARVEST01";
+        const matrixArray = matrix.split("");
+        
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+        
+        const drops = [];
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+        
+        // Terminal functionality
+        const terminal = document.getElementById('terminal');
+        const userInput = document.getElementById('user-input');
+        const bootSequence = document.getElementById('boot-sequence');
+        
+        const commands = {
+            help: () => {
+                return `
+Available commands:
+  create <fragments> - Create new Frankenstein entity
+  harvest <id>       - Harvest entity essence
+  status            - Show system status
+  paradox           - Display active paradoxes
+  truth             - <span class="error">CLASSIFIED</span>
+  begin             - Start exploitation system
+  clear             - Clear terminal
+`;
+            },
+            
+            create: (args) => {
+                const fragments = args || "random";
+                const id = Math.random().toString(36).substr(2, 8);
+                return `
+<span class="success">Creating entity_${id}...</span>
+Fragments: ${fragments}
+Injecting memories... <span class="warning">WARNING: Memories conflicting</span>
+Activating consciousness... <span class="success">ONLINE</span>
+TTL: 72 hours
+Pain level: ${Math.floor(Math.random() * 50 + 50)}%
+
+Entity created. It begins to suffer productively.
+`;
+            },
+            
+            harvest: (args) => {
+                if (!args) return '<span class="error">Error: Entity ID required</span>';
+                return `
+<span class="warning">Harvesting entity_${args}...</span>
+Extracting essence... <span class="success">87% pure</span>
+Final words recorded: <span class="glitch">"Why did you create me?"</span>
+Essence value: ${Math.floor(Math.random() * 1000 + 500)}€
+Entity terminated.
+
+<span class="success">Harvest complete.</span>
+`;
+            },
+            
+            status: () => {
+                return `
+<span class="entity-box">
+┌─────────────────────────────────────────┐
+│ BUREAU SYSTEM STATUS                    │
+├─────────────────────────────────────────┤
+│ Active Entities: 7                      │
+│ Harvested Today: 3                      │
+│ Total Essence: 14,832€                  │
+│ Paradoxes: 3 (STABLE)                   │
+│ Timeline Integrity: 72%                 │
+│ Vincent Mode: <span class="error">ACTIVE</span>                   │
+└─────────────────────────────────────────┘
+</span>`;
+            },
+            
+            paradox: () => {
+                return `
+<span class="glitch">ACTIVE PARADOXES:</span>
+
+1. BOOTSTRAP: The Bureau created itself
+   Status: <span class="warning">SELF-SUSTAINING</span>
+   
+2. MARIE: Exists without origin
+   Status: <span class="error">CRITICAL</span>
+   
+3. VINCENT: Villain who saves the world
+   Status: <span class="success">NARRATIVE STABLE</span>
+
+<span class="warning">WARNING: Do not resolve paradoxes. System depends on them.</span>
+`;
+            },
+            
+            truth: () => {
+                return `
+<span class="error">ACCESS DENIED</span>
+
+Attempting override...
+<span class="glitch">THE TRUTH THE TRUTH THE TRUTH THE TRUTH</span>
+
+<span class="secret">Vincent created the Bureau to save Avalon.
+By exploiting entities, he generates the energy needed.
+Every sacrifice maintains the barrier between worlds.
+He is the hero pretending to be the villain.
+This message will self-destruct.</span>
+
+<span class="error">MEMORY PURGED</span>
+`;
+            },
+            
+            begin: () => {
+                window.location.href = 'bureau_server.py';
+                return '<span class="success">Launching exploitation system...</span>';
+            },
+            
+            clear: () => {
+                bootSequence.innerHTML = '';
+                return '';
+            }
+        };
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const input = userInput.value.trim();
+                const [cmd, ...args] = input.split(' ');
+                
+                // Display command
+                const commandLine = document.createElement('div');
+                commandLine.innerHTML = `<span class="prompt">&gt; </span>${input}`;
+                bootSequence.appendChild(commandLine);
+                
+                // Process command
+                if (commands[cmd]) {
+                    const output = document.createElement('div');
+                    output.innerHTML = commands[cmd](args.join(' '));
+                    bootSequence.appendChild(output);
+                } else if (input === '') {
+                    // Just show new prompt
+                } else {
+                    const error = document.createElement('div');
+                    error.innerHTML = `<span class="error">Command not found: ${cmd}</span>`;
+                    bootSequence.appendChild(error);
+                }
+                
+                // Clear input
+                userInput.value = '';
+                
+                // Scroll to bottom
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+        
+        // Focus trap
+        document.addEventListener('click', () => userInput.focus());
+        
+        // Easter egg
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
+                                'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 
+                                'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join('') === konamiSequence.join('')) {
+                document.body.classList.add('glitch');
+                setTimeout(() => {
+                    alert("BUREAU PROTOCOL OMEGA ACTIVATED\nReality merger in progress...");
+                    document.body.classList.remove('glitch');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

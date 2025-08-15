@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🏛️ Protocole Sphinx - Accès Interstice</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .quantum-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #FFD700;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px #FFD700;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #00FFFF;
+            opacity: 0.8;
+        }
+        
+        .main-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel h2 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00FFFF;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #FFD700;
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .question-display {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00FFFF;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 120px;
+            display: none;
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #00FFFF;
+        }
+        
+        .question-meta {
+            font-size: 0.9rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+        
+        .answer-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .answer-input input {
+            flex: 1;
+        }
+        
+        .answer-input button {
+            width: auto;
+            padding: 12px 20px;
+        }
+        
+        .status-display {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00FF00;
+            color: #00FF00;
+        }
+        
+        .status-error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #FF0000;
+            color: #FF0000;
+        }
+        
+        .status-info {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00FFFF;
+            color: #00FFFF;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #00FFFF;
+            margin-top: 5px;
+        }
+        
+        .certification-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .cert-0 { background: #666; color: #fff; }
+        .cert-1 { background: #4CAF50; color: #fff; }
+        .cert-2 { background: #FF9800; color: #fff; }
+        .cert-3 { background: #9C27B0; color: #fff; }
+        
+        .interstice-access {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00FF00;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .interstice-denied {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #FF0000;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-bg"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ PROTOCOLE SPHINX</h1>
+            <div class="subtitle">Système de Certification Quantique pour l'Accès à l'Interstice</div>
+        </div>
+        
+        <div class="main-panel">
+            <!-- Panel de génération de question -->
+            <div class="panel">
+                <h2>🎯 Génération de Question</h2>
+                
+                <div class="form-group">
+                    <label for="playerId">ID Joueur :</label>
+                    <input type="text" id="playerId" placeholder="Entrez votre identifiant" value="test-user">
+                </div>
+                
+                <div class="form-group">
+                    <label for="difficulty">Niveau de Difficulté :</label>
+                    <select id="difficulty">
+                        <option value="0">0 - INITIÉ (Questions basiques)</option>
+                        <option value="1">1 - ADEPTE (Questions intermédiaires)</option>
+                        <option value="2">2 - MAÎTRE (Questions avancées)</option>
+                        <option value="3">3 - TRANSCENDANT (Questions ultimes)</option>
+                    </select>
+                </div>
+                
+                <button class="btn" onclick="generateQuestion()">Générer Question Sphinx</button>
+                
+                <div id="questionDisplay" class="question-display">
+                    <div id="questionText" class="question-text"></div>
+                    <div id="questionMeta" class="question-meta"></div>
+                    <div class="answer-input">
+                        <input type="number" id="answerInput" placeholder="Votre réponse (nombre décimal)" step="any">
+                        <button class="btn" onclick="submitAnswer()">Valider</button>
+                    </div>
+                </div>
+                
+                <div id="statusDisplay" class="status-display"></div>
+            </div>
+            
+            <!-- Panel de statut joueur -->
+            <div class="panel">
+                <h2>📊 Statut du Joueur</h2>
+                
+                <button class="btn" onclick="loadPlayerStatus()" style="margin-bottom: 20px;">Charger Statut</button>
+                
+                <div id="playerStats"></div>
+                
+                <div id="certificationStatus"></div>
+                
+                <div id="intersticeAccess"></div>
+            </div>
+        </div>
+        
+        <!-- Panel d'informations -->
+        <div class="panel">
+            <h2>ℹ️ Informations sur le Protocole</h2>
+            <div id="protocolInfo">
+                <p><strong>🎯 Objectif :</strong> Valider l'accès à l'Interstice via des questions de physique quantique</p>
+                <p><strong>📊 Niveaux :</strong></p>
+                <ul style="margin: 10px 0 10px 20px;">
+                    <li><span class="certification-badge cert-0">INITIÉ</span> - Questions basiques</li>
+                    <li><span class="certification-badge cert-1">ADEPTE</span> - Questions intermédiaires</li>
+                    <li><span class="certification-badge cert-2">MAÎTRE</span> - Questions avancées (requis pour Interstice)</li>
+                    <li><span class="certification-badge cert-3">TRANSCENDANT</span> - Questions ultimes</li>
+                </ul>
+                <p><strong>🔑 Accès Interstice :</strong> Niveau MAÎTRE (2) minimum requis</p>
+                <p><strong>⏱️ Timeout :</strong> 10 minutes par question</p>
+                <p><strong>📈 Progression :</strong> 3 réponses correctes par niveau pour avancer</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8082/api/sphinx';
+        let currentQuestionId = null;
+        
+        // Génère une nouvelle question
+        async function generateQuestion() {
+            const playerId = document.getElementById('playerId').value.trim();
+            const difficulty = parseInt(document.getElementById('difficulty').value);
+            
+            if (!playerId) {
+                showStatus('Veuillez entrer un ID joueur', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        playerId: playerId,
+                        difficulty: difficulty
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayQuestion(data.question);
+                    showStatus('Question générée avec succès !', 'success');
+                } else {
+                    showStatus(data.error || 'Erreur lors de la génération', 'error');
+                    if (data.activeQuestion) {
+                        displayQuestion(data.activeQuestion);
+                    }
+                }
+            } catch (error) {
+                showStatus('Erreur de connexion au serveur', 'error');
+                console.error('Erreur:', error);
+            }
+        }
+        
+        // Affiche une question
+        function displayQuestion(question) {
+            currentQuestionId = question.questionId;
+            
+            document.getElementById('questionText').textContent = question.questionText;
+            document.getElementById('questionMeta').innerHTML = `
+                <strong>Difficulté:</strong> ${question.difficulty} (${question.difficultyName}) | 
+                <strong>Type:</strong> ${question.questionType} | 
+                <strong>Tolérance:</strong> ±${question.tolerance.toFixed(4)}
+            `;
+            
+            document.getElementById('questionDisplay').style.display = 'block';
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').focus();
+        }
+        
+        // Soumet une réponse
+        async function submitAnswer() {
+            if (!currentQuestionId) {
+                showStatus('Aucune question active', 'error');
+                return;
+            }
+            
+            const answer = parseFloat(document.getElementById('answerInput').value);
+            
+            if (isNaN(answer)) {
+                showStatus('Veuillez entrer une réponse numérique valide', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        questionId: currentQuestionId,
+                        answer: answer
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.correct) {
+                        showStatus('✅ Réponse correcte ! Bien joué !', 'success');
+                    } else {
+                        showStatus('❌ Réponse incorrecte. Essayez une autre question.', 'error');
+                    }
+                    
+                    // Masquer la question après réponse
+                    document.getElementById('questionDisplay').style.display = 'none';
+                    currentQuestionId = null;
+                    
+                    // Recharger automatiquement le statut
+                    setTimeout(() => loadPlayerStatus(), 1000);
+                } else {
+                    showStatus(data.error || 'Erreur lors de la validation', 'error');
+                }
+            } catch (error) {
+                showStatus('Erreur de connexion au serveur', 'error');
+                console.error('Erreur:', error);
+            }
+        }
+        
+        // Charge le statut du joueur
+        async function loadPlayerStatus() {
+            const playerId = document.getElementById('playerId').value.trim();
+            
+            if (!playerId) {
+                showStatus('Veuillez entrer un ID joueur', 'error');
+                return;
+            }
+            
+            try {
+                const [statusResponse, certResponse] = await Promise.all([
+                    fetch(`${API_BASE}/status/${playerId}`),
+                    fetch(`${API_BASE}/certification/${playerId}`)
+                ]);
+                
+                const statusData = await statusResponse.json();
+                const certData = await certResponse.json();
+                
+                if (statusData.success && certData.success) {
+                    displayPlayerStats(statusData.stats);
+                    displayCertificationStatus(certData);
+                    displayIntersticeAccess(certData);
+                    
+                    // Afficher question active s'il y en a une
+                    if (statusData.hasActiveQuestion) {
+                        displayQuestion(statusData.activeQuestion);
+                    }
+                } else {
+                    showStatus('Erreur lors du chargement du statut', 'error');
+                }
+            } catch (error) {
+                showStatus('Erreur de connexion au serveur', 'error');
+                console.error('Erreur:', error);
+            }
+        }
+        
+        // Affiche les statistiques du joueur
+        function displayPlayerStats(stats) {
+            const statsHtml = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.totalQuestions}</div>
+                        <div class="stat-label">Questions Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.correctAnswers}</div>
+                        <div class="stat-label">Réponses Correctes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.successRate.toFixed(1)}%</div>
+                        <div class="stat-label">Taux de Réussite</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.certificationLevel}</div>
+                        <div class="stat-label">Niveau Certification</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('playerStats').innerHTML = statsHtml;
+        }
+        
+        // Affiche le statut de certification
+        function displayCertificationStatus(certData) {
+            const badgeClass = `cert-${certData.certificationLevel}`;
+            const certHtml = `
+                <div style="text-align: center; margin: 20px 0;">
+                    <div class="certification-badge ${badgeClass}">
+                        Niveau ${certData.certificationLevel} - ${certData.certificationName}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('certificationStatus').innerHTML = certHtml;
+        }
+        
+        // Affiche le statut d'accès à l'Interstice
+        function displayIntersticeAccess(certData) {
+            const accessClass = certData.canAccessInterstice ? 'interstice-access' : 'interstice-denied';
+            const accessIcon = certData.canAccessInterstice ? '✅' : '❌';
+            const accessHtml = `
+                <div class="${accessClass}">
+                    <h3>${accessIcon} Accès à l'Interstice</h3>
+                    <p>${certData.message}</p>
+                </div>
+            `;
+            
+            document.getElementById('intersticeAccess').innerHTML = accessHtml;
+        }
+        
+        // Affiche un message de statut
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusDisplay');
+            statusDiv.className = `status-display status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Masquer après 5 secondes
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Gestion de la touche Entrée pour soumettre
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+        
+        // Charger les infos du protocole au démarrage
+        window.addEventListener('load', function() {
+            // Auto-load du statut si un joueur est déjà renseigné
+            const playerId = document.getElementById('playerId').value.trim();
+            if (playerId) {
+                loadPlayerStatus();
+            }
+        });
+    </script>
+</body>
+</html>

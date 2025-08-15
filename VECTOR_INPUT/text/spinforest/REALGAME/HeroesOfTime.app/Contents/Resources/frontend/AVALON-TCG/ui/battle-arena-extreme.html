@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ BATTLE ARENA EXTREME - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* Background animé de fou */
+        .battle-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff0000, #ff00ff, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);
+            background-size: 400% 400%;
+            animation: rage-gradient 3s ease infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes rage-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Container principal */
+        .arena {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        /* Zone de combat principale */
+        .combat-zone {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Cartes géantes pour le combat */
+        .fighter-card {
+            width: 300px;
+            height: 400px;
+            position: absolute;
+            border-radius: 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            cursor: grab;
+        }
+
+        .fighter-card.player {
+            left: 10%;
+            background: linear-gradient(135deg, #1e90ff, #00bfff);
+        }
+
+        .fighter-card.enemy {
+            right: 10%;
+            background: linear-gradient(135deg, #dc143c, #ff1493);
+        }
+
+        .fighter-card:hover {
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 0 0 100px rgba(255, 255, 255, 1);
+        }
+
+        .card-avatar {
+            font-size: 150px;
+            text-align: center;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .card-name {
+            font-size: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .card-stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .stat {
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .stat.attack { color: #ff0000; }
+        .stat.defense { color: #0000ff; }
+        .stat.health { color: #00ff00; }
+
+        /* Effets de combat */
+        .combat-effect {
+            position: absolute;
+            font-size: 100px;
+            font-weight: bold;
+            animation: hit-effect 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes hit-effect {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(2) rotate(180deg);
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Barre de vie épique */
+        .health-bar-container {
+            position: absolute;
+            top: 20px;
+            width: 80%;
+            left: 10%;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 3px solid #fff;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .health-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        /* Boutons d'action de malade */
+        .action-zone {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .action-btn {
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: left 0.3s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .attack-btn {
+            background: linear-gradient(45deg, #ff0000, #ff6600);
+            color: #fff;
+            animation: attack-pulse 1s infinite;
+        }
+
+        @keyframes attack-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 0, 0, 1); }
+        }
+
+        .special-btn {
+            background: linear-gradient(45deg, #ff00ff, #9400d3);
+            color: #fff;
+        }
+
+        .defend-btn {
+            background: linear-gradient(45deg, #0000ff, #00ffff);
+            color: #fff;
+        }
+
+        /* Combo counter */
+        .combo-counter {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            font-size: 60px;
+            font-weight: bold;
+            color: #ffff00;
+            text-shadow: 0 0 20px rgba(255, 255, 0, 0.8);
+            display: none;
+        }
+
+        .combo-counter.active {
+            display: block;
+            animation: combo-bounce 0.5s ease;
+        }
+
+        @keyframes combo-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+        }
+
+        /* Messages épiques */
+        .epic-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 1);
+            animation: epic-appear 2s ease forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes epic-appear {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        /* Particules de fond */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            animation: float-up 4s linear infinite;
+        }
+
+        @keyframes float-up {
+            from {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-10vh);
+                opacity: 0;
+            }
+        }
+
+        /* Score de malade */
+        .score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        /* Mode RAGE */
+        .rage-mode {
+            animation: rage-shake 0.1s infinite;
+        }
+
+        @keyframes rage-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="battle-bg"></div>
+    
+    <div class="arena">
+        <div class="health-bar-container">
+            <div class="health-bar" id="enemy-health" style="width: 100%"></div>
+            <div class="health-text">ENEMY: <span id="enemy-hp">100</span> HP</div>
+        </div>
+        
+        <div class="score-display">SCORE: <span id="score">0</span></div>
+        <div class="combo-counter" id="combo">COMBO x<span id="combo-count">0</span></div>
+        
+        <div class="combat-zone" id="combat-zone">
+            <div class="fighter-card player" id="player-card">
+                <div class="card-avatar">⚔️</div>
+                <div class="card-name">MEGA WARRIOR</div>
+                <div class="card-stats">
+                    <div class="stat attack">ATK: 50</div>
+                    <div class="stat defense">DEF: 30</div>
+                    <div class="stat health">HP: 100</div>
+                </div>
+            </div>
+            
+            <div class="fighter-card enemy" id="enemy-card">
+                <div class="card-avatar">👹</div>
+                <div class="card-name">BOSS DEMON</div>
+                <div class="card-stats">
+                    <div class="stat attack">ATK: 40</div>
+                    <div class="stat defense">DEF: 40</div>
+                    <div class="stat health">HP: 100</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-zone">
+            <button class="action-btn attack-btn" onclick="attack()">ATTACK!</button>
+            <button class="action-btn special-btn" onclick="special()">SPECIAL MOVE</button>
+            <button class="action-btn defend-btn" onclick="defend()">DEFEND</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let combo = 0;
+        let enemyHP = 100;
+        let playerHP = 100;
+        let isDefending = false;
+
+        // Créer des particules de fond
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.animationDuration = (3 + Math.random() * 2) + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        function showEffect(x, y, text, color = '#fff') {
+            const effect = document.createElement('div');
+            effect.className = 'combat-effect';
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            effect.style.color = color;
+            effect.textContent = text;
+            document.getElementById('combat-zone').appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'epic-message';
+            msg.textContent = text;
+            msg.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            document.body.appendChild(msg);
+            
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        function updateCombo() {
+            combo++;
+            const comboEl = document.getElementById('combo');
+            const comboCount = document.getElementById('combo-count');
+            comboEl.classList.add('active');
+            comboCount.textContent = combo;
+            
+            if (combo >= 5) {
+                showMessage('COMBO MASTER!');
+                score += 1000;
+            }
+        }
+
+        function resetCombo() {
+            combo = 0;
+            document.getElementById('combo').classList.remove('active');
+        }
+
+        function attack() {
+            const damage = 10 + Math.floor(Math.random() * 15) + (combo * 2);
+            enemyHP = Math.max(0, enemyHP - damage);
+            
+            // Effet visuel
+            const enemyCard = document.getElementById('enemy-card');
+            enemyCard.classList.add('rage-mode');
+            setTimeout(() => enemyCard.classList.remove('rage-mode'), 300);
+            
+            // Position de l'effet
+            const rect = enemyCard.getBoundingClientRect();
+            showEffect(rect.left + rect.width/2, rect.top + rect.height/2, `-${damage}`, '#ff0000');
+            
+            // Update UI
+            document.getElementById('enemy-hp').textContent = enemyHP;
+            document.getElementById('enemy-health').style.width = enemyHP + '%';
+            
+            score += damage * 10;
+            updateCombo();
+            updateScore();
+            
+            if (enemyHP <= 0) {
+                victory();
+            } else {
+                enemyAttack();
+            }
+        }
+
+        function special() {
+            if (score < 500) {
+                showMessage('NOT ENOUGH POWER!');
+                return;
+            }
+            
+            score -= 500;
+            const damage = 30 + Math.floor(Math.random() * 20);
+            enemyHP = Math.max(0, enemyHP - damage);
+            
+            showMessage('ULTIMATE ATTACK!');
+            document.body.classList.add('rage-mode');
+            setTimeout(() => document.body.classList.remove('rage-mode'), 500);
+            
+            const enemyCard = document.getElementById('enemy-card');
+            const rect = enemyCard.getBoundingClientRect();
+            showEffect(rect.left + rect.width/2, rect.top + rect.height/2, `-${damage}!`, '#ff00ff');
+            
+            document.getElementById('enemy-hp').textContent = enemyHP;
+            document.getElementById('enemy-health').style.width = enemyHP + '%';
+            
+            updateCombo();
+            updateScore();
+            
+            if (enemyHP <= 0) {
+                victory();
+            }
+        }
+
+        function defend() {
+            isDefending = true;
+            const playerCard = document.getElementById('player-card');
+            playerCard.style.background = 'linear-gradient(135deg, #4169e1, #1e90ff)';
+            showMessage('DEFENSE MODE!');
+            
+            setTimeout(() => {
+                isDefending = false;
+                playerCard.style.background = 'linear-gradient(135deg, #1e90ff, #00bfff)';
+            }, 2000);
+        }
+
+        function enemyAttack() {
+            setTimeout(() => {
+                if (isDefending) {
+                    showMessage('BLOCKED!');
+                    score += 50;
+                    updateScore();
+                    return;
+                }
+                
+                const damage = 5 + Math.floor(Math.random() * 10);
+                playerHP = Math.max(0, playerHP - damage);
+                
+                const playerCard = document.getElementById('player-card');
+                playerCard.classList.add('rage-mode');
+                setTimeout(() => playerCard.classList.remove('rage-mode'), 300);
+                
+                const rect = playerCard.getBoundingClientRect();
+                showEffect(rect.left + rect.width/2, rect.top + rect.height/2, `-${damage}`, '#ff0000');
+                
+                resetCombo();
+                
+                if (playerHP <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function victory() {
+            showMessage('VICTORY!');
+            score += 5000;
+            updateScore();
+            
+            setTimeout(() => {
+                enemyHP = 100;
+                document.getElementById('enemy-hp').textContent = enemyHP;
+                document.getElementById('enemy-health').style.width = '100%';
+                showMessage('NEXT ROUND!');
+            }, 3000);
+        }
+
+        function gameOver() {
+            showMessage('GAME OVER!');
+            setTimeout(() => location.reload(), 3000);
+        }
+
+        // Initialisation
+        createParticles();
+        showMessage('FIGHT!');
+    </script>
+</body>
+</html>

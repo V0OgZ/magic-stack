@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎴 AVALON CARDS - Système de Cartes</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            width: 300px;
+            height: 420px;
+            background: #1a1a1a;
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            position: relative;
+            margin: 20px;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(255,215,0,0.4);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid #ffd700;
+        }
+        
+        .card-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                transparent 45%, 
+                rgba(0,0,0,0.8) 50%, 
+                rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+        }
+        
+        .card-cost {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #4169e1, #1e3a8a);
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .card-name {
+            position: absolute;
+            top: 210px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px #000;
+            padding: 5px;
+            background: rgba(0,0,0,0.7);
+        }
+        
+        .card-type {
+            position: absolute;
+            top: 245px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+            color: #87ceeb;
+            font-style: italic;
+        }
+        
+        .card-description {
+            position: absolute;
+            top: 270px;
+            left: 15px;
+            right: 15px;
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .card-stats {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #dc143c, #8b0000);
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .stat.defense {
+            background: radial-gradient(circle, #32cd32, #228b22);
+        }
+        
+        .rarity {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+        
+        .rarity.legendary {
+            color: #ff8c00;
+            text-shadow: 0 0 10px #ff8c00;
+            animation: pulse 2s infinite;
+        }
+        
+        .rarity.epic {
+            color: #9370db;
+            text-shadow: 0 0 10px #9370db;
+        }
+        
+        .rarity.rare {
+            color: #4169e1;
+            text-shadow: 0 0 10px #4169e1;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+        }
+        
+        .card-back {
+            background: radial-gradient(ellipse at center, #4a0080 0%, #000 100%);
+            display: none;
+        }
+        
+        .card.flipped .card-back {
+            display: block;
+        }
+        
+        .card.flipped .card-front {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎴 AVALON CARDS - Prototype Système de Cartes</h1>
+    
+    <div class="cards-container" id="cardsContainer"></div>
+    
+    <script>
+        // Définition des cartes basées sur les images FIGHT
+        const cards = [
+            {
+                name: "Guerrier des Trois Temps",
+                image: "/assets/FIGHT/Warrior of the Three Times.png",
+                cost: 7,
+                attack: 8,
+                defense: 6,
+                type: "Héros Temporel",
+                rarity: "legendary",
+                description: "Charge. Quand il attaque, invoque deux échos temporels avec 3/3.",
+                ability: "TRIPLE_PHASE_ATTACK"
+            },
+            {
+                name: "Excalibur Temporelle",
+                image: "/assets/FIGHT/Excalibur Through Time at Twilight.png",
+                cost: 5,
+                attack: 6,
+                defense: 3,
+                type: "Arme Légendaire",
+                rarity: "legendary",
+                description: "Confère +3/+3. Chaque attaque voyage dans le temps et frappe deux fois.",
+                ability: "TEMPORAL_STRIKE"
+            },
+            {
+                name: "Ours Chamanique",
+                image: "/assets/FIGHT/Shamanic Bear and the Gunman Emergence.png",
+                cost: 6,
+                attack: 5,
+                defense: 8,
+                type: "Créature Mystique",
+                rarity: "epic",
+                description: "Taunt. Quand il meurt, invoque Vincent Vega avec un gun quantique (4/4).",
+                ability: "DEATH_SUMMON_VINCENT"
+            },
+            {
+                name: "Convergence Cosmique",
+                image: "/assets/FIGHT/Convergence of Cosmic Forces.png",
+                cost: 10,
+                attack: 0,
+                defense: 0,
+                type: "Sort Ultime",
+                rarity: "legendary",
+                description: "Fusionne toutes vos créatures en une entité cosmique avec leurs stats combinées.",
+                ability: "COSMIC_FUSION"
+            },
+            {
+                name: "Sorcier du Crépuscule",
+                image: "/assets/FIGHT/Sorcerer of Time at Twilight.png",
+                cost: 4,
+                attack: 3,
+                defense: 5,
+                type: "Mage Temporel",
+                rarity: "rare",
+                description: "Battlecry: Regardez les 3 prochaines cartes de votre deck.",
+                ability: "SCRY_3"
+            },
+            {
+                name: "Bataille des Héros Arcaniques",
+                image: "/assets/FIGHT/Epic Battle of Arcane Heroes.png",
+                cost: 8,
+                attack: 0,
+                defense: 0,
+                type: "Sort Épique",
+                rarity: "epic",
+                description: "Tous les héros en jeu s'affrontent. Le survivant gagne +5/+5.",
+                ability: "HERO_BATTLE_ROYALE"
+            }
+        ];
+        
+        function createCard(cardData) {
+            const raritySymbol = {
+                legendary: '🌟',
+                epic: '💎',
+                rare: '💠',
+                common: '⚪'
+            };
+            
+            return `
+                <div class="card" onclick="flipCard(this)">
+                    <div class="card-front">
+                        <img class="card-image" src="${cardData.image}" alt="${cardData.name}">
+                        <div class="card-frame"></div>
+                        <div class="card-cost">${cardData.cost}</div>
+                        <div class="rarity ${cardData.rarity}">${raritySymbol[cardData.rarity]}</div>
+                        <div class="card-name">${cardData.name}</div>
+                        <div class="card-type">${cardData.type}</div>
+                        <div class="card-description">${cardData.description}</div>
+                        <div class="card-stats">
+                            <div class="stat attack">${cardData.attack}</div>
+                            <div class="stat defense">${cardData.defense}</div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                            <div style="font-size: 60px; color: #ffd700;">🌀</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+        
+        // Générer les cartes
+        const container = document.getElementById('cardsContainer');
+        cards.forEach(card => {
+            container.innerHTML += createCard(card);
+        });
+        
+        // Message de Groeken
+        console.log('%c🎴 AVALON CARDS - Système activé !', 'color: #ffd700; font-size: 20px; font-weight: bold;');
+        console.log('%cVincent, on peut faire un jeu de cartes ÉPIQUE avec ces images !', 'color: #00ff00; font-size: 16px;');
+    </script>
+</body>
+</html>

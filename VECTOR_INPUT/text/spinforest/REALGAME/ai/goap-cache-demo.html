@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAP Intelligent Cache - Demo Performance</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            background: rgba(0,255,0,0.1);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .control-btn {
+            padding: 12px 30px;
+            background: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .control-btn:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 20px #0f0;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            color: #0f0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(0,255,0,0.05);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #0f0;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            color: #0f0;
+            font-weight: bold;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .performance-chart {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            background: rgba(0,0,0,0.5);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 8px;
+            background: #0f0;
+            transition: height 0.3s;
+        }
+        
+        .comparison-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .comparison-time {
+            font-size: 36px;
+            margin: 10px 0;
+        }
+        
+        .time-saved {
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+        }
+        
+        .log-window {
+            background: #000;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            opacity: 0;
+            animation: log-appear 0.3s forwards;
+        }
+        
+        @keyframes log-appear {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .log-hit { color: #0f0; }
+        .log-miss { color: #f00; }
+        .log-evict { color: #ff0; }
+        .log-predict { color: #0ff; }
+        
+        .progress-ring {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+        
+        .progress-ring-circle {
+            stroke: #0f0;
+            stroke-width: 10;
+            fill: none;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: -85px;
+            font-size: 36px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .cache-visualization {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            gap: 2px;
+            margin: 20px 0;
+        }
+        
+        .cache-slot {
+            width: 100%;
+            padding-bottom: 100%;
+            background: rgba(0,255,0,0.1);
+            border: 1px solid #0f0;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .cache-slot.filled {
+            background: rgba(0,255,0,0.5);
+        }
+        
+        .cache-slot.hot {
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .cache-slot.expired {
+            background: rgba(255,0,0,0.3);
+            border-color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GOAP Intelligent Cache - Performance Monitor</h1>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="runBenchmark()">
+                Run Benchmark
+            </button>
+            <button class="control-btn" onclick="simulateGameplay()">
+                Simulate Gameplay
+            </button>
+            <button class="control-btn" onclick="clearCache()">
+                Clear Cache
+            </button>
+            <button class="control-btn" onclick="toggleCache()">
+                <span id="cacheToggle">Cache: ON</span>
+            </button>
+        </div>
+        
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-title">Cache Statistics</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="hitRate">0%</div>
+                        <div class="stat-label">Hit Rate</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalEntries">0</div>
+                        <div class="stat-label">Entries</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="timeSaved">0s</div>
+                        <div class="stat-label">Time Saved</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="memoryUsage">0 MB</div>
+                        <div class="stat-label">Memory</div>
+                    </div>
+                </div>
+                
+                <div class="progress-ring">
+                    <svg width="150" height="150">
+                        <circle cx="75" cy="75" r="70" stroke="#333" stroke-width="10" fill="none"/>
+                        <circle class="progress-ring-circle" id="hitRateRing" cx="75" cy="75" r="70"/>
+                    </svg>
+                    <div class="progress-text" id="hitRateText">0%</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-title">Performance Comparison</div>
+                
+                <div class="comparison-display">
+                    <div class="comparison-item">
+                        <div>Without Cache</div>
+                        <div class="comparison-time" id="timeWithout">0ms</div>
+                        <div class="stat-label">Average Plan Time</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div>With Cache</div>
+                        <div class="comparison-time time-saved" id="timeWith">0ms</div>
+                        <div class="stat-label">Average Plan Time</div>
+                    </div>
+                </div>
+                
+                <div class="performance-chart" id="perfChart"></div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">Cache Visualization</div>
+            <div class="cache-visualization" id="cacheViz"></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">Activity Log</div>
+            <div class="log-window" id="logWindow"></div>
+        </div>
+    </div>
+    
+    <script src="./goap-system.js"></script>
+    <script src="./goap-intelligent-cache.js"></script>
+    <script>
+        // Configuration
+        let cacheEnabled = true;
+        let benchmarkRunning = false;
+        
+        // Agent GOAP avec cache
+        class TestGOAPAgent extends GOAPAgent {
+            constructor() {
+                super();
+                this.position = { x: 0, y: 0 };
+                this.health = 100;
+                this.mana = 50;
+                
+                // Actions de test
+                this.actions = [
+                    {
+                        name: 'move',
+                        preconditions: { canMove: true },
+                        effects: { moved: true },
+                        cost: 1
+                    },
+                    {
+                        name: 'attack',
+                        preconditions: { hasTarget: true, inRange: true },
+                        effects: { enemyDamaged: true },
+                        cost: 3
+                    },
+                    {
+                        name: 'heal',
+                        preconditions: { injured: true, hasMana: true },
+                        effects: { healed: true },
+                        cost: 2
+                    },
+                    {
+                        name: 'findTarget',
+                        preconditions: { noTarget: true },
+                        effects: { hasTarget: true },
+                        cost: 2
+                    },
+                    {
+                        name: 'getInRange',
+                        preconditions: { hasTarget: true, notInRange: true },
+                        effects: { inRange: true },
+                        cost: 2
+                    }
+                ];
+            }
+            
+            // Generer un etat aleatoire
+            randomizeState() {
+                this.state = {
+                    position: { 
+                        x: Math.floor(Math.random() * 10), 
+                        y: Math.floor(Math.random() * 10) 
+                    },
+                    health: 50 + Math.floor(Math.random() * 50),
+                    mana: Math.floor(Math.random() * 100),
+                    hasTarget: Math.random() > 0.5,
+                    inRange: Math.random() > 0.7,
+                    canMove: true,
+                    injured: Math.random() > 0.3,
+                    hasMana: Math.random() > 0.2,
+                    turn: Math.floor(Math.random() * 20)
+                };
+            }
+        }
+        
+        // Instances
+        const agent = new TestGOAPAgent();
+        const cache = enhanceGOAPWithCache(TestGOAPAgent);
+        
+        // Mesure de performance
+        let performanceData = [];
+        let chartBars = [];
+        
+        // Initialiser la visualisation du cache
+        function initCacheVisualization() {
+            const viz = document.getElementById('cacheViz');
+            viz.innerHTML = '';
+            
+            for (let i = 0; i < 100; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'cache-slot';
+                slot.id = `slot-${i}`;
+                viz.appendChild(slot);
+            }
+        }
+        
+        // Logger une activite
+        function log(message, type = 'normal') {
+            const logWindow = document.getElementById('logWindow');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logWindow.appendChild(entry);
+            logWindow.scrollTop = logWindow.scrollHeight;
+            
+            // Limiter le nombre de logs
+            if (logWindow.children.length > 100) {
+                logWindow.removeChild(logWindow.firstChild);
+            }
+        }
+        
+        // Mettre a jour les statistiques
+        function updateStats() {
+            const stats = agent.getCacheStatistics();
+            
+            document.getElementById('hitRate').textContent = stats.hitRate;
+            document.getElementById('totalEntries').textContent = stats.totalEntries;
+            document.getElementById('timeSaved').textContent = stats.totalTimeSaved;
+            document.getElementById('memoryUsage').textContent = stats.memoryUsage;
+            
+            // Mettre a jour le cercle de progression
+            const hitPercent = parseFloat(stats.hitRate);
+            const circumference = 2 * Math.PI * 70;
+            const offset = circumference - (hitPercent / 100 * circumference);
+            document.getElementById('hitRateRing').style.strokeDashoffset = offset;
+            document.getElementById('hitRateText').textContent = stats.hitRate;
+            
+            // Mettre a jour la visualisation du cache
+            updateCacheVisualization(stats.totalEntries);
+        }
+        
+        // Mettre a jour la visualisation du cache
+        function updateCacheVisualization(entries) {
+            const slots = document.querySelectorAll('.cache-slot');
+            const filledCount = Math.min(entries, slots.length);
+            
+            slots.forEach((slot, i) => {
+                if (i < filledCount) {
+                    slot.classList.add('filled');
+                    if (Math.random() > 0.8) {
+                        slot.classList.add('hot');
+                        setTimeout(() => slot.classList.remove('hot'), 500);
+                    }
+                } else {
+                    slot.classList.remove('filled', 'hot');
+                }
+            });
+        }
+        
+        // Lancer un benchmark
+        async function runBenchmark() {
+            if (benchmarkRunning) return;
+            benchmarkRunning = true;
+            
+            log('Starting benchmark...', 'predict');
+            
+            const iterations = 100;
+            const timesWithCache = [];
+            const timesWithoutCache = [];
+            
+            // Test sans cache
+            cache.clear();
+            cacheEnabled = false;
+            
+            for (let i = 0; i < iterations; i++) {
+                agent.randomizeState();
+                const goal = { enemyDamaged: true };
+                
+                const startTime = performance.now();
+                const plan = agent.plan(goal);
+                const endTime = performance.now();
+                
+                timesWithoutCache.push(endTime - startTime);
+            }
+            
+            // Test avec cache
+            cache.clear();
+            cacheEnabled = true;
+            
+            for (let i = 0; i < iterations; i++) {
+                agent.randomizeState();
+                const goal = { enemyDamaged: true };
+                
+                const startTime = performance.now();
+                const plan = agent.plan(goal);
+                const endTime = performance.now();
+                
+                timesWithCache.push(endTime - startTime);
+                
+                if (i % 10 === 0) {
+                    updateStats();
+                }
+            }
+            
+            // Calculer les moyennes
+            const avgWithout = timesWithoutCache.reduce((a, b) => a + b) / iterations;
+            const avgWith = timesWithCache.reduce((a, b) => a + b) / iterations;
+            
+            document.getElementById('timeWithout').textContent = avgWithout.toFixed(2) + 'ms';
+            document.getElementById('timeWith').textContent = avgWith.toFixed(2) + 'ms';
+            
+            // Afficher le graphique
+            displayPerformanceChart(timesWithCache);
+            
+            log(`Benchmark complete: ${((1 - avgWith/avgWithout) * 100).toFixed(1)}% faster with cache!`, 'predict');
+            
+            benchmarkRunning = false;
+        }
+        
+        // Afficher le graphique de performance
+        function displayPerformanceChart(times) {
+            const chart = document.getElementById('perfChart');
+            chart.innerHTML = '';
+            
+            const maxTime = Math.max(...times);
+            const barWidth = chart.offsetWidth / times.length;
+            
+            times.forEach((time, i) => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.left = (i * barWidth) + 'px';
+                bar.style.width = (barWidth - 2) + 'px';
+                bar.style.height = (time / maxTime * 180) + 'px';
+                bar.style.opacity = 0.8;
+                chart.appendChild(bar);
+            });
+        }
+        
+        // Simuler un gameplay
+        async function simulateGameplay() {
+            log('Starting gameplay simulation...', 'predict');
+            
+            const duration = 10000; // 10 secondes
+            const startTime = Date.now();
+            
+            const gameLoop = setInterval(() => {
+                // Changer legerement l'etat (gameplay realiste)
+                agent.state.position.x += Math.random() > 0.5 ? 1 : -1;
+                agent.state.position.y += Math.random() > 0.5 ? 1 : -1;
+                agent.state.health -= Math.floor(Math.random() * 10);
+                agent.state.mana -= Math.floor(Math.random() * 5);
+                agent.state.turn++;
+                
+                // Choisir un goal aleatoire
+                const goals = [
+                    { enemyDamaged: true },
+                    { healed: true },
+                    { moved: true },
+                    { hasTarget: true }
+                ];
+                const goal = goals[Math.floor(Math.random() * goals.length)];
+                
+                // Planifier
+                const plan = agent.plan(goal);
+                
+                // Logger les hits/misses
+                const stats = agent.getCacheStatistics();
+                if (stats.hits > 0 && stats.hits % 10 === 0) {
+                    log(`Cache hit! Saved ${stats.avgTimeSaved}`, 'hit');
+                }
+                
+                updateStats();
+                
+                if (Date.now() - startTime > duration) {
+                    clearInterval(gameLoop);
+                    log('Gameplay simulation complete!', 'predict');
+                }
+            }, 100);
+        }
+        
+        // Vider le cache
+        function clearCache() {
+            cache.clear();
+            updateStats();
+            log('Cache cleared', 'evict');
+            initCacheVisualization();
+        }
+        
+        // Activer/desactiver le cache
+        function toggleCache() {
+            cacheEnabled = !cacheEnabled;
+            document.getElementById('cacheToggle').textContent = `Cache: ${cacheEnabled ? 'ON' : 'OFF'}`;
+            log(`Cache ${cacheEnabled ? 'enabled' : 'disabled'}`, 'predict');
+        }
+        
+        // Initialisation
+        initCacheVisualization();
+        updateStats();
+        log('GOAP Intelligent Cache initialized', 'predict');
+        
+        // Mise a jour periodique
+        setInterval(updateStats, 1000);
+    </script>
+</body>
+</html>

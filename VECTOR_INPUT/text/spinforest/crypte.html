@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypte Runique</title>
+  <link rel="stylesheet" href="spells/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: url('assets/Crypte.png') center/cover no-repeat;
+      font-family: 'Georgia', serif;
+      color: #f0e6d2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* New runic digipad styles */
+    .runic-digipad {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #45b7d1;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 30px rgba(69, 183, 209, 0.5);
+      display: none;
+      animation: fadeInRune 0.5s ease-in;
+    }
+
+    @keyframes fadeInRune {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .runic-title {
+      text-align: center;
+      color: #45b7d1;
+      margin-bottom: 15px;
+      font-size: 0.9em;
+      text-shadow: 0 0 10px #45b7d1;
+    }
+
+    .rune-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .rune-btn {
+      width: 50px;
+      height: 50px;
+      background: rgba(69, 183, 209, 0.1);
+      border: 1px solid #45b7d1;
+      color: #45b7d1;
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+    }
+
+    .rune-btn:hover {
+      background: rgba(69, 183, 209, 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(69, 183, 209, 0.8);
+    }
+
+    .rune-sequence {
+      margin-top: 10px;
+      text-align: center;
+      color: #ffbd2e;
+      min-height: 30px;
+      font-size: 1.2em;
+    }
+
+    .secret-trigger {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .crypte-container {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      animation: fadeIn 1s ease-in;
+    }
+
+    .digipad {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .rune {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #aaa;
+      box-shadow: 0 0 12px rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .rune:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 16px rgba(255,255,255,0.4);
+    }
+
+    .triangle {
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+
+    .losange {
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .cercle {
+      border-radius: 50%;
+    }
+
+    .error-msg {
+      margin-top: 20px;
+      color: red;
+      font-weight: bold;
+      animation: shake 0.4s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="crypte-container">
+    <h1>🔐 Crypte Runique</h1>
+    <p>Entre la séquence sacrée…</p>
+    <div class="digipad">
+      <div class="rune triangle" onclick="enterRune('triangle')"></div>
+      <div class="rune losange" onclick="enterRune('losange')"></div>
+      <div class="rune cercle" onclick="enterRune('cercle')"></div>
+    </div>
+    <div id="err" class="error-msg"></div>
+  </div>
+
+  <audio id="failSound" src="assets/echec.mp3" preload="auto"></audio>
+
+  <!-- Secret trigger zone -->
+  <div class="secret-trigger" onclick="showRunicDigipad()"></div>
+
+  <!-- Runic Digipad -->
+  <div class="runic-digipad" id="runicDigipad">
+    <div class="runic-title">🔮 DIGIPAD RUNIQUE DU SCRIBE 🔮</div>
+    <div class="rune-grid">
+      <button class="rune-btn" onclick="addRune('ᚠ')">ᚠ</button>
+      <button class="rune-btn" onclick="addRune('ᚢ')">ᚢ</button>
+      <button class="rune-btn" onclick="addRune('ᚦ')">ᚦ</button>
+      <button class="rune-btn" onclick="addRune('ᚨ')">ᚨ</button>
+      <button class="rune-btn" onclick="addRune('ᚱ')">ᚱ</button>
+      <button class="rune-btn" onclick="addRune('ᚲ')">ᚲ</button>
+      <button class="rune-btn" onclick="addRune('ᛟ')">ᛟ</button>
+      <button class="rune-btn" onclick="addRune('ᛞ')">ᛞ</button>
+      <button class="rune-btn" onclick="clearRunes()">✖</button>
+    </div>
+    <div class="rune-sequence" id="runeSequence"></div>
+  </div>
+
+  <script>
+    let sequence = [];
+    const correctSequence = ['triangle', 'cercle', 'losange'];
+    
+    // Runic digipad variables
+    let runicSequence = [];
+    const scribeCode = ['ᛟ', 'ᚦ', 'ᚱ']; // Secret code to access Scribe's sanctum
+
+    function enterRune(shape) {
+      sequence.push(shape);
+      if (sequence.length === 3) {
+        checkCode();
+      }
+    }
+
+    function checkCode() {
+      const audio = document.getElementById('failSound');
+      const errDiv = document.getElementById('err');
+      if (JSON.stringify(sequence) === JSON.stringify(correctSequence)) {
+        window.location.href = 'https://v0ogz.github.io/Heroes-of-Time/';
+      } else {
+        errDiv.textContent = '✖ Séquence incorrecte';
+        audio.currentTime = 0;
+        audio.play();
+        errDiv.style.animation = 'shake 0.4s';
+        void errDiv.offsetWidth;
+        errDiv.style.animation = 'shake 0.4s';
+        sequence = [];
+      }
+    }
+
+    // Runic digipad functions
+    function showRunicDigipad() {
+      const digipad = document.getElementById('runicDigipad');
+      digipad.style.display = 'block';
+    }
+
+    function addRune(rune) {
+      if (runicSequence.length < 3) {
+        runicSequence.push(rune);
+        updateRuneDisplay();
+        
+        if (runicSequence.length === 3) {
+          checkRunicCode();
+        }
+      }
+    }
+
+    function clearRunes() {
+      runicSequence = [];
+      updateRuneDisplay();
+    }
+
+    function updateRuneDisplay() {
+      const display = document.getElementById('runeSequence');
+      display.textContent = runicSequence.join(' ');
+    }
+
+    function checkRunicCode() {
+      if (JSON.stringify(runicSequence) === JSON.stringify(scribeCode)) {
+        // Success! Go to Scribe's sanctum
+        setTimeout(() => {
+          window.location.href = 'assets/scribe-sanctum.html';
+        }, 500);
+      } else {
+        // Wrong code
+        const display = document.getElementById('runeSequence');
+        display.style.color = '#ff5555';
+        setTimeout(() => {
+          clearRunes();
+          display.style.color = '#ffbd2e';
+        }, 1000);
+      }
+    }
+
+    // Easter egg: Triple click in bottom right to reveal digipad
+    let clickCount = 0;
+    let clickTimer;
+    
+    document.addEventListener('click', (e) => {
+      if (e.clientX > window.innerWidth - 100 && e.clientY > window.innerHeight - 100) {
+        clickCount++;
+        clearTimeout(clickTimer);
+        
+        if (clickCount === 3) {
+          showRunicDigipad();
+          clickCount = 0;
+        }
+        
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>

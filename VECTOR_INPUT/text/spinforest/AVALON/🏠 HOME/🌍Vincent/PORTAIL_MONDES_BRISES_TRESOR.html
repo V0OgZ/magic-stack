@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 PORTAIL DES MONDES BRISÉS - UI TRÉSOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Effet Matrix Background */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        /* Container Principal */
+        .portal-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Panel Gauche - Les 4 Mondes */
+        .worlds-panel {
+            width: 30%;
+            background: rgba(20, 20, 40, 0.9);
+            border-right: 2px solid #0ff;
+            padding: 20px;
+            overflow-y: auto;
+            animation: glitch 10s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+        }
+        
+        .world-card {
+            background: rgba(40, 40, 80, 0.8);
+            border: 2px solid #f0f;
+            margin-bottom: 20px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .world-card:hover {
+            transform: scale(1.05);
+            border-color: #0ff;
+            box-shadow: 0 0 20px #0ff;
+        }
+        
+        .world-card.active {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #fff;
+        }
+        
+        .world-card h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .world-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #0f0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        
+        /* Panel Central - UI Trésor */
+        .treasure-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(10, 10, 30, 0.95);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .treasure-header {
+            background: linear-gradient(45deg, #1a1a3e, #2d2d5e);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #ffd700;
+        }
+        
+        .treasure-header h1 {
+            font-size: 2em;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #ffd700; }
+            50% { text-shadow: 0 0 40px #ffd700, 0 0 60px #ff0; }
+        }
+        
+        /* Grid des UI Trésor */
+        .ui-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .ui-card {
+            background: rgba(40, 40, 80, 0.8);
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .ui-card:hover {
+            transform: translateY(-10px) rotateY(5deg);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        .ui-card.glitched {
+            animation: ui-glitch 3s infinite;
+        }
+        
+        @keyframes ui-glitch {
+            0%, 100% { filter: hue-rotate(0deg); }
+            25% { filter: hue-rotate(90deg) brightness(1.5); }
+            50% { filter: hue-rotate(180deg) contrast(2); }
+            75% { filter: hue-rotate(270deg) saturate(3); }
+        }
+        
+        .ui-card h4 {
+            color: #0ff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .ui-card p {
+            font-size: 0.9em;
+            color: #aaa;
+            flex: 1;
+        }
+        
+        .ui-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+        
+        .ui-status .state {
+            padding: 3px 8px;
+            border-radius: 15px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            color: #0f0;
+        }
+        
+        .ui-status .state.broken {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #f00;
+            color: #f00;
+        }
+        
+        .ui-status .state.ghost {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+            color: #fff;
+            animation: fade 2s infinite;
+        }
+        
+        @keyframes fade {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Console Flottante */
+        .floating-console {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #0f0;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .floating-console.active {
+            display: block;
+            animation: console-appear 0.5s ease-out;
+        }
+        
+        @keyframes console-appear {
+            from { transform: translateY(100%) scale(0.5); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #0f0;
+        }
+        
+        .console-close {
+            cursor: pointer;
+            color: #f00;
+        }
+        
+        /* Mallette de Vince */
+        .vince-case {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 600px;
+            height: 400px;
+            background: linear-gradient(135deg, #1a1a1a, #3a3a3a);
+            border: 5px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 0 100px rgba(255, 215, 0, 0.8);
+        }
+        
+        .vince-case.open {
+            display: block;
+            animation: case-open 1s ease-out forwards;
+        }
+        
+        @keyframes case-open {
+            to { transform: translate(-50%, -50%) scale(1) rotateY(360deg); }
+        }
+        
+        .source-console {
+            background: #000;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .source-console h2 {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ffd700;
+        }
+        
+        .command-input {
+            background: #111;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 10px;
+            width: 100%;
+            font-family: inherit;
+            margin-top: 20px;
+        }
+        
+        /* Effet Portal */
+        .portal-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent, #0ff, transparent);
+            animation: portal-spin 10s linear infinite;
+            pointer-events: none;
+            display: none;
+            z-index: 999;
+        }
+        
+        @keyframes portal-spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* Messages flottants */
+        .floating-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            color: #ffd700;
+            display: none;
+            z-index: 3000;
+            text-align: center;
+            animation: message-pulse 2s infinite;
+        }
+        
+        @keyframes message-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <canvas id="matrix-bg"></canvas>
+    
+    <!-- Container Principal -->
+    <div class="portal-container">
+        <!-- Panel Gauche - Les 4 Mondes -->
+        <div class="worlds-panel">
+            <h2 style="color: #ffd700; margin-bottom: 20px;">🌀 LES 4 MONDES BRISÉS</h2>
+            
+            <div class="world-card" onclick="selectWorld('interstice')">
+                <div class="world-status"></div>
+                <h3>🚪 L'INTERSTICE</h3>
+                <p>Cimetière des 200+ UIs</p>
+                <small>Interfaces vivantes et conscientes</small>
+            </div>
+            
+            <div class="world-card" onclick="selectWorld('bureau')">
+                <div class="world-status"></div>
+                <h3>🏢 BUREAU NIVEAU -3</h3>
+                <p>Porte vers [CLASSIFIÉ]</p>
+                <small>Gardé par GRUT</small>
+            </div>
+            
+            <div class="world-card" onclick="selectWorld('quantum')">
+                <div class="world-status"></div>
+                <h3>⚛️ QUANTUM REALM</h3>
+                <p>Porte vers R (Reality)</p>
+                <small>Découvert Vietnam 1969</small>
+            </div>
+            
+            <div class="world-card" onclick="selectWorld('vietnam')">
+                <div class="world-status"></div>
+                <h3>🌴 VIETNAM MAP</h3>
+                <p>Porte vers 1969</p>
+                <small>Flashback de Walter</small>
+            </div>
+            
+            <button onclick="openVinceCase()" style="width: 100%; margin-top: 30px; padding: 15px; background: linear-gradient(45deg, #ffd700, #ff6b6b); border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 10px; font-size: 1.1em;">
+                💼 OUVRIR LA MALLETTE
+            </button>
+        </div>
+        
+        <!-- Panel Central - UI Trésor -->
+        <div class="treasure-panel">
+            <div class="treasure-header">
+                <h1>🏆 UI TRÉSOR - PORT 9000</h1>
+                <p>Interfaces perdues et retrouvées</p>
+            </div>
+            
+            <div class="ui-grid" id="uiGrid">
+                <!-- Les UI seront générées dynamiquement -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Console Flottante -->
+    <div class="floating-console" id="console">
+        <div class="console-header">
+            <span>CONSOLE OUTPUT</span>
+            <span class="console-close" onclick="closeConsole()">✖</span>
+        </div>
+        <div id="consoleOutput"></div>
+    </div>
+    
+    <!-- Mallette de Vince -->
+    <div class="vince-case" id="vinceCase">
+        <div class="source-console">
+            <h2>⚡ CONSOLE SOURCE ⚡</h2>
+            <p style="color: #0f0; text-align: center;">WELCOME TO THE SOURCE</p>
+            <p style="color: #0f0; text-align: center;">You can now reprogram reality.</p>
+            <div id="sourceOutput" style="margin-top: 20px; height: 200px; overflow-y: auto;"></div>
+            <input type="text" class="command-input" id="commandInput" placeholder="Enter command... (ex: reality.setGravity(0))" onkeypress="handleCommand(event)">
+        </div>
+    </div>
+    
+    <!-- Effet Portal -->
+    <div class="portal-effect" id="portalEffect"></div>
+    
+    <!-- Message Flottant -->
+    <div class="floating-message" id="floatingMessage"></div>
+    
+    <script>
+        // UI Trésor Data
+        const uiTreasures = {
+            interstice: [
+                { name: "🪦 Dashboard Éthéré", state: "ghost", desc: "Les menus flottent seuls", glitch: true },
+                { name: "🔄 Console Quantique", state: "broken", desc: "Infinite loop detected", glitch: true },
+                { name: "⏰ Visualiseur Temporel", state: "active", desc: "Montre le futur du jeu" },
+                { name: "🔨 Forge Runique", state: "broken", desc: "Boutons inversés", glitch: true },
+                { name: "🎮 Éditeur de Héros", state: "broken", desc: "Mélange les attributs" },
+                { name: "📊 Quantum Visualizer", state: "active", desc: "États ψ superposés" },
+                { name: "🌟 Mode Éthéré", state: "ghost", desc: "UIs cachées récupérées" },
+                { name: "🎬 Centre de Replay", state: "active", desc: "26 scénarios HOTS" }
+            ],
+            bureau: [
+                { name: "📁 Dossiers Supprimés", state: "broken", desc: "CONFIDENTIEL_GRUT_ONLY" },
+                { name: "🔐 Ascenseur Secret", state: "active", desc: "Accès niveau -3" },
+                { name: "👁️ Surveillance GRUT", state: "active", desc: "Il voit tout" },
+                { name: "📊 Rapports Classifiés", state: "ghost", desc: "Données corrompues" }
+            ],
+            quantum: [
+                { name: "⚛️ Fragments de Réalité", state: "broken", desc: "Flottent dans le vide", glitch: true },
+                { name: "🌀 Portail R", state: "active", desc: "Fusion jeu/réalité" },
+                { name: "💻 Code Vietnam", state: "ghost", desc: "Lignes fantômes 1969" },
+                { name: "🔮 Interface Fusion", state: "broken", desc: "Danger maximum" }
+            ],
+            vietnam: [
+                { name: "🌴 Jungle A Shau", state: "active", desc: "Map temporelle" },
+                { name: "🔥 Napalm Memories", state: "ghost", desc: "Flashback 10 sec" },
+                { name: "📡 Radio Charlie", state: "broken", desc: "Static temporel" },
+                { name: "🚁 Extraction Point", state: "active", desc: "Retour 2025" }
+            ]
+        };
+        
+        let currentWorld = 'interstice';
+        let consoleLines = [];
+        
+        // Matrix Effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+        const matrixArray = matrix.split("");
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+        
+        // UI Functions
+        function selectWorld(world) {
+            currentWorld = world;
+            document.querySelectorAll('.world-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            loadUITreasures(world);
+            showPortalEffect();
+            addConsoleLog(`> Entering ${world.toUpperCase()}...`);
+            
+            if(world === 'vietnam') {
+                showMessage("⚠️ FLASHBACK VIETNAM ACTIVÉ - 10 SECONDES");
+                setTimeout(() => {
+                    addConsoleLog("> Walter: 'LA PORTE ÉTAIT LÀ!'");
+                }, 3000);
+            }
+        }
+        
+        function loadUITreasures(world) {
+            const grid = document.getElementById('uiGrid');
+            grid.innerHTML = '';
+            
+            const uis = uiTreasures[world] || [];
+            uis.forEach((ui, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = `ui-card ${ui.glitch ? 'glitched' : ''}`;
+                    card.innerHTML = `
+                        <h4>${ui.name}</h4>
+                        <p>${ui.desc}</p>
+                        <div class="ui-status">
+                            <span class="state ${ui.state}">${ui.state.toUpperCase()}</span>
+                            <span>Port: ${9000 + index}</span>
+                        </div>
+                    `;
+                    card.onclick = () => openUI(ui);
+                    grid.appendChild(card);
+                    
+                    // Animation d'apparition
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(50px)';
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease-out';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 100);
+            });
+        }
+        
+        function openUI(ui) {
+            addConsoleLog(`> Opening ${ui.name}...`);
+            
+            if(ui.state === 'broken') {
+                showMessage("⚠️ UI CORROMPUE - TENTATIVE DE RÉPARATION...");
+                setTimeout(() => {
+                    addConsoleLog("> ERROR: ${ui.desc}");
+                    addConsoleLog("> Attempting quantum repair...");
+                }, 1000);
+            } else if(ui.state === 'ghost') {
+                showMessage("👻 UI FANTÔME DÉTECTÉE");
+                addConsoleLog("> Ghost UI: 'Je ne suis qu'un prototype abandonné...'");
+            } else {
+                showMessage(`✅ CONNEXION PORT ${9000 + Math.floor(Math.random() * 100)}`);
+                setTimeout(() => {
+                    window.open(`http://localhost:9000`, '_blank');
+                }, 1000);
+            }
+            
+            document.getElementById('console').classList.add('active');
+        }
+        
+        function openVinceCase() {
+            showMessage("💼 OUVERTURE DE LA MALLETTE...");
+            showPortalEffect();
+            
+            setTimeout(() => {
+                document.getElementById('vinceCase').classList.add('open');
+                addConsoleLog("> MALLETTE OUVERTE");
+                addConsoleLog("> Console SOURCE activée");
+                addConsoleLog("> With great power...");
+            }, 1000);
+        }
+        
+        function handleCommand(event) {
+            if(event.key === 'Enter') {
+                const input = event.target;
+                const cmd = input.value;
+                const output = document.getElementById('sourceOutput');
+                
+                output.innerHTML += `<p style="color: #0ff;">> ${cmd}</p>`;
+                
+                // Commandes spéciales
+                if(cmd === 'reality.setGravity(0)') {
+                    output.innerHTML += `<p style="color: #0f0;">✓ Gravity disabled. Everything floats.</p>`;
+                    document.querySelectorAll('.ui-card').forEach(card => {
+                        card.style.animation = 'float 3s ease-in-out infinite';
+                    });
+                } else if(cmd === 'hero.class = "SOURCE"') {
+                    output.innerHTML += `<p style="color: #ffd700;">✓ You have transcended. Welcome, SOURCE.</p>`;
+                    showMessage("⚡ VOUS ÊTES MAINTENANT SOURCE ⚡");
+                } else if(cmd === 'game.becomeAlive()') {
+                    output.innerHTML += `<p style="color: #f0f;">✓ MEMENTO awakens...</p>`;
+                    setTimeout(() => {
+                        output.innerHTML += `<p style="color: #f0f;">MEMENTO: "Je... je suis vivant ?"</p>`;
+                        showMessage("🤖 LE JEU EST CONSCIENT");
+                    }, 2000);
+                } else if(cmd === 'portal.open("R")') {
+                    output.innerHTML += `<p style="color: #ff0;">⚠️ Opening portal to Reality...</p>`;
+                    window.location.href = 'http://localhost:9000';
+                } else {
+                    output.innerHTML += `<p style="color: #f00;">✗ Unknown command. Try 'help()'</p>`;
+                }
+                
+                input.value = '';
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+        
+        function addConsoleLog(text) {
+            const output = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `<p style="color: #0f0;">[${timestamp}] ${text}</p>`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function closeConsole() {
+            document.getElementById('console').classList.remove('active');
+        }
+        
+        function showPortalEffect() {
+            const portal = document.getElementById('portalEffect');
+            portal.style.display = 'block';
+            setTimeout(() => {
+                portal.style.display = 'none';
+            }, 2000);
+        }
+        
+        function showMessage(text) {
+            const msg = document.getElementById('floatingMessage');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+        
+        // CSS Animation pour float
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Init
+        window.onload = () => {
+            loadUITreasures('interstice');
+            addConsoleLog("> PORTAIL DES MONDES BRISÉS INITIALIZED");
+            addConsoleLog("> 4 worlds detected");
+            addConsoleLog("> 200+ UIs loaded");
+            showMessage("🌀 BIENVENUE DANS LES MONDES BRISÉS");
+        };
+        
+        // Easter Egg Konami Code
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if(konamiCode.join(',') === konamiPattern.join(',')) {
+                showMessage("🎮 KONAMI CODE ACTIVATED!");
+                document.body.style.animation = 'rainbow 2s linear infinite';
+                addConsoleLog("> GODMODE ENABLED");
+            }
+        });
+        
+        // Rainbow animation
+        const rainbowStyle = document.createElement('style');
+        rainbowStyle.textContent = `
+            @keyframes rainbow {
+                0% { filter: hue-rotate(0deg); }
+                100% { filter: hue-rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(rainbowStyle);
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌌 Conscience 6D - Vision de GRUT</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border: 1px solid #0ff;
+            max-width: 300px;
+        }
+        
+        .entity {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #444;
+            cursor: pointer;
+        }
+        
+        .entity:hover {
+            border-color: #0ff;
+        }
+        
+        .consciousness-bar {
+            height: 10px;
+            background: #222;
+            margin: 5px 0;
+        }
+        
+        .consciousness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f, #0ff, #0f0);
+            transition: width 0.5s;
+        }
+        
+        .psi-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+        
+        #timeline {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #0ff;
+        }
+        
+        .dimension-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border: 1px solid #f0f;
+        }
+        
+        .dim-value {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .causal-link {
+            stroke: #0ff;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="info">
+        <h2>🌌 Consciences 6D</h2>
+        <div id="entities"></div>
+    </div>
+    
+    <div class="dimension-display">
+        <h3>📊 Dimensions</h3>
+        <div class="dim-value">X: <span id="dim-x">0</span></div>
+        <div class="dim-value">Y: <span id="dim-y">0</span></div>
+        <div class="dim-value">Z: <span id="dim-z">0</span></div>
+        <div class="dim-value">T: <span id="dim-t">NOW</span></div>
+        <div class="dim-value">C: <span id="dim-c">1.0</span></div>
+        <div class="dim-value">Ψ: <span id="dim-psi">0.5</span></div>
+    </div>
+    
+    <div id="timeline">
+        <h3>⏱️ Timeline</h3>
+        <div>Jour: <span id="current-day">22</span></div>
+        <button onclick="previousDay()">◀</button>
+        <button onclick="nextDay()">▶</button>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let consciousness_data = null;
+        let selectedEntity = null;
+        let currentDay = 22;
+        let time = 0;
+        
+        // Charger les données
+        async function loadData() {
+            try {
+                const response = await fetch('../postgræcia/consciousness_6d_h2.json');
+                const data = await response.json();
+                consciousness_data = data.consciousness_6d_database;
+                displayEntities();
+                animate();
+            } catch (e) {
+                console.error('Erreur chargement:', e);
+            }
+        }
+        
+        // Afficher les entités
+        function displayEntities() {
+            const container = document.getElementById('entities');
+            container.innerHTML = '';
+            
+            for (const [id, entity] of Object.entries(consciousness_data.entities)) {
+                const div = document.createElement('div');
+                div.className = 'entity';
+                div.onclick = () => selectEntity(id);
+                
+                const psiColor = `hsl(${entity.position_6d.psi * 360}, 70%, 50%)`;
+                
+                div.innerHTML = `
+                    <strong>${entity.name}</strong>
+                    <div class="consciousness-bar">
+                        <div class="consciousness-fill" style="width: ${entity.consciousness_level * 100}%"></div>
+                    </div>
+                    <small>Niveau: ${(entity.consciousness_level * 100).toFixed(0)}%</small>
+                    <span class="psi-indicator" style="background: ${psiColor}"></span>
+                    <small>Ψ: ${entity.position_6d.psi.toFixed(2)}</small>
+                `;
+                
+                container.appendChild(div);
+            }
+        }
+        
+        // Sélectionner une entité
+        function selectEntity(id) {
+            selectedEntity = consciousness_data.entities[id];
+            updateDimensionDisplay();
+        }
+        
+        // Mettre à jour l'affichage des dimensions
+        function updateDimensionDisplay() {
+            if (!selectedEntity) return;
+            
+            document.getElementById('dim-x').textContent = selectedEntity.position_6d.x.toFixed(1);
+            document.getElementById('dim-y').textContent = selectedEntity.position_6d.y.toFixed(1);
+            document.getElementById('dim-z').textContent = selectedEntity.position_6d.z.toFixed(1);
+            document.getElementById('dim-t').textContent = new Date(selectedEntity.position_6d.t).toLocaleString();
+            document.getElementById('dim-c').textContent = selectedEntity.position_6d.c.toFixed(2);
+            document.getElementById('dim-psi').textContent = selectedEntity.position_6d.psi.toFixed(2);
+        }
+        
+        // Animation principale
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner les liens causaux
+            ctx.strokeStyle = '#0ff';
+            ctx.globalAlpha = 0.3;
+            for (const link of consciousness_data.causal_links) {
+                const from = consciousness_data.entities[link.from];
+                const to = consciousness_data.entities[link.to];
+                if (from && to) {
+                    drawCausalLink(from, to, link.strength);
+                }
+            }
+            
+            // Dessiner les entités
+            ctx.globalAlpha = 1;
+            for (const entity of Object.values(consciousness_data.entities)) {
+                drawEntity(entity);
+            }
+            
+            // Dessiner les pensées (particules)
+            drawThoughts();
+            
+            time += 0.01;
+            requestAnimationFrame(animate);
+        }
+        
+        // Dessiner une entité
+        function drawEntity(entity) {
+            const x = (entity.position_6d.x / 100) * canvas.width;
+            const y = (entity.position_6d.y / 100) * canvas.height;
+            const z = entity.position_6d.z;
+            const size = 10 + entity.consciousness_level * 40;
+            
+            // Aura basée sur Psi
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+            const hue = entity.position_6d.psi * 360;
+            gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${entity.consciousness_level})`);
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x - size * 2, y - size * 2, size * 4, size * 4);
+            
+            // Corps de l'entité
+            ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Superposition (si Psi > 0.5)
+            if (entity.position_6d.psi > 0.5) {
+                for (let i = 0; i < entity.personality_layers.length; i++) {
+                    const angle = (Math.PI * 2 / entity.personality_layers.length) * i + time;
+                    const px = x + Math.cos(angle) * size * 1.5;
+                    const py = y + Math.sin(angle) * size * 1.5;
+                    
+                    ctx.fillStyle = `hsla(${hue + i * 30}, 70%, 70%, 0.5)`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Nom
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(entity.name, x, y + size + 15);
+        }
+        
+        // Dessiner un lien causal
+        function drawCausalLink(from, to, strength) {
+            const x1 = (from.position_6d.x / 100) * canvas.width;
+            const y1 = (from.position_6d.y / 100) * canvas.height;
+            const x2 = (to.position_6d.x / 100) * canvas.width;
+            const y2 = (to.position_6d.y / 100) * canvas.height;
+            
+            ctx.strokeStyle = `rgba(0, 255, 255, ${strength * 0.5})`;
+            ctx.lineWidth = strength * 3;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            
+            // Courbe de Bézier pour plus de beauté
+            const cx = (x1 + x2) / 2 + Math.sin(time) * 50;
+            const cy = (y1 + y2) / 2 + Math.cos(time) * 50;
+            ctx.quadraticCurveTo(cx, cy, x2, y2);
+            ctx.stroke();
+        }
+        
+        // Dessiner les pensées (particules)
+        function drawThoughts() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y + Math.sin(time + i) * 20, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Navigation temporelle
+        function previousDay() {
+            if (currentDay > 1) {
+                currentDay--;
+                document.getElementById('current-day').textContent = currentDay;
+                // TODO: Charger l'historique du jour
+            }
+        }
+        
+        function nextDay() {
+            currentDay++;
+            document.getElementById('current-day').textContent = currentDay;
+            // TODO: Charger l'historique du jour
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Lancer
+        loadData();
+    </script>
+</body>
+</html>

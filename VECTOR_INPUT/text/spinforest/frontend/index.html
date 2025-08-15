@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Frontend Temporal Engine - Heroes of Time</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e, #16213e);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, rgba(255,215,0,0.1), rgba(0,255,255,0.1));
+            border-bottom: 3px solid #ffdd00;
+            position: relative;
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px #ffdd00;
+            animation: pulse-gold 3s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 1; text-shadow: 0 0 20px #ffdd00; }
+            50% { opacity: 0.8; text-shadow: 0 0 40px #ffdd00, 0 0 60px #ffdd00; }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            border-bottom: 1px solid #333;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid;
+            transition: all 0.3s;
+        }
+
+        .status-backend { border-color: #ff4444; background: rgba(255,68,68,0.1); }
+        .status-frontend { border-color: #44ff44; background: rgba(68,255,68,0.1); }
+        .status-walter { border-color: #4444ff; background: rgba(68,68,255,0.1); }
+
+        .interfaces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .interface-card {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(20,20,40,0.7));
+            border: 2px solid #ffdd00;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interface-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+            border-color: #00ffff;
+        }
+
+        .interface-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #ffdd00;
+        }
+
+        .interface-card p {
+            opacity: 0.8;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .launch-btn {
+            background: linear-gradient(45deg, #ffdd00, #ff8c00);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.5);
+        }
+
+        .hero-portal {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff69b4, #8a2be2);
+            border-radius: 50%;
+            cursor: pointer;
+            animation: portal-spin 10s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border: 3px solid #fff;
+        }
+
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .timeline-section {
+            margin: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-left: 4px solid #00ffff;
+            border-radius: 10px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .timeline-time {
+            color: #00ffff;
+            font-weight: bold;
+            min-width: 80px;
+        }
+
+        .console-section {
+            margin: 30px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+        }
+
+        .console-line {
+            color: #00ff00;
+            margin: 5px 0;
+        }
+
+        .console-input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            outline: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: #ffdd00;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules flottantes -->
+    <div id="particles"></div>
+
+    <!-- Header principal -->
+    <div class="main-header">
+        <h1>🌀 Frontend Temporal Engine</h1>
+        <p style="font-size: 1.1rem; opacity: 0.8;">Heroes of Time - Interface Unifiée Port 8000</p>
+    </div>
+
+    <!-- Barre de statut -->
+    <div class="status-bar">
+        <div class="status-item status-backend">
+            <span>🔴</span>
+            <span id="backend-status">Backend: ❌ OFFLINE</span>
+        </div>
+        <div class="status-item status-frontend">
+            <span>🟢</span>
+            <span>Frontend: ✅ ONLINE</span>
+        </div>
+        <div class="status-item status-walter">
+            <span>🔵</span>
+            <span id="walter-status">Walter API: 🔍 CHECKING...</span>
+        </div>
+    </div>
+
+    <!-- Portail héros -->
+    <div class="hero-portal" onclick="openHeroSelector()" title="🎯 Sélecteur de Héros">
+        🎯
+    </div>
+
+    <!-- Entrée Narrative -->
+    <div class="adventure-entry" style="text-align: center; margin: 30px 0; padding: 30px; background: linear-gradient(135deg, rgba(34,139,34,0.1), rgba(0,100,0,0.1)); border: 2px solid #228B22; border-radius: 15px;">
+        <h3>🌲 Aventure de la Forêt</h3>
+        <p>Point d'entrée narratif - Trouvez la Clé avec le canard guide</p>
+        <button class="launch-btn" style="background: linear-gradient(45deg, #228B22, #32CD32); font-size: 1.2em; padding: 15px 30px;" onclick="startForestAdventure()">
+            🗝️ Commencer l'Aventure
+        </button>
+    </div>
+
+    <!-- Grid des interfaces principales -->
+    <div class="interfaces-grid">
+        <!-- Heroes of Might and Magic III -->
+        <div class="interface-card" style="border-color: #DAA520; background: linear-gradient(135deg, rgba(218,165,32,0.1), rgba(255,215,0,0.1));">
+            <h3>🏰 Heroes of Might and Magic III</h3>
+            <p>Jeu principal - Directement sur la carte, sans menu</p>
+            <button class="launch-btn" style="background: linear-gradient(45deg, #DAA520, #FFD700);" onclick="launchHoMM3()">
+                ⚔️ Entrer dans le Château
+            </button>
+        </div>
+
+        <!-- Combat TCG -->
+        <div class="interface-card" style="border-color: #8B4513; background: linear-gradient(135deg, rgba(139,69,19,0.1), rgba(160,82,45,0.1));">
+            <h3>🎴 Combat TCG</h3>
+            <p>Système de cartes avec formules magiques 6D</p>
+            <button class="launch-btn" style="background: linear-gradient(45deg, #8B4513, #CD853F);" onclick="openInterface('tcg-combat.html')">
+                🃏 Lancer Combat
+            </button>
+        </div>
+
+        <!-- Dashboard Monitoring -->
+        <div class="interface-card">
+            <h3>📊 Dashboard</h3>
+            <p>Monitoring des systèmes et statistiques</p>
+            <button class="launch-btn" onclick="openInterface('dashboard.html')">
+                📈 Ouvrir Dashboard
+            </button>
+        </div>
+
+        <!-- BRISURE NAVIGATOR -->
+        <div class="interface-card" style="border-color: #ff1493; background: linear-gradient(135deg, rgba(255,20,147,0.1), rgba(138,43,226,0.1));">
+            <h3>🌌 Navigation Mondes</h3>
+            <p>Voyage entre les mondes flottants</p>
+            <button class="launch-btn" style="background: linear-gradient(45deg, #ff1493, #8a2be2);" onclick="openInterface('brisure-navigator.html')">
+                🚀 Explorer Mondes
+            </button>
+        </div>
+
+        <!-- Mode Multivers (Futur) -->
+        <div class="interface-card" style="opacity: 0.3; border-color: #666;">
+            <h3>🐻 Mode Multivers</h3>
+            <p>Géré par URZ-KÔM - Dimensions supplémentaires</p>
+            <button class="launch-btn" disabled style="background: #666;">
+                🔒 Bientôt Disponible
+            </button>
+        </div>
+
+        <!-- Arcade Complète -->
+        <div class="interface-card" style="border-color: #9370DB; background: linear-gradient(135deg, rgba(147,112,219,0.1), rgba(138,43,226,0.1));">
+            <h3>🎮 Arcade Complète</h3>
+            <p>Accès à toutes les interfaces et expérimentations</p>
+            <button class="launch-btn" style="background: linear-gradient(45deg, #9370DB, #8A2BE2);" onclick="openInterface('arcade-complete.html')">
+                🕹️ Mode Arcade
+            </button>
+        </div>
+    </div>
+
+    <!-- Section Timeline -->
+    <div class="timeline-section">
+        <h3 style="color: #00ffff; margin-bottom: 15px;">📅 Timeline Temporelle Récente</h3>
+        <div id="timeline-container">
+            <div class="timeline-item">
+                <span class="timeline-time">NOW</span>
+                <span>🎯 Frontend Temporal Engine - Reconstruction LEGO terminée</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">-5min</span>
+                <span>🔍 Exploration des archives racine - Interfaces découvertes</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">-10min</span>
+                <span>📋 Analyse scripts hots-full - Port 8000 identifié</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">-15min</span>
+                <span>🚀 Recherche Frontend Temporal perdu - Mission commencée</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Console de commandes -->
+    <div class="console-section">
+        <div class="console-line">🌀 Heroes of Time Temporal Console v2.0</div>
+        <div class="console-line">✅ Frontend Engine initialized on port 8000</div>
+        <div class="console-line">🔍 Scanning for backend connection...</div>
+        <div class="console-line" id="api-status">🔴 Backend API: http://localhost:8082 - DISCONNECTED</div>
+        <div class="console-line">💡 Tip: Use WALTER API to reconnect backend services</div>
+        <div style="display: flex; align-items: center; margin-top: 10px;">
+            <span style="color: #00ff00;">root@temporal:~$ </span>
+            <input type="text" class="console-input" id="console-input" placeholder="Enter command..." onkeypress="handleConsoleCommand(event)">
+        </div>
+    </div>
+
+    <script src="temporal-engine.js"></script>
+    <script>
+        // Vérification du statut backend
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch('http://localhost:8082/api/health');
+                document.getElementById('backend-status').textContent = 'Backend: ✅ ONLINE';
+                document.getElementById('api-status').textContent = '🟢 Backend API: http://localhost:8082 - CONNECTED';
+                document.querySelector('.status-backend').style.borderColor = '#44ff44';
+                document.querySelector('.status-backend').style.background = 'rgba(68,255,68,0.1)';
+            } catch (error) {
+                document.getElementById('backend-status').textContent = 'Backend: ❌ OFFLINE';
+                document.getElementById('api-status').textContent = '🔴 Backend API: http://localhost:8082 - DISCONNECTED';
+            }
+        }
+
+        // Vérification API Walter
+        async function checkWalterAPI() {
+            try {
+                // Simulation - remplacer par vraie API Walter
+                document.getElementById('walter-status').textContent = 'Walter API: 🟡 AVAILABLE';
+            } catch (error) {
+                document.getElementById('walter-status').textContent = 'Walter API: ❌ ERROR';
+            }
+        }
+
+        // Ouvrir interface
+        function openInterface(filename) {
+            const newWindow = window.open(filename, '_blank', 'width=1200,height=800');
+            if (!newWindow) {
+                // Fallback - créer une page placeholder
+                createPlaceholderInterface(filename);
+            }
+        }
+
+        // Créer interface placeholder
+        function createPlaceholderInterface(filename) {
+            const placeholderWindow = window.open('about:blank', '_blank', 'width=1200,height=800');
+            placeholderWindow.document.title = filename;
+            placeholderWindow.document.body.innerHTML = `
+                <div style="background: linear-gradient(135deg, #0a0a1a, #1a1a2e); color: #fff; font-family: 'Courier New', monospace; padding: 40px; min-height: 100vh;">
+                    <h1 style="color: #ffdd00; text-align: center; margin-bottom: 30px;">🚧 Interface en Reconstruction</h1>
+                    <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 15px; border: 2px solid #ffdd00;">
+                        <h2 style="color: #00ffff; margin-bottom: 20px;">📁 ${filename}</h2>
+                        <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px;">
+                            Cette interface fait partie du <strong>Frontend Temporal Engine</strong> mais doit être 
+                            reconstruite avec les éléments LEGO disponibles.
+                        </p>
+                        <div style="background: #000; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                            <div style="color: #00ff00;">🔍 Status: Interface détectée dans les archives</div>
+                            <div style="color: #ffdd00;">⚡ Action: Reconstruction en cours par Sid Meier</div>
+                            <div style="color: #00ffff;">🎯 ETA: Disponible après assemblage LEGO</div>
+                        </div>
+                        <p style="color: #ff69b4; font-style: italic;">
+                            "Du LEGO temporal, c'est exactement ce qu'il nous fallait !" - Vincent
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Sélecteur de héros
+        function openHeroSelector() {
+            window.open('../AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/📐 ATELIER_CARTOGRAPHIE/BOOTSTRAP_POCKET_INSTANCE_V2.html', '_blank');
+        }
+
+        // Console commands
+        function handleConsoleCommand(event) {
+            if (event.key === 'Enter') {
+                const command = event.target.value.trim();
+                const consoleSection = document.querySelector('.console-section');
+                
+                // Ajouter la commande
+                const commandLine = document.createElement('div');
+                commandLine.className = 'console-line';
+                commandLine.innerHTML = `<span style="color: #00ff00;">root@temporal:~$ </span>${command}`;
+                consoleSection.insertBefore(commandLine, consoleSection.lastElementChild);
+                
+                // Traiter la commande
+                const responseLine = document.createElement('div');
+                responseLine.className = 'console-line';
+                
+                switch(command.toLowerCase()) {
+                    case 'status':
+                        responseLine.innerHTML = '📊 Frontend: ✅ | Backend: ❌ | Walter: 🔍';
+                        break;
+                    case 'help':
+                        responseLine.innerHTML = '💡 Commands: status, backend, walter, interfaces, clear';
+                        break;
+                    case 'backend':
+                        responseLine.innerHTML = '🔴 Backend disconnected. Use Walter API to reconnect.';
+                        break;
+                    case 'walter':
+                        responseLine.innerHTML = '🔵 Walter API endpoints available. Check security protocols.';
+                        break;
+                    case 'interfaces':
+                        responseLine.innerHTML = '🌀 6 interfaces detected: dashboard, visual-editor, sphinx, hexagon, joint, portail';
+                        break;
+                    case 'clear':
+                        // Nettoyer console
+                        const lines = consoleSection.querySelectorAll('.console-line');
+                        lines.forEach((line, index) => {
+                            if (index > 3) line.remove(); // Garder les 4 premières lignes
+                        });
+                        responseLine.innerHTML = '✨ Console cleared';
+                        break;
+                    default:
+                        responseLine.innerHTML = `❌ Unknown command: ${command}. Type 'help' for available commands.`;
+                }
+                
+                consoleSection.insertBefore(responseLine, consoleSection.lastElementChild);
+                event.target.value = '';
+                
+                // Scroll vers le bas
+                consoleSection.scrollTop = consoleSection.scrollHeight;
+            }
+        }
+
+        // Particules animées
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+                
+                // Supprimer après animation
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 6000);
+            }, 300);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendStatus();
+            checkWalterAPI();
+            createParticles();
+            
+            // Vérifications périodiques
+            setInterval(checkBackendStatus, 30000);
+            setInterval(checkWalterAPI, 60000);
+        });
+    </script>
+</body>
+</html>

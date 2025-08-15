@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔥 Démo Combat Épique - Nouvelles Images</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #combatArena {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(transparent, rgba(0,0,0,0.5));
+            pointer-events: none;
+        }
+        
+        /* UI Combat */
+        .combat-ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+        }
+        
+        h1 {
+            margin: 0;
+            color: #FFD700;
+            text-shadow: 0 0 20px #FF6600;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Sélecteur de scène */
+        .scene-selector {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00D9FF;
+        }
+        
+        .scene-btn {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 2px solid #666;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .scene-btn:hover {
+            background: #333;
+            border-color: #FFD700;
+            transform: scale(1.05);
+        }
+        
+        .scene-btn.active {
+            background: #8B4513;
+            border-color: #FFD700;
+            box-shadow: 0 0 20px #FFD700;
+        }
+        
+        /* Personnages */
+        .fighter {
+            position: absolute;
+            bottom: 15%;
+            transition: all 0.5s ease;
+        }
+        
+        #hero {
+            left: 15%;
+            font-size: 150px;
+            filter: drop-shadow(0 0 20px #00D9FF);
+            animation: heroIdle 2s infinite;
+        }
+        
+        #boss {
+            right: 15%;
+            font-size: 180px;
+            filter: drop-shadow(0 0 30px #FF0000);
+            animation: bossFloat 3s infinite;
+        }
+        
+        @keyframes heroIdle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes bossFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+        }
+        
+        /* Info panneau */
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #8B4513;
+            max-width: 300px;
+        }
+        
+        .info-panel h3 {
+            color: #FFD700;
+            margin-top: 0;
+        }
+        
+        /* Effets spéciaux */
+        .special-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: effectFade 2s forwards;
+        }
+        
+        @keyframes effectFade {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0; transform: scale(2); }
+        }
+        
+        /* Barre de vie */
+        .health-bar {
+            position: absolute;
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #heroHealth {
+            bottom: 35%;
+            left: 10%;
+        }
+        
+        #bossHealth {
+            bottom: 35%;
+            right: 10%;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(to right, #FF0000, #FFD700);
+            transition: width 0.5s;
+        }
+        
+        /* Contrôles */
+        .controls {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            background: #8B4513;
+            border: 2px solid #FFD700;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #A0522D;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="combatArena">
+        <div class="overlay"></div>
+        
+        <div class="combat-ui">
+            <h1>⚔️ COMBAT ÉPIQUE ⚔️</h1>
+            <p id="sceneName">Chargement...</p>
+        </div>
+        
+        <div class="info-panel">
+            <h3>📜 Scénario Actuel</h3>
+            <p id="sceneDescription">...</p>
+            <hr>
+            <h3>🎮 Contrôles</h3>
+            <p>• Cliquez sur les boutons de scène<br>
+               • Utilisez Attaque/Défense<br>
+               • Observez les effets visuels</p>
+        </div>
+        
+        <!-- Personnages -->
+        <div id="hero" class="fighter">🦸</div>
+        <div id="boss" class="fighter">👻</div>
+        
+        <!-- Barres de vie -->
+        <div id="heroHealth" class="health-bar">
+            <div class="health-fill" style="width: 100%"></div>
+        </div>
+        <div id="bossHealth" class="health-bar">
+            <div class="health-fill" style="width: 100%"></div>
+        </div>
+        
+        <!-- Contrôles de combat -->
+        <div class="controls">
+            <button onclick="attack()">⚔️ Attaquer</button>
+            <button onclick="defend()">🛡️ Défendre</button>
+            <button onclick="special()">✨ Spécial</button>
+        </div>
+        
+        <!-- Sélecteur de scène -->
+        <div class="scene-selector">
+            <button class="scene-btn" onclick="changeScene(0)">👻 Fantôme</button>
+            <button class="scene-btn" onclick="changeScene(1)">⏰ 3 Temps</button>
+            <button class="scene-btn" onclick="changeScene(2)">🗡️ Excalibur</button>
+            <button class="scene-btn" onclick="changeScene(3)">🐻 Ours Chaman</button>
+            <button class="scene-btn" onclick="changeScene(4)">🔮 Sorcier</button>
+            <button class="scene-btn" onclick="changeScene(5)">🌌 Cosmique</button>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration des scènes
+        const scenes = [
+            {
+                name: "Bataille Fantôme Crépusculaire",
+                image: "Warrior and Phantom Battle at Dusk.png",
+                boss: "👻",
+                description: "Un guerrier affronte un spectre au crépuscule. Les ombres dansent entre les mondes.",
+                effect: "🌙"
+            },
+            {
+                name: "Le Guerrier des Trois Temps",
+                image: "Warrior of the Three Times.png",
+                boss: "⏳",
+                description: "Passé, présent et futur convergent. Le guerrier existe dans trois époques simultanément.",
+                effect: "⏰"
+            },
+            {
+                name: "La Frappe d'Excalibur",
+                image: "Excalibur Through Time at Twilight.png",
+                boss: "🗡️",
+                description: "L'épée légendaire traverse les âges. Son pouvoir défie les lois du temps.",
+                effect: "✨"
+            },
+            {
+                name: "L'Ours Chaman Émerge",
+                image: "Shamanic Bear and the Gunman Emergence.png",
+                boss: "🐻",
+                description: "Un ours mystique et un gunman émergent de l'Interstice. URZ-KÔM et VINCE ?",
+                effect: "🌀"
+            },
+            {
+                name: "Sorcier du Temps",
+                image: "Sorcerer of Time at Twilight.png",
+                boss: "🧙",
+                description: "Le maître du temps attend au crépuscule. Ses sorts défient la causalité.",
+                effect: "🔮"
+            },
+            {
+                name: "Convergence Cosmique",
+                image: "Convergence of Cosmic Forces.png",
+                boss: "🌌",
+                description: "Toutes les forces de l'univers convergent. L'ultime bataille commence.",
+                effect: "💫"
+            }
+        ];
+        
+        let currentScene = 0;
+        let heroHP = 100;
+        let bossHP = 100;
+        
+        // Charger la première scène
+        changeScene(0);
+        
+        function changeScene(index) {
+            currentScene = index;
+            const scene = scenes[index];
+            
+            // Mettre à jour le background
+            const arena = document.getElementById('combatArena');
+            arena.style.backgroundImage = `url('../../assets/FIGHT/${scene.image}')`;
+            
+            // Mettre à jour l'UI
+            document.getElementById('sceneName').textContent = scene.name;
+            document.getElementById('sceneDescription').textContent = scene.description;
+            document.getElementById('boss').textContent = scene.boss;
+            
+            // Mettre à jour les boutons
+            document.querySelectorAll('.scene-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            
+            // Réinitialiser les HP
+            heroHP = 100;
+            bossHP = 100;
+            updateHealthBars();
+            
+            // Effet d'entrée
+            createEffect(scene.effect, window.innerWidth / 2, window.innerHeight / 2);
+        }
+        
+        function attack() {
+            // Dégâts au boss
+            bossHP = Math.max(0, bossHP - 15);
+            updateHealthBars();
+            
+            // Animation
+            const hero = document.getElementById('hero');
+            hero.style.transform = 'translateX(100px)';
+            setTimeout(() => {
+                hero.style.transform = 'translateX(0)';
+            }, 300);
+            
+            // Effet
+            const scene = scenes[currentScene];
+            createEffect('⚔️', window.innerWidth * 0.85, window.innerHeight * 0.5);
+            
+            // Riposte du boss
+            setTimeout(() => bossAttack(), 1000);
+        }
+        
+        function defend() {
+            // Animation défense
+            const hero = document.getElementById('hero');
+            hero.textContent = '🛡️';
+            setTimeout(() => {
+                hero.textContent = '🦸';
+            }, 1000);
+            
+            createEffect('🛡️', window.innerWidth * 0.15, window.innerHeight * 0.5);
+        }
+        
+        function special() {
+            // Attaque spéciale selon la scène
+            const scene = scenes[currentScene];
+            bossHP = Math.max(0, bossHP - 30);
+            updateHealthBars();
+            
+            // Effet spécial massif
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    createEffect(scene.effect, x, y);
+                }, i * 200);
+            }
+        }
+        
+        function bossAttack() {
+            heroHP = Math.max(0, heroHP - 10);
+            updateHealthBars();
+            
+            const boss = document.getElementById('boss');
+            boss.style.transform = 'translateX(-100px) scale(1.3)';
+            setTimeout(() => {
+                boss.style.transform = 'translateX(0) scale(1)';
+            }, 300);
+            
+            createEffect('💥', window.innerWidth * 0.15, window.innerHeight * 0.5);
+        }
+        
+        function updateHealthBars() {
+            document.querySelector('#heroHealth .health-fill').style.width = heroHP + '%';
+            document.querySelector('#bossHealth .health-fill').style.width = bossHP + '%';
+            
+            // Vérifier la victoire
+            if (bossHP <= 0) {
+                setTimeout(() => {
+                    alert('🎉 VICTOIRE ! Le boss est vaincu !');
+                    changeScene((currentScene + 1) % scenes.length);
+                }, 500);
+            } else if (heroHP <= 0) {
+                setTimeout(() => {
+                    alert('💀 DÉFAITE... Réessayez !');
+                    changeScene(currentScene);
+                }, 500);
+            }
+        }
+        
+        function createEffect(emoji, x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'special-effect';
+            effect.textContent = emoji;
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            effect.style.fontSize = '80px';
+            
+            document.getElementById('combatArena').appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 2000);
+        }
+        
+        // Message de bienvenue
+        console.log('🔥 Démo Combat Épique chargée !');
+        console.log('Utilisez les boutons pour changer de scène et combattre !');
+    </script>
+</body>
+</html>

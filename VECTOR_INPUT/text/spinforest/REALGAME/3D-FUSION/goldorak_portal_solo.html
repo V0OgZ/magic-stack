@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🚀 GOLDORAK PORTAL - URZ-KÔM SOLO</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info { position: absolute; top: 10px; left: 10px; color: #0ff; z-index: 100; background: rgba(0,0,0,0.7); padding: 15px; border: 2px solid #0ff; }
+        #controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #fff; text-align: center; background: rgba(0,0,0,0.8); padding: 10px; }
+        .portal-button { margin: 5px; padding: 10px 20px; background: linear-gradient(45deg, #ff006e, #8338ec); border: none; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>🐻 URZ-KÔM SOLO 3D</h2>
+        <p>Position: <span id="position">Station</span></p>
+        <p>Énergie: <span id="energy">100%</span></p>
+    </div>
+    
+    <div id="controls">
+        <button class="portal-button" onclick="travelTo('crystal')">💎 Cristal</button>
+        <button class="portal-button" onclick="travelTo('quantum')">🌊 Quantum</button>
+        <button class="portal-button" onclick="travelTo('arena')">🏟️ Arène</button>
+        <p>WASD: Move | SPACE: Jump | CLICK: Attack</p>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // INIT
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        // LIGHTS
+        scene.add(new THREE.AmbientLight(0x404040));
+        const sun = new THREE.DirectionalLight(0xffffff, 1);
+        sun.position.set(100, 100, 50);
+        scene.add(sun);
+        
+        // GOLDORAK
+        const goldorakGroup = new THREE.Group();
+        const body = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 6, 3),
+            new THREE.MeshPhongMaterial({ color: 0xff0000 })
+        );
+        goldorakGroup.add(body);
+        
+        const head = new THREE.Mesh(
+            new THREE.SphereGeometry(1.5),
+            new THREE.MeshPhongMaterial({ color: 0xffff00 })
+        );
+        head.position.y = 4;
+        goldorakGroup.add(head);
+        
+        goldorakGroup.position.y = 10;
+        scene.add(goldorakGroup);
+        
+        // WORLD
+        let currentWorld = 'station';
+        const worldObjects = [];
+        
+        function clearWorld() {
+            worldObjects.forEach(obj => scene.remove(obj));
+            worldObjects.length = 0;
+        }
+        
+        function loadStation() {
+            clearWorld();
+            const platform = new THREE.Mesh(
+                new THREE.CylinderGeometry(50, 50, 5),
+                new THREE.MeshPhongMaterial({ color: 0x444444 })
+            );
+            scene.add(platform);
+            worldObjects.push(platform);
+            
+            // Portals
+            const colors = [0x00ffff, 0xff00ff, 0xffff00];
+            const positions = [[30,10,0], [-30,10,0], [0,10,30]];
+            
+            positions.forEach((pos, i) => {
+                const portal = new THREE.Mesh(
+                    new THREE.TorusGeometry(8, 1),
+                    new THREE.MeshPhongMaterial({ 
+                        color: colors[i],
+                        emissive: colors[i],
+                        emissiveIntensity: 0.5
+                    })
+                );
+                portal.position.set(...pos);
+                portal.rotation.x = Math.PI/2;
+                scene.add(portal);
+                worldObjects.push(portal);
+            });
+        }
+        
+        function loadCrystal() {
+            clearWorld();
+            for(let i = 0; i < 10; i++) {
+                const crystal = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(Math.random()*20+10),
+                    new THREE.MeshPhongMaterial({
+                        color: new THREE.Color().setHSL(Math.random()*0.3+0.5, 0.8, 0.5),
+                        transparent: true,
+                        opacity: 0.8
+                    })
+                );
+                crystal.position.set(
+                    (Math.random()-0.5)*200,
+                    Math.random()*50,
+                    (Math.random()-0.5)*200
+                );
+                scene.add(crystal);
+                worldObjects.push(crystal);
+            }
+        }
+        
+        function loadQuantum() {
+            clearWorld();
+            for(let i = 0; i < 15; i++) {
+                const platform = new THREE.Mesh(
+                    new THREE.BoxGeometry(30, 2, 30),
+                    new THREE.MeshPhongMaterial({
+                        color: 0x00ffff,
+                        transparent: true,
+                        opacity: 0.7
+                    })
+                );
+                platform.position.set(
+                    (Math.random()-0.5)*300,
+                    Math.random()*100-50,
+                    (Math.random()-0.5)*300
+                );
+                scene.add(platform);
+                worldObjects.push(platform);
+            }
+        }
+        
+        function loadArena() {
+            clearWorld();
+            const arena = new THREE.Mesh(
+                new THREE.BoxGeometry(200, 10, 200),
+                new THREE.MeshPhongMaterial({ color: 0x880088 })
+            );
+            scene.add(arena);
+            worldObjects.push(arena);
+            
+            // Walls
+            for(let i = 0; i < 4; i++) {
+                const wall = new THREE.Mesh(
+                    new THREE.BoxGeometry(10, 50, 200),
+                    new THREE.MeshPhongMaterial({ color: 0x444444 })
+                );
+                if(i < 2) {
+                    wall.position.x = i === 0 ? -105 : 105;
+                } else {
+                    wall.rotation.y = Math.PI/2;
+                    wall.position.z = i === 2 ? -105 : 105;
+                }
+                wall.position.y = 25;
+                scene.add(wall);
+                worldObjects.push(wall);
+            }
+        }
+        
+        // TRAVEL
+        function travelTo(dest) {
+            const flash = document.createElement('div');
+            flash.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:1000';
+            document.body.appendChild(flash);
+            
+            setTimeout(() => {
+                switch(dest) {
+                    case 'crystal': loadCrystal(); break;
+                    case 'quantum': loadQuantum(); break;
+                    case 'arena': loadArena(); break;
+                    default: loadStation();
+                }
+                currentWorld = dest;
+                document.getElementById('position').textContent = dest.toUpperCase();
+                
+                flash.style.opacity = '0';
+                flash.style.transition = 'opacity 0.5s';
+                setTimeout(() => document.body.removeChild(flash), 500);
+            }, 200);
+        }
+        
+        // CONTROLS
+        const keys = {};
+        document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+        
+        document.addEventListener('click', () => {
+            // Attack animation
+            body.material.emissive = new THREE.Color(0xffff00);
+            body.material.emissiveIntensity = 1;
+            setTimeout(() => {
+                body.material.emissiveIntensity = 0;
+            }, 200);
+        });
+        
+        // START
+        loadStation();
+        camera.position.set(0, 50, 100);
+        
+        // GAME LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Move Goldorak
+            if(keys['w']) goldorakGroup.position.z -= 1;
+            if(keys['s']) goldorakGroup.position.z += 1;
+            if(keys['a']) goldorakGroup.position.x -= 1;
+            if(keys['d']) goldorakGroup.position.x += 1;
+            if(keys[' '] && goldorakGroup.position.y <= 10) {
+                goldorakGroup.position.y += 2;
+            }
+            
+            // Gravity
+            if(goldorakGroup.position.y > 10) {
+                goldorakGroup.position.y -= 0.5;
+            }
+            
+            // Camera follow
+            camera.position.lerp(
+                new THREE.Vector3(
+                    goldorakGroup.position.x,
+                    goldorakGroup.position.y + 50,
+                    goldorakGroup.position.z + 100
+                ),
+                0.1
+            );
+            camera.lookAt(goldorakGroup.position);
+            
+            // Rotate Goldorak
+            goldorakGroup.rotation.y += 0.005;
+            head.rotation.y = Math.sin(Date.now() * 0.001) * 0.2;
+            
+            // Animate world objects
+            worldObjects.forEach((obj, i) => {
+                if(obj.geometry.type === 'TorusGeometry') {
+                    obj.rotation.z += 0.02;
+                } else if(obj.geometry.type === 'IcosahedronGeometry') {
+                    obj.rotation.x += 0.01;
+                    obj.rotation.y += 0.01;
+                }
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        console.log('🐻 URZ-KÔM SOLO 3D - GOLDORAK PORTAL FUSION!');
+    </script>
+</body>
+</html>

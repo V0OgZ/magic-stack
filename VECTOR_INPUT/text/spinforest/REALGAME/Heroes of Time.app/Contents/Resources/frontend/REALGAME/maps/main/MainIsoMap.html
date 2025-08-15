@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🗺️ REALGAME - Mode Carte Principale ISO</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #FFD700;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            pointer-events: auto;
+        }
+        
+        .timeline-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(138,43,226,0.2);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .platform-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px 20px;
+            display: none;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .fog-legend {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .fog-state {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .fog-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="ui-overlay">
+        <div class="info-panel">
+            <h3>🗺️ Mode Carte Principale</h3>
+            <div>Position: <span id="playerPos">0, 0</span></div>
+            <div>Plateforme: <span id="currentPlatform">Sol</span></div>
+            <div>Causalité: <span id="causalityStatus">Active</span></div>
+        </div>
+        
+        <div class="timeline-indicator">
+            <h4>⏰ Timeline</h4>
+            <div id="timelineName">PRINCIPALE</div>
+            <div style="font-size: 12px; opacity: 0.7">Phase: <span id="timePhase">0</span></div>
+        </div>
+        
+        <div class="platform-info" id="platformInfo">
+            <div id="platformName">Plateforme Mystérieuse</div>
+            <div id="platformDesc" style="font-size: 12px; opacity: 0.8">Description</div>
+        </div>
+        
+        <div class="controls">
+            <strong>Contrôles:</strong><br>
+            Clic: Déplacer<br>
+            WASD/Flèches: Caméra<br>
+            Espace: Activer portail<br>
+            T: Changer timeline<br>
+            F: Toggle brouillard
+        </div>
+        
+        <div class="fog-legend">
+            <strong>Brouillard:</strong>
+            <div class="fog-state">
+                <div class="fog-color" style="background: rgba(50, 50, 50, 0.9)"></div>
+                <span>Inexploré</span>
+            </div>
+            <div class="fog-state">
+                <div class="fog-color" style="background: rgba(100, 100, 100, 0.7)"></div>
+                <span>Passé fixé</span>
+            </div>
+            <div class="fog-state">
+                <div class="fog-color" style="background: rgba(255, 255, 0, 0.3)"></div>
+                <span>Accessible</span>
+            </div>
+            <div class="fog-state">
+                <div class="fog-color" style="background: rgba(0, 255, 0, 0.1)"></div>
+                <span>Vision</span>
+            </div>
+            <div class="fog-state">
+                <div class="fog-color" style="background: rgba(138, 43, 226, 0.5)"></div>
+                <span>Superposé</span>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import du MapLayerController
+        import { MapLayerController } from './MapLayerController.js';
+        
+        // 🎮 CARTE PRINCIPALE ISO - REALGAME
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État du jeu
+        const gameState = {
+            // Carte
+            mapWidth: 30,
+            mapHeight: 30,
+            tileSize: 64,
+            
+            // Joueur
+            player: {
+                x: 15,
+                y: 15,
+                z: 0,
+                sprite: '🦸',
+                visionRange: 3
+            },
+            
+            // Caméra
+            camera: {
+                x: 0,
+                y: 0,
+                width: canvas.width,
+                height: canvas.height
+            },
+            
+            // Timeline
+            currentTimeline: 'main',
+            timePhase: 0,
+            
+            // UI
+            showFog: true,
+            selectedPlatform: null
+        };
+        
+        // Contrôleur de couches
+        let mapController = null;
+        
+        // 🏝️ Créer les plateformes flottantes
+        function createPlatforms() {
+            const platforms = [
+                {
+                    id: 'central_nexus',
+                    name: 'Nexus Central',
+                    x: 15, y: 15,
+                    radius: 60,
+                    height: 0,
+                    color: '#4a4a4a',
+                    hasPortal: true,
+                    description: 'Le cœur d\'Avalon, point de convergence des timelines'
+                },
+                {
+                    id: 'temporal_spire',
+                    name: 'Flèche Temporelle',
+                    x: 5, y: 5,
+                    radius: 40,
+                    height: 100,
+                    color: '#6a4a8a',
+                    hasPortal: true,
+                    description: 'Tour mystique où le temps s\'écoule différemment'
+                },
+                {
+                    id: 'memory_garden',
+                    name: 'Jardin des Souvenirs',
+                    x: 25, y: 10,
+                    radius: 45,
+                    height: 50,
+                    color: '#4a8a6a',
+                    description: 'Les échos du passé fleurissent ici'
+                },
+                {
+                    id: 'void_platform',
+                    name: 'Plateforme du Vide',
+                    x: 10, y: 25,
+                    radius: 35,
+                    height: 150,
+                    color: '#2a2a2a',
+                    hasPortal: true,
+                    timeline: 'void',
+                    description: 'Attention : timeline instable !'
+                },
+                {
+                    id: 'crystal_isle',
+                    name: 'Île de Cristal',
+                    x: 20, y: 20,
+                    radius: 50,
+                    height: 80,
+                    color: '#8a6a8a',
+                    description: 'Les cristaux résonnent avec la magie'
+                }
+            ];
+            
+            // Ajouter une timeline morte pour démonstration
+            mapController.causalityState.deadTimelines.add('void');
+            
+            mapController.layers.platforms = platforms;
+        }
+        
+        // 🌀 Créer les portails
+        function createPortals() {
+            const portals = [
+                {
+                    id: 'portal_main',
+                    x: 15, y: 15,
+                    radius: 30,
+                    visible: true,
+                    active: false,
+                    requiredPower: 50,
+                    targetTimeline: 'alternate_1'
+                },
+                {
+                    id: 'portal_temporal',
+                    x: 5, y: 5,
+                    radius: 25,
+                    visible: true,
+                    active: true,
+                    requiredPower: 30,
+                    targetTimeline: 'past_echo'
+                },
+                {
+                    id: 'portal_void',
+                    x: 10, y: 25,
+                    radius: 20,
+                    visible: true,
+                    active: false,
+                    requiredPower: 100,
+                    targetTimeline: 'void'
+                }
+            ];
+            
+            mapController.layers.portals = portals;
+        }
+        
+        // 🎮 Initialisation
+        function init() {
+            // Créer le contrôleur
+            mapController = new MapLayerController({ width: canvas.width, height: canvas.height });
+            
+            // Initialiser le brouillard
+            mapController.initializeFog(gameState.mapWidth, gameState.mapHeight);
+            
+            // Créer le monde
+            createPlatforms();
+            createPortals();
+            
+            // Révéler la zone de départ
+            updateVision();
+            
+            // Centrer la caméra sur le joueur
+            centerCamera();
+            
+            // Démarrer la boucle
+            gameLoop();
+        }
+        
+        // 👁️ Mettre à jour la vision
+        function updateVision() {
+            const { x, y, visionRange } = gameState.player;
+            
+            for (let dy = -visionRange; dy <= visionRange; dy++) {
+                for (let dx = -visionRange; dx <= visionRange; dx++) {
+                    const tx = x + dx;
+                    const ty = y + dy;
+                    
+                    if (tx < 0 || tx >= gameState.mapWidth || 
+                        ty < 0 || ty >= gameState.mapHeight) continue;
+                    
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    if (distance <= visionRange) {
+                        const key = `${tx},${ty}`;
+                        
+                        // Mettre à jour l'état du brouillard
+                        if (distance === 0) {
+                            mapController.layers.fog.set(key, 3); // VISION
+                        } else if (distance <= visionRange - 1) {
+                            const current = mapController.layers.fog.get(key);
+                            if (current === 0) { // UNEXPLORED
+                                mapController.layers.fog.set(key, 2); // REACHABLE
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 📷 Centrer la caméra
+        function centerCamera() {
+            const worldPos = tileToWorld(gameState.player.x, gameState.player.y);
+            gameState.camera.x = worldPos.x - canvas.width / 2;
+            gameState.camera.y = worldPos.y - canvas.height / 2;
+        }
+        
+        // 🎨 Rendu principal
+        function render() {
+            // Effacer
+            ctx.fillStyle = '#0a0a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille de fond (avec effet de profondeur)
+            renderBackgroundGrid();
+            
+            // Rendu via le contrôleur
+            if (gameState.showFog) {
+                mapController.render(ctx, gameState.camera);
+            }
+            
+            // Joueur
+            renderPlayer();
+            
+            // Effets temporels
+            renderTemporalEffects();
+        }
+        
+        // 🏁 Grille de fond
+        function renderBackgroundGrid() {
+            ctx.strokeStyle = 'rgba(255,215,0,0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let y = 0; y < gameState.mapHeight; y++) {
+                for (let x = 0; x < gameState.mapWidth; x++) {
+                    const worldPos = tileToWorld(x, y);
+                    const screenX = worldPos.x - gameState.camera.x;
+                    const screenY = worldPos.y - gameState.camera.y;
+                    
+                    if (screenX < -100 || screenX > canvas.width + 100 ||
+                        screenY < -100 || screenY > canvas.height + 100) continue;
+                    
+                    // Losange isométrique
+                    ctx.beginPath();
+                    ctx.moveTo(screenX, screenY - gameState.tileSize/2);
+                    ctx.lineTo(screenX + gameState.tileSize/2, screenY);
+                    ctx.lineTo(screenX, screenY + gameState.tileSize/2);
+                    ctx.lineTo(screenX - gameState.tileSize/2, screenY);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // 🦸 Rendu du joueur
+        function renderPlayer() {
+            const worldPos = tileToWorld(gameState.player.x, gameState.player.y);
+            const screenX = worldPos.x - gameState.camera.x;
+            const screenY = worldPos.y - gameState.camera.y - gameState.player.z;
+            
+            // Ombre
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath();
+            ctx.ellipse(screenX, screenY + 20, 20, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sprite du joueur
+            ctx.font = '32px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(gameState.player.sprite, screenX, screenY);
+            
+            // Aura de vision
+            ctx.strokeStyle = 'rgba(255,215,0,0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, gameState.player.visionRange * 32, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // ✨ Effets temporels
+        function renderTemporalEffects() {
+            // Particules temporelles
+            const time = Date.now() * 0.001;
+            
+            ctx.fillStyle = 'rgba(138,43,226,0.6)';
+            for (let i = 0; i < 20; i++) {
+                const x = (Math.sin(time + i) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(time * 0.7 + i * 0.5) * 0.5 + 0.5) * canvas.height;
+                const size = Math.sin(time * 2 + i) * 2 + 3;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // 🔄 Mise à jour
+        function update(deltaTime) {
+            // Mise à jour du contrôleur
+            mapController.updatePhasing(deltaTime);
+            
+            // Phase temporelle
+            gameState.timePhase += deltaTime * 0.001;
+            
+            // Mise à jour UI
+            updateUI();
+        }
+        
+        // 📊 Mise à jour UI
+        function updateUI() {
+            document.getElementById('playerPos').textContent = 
+                `${gameState.player.x}, ${gameState.player.y}`;
+            
+            document.getElementById('timePhase').textContent = 
+                gameState.timePhase.toFixed(2);
+            
+            // Vérifier la plateforme actuelle
+            const platform = getPlatformAt(gameState.player.x, gameState.player.y);
+            if (platform) {
+                document.getElementById('currentPlatform').textContent = platform.name;
+                
+                if (platform !== gameState.selectedPlatform) {
+                    gameState.selectedPlatform = platform;
+                    showPlatformInfo(platform);
+                }
+            } else {
+                document.getElementById('currentPlatform').textContent = 'Sol';
+                hidePlatformInfo();
+            }
+            
+            // État de causalité
+            const causalityCheck = mapController.checkCausality(
+                gameState.player.x, 
+                gameState.player.y
+            );
+            document.getElementById('causalityStatus').textContent = 
+                causalityCheck.accessible ? 'Active' : causalityCheck.reason;
+        }
+        
+        // 🏝️ Obtenir la plateforme à une position
+        function getPlatformAt(x, y) {
+            return mapController.layers.platforms.find(p => {
+                const dx = p.x - x;
+                const dy = p.y - y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                return distance < 2; // Proche du centre
+            });
+        }
+        
+        // 💬 Afficher info plateforme
+        function showPlatformInfo(platform) {
+            const info = document.getElementById('platformInfo');
+            document.getElementById('platformName').textContent = platform.name;
+            document.getElementById('platformDesc').textContent = platform.description;
+            info.style.display = 'block';
+            
+            setTimeout(() => {
+                info.style.display = 'none';
+            }, 3000);
+        }
+        
+        function hidePlatformInfo() {
+            document.getElementById('platformInfo').style.display = 'none';
+        }
+        
+        // 🎮 Contrôles
+        canvas.addEventListener('click', (e) => {
+            const worldPos = screenToWorld(e.clientX, e.clientY);
+            const tilePos = worldToTile(worldPos.x, worldPos.y);
+            
+            // Vérifier si on peut se déplacer là
+            const causalityCheck = mapController.checkCausality(tilePos.x, tilePos.y);
+            if (causalityCheck.accessible) {
+                gameState.player.x = tilePos.x;
+                gameState.player.y = tilePos.y;
+                updateVision();
+            } else {
+                console.log(`Déplacement impossible: ${causalityCheck.reason}`);
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            const speed = 5;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                    gameState.camera.y -= speed;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    gameState.camera.y += speed;
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                    gameState.camera.x -= speed;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                    gameState.camera.x += speed;
+                    break;
+                case ' ':
+                    // Activer le portail le plus proche
+                    activateNearestPortal();
+                    break;
+                case 't':
+                case 'T':
+                    // Changer de timeline
+                    switchTimeline();
+                    break;
+                case 'f':
+                case 'F':
+                    // Toggle brouillard
+                    gameState.showFog = !gameState.showFog;
+                    break;
+            }
+        });
+        
+        // 🌀 Activer le portail le plus proche
+        function activateNearestPortal() {
+            const nearestPortal = mapController.layers.portals.reduce((nearest, portal) => {
+                const dx = portal.x - gameState.player.x;
+                const dy = portal.y - gameState.player.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (!nearest || distance < nearest.distance) {
+                    return { portal, distance };
+                }
+                return nearest;
+            }, null);
+            
+            if (nearestPortal && nearestPortal.distance < 3) {
+                // Simuler un sort pour l'activation
+                const spell = {
+                    type: 'dimensional',
+                    power: 100,
+                    targetTimeline: 'alternate_' + Math.floor(Math.random() * 3)
+                };
+                
+                mapController.activatePortal(nearestPortal.portal.id, spell)
+                    .then(result => {
+                        console.log(result.message);
+                    });
+            }
+        }
+        
+        // ⏰ Changer de timeline
+        function switchTimeline() {
+            const timelines = ['main', 'alternate_1', 'past_echo', 'future_potential'];
+            const currentIndex = timelines.indexOf(gameState.currentTimeline);
+            const nextIndex = (currentIndex + 1) % timelines.length;
+            
+            gameState.currentTimeline = timelines[nextIndex];
+            mapController.causalityState.activeTimeline = gameState.currentTimeline;
+            
+            document.getElementById('timelineName').textContent = 
+                gameState.currentTimeline.toUpperCase();
+        }
+        
+        // 🔧 Utilitaires de conversion
+        function tileToWorld(tileX, tileY) {
+            const x = (tileX - tileY) * gameState.tileSize / 2 + canvas.width / 2;
+            const y = (tileX + tileY) * gameState.tileSize / 4 + 100;
+            return { x, y };
+        }
+        
+        function worldToTile(worldX, worldY) {
+            const offsetX = worldX - canvas.width / 2;
+            const offsetY = worldY - 100;
+            
+            const tileX = Math.round((offsetX / (gameState.tileSize / 2) + offsetY / (gameState.tileSize / 4)) / 2);
+            const tileY = Math.round((offsetY / (gameState.tileSize / 4) - offsetX / (gameState.tileSize / 2)) / 2);
+            
+            return { x: tileX, y: tileY };
+        }
+        
+        function screenToWorld(screenX, screenY) {
+            return {
+                x: screenX + gameState.camera.x,
+                y: screenY + gameState.camera.y
+            };
+        }
+        
+        // 🎮 Boucle de jeu
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            update(deltaTime);
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gameState.camera.width = canvas.width;
+            gameState.camera.height = canvas.height;
+        });
+        
+        // 🚀 Lancement
+        init();
+    </script>
+</body>
+</html>

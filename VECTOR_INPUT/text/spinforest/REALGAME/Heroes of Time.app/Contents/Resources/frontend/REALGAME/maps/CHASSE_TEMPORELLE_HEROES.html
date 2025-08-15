@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA CHASSE TEMPORELLE - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #1a1a2e, #0f0f23);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #mapCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        /* HUD en haut */
+        #topHUD {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+            border-bottom: 2px solid #ffd700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        #playerInfo {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .resource-icon {
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle, #ffd700, #b8860b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #timeDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            color: #00ffff;
+        }
+        
+        #timelineIndicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #timelineBar {
+            width: 200px;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #timelineProgress {
+            height: 100%;
+            background: linear-gradient(to right, #00ffff, #ff00ff);
+            width: 50%;
+            transition: width 0.3s;
+        }
+        
+        /* HUD en bas */
+        #bottomHUD {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+            border-top: 2px solid #ffd700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        #heroPortrait {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        #armySlots {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .army-slot {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .army-slot:hover {
+            border-color: #gold;
+            transform: scale(1.05);
+        }
+        
+        .creature-icon {
+            font-size: 32px;
+        }
+        
+        .creature-count {
+            font-size: 14px;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+        
+        #temporalPowers {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .power-btn {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.2), rgba(0,0,0,0.5));
+            color: #00ffff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .power-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0,255,255,0.8);
+        }
+        
+        .power-btn.cooldown {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .cooldown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(255,0,0,0.5) 100%);
+        }
+        
+        /* Minimap */
+        #minimap {
+            position: absolute;
+            bottom: 170px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #ffd700;
+            background: rgba(0,0,0,0.8);
+            border-radius: 10px;
+        }
+        
+        /* Chat temporel */
+        #temporalChat {
+            position: absolute;
+            bottom: 170px;
+            left: 20px;
+            width: 300px;
+            height: 200px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .chat-message {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ffff;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .timeline-ghost {
+            opacity: 0.5;
+            color: #ff00ff;
+        }
+        
+        /* Indicateur de brouillard de causalité */
+        #causalityFog {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 250px;
+            padding: 15px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+        }
+        
+        #fogIntensity {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, 
+                transparent 0%, 
+                rgba(255,0,255,0.3) 30%, 
+                rgba(255,0,255,0.6) 60%, 
+                rgba(255,0,255,1) 100%);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        #fogMarker {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: #fff;
+            border: 2px solid #ff00ff;
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+        
+        /* Sound toggle */
+        #soundToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            color: #ffd700;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #soundToggle.muted {
+            color: #666;
+            border-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="mapCanvas"></canvas>
+        
+        <!-- HUD du haut -->
+        <div id="topHUD">
+            <div id="playerInfo">
+                <div class="resource">
+                    <div class="resource-icon">⚡</div>
+                    <span id="temporalEnergy">100</span>
+                </div>
+                <div class="resource">
+                    <div class="resource-icon">💎</div>
+                    <span id="crystals">50</span>
+                </div>
+                <div class="resource">
+                    <div class="resource-icon">🪙</div>
+                    <span id="gold">1000</span>
+                </div>
+            </div>
+            
+            <div id="timelineIndicator">
+                <div id="timeDisplay">Jour 1 - 12:00</div>
+                <div id="timelineBar">
+                    <div id="timelineProgress"></div>
+                </div>
+            </div>
+            <div>
+                <label style="font-size:12px;margin-right:6px;opacity:.8">Mode:</label>
+                <select id="modeSelect">
+                    <option value="PVE">Player vs AI</option>
+                    <option value="PVP_SIM">AI vs AI (spectate)</option>
+                </select>
+                <label style="font-size:12px;margin:0 6px;opacity:.8">Diff:</label>
+                <select id="diffSelect">
+                    <option value="easy">easy</option>
+                    <option value="normal" selected>normal</option>
+                    <option value="hard">hard</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- HUD du bas -->
+        <div id="bottomHUD">
+            <div id="heroPortrait">🧙</div>
+            
+            <div id="armySlots">
+                <div class="army-slot">
+                    <div class="creature-icon">🐉</div>
+                    <div class="creature-count">5</div>
+                </div>
+                <div class="army-slot">
+                    <div class="creature-icon">⚔️</div>
+                    <div class="creature-count">20</div>
+                </div>
+                <div class="army-slot">
+                    <div class="creature-icon">🏹</div>
+                    <div class="creature-count">30</div>
+                </div>
+                <div class="army-slot">
+                    <div class="creature-icon">🛡️</div>
+                    <div class="creature-count">15</div>
+                </div>
+                <div class="army-slot">
+                    <div class="creature-icon">🦅</div>
+                    <div class="creature-count">10</div>
+                </div>
+            </div>
+            
+            <div id="temporalPowers">
+                <button class="power-btn" title="Saut Temporel (Q)">⏭️</button>
+                <button class="power-btn" title="Superposition (W)">👥</button>
+                <button class="power-btn" title="Vision Fantôme (E)">👁️</button>
+                <button class="power-btn" title="Paradoxe (R)">🌀</button>
+            </div>
+        </div>
+        
+        <!-- Minimap -->
+        <canvas id="minimap"></canvas>
+        
+        <!-- Chat Temporel -->
+        <div id="temporalChat">
+            <div class="chat-message">
+                <strong>Système:</strong> Bienvenue dans la Chasse Temporelle!
+            </div>
+            <div class="chat-message timeline-ghost">
+                <strong>Fantôme [Jour 7]:</strong> Un joueur explore cette zone dans le futur...
+            </div>
+        </div>
+        
+        <!-- Indicateur de Brouillard -->
+        <div id="causalityFog">
+            <div style="margin-bottom: 10px;">Brouillard de Causalité</div>
+            <div id="fogIntensity">
+                <div id="fogMarker"></div>
+            </div>
+        </div>
+        
+        <!-- Toggle Son -->
+        <div id="soundToggle">🔊</div>
+    </div>
+
+    <script>
+        // Configuration du jeu
+        const CONFIG = {
+            mapWidth: 100,
+            mapHeight: 100,
+            tileSize: 32,
+            hexSize: 24,
+            viewportPadding: 100
+        };
+        
+        // État du jeu
+        class GameState {
+            constructor() {
+                this.canvas = document.getElementById('mapCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.minimap = document.getElementById('minimap');
+                this.minimapCtx = this.minimap.getContext('2d');
+                
+                this.soundEnabled = true;
+                this.audioContext = null;
+                
+                // Position de la caméra
+                this.camera = {
+                    x: 0,
+                    y: 0,
+                    zoom: 1,
+                    followHero: true
+                };
+                
+                // État du héros
+                this.hero = {
+                    x: 50,
+                    y: 50,
+                    timeline: 1,
+                    speed: 1,
+                    army: [
+                        { type: 'dragon', count: 5 },
+                        { type: 'knight', count: 20 },
+                        { type: 'archer', count: 30 },
+                        { type: 'defender', count: 15 },
+                        { type: 'griffin', count: 10 }
+                    ]
+                };
+                
+                // Autres joueurs (fantômes temporels)
+                this.ghosts = [];
+                
+                // Carte hexagonale
+                this.map = this.generateMap();
+                
+                // Temps du jeu
+                this.gameTime = {
+                    day: 1,
+                    hour: 12,
+                    minute: 0,
+                    speed: 1
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.setupAudio();
+                this.generateGhosts();
+                this.gameLoop();
+                this.startTimeFlow();
+                // initialiser UI modes
+                try {
+                    const m=document.getElementById('modeSelect');
+                    const d=document.getElementById('diffSelect');
+                    const lm=localStorage.getItem('agentMode');
+                    const ld=localStorage.getItem('agentDifficulty');
+                    if(lm) m.value=lm; if(ld) d.value=ld;
+                    m.addEventListener('change',()=>{ localStorage.setItem('agentMode', m.value); });
+                    d.addEventListener('change',()=>{ localStorage.setItem('agentDifficulty', d.value); });
+                }catch(e){}
+            }
+            
+            setupCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.minimap.width = 200;
+                this.minimap.height = 200;
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+            }
+            
+            setupAudio() {
+                // Initialisation simple du contexte audio
+                const soundToggle = document.getElementById('soundToggle');
+                soundToggle.addEventListener('click', () => {
+                    this.soundEnabled = !this.soundEnabled;
+                    soundToggle.classList.toggle('muted');
+                    soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
+                    
+                    if (this.soundEnabled && !this.audioContext) {
+                        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                });
+            }
+            
+            playSound(type) {
+                if (!this.soundEnabled || !this.audioContext) return;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                switch(type) {
+                    case 'move':
+                        oscillator.frequency.value = 200;
+                        gainNode.gain.value = 0.1;
+                        break;
+                    case 'temporal':
+                        oscillator.frequency.value = 800;
+                        gainNode.gain.value = 0.2;
+                        break;
+                    case 'combat':
+                        oscillator.frequency.value = 150;
+                        gainNode.gain.value = 0.3;
+                        break;
+                    default:
+                        oscillator.frequency.value = 440;
+                        gainNode.gain.value = 0.1;
+                }
+                
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.1);
+            }
+            
+            generateMap() {
+                const map = [];
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    const row = [];
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        row.push({
+                            terrain: this.getRandomTerrain(),
+                            object: Math.random() < 0.1 ? this.getRandomObject() : null,
+                            fogLevel: Math.random() * 3 // 0 = clair, 3 = opaque
+                        });
+                    }
+                    map.push(row);
+                }
+                return map;
+            }
+            
+            getRandomTerrain() {
+                const terrains = ['grass', 'dirt', 'water', 'mountain', 'forest'];
+                return terrains[Math.floor(Math.random() * terrains.length)];
+            }
+            
+            getRandomObject() {
+                const objects = ['castle', 'mine', 'artifact', 'portal', 'monster'];
+                return objects[Math.floor(Math.random() * objects.length)];
+            }
+            
+            generateGhosts() {
+                // Créer des fantômes temporels d'autres joueurs
+                for (let i = 0; i < 5; i++) {
+                    this.ghosts.push({
+                        x: Math.random() * CONFIG.mapWidth,
+                        y: Math.random() * CONFIG.mapHeight,
+                        timeline: Math.floor(Math.random() * 10) + 1,
+                        name: `Joueur_${i + 1}`,
+                        opacity: 0.3 + Math.random() * 0.4
+                    });
+                }
+            }
+            
+            setupEventListeners() {
+                // Déplacement avec clic
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Convertir en coordonnées de carte
+                    const mapX = (x + this.camera.x) / CONFIG.hexSize;
+                    const mapY = (y + this.camera.y) / CONFIG.hexSize;
+                    
+                    this.moveHero(mapX, mapY);
+                });
+                
+                // Pouvoirs temporels
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key.toLowerCase()) {
+                        case 'q':
+                            this.temporalJump();
+                            break;
+                        case 'w':
+                            this.superposition();
+                            break;
+                        case 'e':
+                            this.ghostVision();
+                            break;
+                        case 'r':
+                            this.createParadox();
+                            break;
+                        case '+':
+                        case '=':
+                            this.camera.zoom = Math.min(2, this.camera.zoom + 0.1);
+                            break;
+                        case '-':
+                        case '_':
+                            this.camera.zoom = Math.max(0.5, this.camera.zoom - 0.1);
+                            break;
+                        case 'z':
+                            // Toggle zoom max HOMM3-like
+                            this.camera.zoom = (this.camera.zoom < 1.9) ? 2 : 1;
+                            break;
+                        case 'f':
+                            // Toggle suivi héros
+                            this.camera.followHero = !this.camera.followHero;
+                            break;
+                        case 'arrowup':
+                            this.camera.y -= 40 / this.camera.zoom;
+                            break;
+                        case 'arrowdown':
+                            this.camera.y += 40 / this.camera.zoom;
+                            break;
+                        case 'arrowleft':
+                            this.camera.x -= 40 / this.camera.zoom;
+                            break;
+                        case 'arrowright':
+                            this.camera.x += 40 / this.camera.zoom;
+                            break;
+                    }
+                });
+                
+                // Scroll pour zoom
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                    this.camera.zoom = Math.max(0.5, Math.min(2, this.camera.zoom * delta));
+                });
+            }
+            
+            moveHero(targetX, targetY) {
+                // Animation de déplacement simple
+                // Clamper la cible aux bornes de la carte
+                const clampedX = Math.max(0, Math.min(CONFIG.mapWidth - 1, targetX));
+                const clampedY = Math.max(0, Math.min(CONFIG.mapHeight - 1, targetY));
+                const dx = clampedX - this.hero.x;
+                const dy = clampedY - this.hero.y;
+                const steps = 20;
+                let step = 0;
+                
+                this.playSound('move');
+                
+                const animate = () => {
+                    if (step < steps) {
+                        this.hero.x += dx / steps;
+                        this.hero.y += dy / steps;
+                        step++;
+                        requestAnimationFrame(animate);
+                    }
+                };
+                animate();
+            }
+            
+            temporalJump() {
+                this.playSound('temporal');
+                this.hero.timeline += 1;
+                this.updateTimeDisplay();
+                this.addChatMessage('Système', `Saut temporel! Vous êtes maintenant au jour ${this.hero.timeline}`);
+            }
+            
+            superposition() {
+                this.playSound('temporal');
+                this.addChatMessage('Système', 'Superposition activée! Contrôlez 3 héros simultanément!');
+            }
+            
+            ghostVision() {
+                this.playSound('temporal');
+                this.ghosts.forEach(ghost => {
+                    ghost.opacity = Math.min(1, ghost.opacity + 0.3);
+                });
+                this.addChatMessage('Système', 'Vision fantôme activée! Vous voyez les autres timelines!');
+            }
+            
+            createParadox() {
+                this.playSound('temporal');
+                this.addChatMessage('Système', 'Paradoxe créé! La causalité se déforme autour de vous!');
+            }
+            
+            addChatMessage(author, message) {
+                const chat = document.getElementById('temporalChat');
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'chat-message';
+                msgDiv.innerHTML = `<strong>${author}:</strong> ${message}`;
+                chat.appendChild(msgDiv);
+                chat.scrollTop = chat.scrollHeight;
+            }
+            
+            startTimeFlow() {
+                setInterval(() => {
+                    this.gameTime.minute += this.gameTime.speed;
+                    if (this.gameTime.minute >= 60) {
+                        this.gameTime.minute = 0;
+                        this.gameTime.hour++;
+                        if (this.gameTime.hour >= 24) {
+                            this.gameTime.hour = 0;
+                            this.gameTime.day++;
+                        }
+                    }
+                    this.updateTimeDisplay();
+                }, 100);
+            }
+            
+            updateTimeDisplay() {
+                const display = document.getElementById('timeDisplay');
+                display.textContent = `Jour ${this.gameTime.day + this.hero.timeline - 1} - ${this.gameTime.hour}:${String(this.gameTime.minute).padStart(2, '0')}`;
+                
+                const progress = document.getElementById('timelineProgress');
+                progress.style.width = `${(this.gameTime.hour / 24) * 100}%`;
+            }
+            
+            drawHexagon(x, y, size, color) {
+                this.ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const hx = x + size * Math.cos(angle);
+                    const hy = y + size * Math.sin(angle);
+                    if (i === 0) {
+                        this.ctx.moveTo(hx, hy);
+                    } else {
+                        this.ctx.lineTo(hx, hy);
+                    }
+                }
+                this.ctx.closePath();
+                this.ctx.fillStyle = color;
+                this.ctx.fill();
+                this.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                this.ctx.stroke();
+            }
+            
+            render() {
+                // Clear
+                this.ctx.fillStyle = '#0a0a1e';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Dessiner la carte hexagonale
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        const tile = this.map[y][x];
+                        const hexX = x * CONFIG.hexSize * 1.5 - this.camera.x;
+                        const hexY = y * CONFIG.hexSize * Math.sqrt(3) - this.camera.y + (x % 2) * CONFIG.hexSize * Math.sqrt(3) / 2;
+                        
+                        // Couleur selon terrain
+                        let color = '#2a4d3a'; // grass
+                        switch(tile.terrain) {
+                            case 'water': color = '#1e3a5f'; break;
+                            case 'mountain': color = '#4a4a4a'; break;
+                            case 'forest': color = '#1a3a2a'; break;
+                            case 'dirt': color = '#5a4a3a'; break;
+                            default: color = '#2a4d3a';
+                        }
+                        
+                        // Appliquer le brouillard de causalité
+                        const fog = tile.fogLevel;
+                        if (fog > 0) {
+                            const alpha = fog / 3;
+                            color = this.blendColors(color, '#ff00ff', alpha * 0.3);
+                        }
+                        
+                        this.drawHexagon(hexX, hexY, CONFIG.hexSize, color);
+                        
+                        // Dessiner les objets
+                        if (tile.object) {
+                            this.ctx.fillStyle = '#ffd700';
+                            this.ctx.font = '16px Arial';
+                            this.ctx.textAlign = 'center';
+                            let icon = '?';
+                            switch(tile.object) {
+                                case 'castle': icon = '🏰'; break;
+                                case 'mine': icon = '⛏️'; break;
+                                case 'artifact': icon = '✨'; break;
+                                case 'portal': icon = '🌀'; break;
+                                case 'monster': icon = '👹'; break;
+                            }
+                            this.ctx.fillText(icon, hexX, hexY);
+                        }
+                    }
+                }
+                
+                // Dessiner les fantômes temporels
+                this.ghosts.forEach(ghost => {
+                    const gx = ghost.x * CONFIG.hexSize * 1.5 - this.camera.x;
+                    const gy = ghost.y * CONFIG.hexSize * Math.sqrt(3) - this.camera.y;
+                    
+                    this.ctx.globalAlpha = ghost.opacity;
+                    this.ctx.fillStyle = '#ff00ff';
+                    this.ctx.beginPath();
+                    this.ctx.arc(gx, gy, 10, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.fillText(ghost.name, gx, gy - 15);
+                    this.ctx.globalAlpha = 1;
+                });
+                
+                // Dessiner le héros
+                const heroX = this.hero.x * CONFIG.hexSize * 1.5 - this.camera.x;
+                const heroY = this.hero.y * CONFIG.hexSize * Math.sqrt(3) - this.camera.y;
+                
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.beginPath();
+                this.ctx.arc(heroX, heroY, 12, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = '#fff';
+                this.ctx.font = 'bold 20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('🧙', heroX, heroY + 5);
+                
+                // Mettre à jour la minimap
+                this.renderMinimap();
+            }
+            
+            renderMinimap() {
+                const scale = 2;
+                this.minimapCtx.fillStyle = '#000';
+                this.minimapCtx.fillRect(0, 0, 200, 200);
+                
+                // Dessiner une version simplifiée de la carte
+                for (let y = 0; y < CONFIG.mapHeight; y += 5) {
+                    for (let x = 0; x < CONFIG.mapWidth; x += 5) {
+                        const tile = this.map[y][x];
+                        let color = '#2a4d3a';
+                        switch(tile.terrain) {
+                            case 'water': color = '#1e3a5f'; break;
+                            case 'mountain': color = '#4a4a4a'; break;
+                        }
+                        this.minimapCtx.fillStyle = color;
+                        this.minimapCtx.fillRect(x * scale, y * scale, scale * 5, scale * 5);
+                    }
+                }
+                
+                // Position du héros
+                this.minimapCtx.fillStyle = '#00ff00';
+                this.minimapCtx.fillRect(this.hero.x * scale - 2, this.hero.y * scale - 2, 4, 4);
+            }
+            
+            blendColors(color1, color2, alpha) {
+                // Simple blend de couleurs
+                return color1; // Simplification pour l'instant
+            }
+            
+            gameLoop() {
+                this.render();
+                
+                // Centrer la caméra sur le héros si suivi actif
+                if (this.camera.followHero) {
+                    this.camera.x = this.hero.x * CONFIG.hexSize * 1.5 - this.canvas.width / 2;
+                    this.camera.y = this.hero.y * CONFIG.hexSize * Math.sqrt(3) - this.canvas.height / 2;
+                }
+                // Clamper la caméra aux limites de la carte
+                this.clampCamera();
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            clampCamera() {
+                const maxX = CONFIG.mapWidth * CONFIG.hexSize * 1.5 - this.canvas.width;
+                const maxY = CONFIG.mapHeight * CONFIG.hexSize * Math.sqrt(3) - this.canvas.height;
+                this.camera.x = Math.max(0, Math.min(maxX, this.camera.x));
+                this.camera.y = Math.max(0, Math.min(maxY, this.camera.y));
+            }
+        }
+        
+        // Lancer le jeu
+        const game = new GameState();
+        
+        console.log("LA CHASSE TEMPORELLE - Version Heroes");
+        console.log("Carte hexagonale isométrique");
+        console.log("Brouillard de causalité actif");
+        console.log("Timelines désynchronisées");
+    </script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REALGAME - Carte ISO + Combat (GROEKEN)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+        
+        #hero-stats {
+            position: absolute;
+            top: 10px;
+            left: 250px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #00ff00;
+            font-size: 14px;
+        }
+        
+        .stat-bar {
+            width: 150px;
+            height: 15px;
+            background: #333;
+            border: 1px solid #666;
+            margin: 3px 0;
+            position: relative;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #combat-log {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            color: white;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        
+        .log-damage { color: #ff6666; }
+        .log-heal { color: #66ff66; }
+        .log-special { color: #66ccff; }
+        .log-system { color: #ffff66; }
+        
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .combat-trigger {
+            position: absolute;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 0.3; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <h3>🗺️ REALGAME - Combat Intégré</h3>
+        <div>Position: <span id="position">25, 25</span></div>
+        <div>Timeline: <span id="current-timeline">Principale</span></div>
+        <div>Mode: <span id="game-mode">Exploration</span></div>
+    </div>
+    
+    <div id="hero-stats">
+        <strong>🧙 Héros</strong><br>
+        Niveau: <span id="hero-level">1</span><br>
+        XP: <span id="hero-xp">0</span> / <span id="hero-xp-needed">100</span><br>
+        
+        <div>PV: <span id="hero-hp">100</span> / <span id="hero-hp-max">100</span></div>
+        <div class="stat-bar">
+            <div class="stat-fill" id="hp-bar" style="background: #ff0000; width: 100%"></div>
+        </div>
+        
+        <div>MP: <span id="hero-mp">50</span> / <span id="hero-mp-max">50</span></div>
+        <div class="stat-bar">
+            <div class="stat-fill" id="mp-bar" style="background: #0088ff; width: 100%"></div>
+        </div>
+        
+        <div>⚔️ Attaque: <span id="hero-attack">15</span></div>
+        <div>🛡️ Défense: <span id="hero-defense">5</span></div>
+        <div>💰 Or: <span id="hero-gold">0</span></div>
+    </div>
+    
+    <div id="combat-log">
+        <strong>📜 Journal de Combat</strong><br>
+        <div id="log-content"></div>
+    </div>
+    
+    <div id="controls">
+        <strong>Contrôles:</strong><br>
+        IJKL: Déplacer héros<br>
+        WASD: Déplacer caméra<br>
+        ESPACE: Résoudre causalité<br>
+        Clic: Attaquer (en combat)<br>
+        E: Activer portail<br>
+        1-3: Changer timeline
+    </div>
+
+    <script type="module">
+        // Simuler les imports pour la démo
+        const modules = {};
+        
+        // MapLayerController (simplifié pour la démo)
+        modules.MapLayerController = class {
+            constructor(canvas, magicStack) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.magicStack = magicStack;
+                this.mapWidth = 50;
+                this.mapHeight = 50;
+                this.tileWidth = 64;
+                this.tileHeight = 32;
+                this.camera = { x: 0, y: 0 };
+                this.currentTimeline = 'principale';
+                this.causalityResolved = new Set();
+                
+                this.layers = {
+                    base: [],
+                    objects: [],
+                    phasage: [],
+                    fog: [],
+                    portals: [],
+                    entities: []
+                };
+                
+                this.initializeLayers();
+            }
+            
+            initializeLayers() {
+                // Initialisation simplifiée
+                for (let y = 0; y < this.mapHeight; y++) {
+                    this.layers.base[y] = [];
+                    this.layers.phasage[y] = [];
+                    this.layers.fog[y] = [];
+                    this.layers.objects[y] = [];
+                    
+                    for (let x = 0; x < this.mapWidth; x++) {
+                        this.layers.base[y][x] = { 
+                            type: Math.random() < 0.7 ? 'grass' : 'stone',
+                            walkable: true 
+                        };
+                        
+                        const dist = Math.sqrt((x-25)**2 + (y-25)**2);
+                        this.layers.phasage[y][x] = dist < 15 ? 3 : dist < 25 ? 2 : 1;
+                        this.layers.fog[y][x] = this.layers.phasage[y][x] < 3 ? 1 : 0;
+                        
+                        // Ajouter une arène au centre
+                        if (x === 25 && y === 25) {
+                            this.layers.objects[y][x] = { type: 'arena', icon: '🏛️', interactive: true };
+                        }
+                    }
+                }
+                
+                // Ajouter quelques portails
+                this.layers.portals.push({
+                    id: 'portal_0',
+                    x: 30,
+                    y: 25,
+                    active: false,
+                    color: '#8B00FF'
+                });
+            }
+            
+            cartToIso(cartX, cartY) {
+                return {
+                    x: (cartX - cartY) * (this.tileWidth / 2),
+                    y: (cartX + cartY) * (this.tileHeight / 2)
+                };
+            }
+            
+            isoToCart(isoX, isoY) {
+                return {
+                    x: Math.floor((isoX / (this.tileWidth / 2) + isoY / (this.tileHeight / 2)) / 2),
+                    y: Math.floor((isoY / (this.tileHeight / 2) - isoX / (this.tileWidth / 2)) / 2)
+                };
+            }
+            
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Rendu simplifié
+                for (let y = 0; y < this.mapHeight; y++) {
+                    for (let x = 0; x < this.mapWidth; x++) {
+                        const iso = this.cartToIso(x, y);
+                        const screenX = iso.x - this.camera.x + this.canvas.width / 2;
+                        const screenY = iso.y - this.camera.y + this.canvas.height / 2;
+                        
+                        if (screenX > -100 && screenX < this.canvas.width + 100 &&
+                            screenY > -100 && screenY < this.canvas.height + 100) {
+                            
+                            const phase = this.layers.phasage[y][x];
+                            if (phase === 0) continue;
+                            
+                            // Dessiner la tuile
+                            this.ctx.save();
+                            this.ctx.globalAlpha = phase / 3;
+                            
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(screenX, screenY);
+                            this.ctx.lineTo(screenX + this.tileWidth / 2, screenY + this.tileHeight / 2);
+                            this.ctx.lineTo(screenX, screenY + this.tileHeight);
+                            this.ctx.lineTo(screenX - this.tileWidth / 2, screenY + this.tileHeight / 2);
+                            this.ctx.closePath();
+                            
+                            this.ctx.fillStyle = this.layers.base[y][x].type === 'grass' ? '#4a7c59' : '#666';
+                            this.ctx.fill();
+                            this.ctx.strokeStyle = '#333';
+                            this.ctx.stroke();
+                            
+                            // Objet
+                            const obj = this.layers.objects[y][x];
+                            if (obj) {
+                                this.ctx.font = '20px Arial';
+                                this.ctx.textAlign = 'center';
+                                this.ctx.fillText(obj.icon, screenX, screenY + this.tileHeight / 2);
+                            }
+                            
+                            this.ctx.restore();
+                        }
+                    }
+                }
+                
+                // Entités
+                this.layers.entities.forEach(entity => {
+                    const iso = this.cartToIso(entity.x, entity.y);
+                    const screenX = iso.x - this.camera.x + this.canvas.width / 2;
+                    const screenY = iso.y - this.camera.y + this.canvas.height / 2;
+                    
+                    this.ctx.font = '30px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(entity.sprite || '🧙', screenX, screenY);
+                });
+            }
+            
+            moveCamera(dx, dy) {
+                this.camera.x += dx;
+                this.camera.y += dy;
+            }
+            
+            phaseShift(x, y, radius, newPhase) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < this.mapWidth && ny >= 0 && ny < this.mapHeight) {
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist <= radius) {
+                                this.layers.phasage[ny][nx] = Math.max(
+                                    this.layers.phasage[ny][nx],
+                                    newPhase - Math.floor(dist / 2)
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            
+            resolveCausality(x, y) {
+                const key = `${x},${y}`;
+                if (!this.causalityResolved.has(key)) {
+                    this.causalityResolved.add(key);
+                    this.phaseShift(x, y, 3, 3);
+                    addLog('Causalité résolue!', 'system');
+                }
+            }
+        };
+        
+        // Combat System simplifié
+        modules.UnifiedCombatSystem = class {
+            constructor() {
+                this.combatants = [];
+                this.projectiles = [];
+                this.mode = 'realtime';
+            }
+            
+            executeAttack(attacker, target) {
+                const damage = Math.max(1, attacker.attack - target.defense / 2);
+                target.hp -= damage;
+                addLog(`${attacker.sprite} attaque pour ${damage} dégâts!`, 'damage');
+                return { success: true, damage };
+            }
+        };
+        
+        // MapCombatIntegration simplifié
+        modules.MapCombatIntegration = class {
+            constructor(mapController, canvas) {
+                this.mapController = mapController;
+                this.canvas = canvas;
+                this.combatSystem = new modules.UnifiedCombatSystem();
+                this.inCombat = false;
+                this.combatTriggers = [];
+                
+                // Ajouter un trigger à l'arène
+                this.combatTriggers.push({
+                    id: 'arena_centrale',
+                    x: 25,
+                    y: 25,
+                    radius: 3,
+                    type: 'arena',
+                    enemies: ['warrior', 'mage'],
+                    reward: { gold: 100, xp: 50 }
+                });
+            }
+            
+            checkCombatTriggers(heroX, heroY) {
+                if (this.inCombat) return false;
+                
+                for (let trigger of this.combatTriggers) {
+                    const dist = Math.sqrt((trigger.x - heroX)**2 + (trigger.y - heroY)**2);
+                    if (dist <= trigger.radius) {
+                        this.initiateCombat(trigger);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            initiateCombat(trigger) {
+                this.inCombat = true;
+                document.getElementById('game-mode').textContent = 'Combat!';
+                addLog('⚔️ Combat déclenché!', 'system');
+                
+                // Créer des ennemis simples
+                const enemies = [];
+                trigger.enemies.forEach((type, i) => {
+                    enemies.push({
+                        id: `enemy_${i}`,
+                        sprite: type === 'warrior' ? '⚔️' : '🧙‍♂️',
+                        hp: type === 'warrior' ? 50 : 30,
+                        maxHp: type === 'warrior' ? 50 : 30,
+                        attack: type === 'warrior' ? 12 : 18,
+                        defense: type === 'warrior' ? 8 : 4,
+                        x: trigger.x + (i - 0.5) * 2,
+                        y: trigger.y - 2,
+                        team: 'enemy'
+                    });
+                    this.mapController.layers.entities.push(enemies[i]);
+                });
+                
+                this.enemies = enemies;
+                
+                // Démarrer le combat automatique pour la démo
+                this.startAutoCombat();
+            }
+            
+            startAutoCombat() {
+                const combatInterval = setInterval(() => {
+                    if (!this.inCombat) {
+                        clearInterval(combatInterval);
+                        return;
+                    }
+                    
+                    const hero = this.mapController.layers.entities.find(e => e.id === 'hero');
+                    const aliveEnemies = this.enemies.filter(e => e.hp > 0);
+                    
+                    if (aliveEnemies.length === 0) {
+                        this.endCombat('victory');
+                        clearInterval(combatInterval);
+                        return;
+                    }
+                    
+                    if (hero.hp <= 0) {
+                        this.endCombat('defeat');
+                        clearInterval(combatInterval);
+                        return;
+                    }
+                    
+                    // Tour du héros
+                    const target = aliveEnemies[0];
+                    this.combatSystem.executeAttack(hero, target);
+                    
+                    // Tour des ennemis
+                    aliveEnemies.forEach(enemy => {
+                        if (enemy.hp > 0) {
+                            this.combatSystem.executeAttack(enemy, hero);
+                        }
+                    });
+                    
+                    updateHeroStats();
+                }, 1500);
+            }
+            
+            endCombat(result) {
+                this.inCombat = false;
+                document.getElementById('game-mode').textContent = 'Exploration';
+                
+                if (result === 'victory') {
+                    addLog('🎉 Victoire!', 'system');
+                    const hero = this.mapController.layers.entities.find(e => e.id === 'hero');
+                    hero.xp += 50;
+                    hero.gold += 100;
+                    
+                    // Level up?
+                    if (hero.xp >= hero.level * 100) {
+                        hero.level++;
+                        hero.xp = 0;
+                        hero.maxHp += 10;
+                        hero.hp = hero.maxHp;
+                        hero.attack += 2;
+                        hero.defense += 1;
+                        addLog(`🎉 Level ${hero.level}!`, 'special');
+                    }
+                } else {
+                    addLog('💀 Défaite...', 'system');
+                }
+                
+                // Retirer les ennemis
+                this.enemies.forEach(enemy => {
+                    const idx = this.mapController.layers.entities.indexOf(enemy);
+                    if (idx > -1) this.mapController.layers.entities.splice(idx, 1);
+                });
+                
+                // Retirer le trigger
+                const idx = this.combatTriggers.findIndex(t => t.id === 'arena_centrale');
+                if (idx > -1) this.combatTriggers.splice(idx, 1);
+                
+                updateHeroStats();
+            }
+            
+            update() {
+                const hero = this.mapController.layers.entities.find(e => e.id === 'hero');
+                if (hero && !this.inCombat) {
+                    this.checkCombatTriggers(Math.floor(hero.x), Math.floor(hero.y));
+                }
+            }
+            
+            render() {
+                return false; // Pas de rendu spécial
+            }
+        };
+        
+        // Initialisation
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Créer les systèmes
+        const magicStack = { cast: async () => ({ success: true }) };
+        const mapController = new modules.MapLayerController(canvas, magicStack);
+        const combatIntegration = new modules.MapCombatIntegration(mapController, canvas);
+        
+        // Ajouter le héros
+        const hero = {
+            id: 'hero',
+            x: 25,
+            y: 25,
+            sprite: '🧙',
+            hp: 100,
+            maxHp: 100,
+            mp: 50,
+            maxMp: 50,
+            attack: 15,
+            defense: 5,
+            level: 1,
+            xp: 0,
+            gold: 0,
+            team: 'hero'
+        };
+        mapController.layers.entities.push(hero);
+        
+        // Gestion des inputs
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+        
+        // Journal de combat
+        function addLog(message, type = 'normal') {
+            const logContent = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+            
+            // Garder seulement les 20 derniers messages
+            while (logContent.children.length > 20) {
+                logContent.removeChild(logContent.firstChild);
+            }
+        }
+        
+        // Mise à jour des stats
+        function updateHeroStats() {
+            document.getElementById('hero-level').textContent = hero.level;
+            document.getElementById('hero-xp').textContent = hero.xp;
+            document.getElementById('hero-xp-needed').textContent = hero.level * 100;
+            document.getElementById('hero-hp').textContent = Math.floor(hero.hp);
+            document.getElementById('hero-hp-max').textContent = hero.maxHp;
+            document.getElementById('hero-mp').textContent = Math.floor(hero.mp);
+            document.getElementById('hero-mp-max').textContent = hero.maxMp;
+            document.getElementById('hero-attack').textContent = hero.attack;
+            document.getElementById('hero-defense').textContent = hero.defense;
+            document.getElementById('hero-gold').textContent = hero.gold;
+            
+            // Barres
+            document.getElementById('hp-bar').style.width = `${(hero.hp / hero.maxHp) * 100}%`;
+            document.getElementById('mp-bar').style.width = `${(hero.mp / hero.maxMp) * 100}%`;
+        }
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Déplacer héros
+            const heroSpeed = 0.2;
+            if (keys['i'] || keys['I']) hero.y -= heroSpeed;
+            if (keys['k'] || keys['K']) hero.y += heroSpeed;
+            if (keys['j'] || keys['J']) hero.x -= heroSpeed;
+            if (keys['l'] || keys['L']) hero.x += heroSpeed;
+            
+            // Limites
+            hero.x = Math.max(0, Math.min(mapController.mapWidth - 1, hero.x));
+            hero.y = Math.max(0, Math.min(mapController.mapHeight - 1, hero.y));
+            
+            // Révéler autour du héros
+            mapController.phaseShift(Math.floor(hero.x), Math.floor(hero.y), 5, 3);
+            
+            // Caméra
+            const cameraSpeed = 10;
+            if (keys['w'] || keys['W']) mapController.moveCamera(0, -cameraSpeed);
+            if (keys['s'] || keys['S']) mapController.moveCamera(0, cameraSpeed);
+            if (keys['a'] || keys['A']) mapController.moveCamera(-cameraSpeed, 0);
+            if (keys['d'] || keys['D']) mapController.moveCamera(cameraSpeed, 0);
+            
+            // Résoudre causalité
+            if (keys[' ']) {
+                mapController.resolveCausality(Math.floor(hero.x), Math.floor(hero.y));
+                keys[' '] = false;
+            }
+            
+            // Centre caméra sur héros
+            const heroIso = mapController.cartToIso(hero.x, hero.y);
+            mapController.camera.x += (heroIso.x - mapController.camera.x) * 0.1;
+            mapController.camera.y += (heroIso.y - mapController.camera.y) * 0.1;
+            
+            // Update position
+            document.getElementById('position').textContent = `${Math.floor(hero.x)}, ${Math.floor(hero.y)}`;
+            
+            // Update combat
+            combatIntegration.update();
+            
+            // Régénération
+            if (hero.hp < hero.maxHp && !combatIntegration.inCombat) {
+                hero.hp = Math.min(hero.maxHp, hero.hp + 0.1);
+            }
+            if (hero.mp < hero.maxMp) {
+                hero.mp = Math.min(hero.maxMp, hero.mp + 0.05);
+            }
+            
+            updateHeroStats();
+            
+            // Rendu
+            if (!combatIntegration.render()) {
+                mapController.render();
+            }
+            
+            // Indicateurs de combat
+            ctx.save();
+            combatIntegration.combatTriggers.forEach(trigger => {
+                const iso = mapController.cartToIso(trigger.x, trigger.y);
+                const screenX = iso.x - mapController.camera.x + canvas.width / 2;
+                const screenY = iso.y - mapController.camera.y + canvas.height / 2;
+                
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, trigger.radius * 30, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Messages initiaux
+        addLog('🎮 REALGAME démarré!', 'system');
+        addLog('Approchez de l\'arène centrale pour combattre!', 'special');
+        
+        updateHeroStats();
+        gameLoop();
+    </script>
+</body>
+</html>

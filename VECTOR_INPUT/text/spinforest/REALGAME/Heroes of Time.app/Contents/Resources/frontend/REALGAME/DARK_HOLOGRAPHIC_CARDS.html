@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Dark Fantasy Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at center, #0a0a0a 0%, #000000 100%);
+            color: #e0e0e0;
+            font-family: 'Garamond', 'Georgia', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1500px;
+        }
+
+        /* BRUME MYSTIQUE */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="fog"><feTurbulence baseFrequency="0.01" numOctaves="2"/><feColorMatrix values="0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.3 0"/></filter><rect width="100%" height="100%" filter="url(%23fog)"/></svg>');
+            opacity: 0.4;
+            animation: fogDrift 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fogDrift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+
+        /* CONTAINER */
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            padding: 50px;
+            transform-style: preserve-3d;
+        }
+
+        /* CARTE DARK FANTASY */
+        .dark-card {
+            width: 280px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .dark-card:hover {
+            transform: rotateY(3deg) rotateX(-3deg) translateZ(30px);
+        }
+
+        /* BASE DE LA CARTE - VERRE SOMBRE */
+        .card-glass {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(20, 20, 30, 0.8) 0%,
+                rgba(10, 10, 20, 0.6) 50%,
+                rgba(30, 20, 40, 0.8) 100%
+            );
+            border: 1px solid rgba(100, 80, 120, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* RUNES ANCIENNES */
+        .ancient-runes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            opacity: 0.15;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 50px,
+                rgba(80, 60, 100, 0.1) 50px,
+                rgba(80, 60, 100, 0.1) 51px
+            );
+            animation: runeGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes runeGlow {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.25; }
+        }
+
+        /* REFLETS MÉTALLIQUES SUBTILS */
+        .metal-sheen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            background: linear-gradient(
+                105deg,
+                transparent 40%,
+                rgba(150, 130, 170, 0.1) 45%,
+                rgba(200, 180, 220, 0.15) 50%,
+                rgba(150, 130, 170, 0.1) 55%,
+                transparent 60%
+            );
+            background-size: 200% 200%;
+            animation: sheenMove 6s ease-in-out infinite;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes sheenMove {
+            0% { background-position: 120% 0%; }
+            100% { background-position: -20% 100%; }
+        }
+
+        /* PORTAIL DIMENSIONNEL */
+        .portal-effect {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(60, 40, 80, 0.8) 0%,
+                rgba(40, 30, 60, 0.6) 30%,
+                rgba(20, 20, 40, 0.4) 60%,
+                transparent 100%
+            );
+            animation: portalSpin 10s linear infinite;
+            filter: blur(1px);
+        }
+
+        @keyframes portalSpin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* CONTENU */
+        .card-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* NOM DU HÉROS */
+        .hero-title {
+            font-size: 20px;
+            font-weight: normal;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #c0a080;
+            text-shadow: 
+                0 0 20px rgba(192, 160, 128, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.8);
+            font-family: 'Cinzel', 'Garamond', serif;
+        }
+
+        /* CLASSE */
+        .hero-class {
+            font-size: 12px;
+            color: #8a7a9a;
+            margin-bottom: 20px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* AVATAR MYSTIQUE */
+        .hero-portrait {
+            width: 140px;
+            height: 140px;
+            margin: 10px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .portrait-frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(120, 100, 140, 0.4);
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(40, 30, 50, 0.6),
+                transparent 70%
+            );
+            animation: frameBreath 4s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes frameBreath {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .portrait-symbol {
+            font-size: 60px;
+            filter: 
+                drop-shadow(0 0 10px rgba(120, 100, 140, 0.6))
+                drop-shadow(0 0 20px rgba(80, 60, 100, 0.3));
+            animation: symbolFloat 5s ease-in-out infinite;
+        }
+
+        /* Image statique dans le portrait */
+        .image-layer {
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        @keyframes symbolFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
+        }
+
+        /* FORMULE MAGIQUE ANCIENNE */
+        .spell-inscription {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-top: 1px solid rgba(100, 80, 120, 0.2);
+            border-bottom: 1px solid rgba(100, 80, 120, 0.2);
+        }
+
+        .spell-text {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #9a8aaa;
+            opacity: 0.7;
+            text-transform: uppercase;
+            animation: spellReveal 8s ease-in-out infinite;
+        }
+
+        @keyframes spellReveal {
+            0%, 100% { opacity: 0.4; letter-spacing: 2px; }
+            50% { opacity: 0.9; letter-spacing: 3px; }
+        }
+
+        /* PARTICULES MYSTIQUES */
+        .mystic-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #9a8aaa;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleRise 6s infinite;
+        }
+
+        @keyframes particleRise {
+            0% {
+                transform: translateY(50px) translateX(0);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.6;
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-50px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        /* STATS GRAVÉES */
+        .card-attributes {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            right: 25px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .attribute {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(100, 80, 120, 0.2);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .attr-value {
+            font-size: 18px;
+            color: #c0a080;
+            text-shadow: 0 0 10px rgba(192, 160, 128, 0.3);
+        }
+
+        .attr-label {
+            font-size: 9px;
+            color: #7a6a8a;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ÉNERGIE SOMBRE */
+        .dark-energy {
+            position: absolute;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            top: -10px;
+            left: -10px;
+            border-radius: 15px;
+            opacity: 0;
+            background: radial-gradient(
+                circle at center,
+                transparent 30%,
+                rgba(80, 60, 100, 0.2) 70%,
+                rgba(60, 40, 80, 0.4) 100%
+            );
+            animation: energyPulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes energyPulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.02); }
+        }
+
+        /* TITRE DU JEU */
+        .game-title {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-family: 'Cinzel', 'Garamond', serif;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: #8a7a9a;
+            text-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(120, 100, 140, 0.3);
+            animation: titleGlow 6s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* PORTAILS VERS D'AUTRES MONDES */
+        .world-portal {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                rgba(60, 40, 80, 0.6),
+                rgba(80, 60, 100, 0.4),
+                rgba(100, 80, 120, 0.6),
+                rgba(60, 40, 80, 0.6)
+            );
+            animation: portalRotate 15s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes portalRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .portal-1 {
+            top: 20px;
+            right: 20px;
+        }
+
+        .portal-2 {
+            bottom: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-title">Heroes of Time</h1>
+
+    <div class="cards-container" id="cardsRoot"></div>
+
+    <script>
+        // Effet 3D subtil au mouvement de la souris
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.dark-card');
+            const x = (e.clientX / window.innerWidth - 0.5) * 10;
+            const y = (e.clientY / window.innerHeight - 0.5) * 10;
+            
+            cards.forEach((card, index) => {
+                card.style.transform = `
+                    rotateY(${x}deg) 
+                    rotateX(${-y}deg) 
+                    translateZ(${20 + index * 5}px)
+                `;
+            });
+        });
+
+        // Générateur de cartes à partir d'images statiques
+        const cards = [
+          {id:'RED_HOURGLASS', name:'Sablier Rouge', cls:'Artefact Temporel', img:'assets/CARTES_J26/LoadingHourGlass/E883158F-6F90-4128-85DA-20DAEF9FABE3.png', spell:'TIME_LOCK', stats:{a:2,b:12,c:20}},
+          {id:'BLUE_HOURGLASS', name:'Sablier Azur', cls:'Artefact Temporel', img:'assets/CARTES_J26/LoadingHourGlass/DC3E5FAA-F526-4EE5-AD74-B4CED34A58C2.png', spell:'TIME_DILATION', stats:{a:1,b:10,c:15}},
+          {id:'HOURGLASS_ALT', name:'Sablier Ancien', cls:'Artefact Temporel', img:'assets/CARTES_J26/LoadingHourGlass/D01B0674-FF06-4FD3-AA01-6EE1480F1F00.png', spell:'REWIND', stats:{a:3,b:9,c:16}},
+          {id:'MULTIVERSE', name:'Multivers', cls:'Portail Cosmique', img:'assets/TRAVEL_CARDS/Multiverse.png', spell:'SUPERPOSITION', stats:{a:5,b:15,c:18}},
+          {id:'DRAGON_TWILIGHT', name:'Crepuscule des Dragons', cls:'Scene Epique', img:'assets/TRAVEL_CARDS/Knight and Dragons at Twilight.png', spell:'SUMMON_DRAGON', stats:{a:18,b:12,c:6}},
+          {id:'CASTLE_MIST', name:'Chateau dans la Brume', cls:'Zone Brumeuse', img:'assets/TRAVEL_CARDS/Warrior and Castle in Mist.png', spell:'FOG_REVEAL', stats:{a:8,b:8,c:12}},
+          {id:'GRIFFIN', name:'Chevaucheur de Griffon', cls:'Heroique', img:'assets/TRAVEL_CARDS/Griffin Rider Over Medieval Landscape.png', spell:'FLYOVER', stats:{a:12,b:6,c:10}},
+          {id:'TWILIGHT_WARRIOR', name:'Guerrier au Crepuscule', cls:'Scene Magique', img:'assets/TRAVEL_CARDS/Warrior at Twilight in Enchanted Landscape.png', spell:'SUNSET_AURA', stats:{a:9,b:11,c:9}}
+        ];
+
+        function createParticles(container){
+          for (let i=0;i<5;i++){
+            const p=document.createElement('div');
+            p.className='particle';
+            p.style.left=Math.random()*100+'%';
+            p.style.animationDelay=(Math.random()*6)+'s';
+            p.style.animationDuration=(5+Math.random()*3)+'s';
+            container.appendChild(p);
+          }
+        }
+
+        function renderCards(){
+          const root=document.getElementById('cardsRoot');
+          root.innerHTML='';
+          cards.forEach((c,idx)=>{
+            const card=document.createElement('div'); card.className='dark-card'; card.dataset.card=c.id;
+            card.innerHTML=`
+              <div class="card-glass"></div>
+              <div class="ancient-runes"></div>
+              <div class="metal-sheen"></div>
+              <div class="dark-energy"></div>
+              <div class="portal-effect"></div>
+              <div class="world-portal portal-1"></div>
+              <div class="world-portal portal-2"></div>
+              <div class="card-content">
+                <div class="hero-title">${c.name}</div>
+                <div class="hero-class">${c.cls}</div>
+                <div class="hero-portrait">
+                  <div class="portrait-frame"></div>
+                  <div class="image-layer" style="background-image:url('${c.img.replace(/'/g,"%27")}')"></div>
+                </div>
+                <div class="spell-inscription">
+                  <div class="mystic-particles"></div>
+                  <div class="spell-text">${c.spell}</div>
+                </div>
+                <div class="card-attributes">
+                  <div class="attribute"><div class="attr-value">${c.stats.a}</div><div class="attr-label">Puissance</div></div>
+                  <div class="attribute"><div class="attr-value">${c.stats.b}</div><div class="attr-label">Magie</div></div>
+                  <div class="attribute"><div class="attr-value">${c.stats.c}</div><div class="attr-label">Temps</div></div>
+                </div>
+              </div>`;
+            root.appendChild(card);
+            createParticles(card.querySelector('.mystic-particles'));
+
+            // click effect
+            card.addEventListener('click', function(){
+              console.log('Activating', c.id, c.spell);
+              this.style.filter='brightness(1.3)';
+              this.querySelector('.dark-energy').style.animation='energyBurst 0.5s';
+              const portal=document.createElement('div');
+              portal.style.cssText=`position:fixed;top:50%;left:50%;width:100px;height:100px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle, rgba(80,60,100,0.8), transparent);animation: portalOpen 1s ease-out forwards;pointer-events:none;z-index:9999;`;
+              document.body.appendChild(portal);
+              setTimeout(()=>{ this.style.filter=''; this.querySelector('.dark-energy').style.animation=''; portal.remove(); },1000);
+            });
+          });
+        }
+
+        renderCards();
+
+        // Animation d'ouverture de portail
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes energyBurst {
+                0% { opacity: 0; transform: scale(1); }
+                50% { opacity: 0.8; transform: scale(1.1); }
+                100% { opacity: 0; transform: scale(1.2); }
+            }
+            
+            @keyframes portalOpen {
+                0% { 
+                    width: 100px; 
+                    height: 100px; 
+                    opacity: 1;
+                }
+                100% { 
+                    width: 300px; 
+                    height: 300px; 
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('DARK FANTASY CARD SYSTEM INITIALIZED');
+        console.log('Portal connections established...');
+    </script>
+</body>
+</html>

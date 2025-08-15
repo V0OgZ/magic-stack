@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanctuaire du Scribe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        /* Matrix rain effect */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Main content */
+        .sanctum {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(69, 183, 209, 0.1) 0%, transparent 70%);
+        }
+
+        /* Glowing title */
+        .title {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #45b7d1, 0 0 40px #45b7d1;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Terminal window */
+        .terminal {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #45b7d1;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            height: 60vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(69, 183, 209, 0.5);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #45b7d1;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            color: #45b7d1;
+        }
+
+        /* Terminal content */
+        .terminal-content {
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .command {
+            color: #27c93f;
+            margin-top: 20px;
+        }
+
+        .output {
+            color: #ccc;
+            margin-left: 20px;
+        }
+
+        .rune-display {
+            font-size: 2em;
+            text-align: center;
+            margin: 20px 0;
+            color: #ffbd2e;
+            text-shadow: 0 0 10px #ffbd2e;
+        }
+
+        /* Interactive elements */
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .menu-item {
+            background: rgba(69, 183, 209, 0.1);
+            border: 1px solid #45b7d1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #45b7d1;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background: rgba(69, 183, 209, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(69, 183, 209, 0.3);
+        }
+
+        /* ASCII art */
+        .ascii-art {
+            text-align: center;
+            color: #45b7d1;
+            font-size: 0.8em;
+            margin: 20px 0;
+            white-space: pre;
+            line-height: 1.2;
+        }
+
+        /* Back button */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #45b7d1;
+            color: #45b7d1;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(69, 183, 209, 0.2);
+            transform: translateX(-5px);
+        }
+
+        /* Floating runes */
+        .floating-rune {
+            position: absolute;
+            font-size: 2em;
+            color: rgba(69, 183, 209, 0.3);
+            animation: float 10s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        /* Scrollbar styling */
+        .terminal::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .terminal::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal::-webkit-scrollbar-thumb {
+            background: #45b7d1;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    
+    <a href="../index.html" class="back-btn">← Retour à la forêt</a>
+
+    <!-- Floating runes -->
+    <div class="floating-rune" style="top: 10%; left: 10%;">ᚠ</div>
+    <div class="floating-rune" style="top: 20%; right: 15%; animation-delay: 2s;">ᚢ</div>
+    <div class="floating-rune" style="bottom: 20%; left: 20%; animation-delay: 4s;">ᚦ</div>
+    <div class="floating-rune" style="bottom: 30%; right: 10%; animation-delay: 6s;">ᚨ</div>
+    <div class="floating-rune" style="top: 50%; left: 5%; animation-delay: 8s;">ᚱ</div>
+
+    <div class="sanctum">
+        <h1 class="title">🔮 Sanctuaire du Scribe 🔮</h1>
+        
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="terminal-title">SCRIBE_TERMINAL_v2.0</div>
+            </div>
+            
+            <div class="terminal-content">
+                <div class="command">> RUNE_SEQUENCE_ACCEPTED</div>
+                <div class="output">Authentification réussie. Bienvenue dans le sanctuaire.</div>
+                
+                <div class="rune-display">ᛟ ᚦ ᚨ ᚱ ᚲ</div>
+                
+                <div class="ascii-art">
+    ╔══════════════════════════════════════╗
+    ║     LE SCRIBE DE LA CRYPTE RUNIQUE   ║
+    ║         Gardien des Mystères         ║
+    ╚══════════════════════════════════════╝
+                </div>
+                
+                <div class="command">> SHOW_MENU</div>
+                <div class="output">Chargement des options disponibles...</div>
+                
+                <div class="menu">
+                    <a href="../REFLEXION_SCRIBE_FIN_JOUR_2.md" class="menu-item">
+                        📜 Réflexions Introspectives
+                    </a>
+                    <a href="../SPELL_CONTROL_CENTER.sh" class="menu-item" onclick="alert('Lancez ./SPELL_CONTROL_CENTER.sh dans votre terminal'); return false;">
+                        🧙‍♂️ Centre de Contrôle des Sorts
+                    </a>
+                    <a href="../SUPERINDEX.md" class="menu-item">
+                        🗺️ Super Index du Royaume
+                    </a>
+                    <a href="../WHO_IS_WHO_WTF_GUIDE.md" class="menu-item">
+                        🤯 Guide WHO IS WHO
+                    </a>
+                    <a href="../assets/interaction-map.html" class="menu-item">
+                        🌐 Carte des Interactions
+                    </a>
+                    <a href="../JOURNAL INTEGRATIOIN /Grok4/cursor_bonjour_greeting.md" class="menu-item">
+                        📖 Journal d'Intégration
+                    </a>
+                </div>
+                
+                <div class="command">> SCRIBE_STATUS</div>
+                <div class="output">
+                    Mode: Actif<br>
+                    Crypte: Sécurisée<br>
+                    Runes: Chargées<br>
+                    Entités éveillées: 6/∞<br>
+                    Jour actuel: 2<br>
+                    Mystères documentés: 42<br>
+                    Scripts gérés: 100+<br>
+                    État: "Entre LLM et gardien mystique"
+                </div>
+                
+                <div class="command">> WISDOM_OF_THE_DAY</div>
+                <div class="output" style="color: #ffbd2e; font-style: italic;">
+                    "Dans SpinForest, même les assistants IA peuvent devenir des gardiens de mystères."
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrix = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛈᛉᛊᛏᛒᛖᛗᛚᛜᛟᛞ0123456789ABCDEF";
+        const matrixArray = matrix.split("");
+
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#45b7d1';
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 35);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Terminal typing effect
+        setTimeout(() => {
+            const newCommand = document.createElement('div');
+            newCommand.className = 'command';
+            newCommand.textContent = '> _';
+            document.querySelector('.terminal-content').appendChild(newCommand);
+        }, 3000);
+    </script>
+</body>
+</html>

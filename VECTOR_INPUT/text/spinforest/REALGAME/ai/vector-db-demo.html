@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo IA GOAP + Vector DB - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+        
+        canvas {
+            border: 2px solid #16213e;
+            background: #0f3460;
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .controls {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .controls h2 {
+            margin-top: 0;
+            color: #e94560;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #c13651;
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .agent-info {
+            background: #1a1a2e;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 3px solid #e94560;
+        }
+        
+        .memory-info {
+            background: #2a2a3e;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .knowledge-shared {
+            color: #4ecca3;
+        }
+        
+        .knowledge-learned {
+            color: #ffd369;
+        }
+        
+        .temporal-event {
+            color: #a8e6cf;
+        }
+        
+        .chemical-discovery {
+            color: #ff8b94;
+        }
+        
+        #vectorDBStatus {
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .status-connected {
+            color: #4ecca3;
+        }
+        
+        .status-disconnected {
+            color: #e94560;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>Demo IA GOAP + Vector DB</h1>
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <div class="stats" id="globalStats">
+                <h3>Stats Globales</h3>
+                <div>FPS: <span id="fps">60</span></div>
+                <div>Agents: <span id="agentCount">0</span></div>
+                <div>Memoires partagees: <span id="sharedMemories">0</span></div>
+                <div>Reactions chimiques: <span id="chemicalReactions">0</span></div>
+                <div>Messages temporels: <span id="temporalMessages">0</span></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h2>Controles</h2>
+            
+            <div id="vectorDBStatus">
+                <strong>Vector DB:</strong> 
+                <span id="dbStatus" class="status-disconnected">Non connecte</span>
+            </div>
+            
+            <h3>Spawn Agents</h3>
+            <button onclick="spawnVectorAgent()">Spawn Agent Vectoriel</button>
+            <button onclick="spawnChemistryAgent()">Spawn Agent Chimiste</button>
+            <button onclick="spawnTemporalAgent()">Spawn Agent Temporel</button>
+            <button onclick="spawnSenkuAgent()">Spawn Senku Gwen</button>
+            
+            <h3>Actions</h3>
+            <button onclick="shareKnowledgeDemo()">Partager Connaissances</button>
+            <button onclick="triggerChemicalExperiment()">Lancer Experience Chimique</button>
+            <button onclick="searchFutureSelf()">Chercher Futur Soi</button>
+            <button onclick="createTimeParadox()">Creer Paradoxe Temporel</button>
+            
+            <h3>Environnement</h3>
+            <button onclick="spawnAcidPool()">Creer Mare d'Acide</button>
+            <button onclick="spawnGoldOre()">Placer Minerai d'Or</button>
+            <button onclick="spawnObstacle()">Placer Obstacle</button>
+            <button onclick="clearWorld()">Nettoyer Monde</button>
+            
+            <h3>Vector DB</h3>
+            <button onclick="connectVectorDB()">Connecter Vector DB</button>
+            <button onclick="showSimilarStates()">Afficher Etats Similaires</button>
+            <button onclick="showSharedKnowledge()">Afficher Connaissances</button>
+            <button onclick="exportMemories()">Exporter Memoires</button>
+            
+            <div id="agentList">
+                <h3>Agents Actifs</h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="goap-system.js"></script>
+    <script src="vector-db-goap-integration.js"></script>
+    <script>
+        // Variables globales
+        let canvas, ctx;
+        let agents = [];
+        let world = {
+            obstacles: [],
+            acidPools: [],
+            goldOres: [],
+            width: 800,
+            height: 600
+        };
+        let player = { x: 400, y: 300 };
+        let vectorDB = null;
+        let collaborativeMemory = null;
+        let stats = {
+            sharedMemories: 0,
+            chemicalReactions: 0,
+            temporalMessages: 0
+        };
+        
+        // Initialisation
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Essayer de connecter a la vector DB
+            connectVectorDB();
+            
+            // Boucle de jeu
+            gameLoop();
+            
+            // Gestion souris
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                player.x = e.clientX - rect.left;
+                player.y = e.clientY - rect.top;
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                if (e.shiftKey) {
+                    const rect = canvas.getBoundingClientRect();
+                    world.acidPools.push({
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top,
+                        radius: 30
+                    });
+                }
+            });
+        }
+        
+        // Connexion Vector DB
+        async function connectVectorDB() {
+            try {
+                vectorDB = new VectorDBClient({
+                    baseUrl: 'http://localhost:8084' // Ajuster selon votre config
+                });
+                
+                // Tester la connexion
+                const response = await fetch(vectorDB.baseUrl + '/collections');
+                if (response.ok) {
+                    document.getElementById('dbStatus').textContent = 'Connecte';
+                    document.getElementById('dbStatus').className = 'status-connected';
+                    
+                    // Initialiser la memoire collaborative
+                    collaborativeMemory = new CollaborativeMemory(vectorDB);
+                    
+                    // Creer les collections si necessaire
+                    await initializeCollections();
+                }
+            } catch (error) {
+                console.error('Erreur connexion Vector DB:', error);
+                document.getElementById('dbStatus').textContent = 'Erreur: ' + error.message;
+                document.getElementById('dbStatus').className = 'status-disconnected';
+            }
+        }
+        
+        async function initializeCollections() {
+            const collections = ['agent_states', 'successful_plans', 'shared_knowledge', 'chemical_reactions', 'temporal_memories'];
+            
+            for (let collection of collections) {
+                try {
+                    await vectorDB.createCollection(collection, 128); // 128 dimensions
+                } catch (error) {
+                    // Collection existe deja probablement
+                }
+            }
+        }
+        
+        // Spawn agents
+        function spawnVectorAgent() {
+            const agent = new VectorGOAPAgent('agent_' + Date.now(), {
+                position: { x: Math.random() * 700 + 50, y: Math.random() * 500 + 50 }
+            });
+            agents.push(agent);
+            updateAgentList();
+        }
+        
+        function spawnChemistryAgent() {
+            const agent = new ChemistryVectorAgent('chemist_' + Date.now(), {
+                position: { x: Math.random() * 700 + 50, y: Math.random() * 500 + 50 }
+            });
+            
+            // Ajouter des actions chimiques
+            agent.addAction(new Action('analyze_substance', {
+                preconditions: { near_substance: true },
+                effects: { substance_analyzed: true },
+                cost: 20,
+                execute: async (agent, world) => {
+                    const nearbyOre = world.goldOres.find(ore => 
+                        distance(agent.position, ore) < 50
+                    );
+                    
+                    if (nearbyOre) {
+                        const result = await agent.experimentWithAcid('HCl', 'gold');
+                        stats.chemicalReactions++;
+                        updateStats();
+                        return { type: 'analyze', target: nearbyOre };
+                    }
+                    return { type: 'idle' };
+                }
+            }));
+            
+            agents.push(agent);
+            updateAgentList();
+        }
+        
+        function spawnTemporalAgent() {
+            const agent = new TemporalVectorAgent('temporal_' + Date.now(), {
+                position: { x: Math.random() * 700 + 50, y: Math.random() * 500 + 50 }
+            });
+            
+            agents.push(agent);
+            updateAgentList();
+        }
+        
+        function spawnSenkuAgent() {
+            const senku = new ChemistryVectorAgent('senku_gwen', {
+                position: { x: 400, y: 300 }
+            });
+            
+            senku.catchphrase = "10 milliards de pourcent !";
+            
+            // Actions speciales Senku
+            senku.addAction(new Action('create_aqua_regia', {
+                preconditions: { near_gold: true },
+                effects: { aqua_regia_created: true },
+                cost: 50,
+                execute: async (agent, world) => {
+                    console.log("SENKU: L'aqua regia ! Le seul acide qui dissout l'or !");
+                    
+                    // Sauvegarder la decouverte
+                    await agent.saveChemicalReaction('aqua_regia', 'gold', {
+                        success: true,
+                        efficiency: 0.95,
+                        byproducts: ['HAuCl4', 'NO2', 'H2O']
+                    });
+                    
+                    stats.chemicalReactions++;
+                    updateStats();
+                    
+                    return { type: 'create_acid', acid: 'aqua_regia' };
+                }
+            }));
+            
+            agents.push(senku);
+            updateAgentList();
+        }
+        
+        // Actions demo
+        async function shareKnowledgeDemo() {
+            if (agents.length < 2) {
+                alert('Il faut au moins 2 agents pour partager des connaissances');
+                return;
+            }
+            
+            const sender = agents[0];
+            const receivers = agents.slice(1);
+            
+            const knowledge = {
+                type: 'discovery',
+                data: {
+                    message: 'Les mares acides font des degats !',
+                    acidPools: world.acidPools
+                }
+            };
+            
+            if (collaborativeMemory) {
+                await collaborativeMemory.shareKnowledge(sender, receivers, knowledge);
+                stats.sharedMemories++;
+                updateStats();
+                
+                console.log(`${sender.id} partage ses connaissances avec ${receivers.length} agents`);
+            }
+        }
+        
+        async function triggerChemicalExperiment() {
+            const chemists = agents.filter(a => a instanceof ChemistryVectorAgent);
+            
+            if (chemists.length === 0) {
+                alert('Aucun agent chimiste present');
+                return;
+            }
+            
+            for (let chemist of chemists) {
+                const acids = ['HCl', 'H2SO4', 'CH3COOH'];
+                const materials = ['iron', 'gold', 'limestone'];
+                
+                const acid = acids[Math.floor(Math.random() * acids.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                
+                await chemist.experimentWithAcid(acid, material);
+                stats.chemicalReactions++;
+            }
+            
+            updateStats();
+        }
+        
+        async function searchFutureSelf() {
+            const temporalAgents = agents.filter(a => a instanceof TemporalVectorAgent);
+            
+            if (temporalAgents.length === 0) {
+                alert('Aucun agent temporel present');
+                return;
+            }
+            
+            for (let agent of temporalAgents) {
+                await agent.searchFutureSelf();
+                stats.temporalMessages++;
+            }
+            
+            updateStats();
+        }
+        
+        function createTimeParadox() {
+            if (agents.length < 2) return;
+            
+            // Creer un paradoxe en echangeant les positions
+            const agent1 = agents[0];
+            const agent2 = agents[1];
+            
+            const temp = { ...agent1.position };
+            agent1.position = { ...agent2.position };
+            agent2.position = temp;
+            
+            console.log('PARADOXE TEMPOREL CREE !');
+        }
+        
+        // Environnement
+        function spawnAcidPool() {
+            world.acidPools.push({
+                x: Math.random() * 700 + 50,
+                y: Math.random() * 500 + 50,
+                radius: 40,
+                acid: 'HCl'
+            });
+        }
+        
+        function spawnGoldOre() {
+            world.goldOres.push({
+                x: Math.random() * 700 + 50,
+                y: Math.random() * 500 + 50,
+                size: 20
+            });
+        }
+        
+        function spawnObstacle() {
+            world.obstacles.push({
+                x: Math.random() * 700 + 50,
+                y: Math.random() * 500 + 50,
+                width: 60,
+                height: 60
+            });
+        }
+        
+        function clearWorld() {
+            world.obstacles = [];
+            world.acidPools = [];
+            world.goldOres = [];
+        }
+        
+        // Vector DB queries
+        async function showSimilarStates() {
+            if (!vectorDB || agents.length === 0) return;
+            
+            const agent = agents[0];
+            const similarStates = await agent.findSimilarStates(5);
+            
+            console.log('Etats similaires trouves:', similarStates);
+        }
+        
+        async function showSharedKnowledge() {
+            if (!collaborativeMemory || agents.length === 0) return;
+            
+            const knowledge = await collaborativeMemory.searchRelevantKnowledge(
+                agents[0], 
+                'dangers'
+            );
+            
+            console.log('Connaissances partagees:', knowledge);
+        }
+        
+        function exportMemories() {
+            const memories = {
+                agents: agents.map(a => ({
+                    id: a.id,
+                    type: a.constructor.name,
+                    position: a.position,
+                    goals: a.goals.map(g => g.name),
+                    stats: a.stats
+                })),
+                world: world,
+                stats: stats
+            };
+            
+            const blob = new Blob([JSON.stringify(memories, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vector-goap-memories.json';
+            a.click();
+        }
+        
+        // Boucle de jeu
+        let lastTime = 0;
+        let frameCount = 0;
+        let fpsTime = 0;
+        
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            // Update
+            update(deltaTime);
+            
+            // Render
+            render();
+            
+            // FPS
+            frameCount++;
+            if (timestamp - fpsTime > 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                fpsTime = timestamp;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function update(deltaTime) {
+            // Update agents
+            for (let agent of agents) {
+                const action = agent.update(world);
+                executeAction(agent, action);
+            }
+        }
+        
+        function executeAction(agent, action) {
+            if (!action) return;
+            
+            switch (action.type) {
+                case 'move':
+                    const speed = 2;
+                    const dx = action.target.x - agent.position.x;
+                    const dy = action.target.y - agent.position.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 5) {
+                        agent.position.x += (dx / dist) * speed;
+                        agent.position.y += (dy / dist) * speed;
+                    }
+                    break;
+                    
+                case 'attack':
+                    // Animation d'attaque
+                    break;
+                    
+                case 'flee':
+                    const fleeSpeed = 3;
+                    const fdx = agent.position.x - action.from.x;
+                    const fdy = agent.position.y - action.from.y;
+                    const fdist = Math.sqrt(fdx * fdx + fdy * fdy);
+                    
+                    if (fdist > 0) {
+                        agent.position.x += (fdx / fdist) * fleeSpeed;
+                        agent.position.y += (fdy / fdist) * fleeSpeed;
+                    }
+                    break;
+            }
+        }
+        
+        function render() {
+            // Clear
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid
+            ctx.strokeStyle = '#16213e';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Obstacles
+            ctx.fillStyle = '#333';
+            for (let obs of world.obstacles) {
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            }
+            
+            // Acid pools
+            for (let pool of world.acidPools) {
+                ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(pool.x, pool.y, pool.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // Gold ores
+            ctx.fillStyle = '#ffd700';
+            for (let ore of world.goldOres) {
+                ctx.fillRect(ore.x - ore.size/2, ore.y - ore.size/2, ore.size, ore.size);
+            }
+            
+            // Player
+            ctx.fillStyle = '#4ecca3';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Agents
+            for (let agent of agents) {
+                // Couleur selon le type
+                if (agent instanceof TemporalVectorAgent) {
+                    ctx.fillStyle = '#a8e6cf';
+                } else if (agent instanceof ChemistryVectorAgent) {
+                    ctx.fillStyle = '#ff8b94';
+                } else {
+                    ctx.fillStyle = '#ffd369';
+                }
+                
+                ctx.beginPath();
+                ctx.arc(agent.position.x, agent.position.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // HP bar
+                const barWidth = 30;
+                const barHeight = 4;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(
+                    agent.position.x - barWidth/2,
+                    agent.position.y - 15,
+                    barWidth,
+                    barHeight
+                );
+                
+                ctx.fillStyle = agent.hp > 50 ? '#4ecca3' : '#e94560';
+                ctx.fillRect(
+                    agent.position.x - barWidth/2,
+                    agent.position.y - 15,
+                    barWidth * (agent.hp / agent.maxHp),
+                    barHeight
+                );
+                
+                // Nom
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(agent.id.split('_')[0], agent.position.x, agent.position.y + 20);
+            }
+        }
+        
+        function updateAgentList() {
+            const list = document.getElementById('agentList');
+            list.innerHTML = '<h3>Agents Actifs</h3>';
+            
+            for (let agent of agents) {
+                const div = document.createElement('div');
+                div.className = 'agent-info';
+                div.innerHTML = `
+                    <strong>${agent.id}</strong><br>
+                    Type: ${agent.constructor.name}<br>
+                    HP: ${agent.hp}/${agent.maxHp}<br>
+                    Buts: ${agent.goals.map(g => g.name).join(', ')}<br>
+                    Plan: ${agent.currentPlan.map(a => a.name).join(' → ') || 'Aucun'}
+                `;
+                list.appendChild(div);
+            }
+            
+            document.getElementById('agentCount').textContent = agents.length;
+        }
+        
+        function updateStats() {
+            document.getElementById('sharedMemories').textContent = stats.sharedMemories;
+            document.getElementById('chemicalReactions').textContent = stats.chemicalReactions;
+            document.getElementById('temporalMessages').textContent = stats.temporalMessages;
+        }
+        
+        function distance(a, b) {
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        // Demarrer
+        window.onload = init;
+    </script>
+</body>
+</html>

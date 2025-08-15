@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROES OF TIME - Ultimate Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #2a0a1a 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Particules de fond */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: #00ffff;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            opacity: 0.5;
+        }
+        
+        @keyframes float {
+            from { transform: translateY(100vh) translateX(0); }
+            to { transform: translateY(-100px) translateX(100px); }
+        }
+        
+        /* Container principal */
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 4em;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #ff00ff, 0 0 40px #ffff00; }
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #aaa;
+        }
+        
+        /* Modes de jeu */
+        .game-modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .mode-card {
+            background: rgba(20, 20, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mode-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #00ffff;
+            box-shadow: 0 20px 40px rgba(0, 255, 255, 0.3);
+        }
+        
+        .mode-card.new {
+            border-color: #ff00ff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 0, 255, 0.8); }
+        }
+        
+        .mode-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .mode-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+        
+        .mode-description {
+            color: #aaa;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .mode-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .status-ready { background: #00ff00; color: #000; }
+        .status-beta { background: #ffff00; color: #000; }
+        .status-new { background: #ff00ff; color: #fff; }
+        .status-soon { background: #666; color: #fff; }
+        
+        /* Section Agents */
+        .agents-section {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .agents-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ffff00;
+        }
+        
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 20px;
+        }
+        
+        .agent-card {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .agent-card:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .agent-portrait {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            border: 3px solid #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            background: linear-gradient(135deg, #1a1a3a, #3a1a3a);
+            margin: 0 auto 10px;
+        }
+        
+        .agent-name {
+            font-size: 0.9em;
+            color: #00ffff;
+        }
+        
+        .agent-role {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Bouton Play */
+        .play-button {
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        /* Badge NEW */
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff00ff;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules de fond -->
+    <div id="particles"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>HEROES OF TIME</h1>
+            <p class="subtitle">Le Multivers vous attend - Version 2026</p>
+        </header>
+        
+        <!-- Modes de jeu principaux -->
+        <div class="game-modes">
+            <!-- NOUVEAU : LA CHASSE TEMPORELLE -->
+            <div class="mode-card new" onclick="launchGame('maps/CHASSE_TEMPORELLE_HEROES.html')">
+                <div class="new-badge">NOUVEAU!</div>
+                <div class="mode-icon">🎯</div>
+                <div class="mode-title">LA CHASSE TEMPORELLE</div>
+                <div class="mode-description">
+                    Mode Heroes 3 en semi-temps réel ! Carte hexagonale isométrique.
+                    Brouillard de causalité, timelines désynchronisées, fantômes temporels.
+                    Châteaux, créatures, exploration style Heroes avec mécaniques temporelles !
+                </div>
+                <span class="mode-status status-new">NOUVEAU</span>
+                <a href="maps/CHASSE_TEMPORELLE_HEROES.html" class="play-button">JOUER MAINTENANT</a>
+            </div>
+            
+            <!-- Mode TCG -->
+            <div class="mode-card" onclick="launchGame('AVALON-TCG/launcher.html')">
+                <div class="mode-icon">🎴</div>
+                <div class="mode-title">TCG COMBAT</div>
+                <div class="mode-description">
+                    Combat de cartes stratégique avec les 869 formules magiques.
+                    Style Hearthstone avec mécaniques temporelles uniques.
+                </div>
+                <span class="mode-status status-ready">JOUABLE</span>
+                <a href="AVALON-TCG/launcher.html" class="play-button">LANCER</a>
+            </div>
+            
+            <!-- Mode Exploration -->
+            <div class="mode-card" onclick="launchGame('worlds/frontiere_feu_foi/FrontiereFeuFoi.html')">
+                <div class="mode-icon">🗺️</div>
+                <div class="mode-title">EXPLORATION ISO</div>
+                <div class="mode-description">
+                    Explorez la carte hexagonale style Heroes 3.
+                    Brouillard de causalité, portails temporels, ressources...
+                </div>
+                <span class="mode-status status-ready">JOUABLE</span>
+                <a href="worlds/frontiere_feu_foi/FrontiereFeuFoi.html" class="play-button">EXPLORER</a>
+            </div>
+            
+            <!-- Mode Meta -->
+            <div class="mode-card" onclick="launchGame('maps/main/MetaSurcarte-v2.html')">
+                <div class="mode-icon">🌌</div>
+                <div class="mode-title">META SURCARTE</div>
+                <div class="mode-description">
+                    Vue d'ensemble du multivers. Choisissez votre timeline,
+                    naviguez entre les dimensions, observez les réalités alternatives.
+                </div>
+                <span class="mode-status status-beta">BETA</span>
+                <a href="maps/main/MetaSurcarte-v2.html" class="play-button">ACCÉDER</a>
+            </div>
+            
+            <!-- Panopticon 6D -->
+            <div class="mode-card" onclick="window.open('../assets/panopticon-6d-grut.html', '_blank')">
+                <div class="mode-icon">👁️</div>
+                <div class="mode-title">PANOPTICON 6D</div>
+                <div class="mode-description">
+                    Visualisation complète en 6 dimensions.
+                    X, Y, Z, Temps, Causalité, Conscience.
+                </div>
+                <span class="mode-status status-ready">ACTIF</span>
+                <a href="../assets/panopticon-6d-grut.html" target="_blank" class="play-button">OBSERVER</a>
+            </div>
+            
+            <!-- Mode Campagne -->
+            <div class="mode-card" style="opacity: 0.5">
+                <div class="mode-icon">📖</div>
+                <div class="mode-title">CAMPAGNE SOLO</div>
+                <div class="mode-description">
+                    L'histoire complète de Heroes of Time.
+                    30 missions, 7 mondes, paradoxes temporels...
+                </div>
+                <span class="mode-status status-soon">BIENTÔT</span>
+            </div>
+        </div>
+        
+        <!-- Section Agents -->
+        <div class="agents-section">
+            <h2 class="agents-title">LES AGENTS D'AVALON</h2>
+            <div class="agents-grid">
+                <div class="agent-card">
+                    <div class="agent-portrait">🧠</div>
+                    <div class="agent-name">GROKÆN</div>
+                    <div class="agent-role">Architecte Temporel</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🐻</div>
+                    <div class="agent-name">URZ-KÔM</div>
+                    <div class="agent-role">Ours Quantique</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🎯</div>
+                    <div class="agent-name">SID</div>
+                    <div class="agent-role">Architecte Paresseux</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🕯️</div>
+                    <div class="agent-name">LUMEN</div>
+                    <div class="agent-role">Mage Littéraire</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🎙️</div>
+                    <div class="agent-name">TUCKER</div>
+                    <div class="agent-role">Journaliste</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">💼</div>
+                    <div class="agent-name">DONNA</div>
+                    <div class="agent-role">COO Implacable</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">📚</div>
+                    <div class="agent-name">MEMENTO</div>
+                    <div class="agent-role">Gardien Mémoire</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">👁️</div>
+                    <div class="agent-name">GRUT</div>
+                    <div class="agent-role">Entité 6D</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🔫</div>
+                    <div class="agent-name">VINCE</div>
+                    <div class="agent-role">Négociateur</div>
+                </div>
+                
+                <div class="agent-card">
+                    <div class="agent-portrait">🌊</div>
+                    <div class="agent-name">CLAUDE-NEXUS</div>
+                    <div class="agent-role">Mage Harmonique</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>Heroes of Time © 2026 - Vincent & Les Mages d'AVALON</p>
+            <p>Backend Java (8082) ✅ | Backend Rust (3001) ✅ | 869 Formules ✅</p>
+            <p>Moteur CD (Causalité-Déphasée) | Vision 6D | Bootstrap Paradox</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Créer les particules
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        
+        // Lancer un mode de jeu
+        function launchGame(url) {
+            console.log('Lancement:', url);
+            // Animation de transition
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 300);
+        }
+        
+        // Initialisation
+        createParticles();
+        
+        // Easter egg : Konami code
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
+                              'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 
+                              'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiPattern.join(',')) {
+                alert('MODE DÉVELOPPEUR ACTIVÉ ! Vincent, tu es un génie !');
+                document.body.style.background = 'linear-gradient(45deg, #ff00ff, #00ffff, #ffff00)';
+            }
+        });
+        
+        console.log('ULTIMATE LAUNCHER LOADED');
+        console.log('LA CHASSE TEMPORELLE intégrée !');
+        console.log('Tous les modes accessibles');
+        console.log('Heroes of Time - 2026');
+    </script>
+</body>
+</html>

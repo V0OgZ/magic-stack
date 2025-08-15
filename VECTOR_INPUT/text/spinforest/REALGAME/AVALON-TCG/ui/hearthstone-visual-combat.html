@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ AVALON TCG - Combat Visuel Style Hearthstone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Background animé avec portails */
+        .battle-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            overflow: hidden;
+        }
+
+        .portal {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 30%, rgba(138, 43, 226, 0.3) 70%);
+            animation: portal-spin 20s linear infinite;
+        }
+
+        .portal:nth-child(1) { top: -100px; left: -100px; }
+        .portal:nth-child(2) { bottom: -100px; right: -100px; animation-direction: reverse; }
+        .portal:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); animation-duration: 30s; }
+
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Container principal */
+        .combat-arena {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            z-index: 1;
+        }
+
+        /* Zone adversaire */
+        .opponent-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Portrait de héros */
+        .hero-portrait {
+            width: 200px;
+            height: 250px;
+            position: relative;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hero-portrait:hover {
+            transform: scale(1.05);
+        }
+
+        .portrait-frame {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+            padding: 5px;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+        }
+
+        .portrait-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portrait-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        .hero-stats {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-bubble {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 3px solid #fff;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .health { background: radial-gradient(circle, #ff4757, #c0392b); }
+        .armor { background: radial-gradient(circle, #95a5a6, #7f8c8d); }
+
+        /* Zone centrale de combat */
+        .battlefield {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .minion-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            min-height: 180px;
+        }
+
+        /* Cartes créatures sur le terrain */
+        .minion-card {
+            width: 120px;
+            height: 160px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 2px solid #333;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .minion-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .minion-artwork {
+            width: 100%;
+            height: 70%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .minion-stats {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Zone du joueur */
+        .player-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main du joueur */
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            gap: -30px;
+            margin-top: 20px;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Cartes en main */
+        .hand-card {
+            width: 140px;
+            height: 200px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 3px solid #333;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-origin: bottom center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .hand-card:hover {
+            transform: translateY(-50px) scale(1.2);
+            z-index: 10;
+            border-color: #ffd700;
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.5);
+        }
+
+        .hand-card:nth-child(1) { transform: rotate(-10deg); }
+        .hand-card:nth-child(2) { transform: rotate(-5deg); }
+        .hand-card:nth-child(3) { transform: rotate(0deg); }
+        .hand-card:nth-child(4) { transform: rotate(5deg); }
+        .hand-card:nth-child(5) { transform: rotate(10deg); }
+
+        .card-cost {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #3742fa, #5f27cd);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(55, 66, 250, 0.8);
+        }
+
+        .card-artwork {
+            width: 100%;
+            height: 60%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+        }
+
+        .card-name {
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .card-description {
+            padding: 5px;
+            font-size: 10px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        /* Effet de frappe */
+        .strike-effect {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+            animation: strike 0.8s ease-out forwards;
+        }
+
+        @keyframes strike {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Mana crystals */
+        .mana-display {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .mana-crystal {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #3742fa, #5f27cd);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .mana-crystal.active {
+            opacity: 1;
+            box-shadow: 0 0 15px rgba(55, 66, 250, 0.8);
+            animation: mana-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes mana-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Bouton fin de tour */
+        .end-turn-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 20px 40px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.5);
+        }
+
+        .end-turn-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.8);
+        }
+
+        /* Timeline indicator */
+        .timeline-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-icon {
+            font-size: 24px;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="battle-background">
+        <div class="portal"></div>
+        <div class="portal"></div>
+        <div class="portal"></div>
+    </div>
+
+    <div class="combat-arena">
+        <!-- Timeline Display -->
+        <div class="timeline-display">
+            <span class="timeline-icon">🌀</span>
+            <span>Timeline: PRIME</span>
+        </div>
+
+        <!-- Opponent Zone -->
+        <div class="opponent-zone">
+            <div class="hero-portrait">
+                <div class="portrait-frame">
+                    <div class="portrait-image" style="background: radial-gradient(circle, #2c3e50, #8e44ad);">
+                        <!-- GRUT Portrait -->
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-bubble health">30</div>
+                    <div class="stat-bubble armor">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Battlefield -->
+        <div class="battlefield">
+            <div class="minion-zone opponent-minions">
+                <!-- Créatures adverses -->
+            </div>
+            <div class="minion-zone player-minions">
+                <!-- Créatures du joueur -->
+            </div>
+        </div>
+
+        <!-- Player Zone -->
+        <div class="player-zone">
+            <div class="hero-portrait">
+                <div class="portrait-frame">
+                    <div class="portrait-image" style="background: linear-gradient(135deg, #0f3460, #16213e);">
+                        <!-- URZ-KÔM Portrait -->
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-bubble health">30</div>
+                    <div class="stat-bubble armor">5</div>
+                </div>
+            </div>
+
+            <div class="player-hand">
+                <div class="hand-card" onclick="playCard(this, 0)">
+                    <div class="card-cost">5</div>
+                    <div class="card-artwork" style="background: linear-gradient(45deg, #001f3f, #ff6600);"></div>
+                    <div class="card-name">Frappe Quantique</div>
+                    <div class="card-description">8 dmg + écho</div>
+                </div>
+
+                <div class="hand-card" onclick="playCard(this, 1)">
+                    <div class="card-cost">3</div>
+                    <div class="card-artwork" style="background: radial-gradient(circle, #9b59b6, #3498db);"></div>
+                    <div class="card-name">Portail Temporel</div>
+                    <div class="card-description">Téléporte +2/+2</div>
+                </div>
+
+                <div class="hand-card" onclick="playCard(this, 2)">
+                    <div class="card-cost">7</div>
+                    <div class="card-artwork" style="background: linear-gradient(135deg, #f39c12, #e74c3c, #3498db);"></div>
+                    <div class="card-name">Guerrier Triforme</div>
+                    <div class="card-description">7/7 Triple attaque</div>
+                </div>
+
+                <div class="hand-card" onclick="playCard(this, 3)">
+                    <div class="card-cost">1</div>
+                    <div class="card-artwork" style="background: radial-gradient(circle, #e74c3c, #3498db, #f39c12);"></div>
+                    <div class="card-name">Cristal d'Avalon</div>
+                    <div class="card-description">+1 mana</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mana Display -->
+        <div class="mana-display">
+            <div class="mana-crystal active"></div>
+            <div class="mana-crystal active"></div>
+            <div class="mana-crystal active"></div>
+            <div class="mana-crystal active"></div>
+            <div class="mana-crystal active"></div>
+            <div class="mana-crystal"></div>
+            <div class="mana-crystal"></div>
+            <div class="mana-crystal"></div>
+            <div class="mana-crystal"></div>
+            <div class="mana-crystal"></div>
+        </div>
+
+        <!-- End Turn Button -->
+        <button class="end-turn-btn" onclick="endTurn()">FIN DE TOUR</button>
+    </div>
+
+    <script>
+        let currentMana = 5;
+        let maxMana = 5;
+
+        function playCard(card, index) {
+            // Animation de jeu de carte
+            card.style.animation = 'play-card 0.8s ease-out forwards';
+            
+            // Créer effet visuel
+            createVisualEffect(card);
+            
+            // Retirer la carte après animation
+            setTimeout(() => {
+                card.remove();
+                reorganizeHand();
+            }, 800);
+        }
+
+        function createVisualEffect(card) {
+            const effect = document.createElement('div');
+            effect.className = 'strike-effect';
+            effect.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent)';
+            
+            const rect = card.getBoundingClientRect();
+            effect.style.left = rect.left + rect.width/2 - 100 + 'px';
+            effect.style.top = rect.top + rect.height/2 - 100 + 'px';
+            
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 800);
+        }
+
+        function reorganizeHand() {
+            const cards = document.querySelectorAll('.hand-card');
+            cards.forEach((card, index) => {
+                const rotation = (index - (cards.length - 1) / 2) * 5;
+                card.style.transform = `rotate(${rotation}deg)`;
+            });
+        }
+
+        function endTurn() {
+            // Animation mana
+            maxMana = Math.min(10, maxMana + 1);
+            currentMana = maxMana;
+            updateManaDisplay();
+            
+            // Effet timeline
+            const timeline = document.querySelector('.timeline-display');
+            timeline.style.animation = 'timeline-shift 1s ease';
+            setTimeout(() => timeline.style.animation = '', 1000);
+        }
+
+        function updateManaDisplay() {
+            const crystals = document.querySelectorAll('.mana-crystal');
+            crystals.forEach((crystal, index) => {
+                if (index < currentMana) {
+                    crystal.classList.add('active');
+                } else {
+                    crystal.classList.remove('active');
+                }
+            });
+        }
+
+        // Animation CSS pour jouer une carte
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes play-card {
+                0% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-200px) scale(1.5) rotate(360deg); }
+                100% { transform: translateY(-400px) scale(0) rotate(720deg); opacity: 0; }
+            }
+            
+            @keyframes timeline-shift {
+                0%, 100% { filter: hue-rotate(0deg); }
+                50% { filter: hue-rotate(180deg) brightness(1.5); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

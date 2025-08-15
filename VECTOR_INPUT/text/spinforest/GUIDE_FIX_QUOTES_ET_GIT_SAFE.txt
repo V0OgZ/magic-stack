@@ -1,0 +1,59 @@
+GUIDE ANTI-MERDE - QUOTES ET GIT SAFE
+=====================================
+
+PROBLEME DES QUOTES DE MERDE:
+-----------------------------
+Quand tu vois "dquote>" c'est que le terminal attend une quote fermante
+Solution: CTRL+C pour sortir direct
+
+COMMANDES SAFE (sans quotes de merde):
+--------------------------------------
+echo FIX QUOTE IMMEDIATE    # Pas de quotes
+git status                  # Simple
+git add .                   # Direct
+git commit -m "message"     # Quotes simples obligatoires ici
+git push                    # Tranquille
+
+COMMANDES GIT SAFE:
+------------------
+# Voir ce qui va être commit AVANT:
+git status
+git diff --staged
+
+# Commit safe avec verif:
+git add -p    # Verif chaque changement
+git commit    # Ouvre editeur pour message
+
+# Push safe:
+git push --dry-run    # Test sans vraiment pusher
+git push              # Si OK
+
+# Annuler si merde:
+git reset HEAD~1      # Annule dernier commit (garde les fichiers)
+git reset --hard HEAD # DANGER: efface tout
+
+EVITER LES QUOTES DE MERDE:
+---------------------------
+# MAUVAIS:
+echo "truc avec "quotes" dedans"    # MERDE!
+
+# BON:
+echo 'truc avec "quotes" dedans'    # Quotes simples
+echo truc sans quotes               # Pas de quotes si pas besoin
+echo "truc simple"                  # Quotes doubles OK si simple
+
+RACCOURCIS TERMINAL:
+-------------------
+CTRL+C = Sortir de la merde
+CTRL+D = Fermer terminal
+CTRL+L = Clear ecran
+
+ALIAS UTILES (.zshrc):
+----------------------
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias wtf='git status'
+
+C'EST TOUT ! PLUS DE QUOTES DE MERDE !

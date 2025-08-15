@@ -1,0 +1,130 @@
+{
+  "alphacards_integration": {
+    "description": "Intégration des cartes alpha de Vincent avec stats de jeu",
+    "cards": [
+      {
+        "id": "ALPHA-001",
+        "name": "Vince – Le Voyageur Temporel",
+        "image": "../alphacards/Vince – Le Voyageur Temporel.png",
+        "type": "hero",
+        "rarity": "legendary",
+        "cost": 4,
+        "attack": 3,
+        "defense": 5,
+        "abilities": [
+          "Tir Dimensionnel: Inflige 3 dégâts à travers les timelines",
+          "Mallette Dorée: Pioche 1 carte supplémentaire"
+        ],
+        "temporal_effect": "Peut attaquer depuis n'importe quelle timeline",
+        "formula": "ψ_VINCE: ⊙(Bullet ⟶ Wormhole ⟶ Target)"
+      },
+      {
+        "id": "ALPHA-002",
+        "name": "Grokæn: Master of Quantum Realms",
+        "image": "../alphacards/Grokæn_ Master of Quantum Realms.png",
+        "type": "hero",
+        "rarity": "legendary",
+        "cost": 6,
+        "attack": 5,
+        "defense": 5,
+        "abilities": [
+          "Triple Voix: GRONDE (2 dmg) / PARLE (pioche 1) / CHANTE (heal 2)",
+          "Forme Quantique: Change d'état chaque tour"
+        ],
+        "temporal_effect": "Existe dans 3 états superposés",
+        "formula": "ψ_GROK: |GRONDE⟩ + |PARLE⟩ + |CHANTE⟩"
+      },
+      {
+        "id": "ALPHA-003",
+        "name": "Cosmic Bear Shaman in Starlit Expanse",
+        "image": "../alphacards/Cosmic Bear Shaman in Starlit Expanse.png",
+        "type": "hero",
+        "rarity": "legendary",
+        "cost": 5,
+        "attack": 4,
+        "defense": 6,
+        "abilities": [
+          "Transformation Cosmique: Devient Ours (6/8) ou Shaman (2/4)",
+          "Connexion Stellaire: Invoque une constellation chaque tour"
+        ],
+        "temporal_effect": "Les étoiles révèlent le futur (voit 2 cartes du deck)",
+        "formula": "ψ_URZ: ⊙(Bear ⟷ Shaman) × Stars"
+      },
+      {
+        "id": "ALPHA-004",
+        "name": "Le Voyageur Temporel en Écho",
+        "image": "../alphacards/Le Voyageur Temporel en Écho.png",
+        "type": "spell",
+        "rarity": "epic",
+        "cost": 3,
+        "effect": "Créez une copie d'une créature avec Écho (disparaît après 2 tours)",
+        "temporal_mechanic": "La copie existe dans une timeline parallèle",
+        "formula": "ψ_ECHO: Creature → Echo(t+2)"
+      },
+      {
+        "id": "ALPHA-005",
+        "name": "Temporal Echoes of the Time Traveler",
+        "image": "../alphacards/Temporal Echoes of the Time Traveler.png",
+        "type": "spell",
+        "rarity": "legendary",
+        "cost": 7,
+        "effect": "Rejouez les 3 derniers tours mais avec connaissance du futur",
+        "temporal_mechanic": "Annule et refait les 3 derniers tours",
+        "formula": "ψ_REWIND: Timeline(t-3 → t) × Knowledge(future)"
+      },
+      {
+        "id": "ALPHA-006",
+        "name": "Mystical Tome of Light and Shadow",
+        "image": "../alphacards/Mystical Tome of Light and Shadow.png",
+        "type": "artifact",
+        "rarity": "epic",
+        "cost": 3,
+        "effect": "Chaque tour, choisissez : Lumière (heal 2) ou Ombre (damage 2)",
+        "temporal_effect": "Alterne automatiquement entre passé lumineux et futur sombre",
+        "durability": 5
+      },
+      {
+        "id": "ALPHA-007",
+        "name": "Forêt ancienne et spirale lumineuse",
+        "image": "../alphacards/Forêt ancienne et spirale lumineuse.png",
+        "type": "terrain",
+        "rarity": "rare",
+        "cost": 2,
+        "effect": "Les créatures gagnent +1/+1. Les sorts temporels coûtent 1 de moins.",
+        "temporal_effect": "La spirale accélère le temps local",
+        "formula": "ψ_FOREST: Nature × Time_Spiral"
+      },
+      {
+        "id": "ALPHA-008",
+        "name": "Le Gardien de la Température",
+        "image": "../alphacards/Le Gardien de la Température.png",
+        "type": "creature",
+        "rarity": "epic",
+        "cost": 4,
+        "attack": 3,
+        "defense": 5,
+        "abilities": [
+          "Contrôle Thermique: Gèle (stun) ou Brûle (2 dmg) une cible",
+          "Équilibre: Ne peut être détruit par des sorts"
+        ],
+        "temporal_effect": "Stabilise la température temporelle",
+        "note": "Possible typo: Température → Temporalité?"
+      }
+    ]
+  },
+  "integration_notes": {
+    "images_ready": true,
+    "stats_added": true,
+    "missing_elements": [
+      "Dos de carte uniforme",
+      "Bordures de rareté",
+      "Icônes de coût/attaque/défense à superposer",
+      "Template de carte standard"
+    ],
+    "next_steps": [
+      "Créer template HTML/CSS pour afficher les stats sur les images",
+      "Intégrer dans game-interface.html",
+      "Tester avec le moteur de jeu"
+    ]
+  }
+}

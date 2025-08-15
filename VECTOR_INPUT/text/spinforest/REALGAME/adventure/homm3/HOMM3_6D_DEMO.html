@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏰 HOMM3 6D - Adventure Temporelle</title>
+    <link rel="stylesheet" href="DARK_ELITE_THEME.css">
+    <link rel="stylesheet" href="MINIMAL_OVERRIDE.css">
+    <style>
+        /* OVERRIDE pour supprimer le rose et utiliser le thème sombre */
+        
+        /* OVERRIDE COMPLET DU STYLE ROSE */
+        .header, .left-panel, .right-panel, .controls {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.8) 0%, rgba(10, 10, 20, 0.6) 50%, rgba(30, 20, 40, 0.8) 100%) !important;
+            border: 1px solid rgba(100, 80, 120, 0.3) !important;
+            border-radius: 15px !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .title {
+            color: #c0a080 !important;
+            text-shadow: 0 0 20px rgba(192, 160, 128, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+            font-family: 'Cinzel', 'Garamond', serif !important;
+            text-transform: uppercase !important;
+            letter-spacing: 4px !important;
+        }
+        
+        .section h3 {
+            color: #c0a080 !important;
+            text-shadow: 0 0 10px rgba(192, 160, 128, 0.3) !important;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, rgba(40, 30, 50, 0.8) 0%, rgba(30, 20, 40, 0.6) 100%) !important;
+            color: #c0a080 !important;
+            border: 1px solid rgba(100, 80, 120, 0.4) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(60, 45, 75, 0.9) 0%, rgba(50, 35, 65, 0.8) 100%) !important;
+            color: #d4b896 !important;
+            border-color: rgba(120, 100, 140, 0.6) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(192, 160, 128, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+        }
+        
+        .section {
+            border-bottom: 1px solid rgba(100, 80, 120, 0.2) !important;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-dot.online { background: #28a745; box-shadow: 0 0 5px #28a745; }
+        .status-dot.offline { background: #dc3545; }
+        
+        .left-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .map-container {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .right-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            grid-column: 1 / -1;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px;
+        }
+        
+        .panel-section {
+            margin-bottom: 20px;
+        }
+        
+        .panel-title {
+            color: #FFD700;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #8A2BE2;
+            padding-bottom: 5px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #8A2BE2, #FF1493);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            margin: 2px;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(45deg, #FF1493, #FFD700);
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 5px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #FFD700;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .log-area {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+        
+        .log-entry.success { color: #28a745; }
+        .log-entry.error { color: #dc3545; }
+        .log-entry.info { color: #17a2b8; }
+        
+        .entity-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .entity-item {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        
+        .entity-item.selected {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.2);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 2px solid #8A2BE2;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 5px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .fog-overlay {
+            position: absolute;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 0%, rgba(100,100,100,0.7) 100%);
+        }
+        
+        .axis-mode {
+            background: linear-gradient(45deg, #8B0000, #FF4500) !important;
+            box-shadow: 0 0 15px #FF4500;
+        }
+        
+        .time-velocity-display {
+            font-size: 10px;
+            color: #FFD700;
+            text-align: center;
+        }
+        
+        /* 🎒 INVENTAIRE STYLES */
+        .hotbar-slot {
+            width: 30px;
+            height: 30px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #666;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .hotbar-slot:hover {
+            border-color: #8A2BE2;
+            background: rgba(138, 43, 226, 0.2);
+        }
+        
+        .hotbar-slot.has-item {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+            color: #FFD700;
+        }
+        
+        .hotbar-slot.cooldown {
+            border-color: #FF4500;
+            background: rgba(255, 69, 0, 0.1);
+            color: #FF4500;
+        }
+        
+        .hotbar-slot .item-icon {
+            font-size: 14px;
+        }
+        
+        .hotbar-slot .cooldown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #FF4500;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">🏰 HOMM3 6D - Adventure Temporelle</div>
+            <div class="status-bar">
+                <div>
+                    <span class="status-dot" id="rustStatus"></span>
+                    Rust: <span id="rustStatusText">...</span>
+                </div>
+                <div>
+                    <span class="status-dot" id="javaStatus"></span>
+                    Java: <span id="javaStatusText">...</span>
+                </div>
+                <button class="btn" onclick="checkServerStatus()">🔄 Refresh</button>
+                <button class="btn" onclick="refreshInventoryFromBackend()">💰 Sync Inventory</button>
+            </div>
+        </div>
+        
+        <!-- Left Panel - Map Controls -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <div class="panel-title">🗺️ Contrôles Carte</div>
+                <button class="btn" onclick="generateNewMap()">🎲 Nouvelle Carte</button>
+                <button class="btn" onclick="initializeEntities()">🎭 Placer Entités</button>
+                <button class="btn" onclick="showOpenAPIViewer()">📚 OpenAPI Viewer</button>
+                <button class="btn" onclick="openCardGallery()">🎴 Galerie Dark</button>
+                <button class="btn" onclick="openCardComparator()">⚔️ Comparateur</button>
+                <button class="btn" onclick="openArchaeologistBadge()">🏺 Archéologue du Futur</button>
+                <button class="btn" onclick="toggleClippyMemento()">📎 Assistant Memento</button>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🎒 Inventaire & Hotbar</div>
+                
+                <!-- Ressources -->
+                <div style="display: flex; justify-content: space-between; margin: 5px 0; font-size: 11px;">
+                    <span>💰 <span id="goldCount">0</span></span>
+                    <span>💙 <span id="manaCount">100</span></span>
+                    <span>⏳ <span id="crystalCount">0</span></span>
+                </div>
+                
+                <!-- Hotbar (8 slots) -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 8px 0;">
+                    <div class="hotbar-slot" id="slot0" onclick="useHotbarSlot(0)" data-key="1">1</div>
+                    <div class="hotbar-slot" id="slot1" onclick="useHotbarSlot(1)" data-key="2">2</div>
+                    <div class="hotbar-slot" id="slot2" onclick="useHotbarSlot(2)" data-key="3">3</div>
+                    <div class="hotbar-slot" id="slot3" onclick="useHotbarSlot(3)" data-key="4">4</div>
+                    <div class="hotbar-slot" id="slot4" onclick="useHotbarSlot(4)" data-key="5">5</div>
+                    <div class="hotbar-slot" id="slot5" onclick="useHotbarSlot(5)" data-key="6">6</div>
+                    <div class="hotbar-slot" id="slot6" onclick="useHotbarSlot(6)" data-key="7">7</div>
+                    <div class="hotbar-slot" id="slot7" onclick="useHotbarSlot(7)" data-key="8">8</div>
+                </div>
+                
+                <!-- Actions inventaire -->
+                <div style="display: flex; gap: 3px;">
+                    <button class="btn" onclick="openInventory()" style="flex: 1; font-size: 10px;">📦 Ouvrir</button>
+                    <button class="btn" onclick="autoHeal()" style="flex: 1; font-size: 10px;">❤️ Heal</button>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🎮 Mini-Games</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 5px 0;">
+                    <button class="btn" onclick="startPanoramixPotions()" style="font-size: 9px;">🧙‍♂️ Panoramix</button>
+                    <button class="btn" onclick="startSenkuChemistry()" style="font-size: 9px;">🧪 Senku</button>
+                    <button class="btn" onclick="startHerbCollection()" style="font-size: 9px;">🌿 Collecte</button>
+                    <button class="btn" onclick="startRunicForge()" style="font-size: 9px;">⚒️ Forge</button>
+                </div>
+                <div id="activeMinigame" style="font-size: 10px; color: #FFD700; min-height: 20px;">
+                    Aucun mini-game actif
+                </div>
+                <div id="gatheringSkills" style="font-size: 9px; color: #ccc; margin-top: 5px;">
+                    Herbalisme: <span id="herbalismLevel">1</span><br>
+                    Chimie: <span id="chemistryLevel">1</span><br>
+                    Forge: <span id="forgingLevel">1</span>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">💎 Artefacts Équipés</div>
+                <div id="artifactsList" style="font-size: 10px; color: #ccc; min-height: 30px;">
+                    Aucun artefact équipé
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🔬 Inversion Temporelle</div>
+                <div class="slider-container">
+                    <span>-1</span>
+                    <input type="range" class="slider" id="timeVelocitySlider" 
+                           min="-1" max="1" step="0.1" value="1" 
+                           onchange="updateTimeVelocity(this.value)">
+                    <span>+1</span>
+                </div>
+                <div class="time-velocity-display" id="timeVelocityDisplay">Vitesse: +1.0 (Normal)</div>
+                <button class="btn" id="axisBtn" onclick="toggleAxisMode()">🔄 Mode Axis</button>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🌀 Topologie Non-Euclidienne</div>
+                <select id="topologySelect" onchange="updateTopology(this.value)" style="width: 100%; padding: 5px; background: rgba(255,255,255,0.1); border: 1px solid #8A2BE2; border-radius: 4px; color: #fff; font-size: 11px;">
+                    <option value="plane">📐 Plan Euclidien</option>
+                    <option value="torus">🍩 Torus (Wrap X/Y)</option>
+                    <option value="mobius">♾️ Möbius (Inversion)</option>
+                    <option value="klein">🌀 Klein (Double Wrap)</option>
+                </select>
+                <div style="font-size: 10px; color: #ccc; margin-top: 5px;" id="topologyDesc">
+                    Plan euclidien standard
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📍 Coordonnées</div>
+                <div style="font-size: 11px;">
+                    Cursor: <span id="cursorPos">(-,-)</span><br>
+                    Selected: <span id="selectedPos">Aucune</span><br>
+                    Causalité: <span id="causalityLevel">-</span>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🎯 Quêtes Actives</div>
+                <div id="questList" style="font-size: 10px; color: #ccc; max-height: 120px; overflow-y: auto;">
+                    Chargement...
+                </div>
+                <div style="margin-top: 5px;">
+                    <button class="btn" onclick="showQuestLog()" style="width: 100%; font-size: 10px;">📜 Journal</button>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📍 Localisation</div>
+                <div style="font-size: 10px; color: #FFD700;">
+                    <div id="currentLocationName">Zone Inconnue</div>
+                    <div id="currentLocationDesc" style="color: #ccc; margin-top: 3px; font-size: 9px;">
+                        Description de la zone
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🌐 World State Graph</div>
+                <div style="font-size: 10px; color: #ccc;">
+                    Status: <span id="wsgStatus">Démarrage...</span><br>
+                    Entités: <span id="entityCount">0</span><br>
+                    Collisions: <span id="collisionCount">0</span><br>
+                    Proximité: <span id="proximityRadius">1.5</span>
+                </div>
+                <div style="margin-top: 5px;">
+                    <input type="range" min="0.5" max="3.0" step="0.1" value="1.5" 
+                           onchange="setProximityRadius(this.value)" 
+                           style="width: 100%; height: 15px;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Map Container -->
+        <div class="map-container">
+            <canvas class="map-canvas" id="mapCanvas" width="800" height="600"></canvas>
+            <div id="fogOverlay" class="fog-overlay"></div>
+        </div>
+        
+        <!-- Right Panel - Entities & Info -->
+        <div class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">🎭 Entités Actives</div>
+                <div class="entity-list" id="entityList">
+                    <div class="entity-item">Aucune entité détectée</div>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📊 WSG Status</div>
+                <button class="btn" onclick="pollWorldStateGraph()">🔄 Poll WSG</button>
+                <div style="font-size: 10px; margin-top: 5px;">
+                    Dernière sync: <span id="lastWSGPoll">Jamais</span>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📜 Debug Log</div>
+                <div class="log-area" id="debugLog"></div>
+            </div>
+        </div>
+        
+        <!-- Controls Bar -->
+        <div class="controls">
+            <button class="btn" onclick="startPathfinding()">🧭 Planifier Route</button>
+            <button class="btn" onclick="startMovement()">🚶 Démarrer Mouvement</button>
+            <button class="btn" onclick="observeArea()">👁️ Observer Zone</button>
+            <button class="btn" onclick="testTopologies()">🌀 Test Topologies</button>
+            <button class="btn" onclick="toggleWSG()">🌐 Toggle WSG</button>
+            <button class="btn" onclick="forceCollisionCheck()">⚔️ Check Collisions</button>
+            <button class="btn" onclick="testTCG()">🃏 Test TCG</button>
+            <button class="btn" onclick="showQuestLog()">📜 Quest Log</button>
+            <button class="btn" onclick="clearAll()">🗑️ Clear All</button>
+            
+            <!-- 🗨️ COMMANDES MINI-GAMES -->
+            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                <input type="text" id="commandInput" placeholder="craft potion_vie | chemistry aqua_regia | collect" 
+                       style="flex: 1; padding: 5px; background: rgba(255,255,255,0.1); border: 1px solid #8A2BE2; border-radius: 3px; color: #fff; font-size: 11px;"
+                       onkeypress="if(event.key==='Enter') executeCommand()">
+                <button class="btn" onclick="executeCommand()" style="font-size: 10px;">⚡ CMD</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include modules -->
+    <script src="map.js"></script>
+    <script src="movement.js"></script>
+    <script src="fog.js"></script>
+    <script src="inventory.js"></script>
+    <script src="wsg.js"></script>
+    <script src="tcg.js"></script>
+    <script src="quest.js"></script>
+    <script src="economy-backend.js"></script>
+    <script src="minigames.js"></script>
+    <script src="temporal-drift.js"></script>
+    <script src="drift-hud.js"></script>
+    <script src="xp-system.js"></script>
+    <script src="persistence-system.js"></script>
+    
+    <script>
+        // 🚀 VARIABLES GLOBALES
+        let map, movement, fog, inventory, wsg, questSystem, minigames, economyBackend;
+        let temporalDrift, driftHUD;
+        let xpSystem, persistenceSystem;
+        let canvas, ctx;
+        let selectedEntity = null;
+        let isAxisMode = false;
+        let currentTimeVelocity = 1.0;
+        let currentTopology = 'plane'; // 🌀 NOUVEAU: Topologie active
+        let wsgPollInterval = null;
+        
+        // 🔧 CONFIGURATION XP AUTO-BACKEND (Updated per API.md)
+        const XP_CONFIG = {
+            backendAutoXP: {
+                resolve: true,    // ✅ Backend donne XP automatiquement sur resolve (idempotent)
+                collapse: true,   // ✅ Backend donne XP automatiquement sur collapse (idempotent avec playerId)  
+                tcg: true,        // ✅ Backend donne XP automatiquement après TCG
+                collect: false,   // ❌ Backend ne donne pas encore XP sur collecte (mais infère item kind)
+                craft: false,     // ❌ Backend ne donne pas encore XP sur craft
+                arcade: false     // ❌ Backend ne donne pas encore XP sur arcade
+            }
+        };
+        
+        // 🎯 INITIALISATION
+        document.addEventListener('DOMContentLoaded', async function() {
+            canvas = document.getElementById('mapCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Charger les ressources
+            const resourcesResponse = await fetch('resources.json');
+            const resources = await resourcesResponse.json();
+            
+            // Initialiser les modules selon les conseils du collègue
+            map = new HOMM3Map(resources.api_endpoints);
+            movement = new HOMM3Movement(map);
+            fog = new HOMM3CausalityFog(map);
+            inventory = new InventorySystem(map);
+            wsg = new WSGSystem(map);
+            questSystem = new QuestSystem(map, inventory);
+            economyBackend = new EconomyBackend();
+            minigames = new MinigameSystem(inventory, questSystem, economyBackend);
+            
+            // 🚗 Temporal Drift System
+            temporalDrift = new TemporalDriftSystem();
+            driftHUD = new TemporalDriftHUD(temporalDrift);
+            
+            // 🏆 XP System
+            xpSystem = new XPSystem();
+            
+            // 💾 Persistence System
+            persistenceSystem = new PersistenceSystem();
+            
+            // Callbacks pour les événements
+            setupEventCallbacks();
+            setupInventoryCallbacks();
+            setupWSGCallbacks();
+            setupQuestCallbacks();
+            setupMinigameCallbacks();
+            setupEconomyBackendCallbacks();
+            setupXPCallbacks();
+            setupPersistenceCallbacks();
+            setupTemporalDriftCallbacks();
+            updateInventoryUI();
+            updateQuestUI();
+            
+            // Charger inventaire initial depuis le backend
+            refreshInventoryFromBackend();
+            
+            // Démarrer WSG polling
+            wsg.start();
+            
+            // 🚗 Démarrer Temporal Drift
+            temporalDrift.start();
+            
+            // Vérifier les serveurs
+            await checkServerStatus();
+            
+            // Configurer les événements de canvas
+            setupCanvasEvents();
+            
+            // Démarrer le polling WSG (comme conseillé)
+            startWSGPolling();
+            
+            log('✅ HOMM3 6D Demo initialisé avec les APIs Magic Stack', 'success');
+        });
+        
+        // 📡 VÉRIFICATION SERVEURS
+        async function checkServerStatus() {
+            try {
+                // Test Rust
+                const rustResponse = await fetch('http://localhost:3001/openapi');
+                updateServerStatus('rust', rustResponse.ok);
+                
+                // Test Java
+                const javaResponse = await fetch('http://localhost:8082/api');
+                updateServerStatus('java', javaResponse.ok);
+                
+            } catch (error) {
+                updateServerStatus('rust', false);
+                updateServerStatus('java', false);
+            }
+        }
+        
+        function updateServerStatus(server, isOnline) {
+            const statusDot = document.getElementById(`${server}Status`);
+            const statusText = document.getElementById(`${server}StatusText`);
+            
+            if (isOnline) {
+                statusDot.className = 'status-dot online';
+                statusText.textContent = 'EN LIGNE';
+                statusText.style.color = '#28a745';
+            } else {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'HORS LIGNE';
+                statusText.style.color = '#dc3545';
+            }
+        }
+        
+        // 🗺️ GÉNÉRATION CARTE
+        async function generateNewMap() {
+            log('🎲 Génération nouvelle carte...', 'info');
+            
+            try {
+                // Vérifier que les modules sont initialisés
+                if (!map) {
+                    log('❌ Module map non initialisé', 'error');
+                    return;
+                }
+                if (!fog) {
+                    log('❌ Module fog non initialisé', 'error');
+                    return;
+                }
+                
+                await map.generateMap({
+                    width: 48,
+                    height: 36,
+                    seed: Math.floor(Math.random() * 1000000)
+                });
+                
+                // Initialiser le fog
+                fog.initialize();
+                
+                // Redessiner
+                renderMap();
+                
+                log('✅ Carte générée avec succès', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur génération carte: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🎭 INITIALISATION ENTITÉS
+        async function initializeEntities() {
+            if (!map.mapData) {
+                log('❌ Générer une carte d\'abord', 'error');
+                return;
+            }
+            
+            log('🎭 Initialisation entités 6D...', 'info');
+            
+            try {
+                await map.initializeEntities([
+                    { start: 2, end: 8, period: 12 },
+                    { start: 5, end: 15, period: 20 }
+                ]);
+                
+                log('✅ Entités initialisées', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur initialisation entités: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🌀 TOPOLOGIE NON-EUCLIDIENNE
+        function updateTopology(topology) {
+            currentTopology = topology;
+            
+            const descriptions = {
+                'plane': 'Plan euclidien standard - géométrie classique',
+                'torus': 'Torus - Les bords se rejoignent (wrap X et Y)',
+                'mobius': 'Möbius - Wrap horizontal avec inversion verticale',
+                'klein': 'Klein - Double wrap/inversion sur X et Y'
+            };
+            
+            const desc = document.getElementById('topologyDesc');
+            desc.textContent = descriptions[topology] || 'Topologie inconnue';
+            
+            // Feedback visuel selon la topologie
+            const select = document.getElementById('topologySelect');
+            if (topology === 'plane') {
+                select.style.borderColor = '#8A2BE2';
+            } else if (topology === 'torus') {
+                select.style.borderColor = '#FFD700';
+            } else if (topology === 'mobius') {
+                select.style.borderColor = '#FF1493';
+            } else if (topology === 'klein') {
+                select.style.borderColor = '#00FF00';
+                select.style.boxShadow = '0 0 10px #00FF00';
+            }
+            
+            log(`🌀 Topologie changée: ${topology}`, 'info');
+            
+            // 🚗 Temporal Drift: Enregistrer changement topologie
+            if (temporalDrift) {
+                temporalDrift.recordTopologyChange();
+            }
+        }
+        
+        // 🧭 PATHFINDING AVEC INTÉGRATION VISUELLE
+        async function startPathfinding() {
+            const selectedPos = document.getElementById('selectedPos').textContent;
+            if (selectedPos === 'Aucune') {
+                log('❌ Cliquer sur position de départ d\'abord', 'error');
+                return;
+            }
+            
+            const [startX, startY] = selectedPos.split(',').map(n => parseInt(n));
+            const goalX = startX + 10;  // Exemple: 10 tiles à droite
+            const goalY = startY + 5;   // Exemple: 5 tiles vers le bas
+            
+            const start = { x: startX, y: startY, timeline: 'principale' };
+            const goal = { x: goalX, y: goalY, timeline: 'principale' };
+            
+            try {
+                const result = await movement.planPath('hero_1', start, goal, {
+                    speed_multiplier: 1.0,
+                    alpha_causal: 0.7,
+                    time_velocity: currentTimeVelocity,  // UTILISE SLIDER
+                    topology: currentTopology  // 🌀 UTILISE TOPOLOGIE SÉLECTIONNÉE
+                });
+                
+                if (result.ok) {
+                    log(`🧭 Chemin planifié: ${result.path.length} étapes, coût: ${result.cost}`, 'success');
+                    if (currentTimeVelocity < 0) {
+                        log('⏰ Mode AXIS: Chemin d\'inversion temporelle', 'info');
+                    }
+                    if (currentTopology !== 'plane') {
+                        log(`🌀 Topologie ${currentTopology}: Géométrie non-euclidienne active`, 'info');
+                    }
+                } else {
+                    log('❌ Impossible de planifier le chemin', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur pathfinding: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🔬 INVERSION TEMPORELLE (AXIS)
+        function updateTimeVelocity(value) {
+            currentTimeVelocity = parseFloat(value);
+            const display = document.getElementById('timeVelocityDisplay');
+            
+            if (currentTimeVelocity < 0) {
+                display.textContent = `Vitesse: ${currentTimeVelocity} (⏪ AXIS)`;
+                display.style.color = '#FF4500';
+            } else {
+                display.textContent = `Vitesse: +${currentTimeVelocity} (Normal)`;
+                display.style.color = '#FFD700';
+            }
+            
+            // 🚗 Temporal Drift: Enregistrer changement vitesse
+            if (temporalDrift) {
+                temporalDrift.setTimeVelocity(currentTimeVelocity);
+            }
+        }
+        
+        function toggleAxisMode() {
+            isAxisMode = !isAxisMode;
+            const btn = document.getElementById('axisBtn');
+            const slider = document.getElementById('timeVelocitySlider');
+            
+            if (isAxisMode) {
+                btn.classList.add('axis-mode');
+                btn.textContent = '⏪ AXIS ON';
+                slider.value = '-1.0';
+                updateTimeVelocity(-1.0);
+            } else {
+                btn.classList.remove('axis-mode');
+                btn.textContent = '🔄 Mode Axis';
+                slider.value = '1.0';
+                updateTimeVelocity(1.0);
+            }
+        }
+        
+        // 👁️ OBSERVATION ZONE
+        async function observeArea() {
+            const selectedPos = document.getElementById('selectedPos').textContent;
+            if (selectedPos === 'Aucune') {
+                log('❌ Cliquer sur une position d\'abord', 'error');
+                return;
+            }
+            
+            const [x, y] = selectedPos.split(',').map(n => parseInt(n));
+            
+            try {
+                await fog.observeArea(
+                    { x, y, z: 0, t: Date.now() / 1000, c: 0.5, psi: 0 },
+                    2,
+                    'manual_observation'
+                );
+                
+                renderMap(); // Redessiner avec fog mis à jour
+                log(`👁️ Zone observée en (${x}, ${y})`, 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur observation: ${error.message}`, 'error');
+            }
+        }
+        
+        // ⚔️ RÉSOLUTION CAUSALITÉ
+        async function resolveCausality() {
+            // Rechercher les collisions via WSG et résoudre
+            log('🌀 Recherche de collisions causales...', 'info');
+            
+            const nodeIds = ['hero_1', 'monster_dragon']; // Exemple
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/causality/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        node_ids: nodeIds,
+                        mode: 'QUANTUM',
+                        seed: Math.floor(Math.random() * 1000)
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                const result = await response.json();
+                
+                if (result.started_match_id) {
+                    log(`🎴 Match TCG démarré: ${result.started_match_id}`, 'info');
+                    // Ouvrir interface TCG
+                } else if (result.winner) {
+                    log(`🏆 Résolution quantique: ${result.winner} l'emporte`, 'success');
+                }
+                
+                // 🚗 Temporal Drift: Enregistrer résolution
+                if (temporalDrift) {
+                    temporalDrift.recordResolve();
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur résolution: ${error.message}`, 'error');
+            }
+        }
+        
+        // ✨ LANCER SORT (AVEC 'formula')
+        async function castSpell(formula) {
+            log(`✨ Lancement formule: ${formula}`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3001/agents/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: formula,
+                        formula_type: 'AREA_EFFECT',
+                        caster_node_id: selectedEntity?.id || 'player_1',
+                        parameters: {
+                            target: 'area',
+                            power: 50,
+                            radius: 3
+                        }
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                const result = await response.json();
+                
+                log(`✅ Formule ${formula} lancée avec succès`, 'success');
+                
+                // Appliquer effets visuels selon le sort
+                if (formula === 'REVEAL_CAUSALITY') {
+                    await fog.applyCausalitySpell('REVEAL_CAUSALITY', { x: 10, y: 10, radius: 5 }, 0.8);
+                    renderMap();
+                }
+                
+                // 🚗 Temporal Drift: Enregistrer cast
+                if (temporalDrift) {
+                    temporalDrift.recordCast();
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur sort ${formula}: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🔄 POLLING WSG
+        function startWSGPolling() {
+            // Poll WSG toutes les 5 secondes comme conseillé
+            wsgPollInterval = setInterval(pollWorldStateGraph, 5000);
+        }
+        
+        async function pollWorldStateGraph() {
+            try {
+                const response = await fetch('http://localhost:3001/api/panopticon/world-state-graph');
+                
+                if (response.ok) {
+                    const wsgData = await response.json();
+                    updateEntityList(wsgData);
+                    document.getElementById('lastWSGPoll').textContent = new Date().toLocaleTimeString();
+                } else {
+                    log('⚠️ WSG endpoint non disponible', 'error');
+                }
+                
+            } catch (error) {
+                // WSG peut ne pas être implémenté encore
+                document.getElementById('lastWSGPoll').textContent = 'API manquante';
+            }
+        }
+        
+        // 🎨 RENDU CARTE
+        function renderMap() {
+            if (!map.mapData) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const tileWidth = canvas.width / map.config.width;
+            const tileHeight = canvas.height / map.config.height;
+            
+            // Dessiner les biomes
+            for (let y = 0; y < map.config.height; y++) {
+                for (let x = 0; x < map.config.width; x++) {
+                    const tile = map.getTileInfo(x, y);
+                    if (!tile) continue;
+                    
+                    // Couleur selon le biome
+                    const biomeColors = {
+                        'plain': '#90EE90',
+                        'forest': '#228B22', 
+                        'mountain': '#8B4513',
+                        'sea': '#4169E1'
+                    };
+                    
+                    ctx.fillStyle = biomeColors[tile.biome] || '#666';
+                    ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+                    
+                    // Obstacles
+                    if (tile.obstacle) {
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+                    }
+                    
+                    // Overlay de causalité
+                    if (fog.getCausalityLevel) {
+                        const causalLevel = fog.getCausalityLevel(x, y);
+                        if (causalLevel > 0.3) {
+                            ctx.fillStyle = `rgba(100,100,100,${causalLevel * 0.7})`;
+                            ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+                        }
+                    }
+                }
+            }
+            
+            // Grille
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= map.config.width; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * tileWidth, 0);
+                ctx.lineTo(x * tileWidth, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= map.config.height; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * tileHeight);
+                ctx.lineTo(canvas.width, y * tileHeight);
+                ctx.stroke();
+            }
+        }
+        
+        // 🖱️ ÉVÉNEMENTS CANVAS
+        function setupCanvasEvents() {
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / (canvas.width / map.config.width));
+                const y = Math.floor((e.clientY - rect.top) / (canvas.height / map.config.height));
+                
+                document.getElementById('cursorPos').textContent = `(${x},${y})`;
+                
+                if (map.mapData) {
+                    const causalLevel = fog.getCausalityLevel ? fog.getCausalityLevel(x, y) : 0;
+                    document.getElementById('causalityLevel').textContent = causalLevel.toFixed(3);
+                }
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / (canvas.width / map.config.width));
+                const y = Math.floor((e.clientY - rect.top) / (canvas.height / map.config.height));
+                
+                document.getElementById('selectedPos').textContent = `${x},${y}`;
+                
+                log(`🖱️ Position sélectionnée: (${x}, ${y})`, 'info');
+                
+                // INTÉGRATION QUÊTES - Mettre à jour position
+                if (questSystem) {
+                    questSystem.updateLocation(x, y);
+                }
+                
+                // COLLECTE MINI-GAME ou découverte normale
+                if (minigames && minigames.getActiveMinigame()?.id === 'herb_collection') {
+                    // Mode collecte actif - essayer de récolter
+                    handleCollectCommand(x, y).catch(error => {
+                        log(`🌿 ${error.message}`, 'warning');
+                    });
+                } else if (Math.random() < 0.3) { // 30% chance découverte normale
+                    setTimeout(() => {
+                        if (questSystem) {
+                            questSystem.onItemCollected('time_crystal', 1);
+                            if (inventory) {
+                                inventory.addResource('time_crystals', 1);
+                                updateInventoryUI();
+                            }
+                        }
+                    }, 500);
+                }
+            });
+        }
+        
+        // 📚 OPENAPI VIEWER
+        function showOpenAPIViewer() {
+            window.open('../API_TESTER.html', '_blank');
+        }
+        
+        // 🎴 CARD GALLERIES
+        function openCardGallery() {
+            window.open('/DARK_HOLOGRAPHIC_CARDS.html', '_blank');
+        }
+        
+        function openCardComparator() {
+            window.open('/CARD_STYLES_COMPARATOR.html', '_blank');
+        }
+        
+        function openArchaeologistBadge() {
+            window.open('/BADGE_ARCHEOLOGUE_DU_FUTUR.html', '_blank');
+        }
+
+        // 📎🧙 CLIPPY-MEMENTO ASSISTANT
+        let clippyMemento = null;
+        let clippyVisible = false;
+
+        function toggleClippyMemento() {
+            if (!clippyMemento) {
+                initializeClippyMemento();
+            }
+            
+            clippyVisible = !clippyVisible;
+            const clippy = document.getElementById('clippy-memento-game');
+            
+            if (clippyVisible) {
+                clippy.style.display = 'block';
+                setTimeout(() => {
+                    clippyMemento.showDialogue(
+                        "📎🧙 Salut Vincent ! Je suis ton assistant AVALON ! Je peux t'aider avec le lore, les mécaniques, et la navigation. Que veux-tu savoir ? ✨",
+                        ['🗺️ Navigation', '⚔️ Combat', '🔮 Magie', '🎒 Inventaire', '📚 Lore AVALON']
+                    );
+                }, 300);
+            } else {
+                clippyMemento.closeDialogue();
+                setTimeout(() => { clippy.style.display = 'none'; }, 300);
+            }
+        }
+
+        function initializeClippyMemento() {
+            // Injecter HTML Clippy
+            const clippyHTML = `
+            <div id="clippy-memento-game" class="clippy-memento-game" style="display: none;">
+                <div class="clippy-body-game">
+                    <div class="clippy-shape-game">
+                        <div class="clippy-eyes-game">
+                            <div class="eye-game"></div>
+                            <div class="eye-game"></div>
+                        </div>
+                    </div>
+                    <div class="magic-particles-game">
+                        <div class="particle-game"></div>
+                        <div class="particle-game"></div>
+                        <div class="particle-game"></div>
+                    </div>
+                </div>
+                <div id="clippy-dialogue-game" class="clippy-dialogue-game">
+                    <div class="dialogue-header-game">
+                        <div class="memento-avatar-game">📎</div>
+                        <div>
+                            <strong>Clippy-Memento</strong>
+                            <div class="level-indicator">👑 Mode Vincent</div>
+                        </div>
+                    </div>
+                    <div id="dialogue-content-game" class="dialogue-content-game"></div>
+                    <div id="dialogue-actions-game" class="dialogue-actions-game"></div>
+                </div>
+            </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', clippyHTML);
+
+            // Injecter CSS
+            const clippyCSS = `
+            <style>
+            .clippy-memento-game {
+                position: fixed;
+                right: 20px;
+                bottom: 20px;
+                z-index: 3000;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .clippy-body-game {
+                width: 70px;
+                height: 90px;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+
+            .clippy-shape-game {
+                width: 55px;
+                height: 70px;
+                background: linear-gradient(45deg, #ffd700, #ff6b35, #6366f1);
+                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                position: relative;
+                animation: clippy-idle-game 3s ease-in-out infinite;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+                cursor: pointer;
+            }
+
+            .clippy-eyes-game {
+                position: absolute;
+                top: 18px;
+                left: 15px;
+                display: flex;
+                gap: 8px;
+            }
+
+            .eye-game {
+                width: 7px;
+                height: 7px;
+                background: #1a1a2e;
+                border-radius: 50%;
+                animation: blink-game 4s infinite;
+            }
+
+            .magic-particles-game {
+                position: absolute;
+                top: -10px;
+                left: -10px;
+                right: -10px;
+                bottom: -10px;
+                pointer-events: none;
+            }
+
+            .particle-game {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: #ffd700;
+                border-radius: 50%;
+                animation: float-particle-game 2.5s ease-in-out infinite;
+            }
+
+            .particle-game:nth-child(1) { top: 15%; left: 25%; animation-delay: 0s; }
+            .particle-game:nth-child(2) { top: 35%; right: 20%; animation-delay: 0.8s; }
+            .particle-game:nth-child(3) { bottom: 25%; left: 15%; animation-delay: 1.6s; }
+
+            .clippy-dialogue-game {
+                position: absolute;
+                bottom: 100px;
+                right: 0;
+                width: 320px;
+                background: rgba(26, 26, 46, 0.95);
+                border: 2px solid #6366f1;
+                border-radius: 15px;
+                padding: 18px;
+                box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(15px);
+                transform: scale(0) translateY(20px);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            .clippy-dialogue-game.show {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+
+            .dialogue-header-game {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            }
+
+            .memento-avatar-game {
+                width: 28px;
+                height: 28px;
+                background: linear-gradient(45deg, #ffd700, #ff6b35);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+            }
+
+            .level-indicator {
+                font-size: 10px;
+                color: #ffd700;
+                font-weight: bold;
+            }
+
+            .dialogue-content-game {
+                margin-bottom: 15px;
+                line-height: 1.6;
+                font-size: 14px;
+                color: #e0e0e0;
+            }
+
+            .dialogue-actions-game {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .action-btn-game {
+                padding: 6px 10px;
+                background: rgba(99, 102, 241, 0.2);
+                border: 1px solid #6366f1;
+                border-radius: 6px;
+                color: #a5b4fc;
+                cursor: pointer;
+                font-size: 11px;
+                transition: all 0.2s ease;
+            }
+
+            .action-btn-game:hover {
+                background: rgba(99, 102, 241, 0.4);
+                color: white;
+                transform: translateY(-1px);
+            }
+
+            @keyframes clippy-idle-game {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                50% { transform: translateY(-4px) rotate(2deg); }
+            }
+
+            @keyframes clippy-excited-game {
+                0%, 100% { transform: translateY(0) scale(1); }
+                25% { transform: translateY(-8px) scale(1.05); }
+                75% { transform: translateY(-3px) scale(1.02); }
+            }
+
+            @keyframes float-particle-game {
+                0%, 100% { opacity: 0; transform: translateY(0) scale(0.8); }
+                50% { opacity: 1; transform: translateY(-18px) scale(1.2); }
+            }
+
+            @keyframes blink-game {
+                0%, 90%, 100% { opacity: 1; }
+                95% { opacity: 0; }
+            }
+
+            @media (max-width: 768px) {
+                .clippy-dialogue-game {
+                    width: 280px;
+                    right: -30px;
+                }
+            }
+            </style>`;
+
+            document.head.insertAdjacentHTML('beforeend', clippyCSS);
+
+            // Créer objet Clippy-Memento
+            clippyMemento = new ClippyMementoGame();
+        }
+
+        // Classe Clippy-Memento pour le jeu
+        class ClippyMementoGame {
+            constructor() {
+                this.isDialogueOpen = false;
+                this.currentContext = null;
+                this.userLevel = 'vincent'; // Vincent = accès total
+                
+                // Base de connaissances statique (ultra-rapide)
+                this.knowledgeBase = {
+                    'sid_meier': {
+                        message: "🎯 Sid Meier, l'Architecte Paresseux ! Arrivé dans AVALON via le Portail de Morgana lors de l'Événement CHEVRON 7. Créateur légendaire de civilisations, maître des hexagones et du calcul probabiliste ! 🏛️✨",
+                        actions: ['🎮 Ses Capacités', '🌀 Portail Morgana', '🎯 Jouer avec Sid']
+                    },
+                    'portails': {
+                        message: "🌀 Les Portails d'AVALON ! Tu as 4 types : STANDARD (violet), VORTEX (temporel rose), QUANTUM (turquoise), et DEAD (gris). Morgana contrôle le système principal. Attention, chaque arbre de la Forêt GROFI est un portail potentiel ! 🌲⚡",
+                        actions: ['🚪 Comment activer', '⚠️ Dangers', '🗺️ Destinations']
+                    },
+                    'combat': {
+                        message: "⚔️ Combat AVALON ! Système TCG automatique quand collision détectée. Observe bien les cartes adverses, gère ton mana, et utilise les combos ! Le brouillard de causalité peut changer la donne ! 🃏⚡",
+                        actions: ['🎴 Système TCG', '💡 Stratégies', '🔮 Sorts Combat']
+                    },
+                    'foret_grofi': {
+                        message: "🌲 Forêt GROFI - ATTENTION ! Cette forêt est CONSCIENTE et existe dans tous les mondes simultanément ! Chaque arbre est un nœud quantique. La Tour Sombre s'élève au centre. Morgana pourrait ÊTRE la forêt ! 🔮⚠️",
+                        actions: ['🏰 Tour Sombre', '🌳 Arbres Quantiques', '👁️ Théorie Walter']
+                    },
+                    'vector_db': {
+                        message: "🧠 Ton Vector DB fonctionne parfaitement ! 5000+ assets indexés, recherche <10ms, system ultra-optimisé ! Les IA peuvent chercher dans tout AVALON. Clippy-Memento utilise tes endpoints existants ! 🚀",
+                        actions: ['📊 Voir Stats', '🔍 Test Recherche', '⚙️ Performance']
+                    }
+                };
+
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // Click sur Clippy
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.clippy-shape-game')) {
+                        if (!this.isDialogueOpen) {
+                            this.showWelcomeMessage();
+                        }
+                    }
+                });
+
+                // Déclencheurs automatiques selon contexte jeu (examples)
+                setInterval(() => {
+                    this.checkContextualTriggers();
+                }, 5000);
+            }
+
+            checkContextualTriggers() {
+                // Éviter spam si dialogue déjà ouvert
+                if (this.isDialogueOpen) return;
+
+                // Exemples de déclencheurs selon état du jeu
+                if (map && map.currentArea === 'forest_grofi') {
+                    this.triggerContextualHelp('foret_grofi');
+                } else if (inventory && inventory.items.length >= inventory.maxSlots - 2) {
+                    this.triggerContextualHelp('inventory_almost_full');
+                }
+            }
+
+            triggerContextualHelp(context) {
+                // Éviter répétition
+                if (this.currentContext === context) return;
+                this.currentContext = context;
+
+                const knowledge = this.knowledgeBase[context];
+                if (knowledge) {
+                    this.animateClippy('excited');
+                    setTimeout(() => {
+                        this.showDialogue(knowledge.message, knowledge.actions);
+                    }, 500);
+                }
+            }
+
+            showWelcomeMessage() {
+                this.showDialogue(
+                    "📎🧙 Salut Vincent ! Je suis Clippy-Memento, ton assistant personnel d'AVALON ! Je connais tous tes 5000+ assets, l'histoire des portails, les héros, et les systèmes techniques. Que veux-tu explorer ? ✨",
+                    ['🎯 Sid Meier Info', '🌀 Système Portails', '🧠 Vector DB Status', '🔮 Lore Secrets', '🎮 Gameplay Help']
+                );
+            }
+
+            showDialogue(message, actions = []) {
+                const dialogue = document.getElementById('clippy-dialogue-game');
+                const content = document.getElementById('dialogue-content-game');
+                const actionsContainer = document.getElementById('dialogue-actions-game');
+
+                content.innerHTML = message;
+                
+                // Créer boutons d'action
+                actionsContainer.innerHTML = '';
+                actions.forEach(action => {
+                    const btn = document.createElement('button');
+                    btn.className = 'action-btn-game';
+                    btn.textContent = action;
+                    btn.onclick = () => this.handleAction(action);
+                    actionsContainer.appendChild(btn);
+                });
+
+                // Bouton fermer
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'action-btn-game';
+                closeBtn.textContent = '❌ Fermer';
+                closeBtn.onclick = () => this.closeDialogue();
+                actionsContainer.appendChild(closeBtn);
+
+                dialogue.classList.add('show');
+                this.isDialogueOpen = true;
+            }
+
+            handleAction(action) {
+                if (action.includes('Sid Meier')) {
+                    this.showDialogue(this.knowledgeBase.sid_meier.message, this.knowledgeBase.sid_meier.actions);
+                } else if (action.includes('Portails')) {
+                    this.showDialogue(this.knowledgeBase.portails.message, this.knowledgeBase.portails.actions);
+                } else if (action.includes('Combat')) {
+                    this.showDialogue(this.knowledgeBase.combat.message, this.knowledgeBase.combat.actions);
+                } else if (action.includes('Vector DB')) {
+                    this.showDialogue(this.knowledgeBase.vector_db.message, this.knowledgeBase.vector_db.actions);
+                } else if (action.includes('Lore Secrets')) {
+                    this.showDialogue("🔮 Accès Vincent aux secrets ! Tu as accès à TOUT : archives niveau 5, portails Morgana, systèmes techniques, lore complet ! Que veux-tu explorer ? 👑⚡", ['🌀 Portails Secrets', '🏰 Tour Sombre', '📚 Archives Privées']);
+                } else if (action.includes('Gameplay')) {
+                    this.showDialogue("🎮 Gameplay AVALON ! Exploration 6D + TCG combat + craft + quêtes temporelles ! Système de drift pour réguler vitesse. Progression XP automatique ! ⚡🎯", ['⚔️ Combat TCG', '🎒 Système Craft', '⏰ Temporal Drift']);
+                } else {
+                    this.showDialogue(`📎 "${action}" - Fonctionnalité disponible ! En mode Vincent, tu as accès à toutes les informations. Cette action sera bientôt connectée à ton Vector DB pour des réponses encore plus précises ! 🚀`, []);
+                }
+            }
+
+            closeDialogue() {
+                document.getElementById('clippy-dialogue-game').classList.remove('show');
+                this.isDialogueOpen = false;
+                this.currentContext = null;
+            }
+
+            animateClippy(type) {
+                const clippy = document.querySelector('.clippy-shape-game');
+                if (!clippy) return;
+                
+                const animations = {
+                    'excited': 'clippy-excited-game 1s ease-in-out',
+                    'thinking': 'clippy-thinking-game 1s ease-in-out',
+                    'idle': 'clippy-idle-game 3s ease-in-out infinite'
+                };
+                
+                clippy.style.animation = animations[type] || animations.idle;
+                
+                if (type !== 'idle') {
+                    setTimeout(() => {
+                        clippy.style.animation = animations.idle;
+                    }, 1000);
+                }
+            }
+        }
+        
+        // 🧹 UTILITAIRES
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        function clearAll() {
+            document.getElementById('debugLog').innerHTML = '';
+            document.getElementById('entityList').innerHTML = '<div class="entity-item">Aucune entité détectée</div>';
+            selectedEntity = null;
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function updateEntityList(wsgData) {
+            // Mettre à jour la liste des entités depuis WSG
+            // Implementation selon les données reçues
+        }
+        
+        function drawPath(path, timeVelocity = 1.0) {
+            if (!path || path.length < 2) return;
+            
+            const tileWidth = canvas.width / map.config.width;
+            const tileHeight = canvas.height / map.config.height;
+            
+            // COULEUR SELON TIME_VELOCITY
+            if (timeVelocity < 0) {
+                ctx.strokeStyle = '#FF4500';  // Orange pour AXIS
+                ctx.lineWidth = 4;
+                ctx.setLineDash([3, 3]);
+            } else if (timeVelocity > 1.0) {
+                ctx.strokeStyle = '#00FF00';  // Vert pour vitesse élevée
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 2]);
+            } else {
+                ctx.strokeStyle = '#FFD700';  // Or pour normal
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+            }
+            
+            // TRACER LE CHEMIN
+            ctx.beginPath();
+            for (let i = 0; i < path.length; i++) {
+                const point = path[i];
+                const pixelX = (point.x + 0.5) * tileWidth;
+                const pixelY = (point.y + 0.5) * tileHeight;
+                
+                if (i === 0) {
+                    ctx.moveTo(pixelX, pixelY);
+                    // Marqueur début (carré)
+                    ctx.fillStyle = ctx.strokeStyle;
+                    ctx.fillRect(pixelX - 3, pixelY - 3, 6, 6);
+                } else {
+                    ctx.lineTo(pixelX, pixelY);
+                }
+                
+                // Marqueur fin (cercle)
+                if (i === path.length - 1) {
+                    ctx.fillStyle = ctx.strokeStyle;
+                    ctx.beginPath();
+                    ctx.arc(pixelX, pixelY, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo((path[0].x + 0.5) * tileWidth, (path[0].y + 0.5) * tileHeight);
+                    for (let j = 1; j < path.length; j++) {
+                        ctx.lineTo((path[j].x + 0.5) * tileWidth, (path[j].y + 0.5) * tileHeight);
+                    }
+                }
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function setupEventCallbacks() {
+            // Callbacks selon les conseils du collègue
+            if (movement) {
+                // NOUVEAU: Traçage visuel du chemin planifié
+                movement.onPathPlanned = (agentId, path, timeVelocity) => {
+                    drawPath(path, timeVelocity);
+                    log(`🗺️ Route tracée pour ${agentId}: ${path.length} étapes (velocity: ${timeVelocity})`, 'success');
+                };
+                
+                movement.onMoveEnd = (agentId, position, duration) => {
+                    log(`🏁 ${agentId} arrivé en (${position.x}, ${position.y}) en ${duration}ms`, 'success');
+                    
+                    // SYNCHRONISATION BROUILLARD après mouvement
+                    if (fog && fog.markObserved) {
+                        fog.markObserved(position.x, position.y, 2);
+                        renderMap(); // Redessiner avec fog mis à jour
+                    }
+                    
+                    // 🚗 Temporal Drift: Enregistrer mouvement terminé
+                    if (temporalDrift) {
+                        temporalDrift.recordMove();
+                    }
+                };
+                
+                movement.onCollisionDetected = (agentId, others, position) => {
+                    log(`⚔️ Collision détectée: ${agentId} vs ${others.join(', ')} en (${position.x}, ${position.y})`, 'info');
+                };
+                
+                movement.onTimeInversion = (agentId, path) => {
+                    log(`⏰ Inversion temporelle activée pour ${agentId}`, 'info');
+                };
+                
+                movement.onMoveWithFog = (agentId, position, fogResult) => {
+                    log(`🚶 ${agentId} révèle ${fogResult.newTilesCount} nouvelles zones en (${position.x}, ${position.y})`, 'success');
+                    
+                    // Effets visuels pour exploration majeure
+                    if (fogResult.newTilesCount >= 5) {
+                        log('🎉 Grande découverte! Zone importante révélée', 'success');
+                        
+                        // Récompense pour exploration
+                        if (inventory) {
+                            inventory.addResource('gold', 25);
+                            log('💰 +25 gold pour exploration', 'success');
+                        }
+                    }
+                };
+            }
+            
+            if (fog) {
+                fog.onTileExplored = (tilesRevealed, context) => {
+                    if (Array.isArray(tilesRevealed)) {
+                        log(`🔍 ${tilesRevealed.length} tiles explorées autour de (${context.centerX}, ${context.centerY})`, 'info');
+                        renderMap(); // Redessiner avec nouvelles zones révélées
+                    } else {
+                        // Ancien format (compatibilité)
+                        log(`🔍 Tile (${tilesRevealed}, ${context}) explorée`, 'info');
+                    }
+                };
+                
+                fog.onAreaObserved = (center, radius, result) => {
+                    log(`👁️ Observation collapse en (${center.x}, ${center.y}), rayon: ${radius}`, 'success');
+                    renderMap(); // Redessiner après collapse
+                };
+                
+                // Alias pour compatibilité
+                fog.onObservationCollapse = fog.onAreaObserved;
+            }
+        }
+        
+        // 🚶 DÉMARRER MOUVEMENT AVEC SYNCHRONISATION
+        async function startMovement() {
+            const selectedPos = document.getElementById('selectedPos').textContent;
+            if (selectedPos === 'Aucune') {
+                log('❌ Cliquer sur position de départ d\'abord', 'error');
+                return;
+            }
+            
+            // D'abord planifier le chemin
+            await startPathfinding();
+            
+            // Puis démarrer le mouvement simulé
+            const [startX, startY] = selectedPos.split(',').map(n => parseInt(n));
+            const path = [
+                { x: startX, y: startY },
+                { x: startX + 2, y: startY + 1 },
+                { x: startX + 4, y: startY + 2 },
+                { x: startX + 6, y: startY + 3 }
+            ];
+            
+            try {
+                await movement.startMovement('hero_1', path, 800); // 800ms par step
+                log('🚶 Mouvement démarré avec synchronisation fog', 'success');
+                
+                // 🚗 Temporal Drift: Enregistrer mouvement
+                if (temporalDrift) {
+                    temporalDrift.recordMove();
+                }
+            } catch (error) {
+                log(`❌ Erreur mouvement: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🌀 TEST TOPOLOGIES NON-EUCLIDIENNES
+        async function testTopologies() {
+            log('🧪 Test de toutes les topologies non-euclidiennes...', 'info');
+            
+            const topologies = ['plane', 'torus', 'mobius', 'klein'];
+            const originalTopology = currentTopology;
+            
+            if (!map.mapData) {
+                await generateNewMap();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            for (const topology of topologies) {
+                log(`🌀 Test topologie: ${topology}`, 'info');
+                
+                // Changer la topologie
+                updateTopology(topology);
+                document.getElementById('topologySelect').value = topology;
+                
+                // Tester un chemin avec cette topologie
+                const start = { x: 5, y: 5, timeline: 'principale' };
+                const goal = { x: 40, y: 30, timeline: 'principale' }; // Goal près du bord pour tester wrap
+                
+                try {
+                    const result = await movement.planPath(`test_${topology}`, start, goal, {
+                        speed_multiplier: 1.0,
+                        alpha_causal: 0.5,
+                        time_velocity: 1.0,
+                        topology: topology
+                    });
+                    
+                    if (result.ok) {
+                        log(`✅ ${topology}: ${result.path.length} étapes, coût: ${result.cost}`, 'success');
+                        
+                        // Analyses spécifiques par topologie
+                        if (topology === 'torus' && result.path.length > 0) {
+                            log(`🍩 Torus: Chemin peut wrapper les bords`, 'info');
+                        } else if (topology === 'mobius' && result.path.length > 0) {
+                            log(`♾️ Möbius: Inversion verticale possible`, 'info');
+                        } else if (topology === 'klein' && result.path.length > 0) {
+                            log(`🌀 Klein: Double wrap/inversion active`, 'info');
+                        }
+                    } else {
+                        log(`❌ ${topology}: Pathfinding échoué`, 'error');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ ${topology}: ${error.message}`, 'error');
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 300)); // Pause entre tests
+            }
+            
+            // Remettre la topologie originale
+            updateTopology(originalTopology);
+            document.getElementById('topologySelect').value = originalTopology;
+            
+            log('🎉 Test de toutes les topologies terminé!', 'success');
+        }
+        
+        // 🎒 SYSTÈME INVENTAIRE ET HOTBAR
+        function setupInventoryCallbacks() {
+            if (!inventory) return;
+            
+            // Callback item utilisé
+            inventory.onItemUsed = (itemId, item, result) => {
+                log(`🎒 ${item.name} utilisé`, 'success');
+                updateInventoryUI();
+                
+                // Effets spéciaux selon l'item
+                if (item.effects?.includes('reveal_causality') && fog) {
+                    const center = { x: 24, y: 18, z: 0, t: Date.now()/1000, c: 0.5, psi: 0 };
+                    fog.observeArea(center, item.power || 2, 'item_reveal');
+                }
+            };
+            
+            // Callback sort lancé
+            inventory.onSpellCast = (spellId, spell, result) => {
+                log(`✨ ${spell.name} lancé`, 'success');
+                updateInventoryUI();
+                
+                // Effets visuels
+                if (spell.effects?.includes('temporal_sight')) {
+                    log('👁️ Traces temporelles révélées...', 'info');
+                } else if (spell.effects?.includes('phase_through')) {
+                    log('👻 Déphasage temporaire activé', 'info');
+                }
+            };
+            
+            // Callback ressources changées
+            inventory.onResourceChanged = (type, newValue) => {
+                updateResourceDisplay(type, newValue);
+            };
+            
+            // Callback inventaire mis à jour
+            inventory.onInventoryUpdated = (action, id, data) => {
+                updateInventoryUI();
+                if (action === 'hotbar_updated') {
+                    updateHotbarUI();
+                }
+            };
+        }
+        
+        function updateInventoryUI() {
+            if (!inventory) return;
+            
+            // Mettre à jour les ressources
+            updateResourceDisplay('gold', inventory.resources.gold);
+            updateResourceDisplay('mana', inventory.resources.mana);
+            updateResourceDisplay('time_crystals', inventory.resources.time_crystals);
+            
+            // Mettre à jour la hotbar
+            updateHotbarUI();
+            
+            // Mettre à jour les artefacts équipés
+            updateArtifactsDisplay();
+        }
+        
+        function updateResourceDisplay(type, value) {
+            const displayMap = {
+                'gold': 'goldCount',
+                'mana': 'manaCount', 
+                'time_crystals': 'crystalCount'
+            };
+            
+            const elementId = displayMap[type];
+            if (elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+        }
+        
+        function updateHotbarUI() {
+            if (!inventory) return;
+            
+            for (let i = 0; i < inventory.hotbarSlots; i++) {
+                const slot = document.getElementById(`slot${i}`);
+                const hotbarItem = inventory.hotbar[i];
+                
+                if (!slot) continue;
+                
+                slot.className = 'hotbar-slot';
+                slot.innerHTML = i + 1; // Numéro par défaut
+                
+                if (hotbarItem) {
+                    slot.classList.add('has-item');
+                    
+                    let item = null;
+                    let icon = '❓';
+                    let name = 'Inconnu';
+                    
+                    if (hotbarItem.type === 'item') {
+                        item = inventory.items.get(hotbarItem.id);
+                        if (item) {
+                            icon = getItemIcon(item);
+                            name = item.name;
+                        }
+                    } else if (hotbarItem.type === 'spell') {
+                        item = inventory.spells.get(hotbarItem.id);
+                        if (item) {
+                            icon = getSpellIcon(item);
+                            name = item.name;
+                        }
+                    }
+                    
+                    slot.innerHTML = `<div class="item-icon">${icon}</div>`;
+                    slot.title = name;
+                    
+                    // Vérifier cooldown
+                    if (item && isOnCooldown(item)) {
+                        slot.classList.add('cooldown');
+                        const remaining = getCooldownRemaining(item);
+                        slot.innerHTML += `<div class="cooldown-overlay">${remaining}s</div>`;
+                    }
+                }
+            }
+        }
+        
+        function getItemIcon(item) {
+            const iconMap = {
+                'health_potion': '❤️',
+                'mana_crystal': '💙', 
+                'time_lens': '🔍',
+                'wiener_eye_fragment': '👁️'
+            };
+            return iconMap[item.id] || '📦';
+        }
+        
+        function getSpellIcon(spell) {
+            const iconMap = {
+                'echo_temporel': '🔮',
+                'phase_shift': '👻',
+                'reveal_causality': '👁️',
+                'chaos_fog': '🌪️',
+                'time_clarity': '⏰'
+            };
+            return iconMap[spell.id] || '✨';
+        }
+        
+        function isOnCooldown(item) {
+            if (!item.lastUsed && !item.lastCast) return false;
+            
+            const lastUse = item.lastUsed || item.lastCast || 0;
+            const cooldown = item.cooldown || 0;
+            const now = Date.now();
+            
+            return (now - lastUse) < cooldown;
+        }
+        
+        function getCooldownRemaining(item) {
+            const lastUse = item.lastUsed || item.lastCast || 0;
+            const cooldown = item.cooldown || 0;
+            const now = Date.now();
+            
+            return Math.ceil((cooldown - (now - lastUse)) / 1000);
+        }
+        
+        function updateArtifactsDisplay() {
+            const artifactsList = document.getElementById('artifactsList');
+            if (!artifactsList || !inventory) return;
+            
+            const equipped = inventory.getEquippedArtifacts();
+            
+            if (equipped.length === 0) {
+                artifactsList.textContent = 'Aucun artefact équipé';
+                return;
+            }
+            
+            const html = equipped.map(artifact => {
+                const rarity = artifact.rarity || 'common';
+                const color = getRarityColor(rarity);
+                return `<div style="color: ${color}; margin: 2px 0;">${artifact.name}</div>`;
+            }).join('');
+            
+            artifactsList.innerHTML = html;
+        }
+        
+        function getRarityColor(rarity) {
+            const colors = {
+                'common': '#aaa',
+                'rare': '#4169E1',
+                'epic': '#8A2BE2',
+                'legendary': '#FFD700'
+            };
+            return colors[rarity] || '#aaa';
+        }
+        
+        // 🎮 ACTIONS HOTBAR
+        async function useHotbarSlot(slotIndex) {
+            if (!inventory) {
+                log('❌ Inventaire non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                const result = await inventory.useHotbarSlot(slotIndex);
+                updateInventoryUI();
+                
+                log(`⚡ Slot ${slotIndex + 1} utilisé`, 'success');
+                
+            } catch (error) {
+                log(`❌ Slot ${slotIndex + 1}: ${error.message}`, 'error');
+            }
+        }
+        
+        async function autoHeal() {
+            if (!inventory) return;
+            
+            try {
+                await inventory.useItem('health_potion');
+                log('❤️ Auto-heal déclenché', 'success');
+                
+            } catch (error) {
+                log(`❌ Auto-heal: ${error.message}`, 'error');
+            }
+        }
+        
+        function openInventory() {
+            // TODO: Ouvrir panneau inventaire complet
+            log('📦 Inventaire complet - À implémenter', 'info');
+            
+            // Pour l'instant, afficher un résumé
+            if (inventory) {
+                log(`Items: ${inventory.items.size}, Sorts: ${inventory.spells.size}, Artefacts: ${inventory.artifacts.size}`, 'info');
+            }
+        }
+        
+        // ⌨️ RACCOURCIS CLAVIER HOTBAR
+        document.addEventListener('keydown', function(event) {
+            // Touches 1-8 pour hotbar
+            if (event.key >= '1' && event.key <= '8') {
+                const slotIndex = parseInt(event.key) - 1;
+                useHotbarSlot(slotIndex);
+                event.preventDefault();
+            }
+            
+            // Touche H pour auto-heal
+            if (event.key.toLowerCase() === 'h') {
+                autoHeal();
+                event.preventDefault();
+            }
+            
+            // Touche I pour inventaire
+            if (event.key.toLowerCase() === 'i') {
+                openInventory();
+                event.preventDefault();
+            }
+        });
+        
+        // 🌐 SYSTÈME WSG ET COLLISIONS
+        function setupWSGCallbacks() {
+            if (!wsg) return;
+            
+            // Callback entité découverte
+            wsg.onEntityDiscovered = (nodeId, entity) => {
+                log(`🎭 Entité découverte: ${entity.identity} (${entity.type})`, 'info');
+                renderMap(); // Redessiner avec nouvelles entités
+            };
+            
+            // Callback entité déplacée
+            wsg.onEntityMoved = (nodeId, entity, previous) => {
+                log(`🚶 ${entity.identity} déplacé: (${previous.x},${previous.y}) → (${entity.x},${entity.y})`, 'info');
+                renderMap();
+            };
+            
+            // Callback collision détectée
+            wsg.onCollisionDetected = (entity1, entity2, distance) => {
+                log(`⚔️ COLLISION: ${entity1.identity} vs ${entity2.identity} (d=${distance.toFixed(2)})`, 'warning');
+                
+                // Effet visuel collision
+                flashCollisionEffect(entity1, entity2);
+            };
+            
+            // Callback TCG déclenché
+            wsg.onTCGTriggered = (matchId, entity1, entity2, result) => {
+                log(`🃏 TCG DÉCLENCHÉ: Match ${matchId}`, 'success');
+                openTCGPanel(matchId, entity1, entity2, result);
+            };
+            
+            // Callback résolution complète
+            wsg.onResolutionComplete = (winner, entity1, entity2, result) => {
+                log(`👑 RÉSOLUTION: Vainqueur ${winner}`, 'success');
+                handleResolutionResult(winner, entity1, entity2, result);
+            };
+            
+            // Callback erreur WSG
+            wsg.onWSGError = (errorType, error) => {
+                log(`❌ WSG Error (${errorType}): ${error.message}`, 'error');
+            };
+        }
+        
+        function flashCollisionEffect(entity1, entity2) {
+            // Effet visuel temporaire sur le canvas
+            if (!canvas || !ctx) return;
+            
+            const tileWidth = canvas.width / map.config.width;
+            const tileHeight = canvas.height / map.config.height;
+            
+            // Flash rouge aux positions des entités
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = '#FF4500';
+            
+            // Entity 1
+            ctx.fillRect(
+                entity1.x * tileWidth - 2,
+                entity1.y * tileHeight - 2,
+                tileWidth + 4,
+                tileHeight + 4
+            );
+            
+            // Entity 2
+            ctx.fillRect(
+                entity2.x * tileWidth - 2,
+                entity2.y * tileHeight - 2,
+                tileWidth + 4,
+                tileHeight + 4
+            );
+            
+            ctx.restore();
+            
+            // Restaurer après 300ms
+            setTimeout(() => {
+                renderMap();
+            }, 300);
+        }
+        
+        function openTCGPanel(matchId, entity1, entity2, result) {
+            log(`🃏 Ouverture TCG Panel - Match: ${matchId}`, 'info');
+            
+            // Configurer callbacks TCG
+            setupTCGCallbacks();
+            
+            // Ouvrir le vrai panneau TCG
+            if (window.tcgPanel) {
+                window.tcgPanel.open(matchId, entity1, entity2, result);
+            }
+        }
+        
+        function setupTCGCallbacks() {
+            if (!window.tcgPanel) return;
+            
+            // Callback début de match
+            window.tcgPanel.onMatchStart = (matchId, playerEntity, enemyEntity) => {
+                log(`⚔️ Combat démarré: ${playerEntity.identity} vs ${enemyEntity.identity}`, 'success');
+                
+                // Pause WSG pendant le combat
+                if (wsg) {
+                    wsg.stop();
+                }
+            };
+            
+            // Callback fin de match
+            window.tcgPanel.onMatchEnd = (matchId, winner, playerEntity, enemyEntity) => {
+                log(`🏆 Combat terminé - Vainqueur: ${winner}`, 'success');
+                
+                // Reprendre WSG après combat
+                if (wsg) {
+                    wsg.start();
+                }
+                
+                // Gestion post-combat
+                handleTCGResult(matchId, winner, playerEntity, enemyEntity);
+            };
+            
+            // Callback carte jouée
+            window.tcgPanel.onCardPlayed = (card, player) => {
+                log(`🃏 ${player} joue ${card.name}`, 'info');
+            };
+        }
+        
+        function handleTCGResult(matchId, winner, playerEntity, enemyEntity) {
+            const playerWon = winner === playerEntity.node_id;
+            
+            if (playerWon) {
+                log('🎉 Victoire du joueur!', 'success');
+                
+                // Récompenses de victoire
+                if (inventory) {
+                    inventory.addResource('gold', 100);
+                    inventory.addResource('time_crystals', 2);
+                    
+                    // Bonus selon type d'ennemi
+                    if (enemyEntity.type === 'treasure') {
+                        inventory.addResource('gold', 150);
+                        log('💰 Trésor supplémentaire découvert!', 'success');
+                    } else if (enemyEntity.hostile) {
+                        inventory.addResource('time_crystals', 3);
+                        log('⏳ Cristaux temporels de combat obtenus!', 'success');
+                    }
+                }
+                
+                // Effet visuel victoire
+                setTimeout(() => {
+                    log('✨ Expérience gagnée! Nouvelles capacités débloquées', 'success');
+                }, 1000);
+                
+            } else {
+                log('💀 Défaite du joueur...', 'warning');
+                
+                // Pénalités de défaite
+                if (inventory) {
+                    const goldLoss = Math.min(50, inventory.resources.gold);
+                    inventory.resources.gold -= goldLoss;
+                    
+                    if (goldLoss > 0) {
+                        log(`💸 Vous perdez ${goldLoss} gold`, 'warning');
+                    }
+                }
+                
+                // Effet visuel défaite
+                setTimeout(() => {
+                    log('🔄 Respawn dans 3 secondes...', 'info');
+                    // TODO: Respawn logic
+                }, 1000);
+            }
+            
+            // Mettre à jour l'UI
+            if (inventory) {
+                updateInventoryUI();
+            }
+            
+            renderMap();
+        }
+        
+        function handleResolutionResult(winner, entity1, entity2, result) {
+            // Gestion résolution automatique (QUANTUM)
+            if (wsg && wsg.localPlayer && winner === wsg.localPlayer.node_id) {
+                log('✨ Résolution favorable!', 'success');
+                
+                // Récompense basique
+                if (inventory && entity2.type === 'treasure') {
+                    inventory.addResource('gold', 50);
+                    inventory.addResource('time_crystals', 1);
+                    log('💰 Trésor obtenu: +50 gold, +1 cristal temporel', 'success');
+                }
+            } else {
+                log('⚡ Résolution défavorable', 'warning');
+            }
+            
+            renderMap();
+        }
+        
+        // 🎮 CONTRÔLES WSG
+        function toggleWSG() {
+            if (!wsg) return;
+            
+            if (wsg.enabled) {
+                wsg.stop();
+                log('🌐 WSG arrêté', 'info');
+            } else {
+                wsg.start();
+                log('🌐 WSG démarré', 'success');
+            }
+        }
+        
+        function forceCollisionCheck() {
+            if (!wsg) return;
+            
+            wsg.forceCollisionCheck();
+            log('🔍 Vérification collision forcée', 'info');
+        }
+        
+        function showWSGStatus() {
+            if (!wsg) return;
+            
+            const status = wsg.getStatus();
+            log(`📊 WSG Status: ${status.entityCount} entités, polling ${status.enabled ? 'ON' : 'OFF'}`, 'info');
+            
+            if (status.playerPosition) {
+                log(`👤 Joueur: (${status.playerPosition.x}, ${status.playerPosition.y})`, 'info');
+            }
+        }
+        
+        function setProximityRadius(radius) {
+            if (!wsg) return;
+            
+            wsg.setProximityRadius(parseFloat(radius));
+            log(`🎯 Rayon de proximité: ${radius}`, 'info');
+            
+            // Mettre à jour l'affichage
+            updateWSGDisplay();
+        }
+        
+        function updateWSGDisplay() {
+            if (!wsg) return;
+            
+            const status = wsg.getStatus();
+            
+            // Mettre à jour les éléments UI
+            const statusElement = document.getElementById('wsgStatus');
+            const entityCountElement = document.getElementById('entityCount');
+            const collisionCountElement = document.getElementById('collisionCount');
+            const proximityRadiusElement = document.getElementById('proximityRadius');
+            
+            if (statusElement) {
+                statusElement.textContent = status.enabled ? 'Actif' : 'Arrêté';
+                statusElement.style.color = status.enabled ? '#00FF00' : '#FF4500';
+            }
+            
+            if (entityCountElement) {
+                entityCountElement.textContent = status.entityCount;
+            }
+            
+            if (collisionCountElement) {
+                collisionCountElement.textContent = status.detectedCollisions;
+            }
+            
+            if (proximityRadiusElement) {
+                proximityRadiusElement.textContent = wsg.proximityRadius.toFixed(1);
+            }
+        }
+        
+        // Mettre à jour l'affichage WSG toutes les 3 secondes
+        setInterval(updateWSGDisplay, 3000);
+        
+        // 🎯 SYSTÈME DE QUÊTES
+        function setupQuestCallbacks() {
+            if (!questSystem) return;
+            
+            // Callback quête démarrée
+            questSystem.onQuestStarted = (questId, questData) => {
+                log(`🎯 Nouvelle quête: ${questData.name}`, 'success');
+                updateQuestUI();
+                
+                // Notification spéciale pour quêtes principales
+                if (questData.type === 'main') {
+                    log(`📜 ${questData.description}`, 'info');
+                }
+            };
+            
+            // Callback quête complétée
+            questSystem.onQuestCompleted = (questId, questData) => {
+                log(`🏆 QUÊTE COMPLÉTÉE: ${questData.name}`, 'success');
+                
+                // Effets visuels de célébration
+                setTimeout(() => {
+                    log('✨ Récompenses reçues!', 'success');
+                }, 500);
+                
+                updateQuestUI();
+                updateInventoryUI(); // Pour les récompenses
+            };
+            
+            // Callback objectif complété
+            questSystem.onObjectiveCompleted = (questId, objectiveId, objective) => {
+                log(`✅ ${objective.description}`, 'success');
+                updateQuestUI();
+            };
+            
+            // Callback changement de lieu
+            questSystem.onLocationChanged = (newLocation, oldLocation, locationData) => {
+                log(`📍 ${locationData.name}`, 'info');
+                log(`${locationData.description}`, 'info');
+                updateLocationDisplay(locationData);
+                updateQuestUI();
+            };
+            
+            // Callback progression
+            questSystem.onProgressUpdate = (questId, objectiveId, objective) => {
+                updateQuestUI();
+            };
+        }
+        
+        function updateQuestUI() {
+            if (!questSystem) return;
+            
+            const questList = document.getElementById('questList');
+            if (!questList) return;
+            
+            const activeQuests = questSystem.getActiveQuests();
+            
+            if (activeQuests.length === 0) {
+                questList.innerHTML = '<div style="color: #666;">Aucune quête active</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            for (const quest of activeQuests) {
+                const typeIcon = quest.type === 'main' ? '⭐' : '📋';
+                const completedObjectives = quest.objectives.filter(obj => obj.completed).length;
+                const totalObjectives = quest.objectives.length;
+                
+                html += `
+                    <div style="margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 3px;">
+                        <div style="color: #FFD700; font-weight: bold; font-size: 11px;">
+                            ${typeIcon} ${quest.name}
+                        </div>
+                        <div style="color: #ccc; font-size: 9px; margin-top: 2px;">
+                            ${completedObjectives}/${totalObjectives} objectifs
+                        </div>
+                        <div style="width: 100%; height: 3px; background: #333; border-radius: 2px; margin-top: 3px;">
+                            <div style="width: ${(completedObjectives/totalObjectives)*100}%; height: 100%; background: #8A2BE2; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            questList.innerHTML = html;
+        }
+        
+        function updateLocationDisplay(locationData) {
+            const nameElement = document.getElementById('currentLocationName');
+            const descElement = document.getElementById('currentLocationDesc');
+            
+            if (nameElement) {
+                nameElement.textContent = locationData.name;
+            }
+            
+            if (descElement) {
+                descElement.textContent = locationData.description;
+            }
+        }
+        
+        function showQuestLog() {
+            if (!questSystem) return;
+            
+            log('📜 === JOURNAL DE QUÊTES ===', 'info');
+            
+            const mainQuests = questSystem.getMainQuestLine();
+            
+            log('🌟 QUÊTES PRINCIPALES:', 'info');
+            for (const questInfo of mainQuests) {
+                const statusIcon = questInfo.status === 'completed' ? '✅' : 
+                                  questInfo.status === 'active' ? '🎯' : '🔒';
+                log(`${statusIcon} ${questInfo.quest.name} (${questInfo.status})`, 'info');
+                
+                if (questInfo.status === 'active') {
+                    const quest = questSystem.activeQuests.get(questInfo.id);
+                    if (quest) {
+                        for (const objective of quest.objectives) {
+                            const objIcon = objective.completed ? '✅' : '📋';
+                            log(`  ${objIcon} ${objective.description}`, 'info');
+                        }
+                    }
+                }
+            }
+            
+            const currentLocation = questSystem.getCurrentLocationInfo();
+            if (currentLocation) {
+                log(`📍 Localisation actuelle: ${currentLocation.name}`, 'info');
+            }
+        }
+        
+        // 🗺️ INTÉGRATION QUÊTES AVEC MOUVEMENT
+        function updateQuestSystemOnMove(x, y) {
+            if (questSystem) {
+                questSystem.updateLocation(x, y);
+            }
+        }
+        
+
+        
+        // 🃏 TEST TCG
+        function testTCG() {
+            log('🃏 Test du panneau TCG...', 'info');
+            
+            // Créer entités de test
+            const playerEntity = {
+                node_id: 'test_player',
+                identity: 'Hero Temporel',
+                type: 'hero',
+                x: 10, y: 10, z: 0,
+                t: Date.now() / 1000,
+                c: 0.5, psi: 0
+            };
+            
+            const enemyEntity = {
+                node_id: 'test_enemy',
+                identity: 'Gardien Causal',
+                type: 'npc',
+                x: 11, y: 10, z: 0,
+                t: Date.now() / 1000,
+                c: 0.3, psi: 0.2,
+                hostile: true
+            };
+            
+            const mockResult = {
+                mode: 'TCG',
+                started_match_id: 'test_match_' + Date.now(),
+                involved: [playerEntity.node_id, enemyEntity.node_id]
+            };
+            
+            // Déclencher le TCG
+            openTCGPanel(mockResult.started_match_id, playerEntity, enemyEntity, mockResult);
+        }
+        
+        // 🎮 SYSTÈME MINI-GAMES
+        function setupMinigameCallbacks() {
+            if (!minigames) return;
+            
+            // Callback démarrage mini-game
+            minigames.onMinigameStart = (minigameId, minigameData) => {
+                log(`🎮 Mini-game démarré: ${minigameData.name}`, 'success');
+                updateMinigameUI();
+                
+                // Affichage spécial selon le type
+                if (minigameId === 'panoramix_potions') {
+                    log('🧙‍♂️ Panoramix: "Bienvenue dans mon atelier, apprenti ! Créons de la magie !"', 'info');
+                } else if (minigameId === 'senku_chemistry') {
+                    log('🧪 Senku: "Get excited ! 10 milliards % que ça va être scientifique !"', 'info');
+                } else if (minigameId === 'herb_collection') {
+                    log('🌿 Système de collecte activé - Explorez pour trouver des herbes rares', 'info');
+                }
+            };
+            
+            // Callback fin mini-game
+            minigames.onMinigameComplete = (minigameId, minigameData) => {
+                log(`🏆 Mini-game terminé: ${minigameData.name}`, 'success');
+                updateMinigameUI();
+            };
+            
+            // Callback ressource récoltée
+            minigames.onResourceGathered = (resource, quantity, resourceDef, biome) => {
+                log(`🌿 Collecté: ${quantity}x ${resourceDef.name} (${biome})`, 'success');
+                updateInventoryUI();
+                
+                // Chance d'interaction avec personnages
+                if (Math.random() < 0.3) {
+                    const comments = [
+                        `🧙‍♂️ Panoramix: "Excellente ${resourceDef.name} ! Parfaite pour mes potions !"`,
+                        `🧪 Senku: "Spécimen intéressant ! Analysons sa composition chimique !"`,
+                        `🌿 Guide: "Cette ${resourceDef.name} est rare dans ce biome !"`
+                    ];
+                    const comment = comments[Math.floor(Math.random() * comments.length)];
+                    setTimeout(() => log(comment, 'info'), 1000);
+                }
+            };
+            
+            // Callback recette créée
+            minigames.onRecipeCrafted = (minigameType, recipeId, recipeData) => {
+                log(`✨ Recette créée: ${recipeData.name}`, 'success');
+                updateInventoryUI();
+                
+                if (minigameType === 'panoramix_potions' && recipeData.runes) {
+                    log(`📜 Runes utilisées: ${recipeData.runes}`, 'info');
+                } else if (minigameType === 'senku_chemistry' && recipeData.formula) {
+                    log(`⚗️ Formule: ${recipeData.formula}`, 'info');
+                }
+            };
+            
+            // Callback level up skill
+            minigames.onSkillLevelUp = (skill, newLevel) => {
+                log(`📈 SKILL UP! ${skill} niveau ${newLevel}`, 'success');
+                updateSkillsDisplay();
+                
+                // Débloquage de nouvelles recettes
+                if (newLevel >= 3) {
+                    log(`🔓 Nouvelles recettes débloquées pour ${skill}!`, 'success');
+                }
+            };
+        }
+        
+        function updateMinigameUI() {
+            const activeMinigameElement = document.getElementById('activeMinigame');
+            if (!activeMinigameElement || !minigames) return;
+            
+            const activeMinigame = minigames.getActiveMinigame();
+            
+            if (activeMinigame) {
+                const timeRemaining = Math.max(0, (activeMinigame.startTime + activeMinigame.duration - Date.now()) / 1000);
+                activeMinigameElement.innerHTML = `
+                    <div style="color: #FFD700;">${activeMinigame.name}</div>
+                    <div style="color: #8A2BE2; font-size: 9px;">${Math.ceil(timeRemaining)}s restantes</div>
+                `;
+                
+                // Auto-fermer quand terminé
+                if (timeRemaining <= 0) {
+                    minigames.endCurrentMinigame();
+                    updateMinigameUI();
+                }
+            } else {
+                activeMinigameElement.innerHTML = 'Aucun mini-game actif';
+            }
+        }
+        
+        function updateSkillsDisplay() {
+            if (!minigames) return;
+            
+            const skills = minigames.getGatheringSkills();
+            
+            const herbalismElement = document.getElementById('herbalismLevel');
+            const chemistryElement = document.getElementById('chemistryLevel');
+            const forgingElement = document.getElementById('forgingLevel');
+            
+            if (herbalismElement) herbalismElement.textContent = skills.herbalism || 1;
+            if (chemistryElement) chemistryElement.textContent = skills.chemistry || 1;
+            if (forgingElement) forgingElement.textContent = skills.foraging || 1;
+        }
+
+        // 💰 ECONOMY BACKEND INTEGRATION
+        function setupEconomyBackendCallbacks() {
+            if (!economyBackend) return;
+            
+            // Callback inventaire mis à jour
+            economyBackend.onInventoryUpdated = (inventory) => {
+                updateInventoryFromBackend(inventory);
+                log('💰 Inventaire synchronisé depuis backend', 'success');
+            };
+            
+            // Callback ressource collectée
+            economyBackend.onResourceCollected = (result) => {
+                log(`🌿 Ressource collectée: ${result.added?.length || 0} items`, 'success');
+            };
+            
+            // Callback craft completed
+            economyBackend.onCraftCompleted = (type, result) => {
+                log(`🧪 ${type} créé avec succès !`, 'success');
+            };
+            
+            // Callback erreur
+            economyBackend.onError = (operation, error, fallback) => {
+                log(`❌ Backend ${operation}: ${error.message}`, 'warning');
+            };
+        }
+        
+        // 🏆 XP SYSTEM CALLBACKS
+        function setupXPCallbacks() {
+            if (!xpSystem) return;
+            
+            // Callbacks XP
+            xpSystem.onXPGained = (source, amount, result) => {
+                log(`🏆 +${amount} XP (${source})`, 'success');
+                
+                // Mettre à jour HUD si disponible
+                updateXPDisplay(result);
+                
+                // Sauvegarder progression
+                if (persistenceSystem) {
+                    persistenceSystem.addHeroXP(amount, source);
+                }
+            };
+            
+            xpSystem.onLevelUp = (level, xp, xpNext) => {
+                log(`🎉 LEVEL UP! Niveau ${level} atteint!`, 'success');
+                showLevelUpNotification(level);
+            };
+            
+            // Intégrer XP aux événements existants
+            if (movement) {
+                movement.onMoveEnd = (agentId, position, duration) => {
+                    // Code existant...
+                    xpSystem.onMovementCompleted(agentId, [], currentTimeVelocity);
+                };
+            }
+            
+            if (wsg) {
+                wsg.onTCGTriggered = (matchId, entity1, entity2, result) => {
+                    // 🔧 CORRECTION: XP auto backend pour TCG  
+                    if (!XP_CONFIG.backendAutoXP.tcg) {
+                        // Seulement si backend ne donne pas XP automatiquement
+                        setTimeout(() => {
+                            xpSystem.onTCGMatchEnd(matchId, result.winner, entity1, entity2);
+                        }, 2000);
+                    }
+                };
+            }
+            
+            if (fog) {
+                fog.onTileExplored = (x, y, newEntities) => {
+                    // 🔧 CORRECTION: XP auto backend pour collapse
+                    if (!XP_CONFIG.backendAutoXP.collapse) {
+                        // Seulement si backend ne donne pas XP automatiquement
+                        xpSystem.onFogRevealed(1, newEntities || []);
+                    }
+                };
+            }
+            
+            if (questSystem) {
+                questSystem.onQuestCompleted = (questId, isMain) => {
+                    xpSystem.onQuestCompleted(questId, isMain);
+                };
+                
+                questSystem.onObjectiveCompleted = (questId, objectiveId) => {
+                    xpSystem.onQuestObjectiveCompleted(questId, objectiveId);
+                };
+            }
+        }
+        
+        // 💾 PERSISTENCE SYSTEM CALLBACKS  
+        function setupPersistenceCallbacks() {
+            if (!persistenceSystem) return;
+            
+            // Callbacks persistance
+            persistenceSystem.onSaveCompleted = (data) => {
+                log('💾 Jeu sauvegardé automatiquement', 'info');
+            };
+            
+            persistenceSystem.onLoadCompleted = (data) => {
+                log('📂 Sauvegarde chargée', 'success');
+                
+                // Restaurer état UI depuis la sauvegarde
+                if (data.hero) {
+                    updateHeroDisplay(data.hero);
+                }
+                
+                if (data.inventory) {
+                    updateInventoryFromPersistence(data.inventory);
+                }
+                
+                if (data.world) {
+                    restoreWorldState(data.world);
+                }
+            };
+            
+            // Synchroniser avec autres systèmes
+            if (inventory) {
+                inventory.onResourceChanged = (type, amount) => {
+                    persistenceSystem.addResource(type, amount);
+                };
+                
+                inventory.onItemAdded = (itemId, item) => {
+                    persistenceSystem.addItem(itemId, item);
+                };
+            }
+            
+            if (map) {
+                map.onGatheringSpotCollected = (spot, playerId) => {
+                    persistenceSystem.gatherSpot(spot.id);
+                    
+                    // 🔧 CORRECTION: XP auto backend pour collecte
+                    if (!XP_CONFIG.backendAutoXP.collect) {
+                        // Seulement si backend ne donne pas XP automatiquement
+                        xpSystem.onResourceCollected(spot.id, [spot.type]);
+                    }
+                };
+            }
+        }
+        
+        // 🚗 TEMPORAL DRIFT CALLBACKS
+        function setupTemporalDriftCallbacks() {
+            if (!temporalDrift) return;
+            
+            // Callback après completion d'un drift
+            temporalDrift.onDriftCompleted = (success, result) => {
+                log(`🚗 Drift ${success ? 'RÉUSSI' : 'ÉCHOUÉ'}!`, success ? 'success' : 'warning');
+                
+                // 🔧 CORRECTION: Rafraîchir inventaire et XP après completion
+                if (success && result) {
+                    // Rafraîchir inventaire si rewards
+                    if (result.inventory) {
+                        refreshInventoryFromBackend();
+                    }
+                    
+                    // Si XP dans les rewards, mettre à jour l'affichage
+                    if (result.xp) {
+                        // 🔧 CORRECTION: XP auto backend pour arcade
+                        if (!XP_CONFIG.backendAutoXP.arcade && xpSystem) {
+                            // Seulement si backend ne donne pas XP automatiquement
+                            xpSystem.addXP('drift_minigame', result.xp);
+                        }
+                        updateXPDisplay(result);
+                    }
+                }
+                
+                // Toujours rafraîchir inventaire pour être sûr
+                refreshInventoryFromBackend();
+            };
+            
+            // Callback drift triggered
+            temporalDrift.onDriftTriggered = (miniGameInfo) => {
+                log(`🚗 DRIFT DÉCLENCHÉ: ${miniGameInfo.id}`, 'warning');
+                
+                // Optionnel: Jouer son/effet visuel
+                if (driftHUD) {
+                    driftHUD.showDriftWarning();
+                }
+            };
+            
+            // Callback zone changed
+            temporalDrift.onZoneChanged = (oldZone, newZone) => {
+                if (newZone === 'red') {
+                    log('⚠️ ZONE ROUGE: Vitesse temporelle critique!', 'warning');
+                } else if (newZone === 'amber') {
+                    log('🟡 ZONE AMBRE: Attention à la vitesse', 'info');
+                } else {
+                    log('🟢 ZONE VERTE: Vitesse normale', 'success');
+                }
+            };
+        }
+        
+        // 🎮 HELPER FUNCTIONS
+        function updateXPDisplay(heroData) {
+            // Mettre à jour affichage XP dans l'UI
+            const xpElement = document.getElementById('heroXP');
+            if (xpElement && heroData) {
+                xpElement.textContent = `Niveau ${heroData.level} (${heroData.xp}/${heroData.xpNext})`;
+            }
+        }
+        
+        function showLevelUpNotification(level) {
+            // Afficher notification level up
+            const notification = document.createElement('div');
+            notification.className = 'level-up-notification';
+            notification.innerHTML = `🎉 NIVEAU ${level} ATTEINT!`;
+            notification.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;
+                padding: 20px 40px; border-radius: 15px; font-size: 1.5em; font-weight: bold;
+                z-index: 10000; animation: levelUpPulse 3s ease; box-shadow: 0 0 30px #FFD700;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function updateInventoryFromPersistence(inventoryData) {
+            // Synchroniser inventaire avec données persistées
+            if (inventory && inventoryData.resources) {
+                Object.entries(inventoryData.resources).forEach(([type, amount]) => {
+                    inventory.resources[type] = amount;
+                });
+                updateInventoryUI();
+            }
+        }
+        
+        function restoreWorldState(worldData) {
+            // Restaurer état du monde depuis sauvegarde
+            if (worldData.revealedTiles) {
+                worldData.revealedTiles.forEach(tileKey => {
+                    const [x, y] = tileKey.split(',').map(Number);
+                    if (fog) fog.markObserved(x, y, 1);
+                });
+            }
+            
+            if (worldData.currentTopology) {
+                currentTopology = worldData.currentTopology;
+                updateTopology(currentTopology);
+            }
+        }
+        
+        async function refreshInventoryFromBackend() {
+            if (!economyBackend) return;
+            
+            try {
+                const inventory = await economyBackend.getInventory(true);
+                updateInventoryFromBackend(inventory);
+                log('✅ Inventaire chargé depuis backend', 'info');
+            } catch (error) {
+                log(`❌ Erreur chargement inventaire: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateInventoryFromBackend(backendInventory) {
+            if (!inventory || !backendInventory) return;
+            
+            // Synchroniser resources
+            if (backendInventory.resources) {
+                Object.entries(backendInventory.resources).forEach(([type, value]) => {
+                    inventory.resources[type] = value;
+                    updateResourceDisplay(type, value);
+                });
+            }
+            
+            // Synchroniser items
+            if (backendInventory.items) {
+                Object.entries(backendInventory.items).forEach(([id, item]) => {
+                    inventory.items.set(id, item);
+                });
+            }
+            
+            // Synchroniser artifacts
+            if (backendInventory.artifacts) {
+                Object.entries(backendInventory.artifacts).forEach(([id, artifact]) => {
+                    inventory.artifacts.set(id, artifact);
+                });
+            }
+            
+            updateInventoryUI();
+        }
+        
+        // 🧙‍♂️ PANORAMIX POTIONS
+        async function startPanoramixPotions() {
+            if (!minigames) {
+                log('❌ Système mini-games non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                await minigames.startMinigame('panoramix_potions');
+                
+                // Interface simple de craft
+                setTimeout(() => {
+                    if (minigames.getActiveMinigame()?.id === 'panoramix_potions') {
+                        showPanoramixInterface();
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ ${error.message}`, 'error');
+            }
+        }
+        
+        function showPanoramixInterface() {
+            log('🧙‍♂️ === ATELIER DE PANORAMIX ===', 'info');
+            log('Recettes disponibles:', 'info');
+            log('1. Potion de Vie (3 herbes, 1 eau, 1 miel)', 'info');
+            log('2. Élixir Temporel (2 essence temporelle, 5 herbes, 1 eau cristalline)', 'info');
+            log('Tapez "craft potion_vie" pour créer une potion !', 'info');
+        }
+        
+        // 🧪 SENKU CHEMISTRY
+        async function startSenkuChemistry() {
+            if (!minigames) {
+                log('❌ Système mini-games non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                await minigames.startMinigame('senku_chemistry');
+                
+                setTimeout(() => {
+                    if (minigames.getActiveMinigame()?.id === 'senku_chemistry') {
+                        showSenkuInterface();
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ ${error.message}`, 'error');
+            }
+        }
+        
+        function showSenkuInterface() {
+            log('🧪 === LABORATOIRE DE SENKU ===', 'info');
+            log('Formules disponibles:', 'info');
+            log('1. Eau Régale (1 acide nitrique, 3 acide chlorhydrique)', 'info');
+            log('2. Poudre Noire (1 soufre, 2 carbone, 3 nitrate potassium)', 'info');
+            log('3. Savon Revival (2 graisse animale, 3 cendres, 1 alcool)', 'info');
+            log('Tapez "chemistry aqua_regia" pour créer !', 'info');
+        }
+        
+        // 🌿 HERB COLLECTION
+        async function startHerbCollection() {
+            if (!minigames) {
+                log('❌ Système mini-games non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                await minigames.startMinigame('herb_collection');
+                log('🌿 Mode collecte activé ! Cliquez sur la carte pour récolter des herbes', 'success');
+                
+            } catch (error) {
+                log(`❌ ${error.message}`, 'error');
+            }
+        }
+        
+        // ⚒️ RUNIC FORGE
+        async function startRunicForge() {
+            if (!minigames) {
+                log('❌ Système mini-games non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                await minigames.startMinigame('runic_forge');
+                log('⚒️ Forge runique allumée ! Forgez des artefacts temporels', 'success');
+                
+            } catch (error) {
+                log(`❌ ${error.message}`, 'error');
+            }
+        }
+        
+        // 🗨️ COMMANDES CHAT POUR MINI-GAMES
+        function handleMinigameCommand(command) {
+            const parts = command.toLowerCase().split(' ');
+            
+            if (parts[0] === 'craft' && parts[1]) {
+                handleCraftCommand(parts[1]);
+            } else if (parts[0] === 'chemistry' && parts[1]) {
+                handleChemistryCommand(parts[1]);
+            } else if (parts[0] === 'collect') {
+                // Auto-collecte à position courante
+                const selectedPos = document.getElementById('selectedPos').textContent;
+                if (selectedPos !== 'Aucune') {
+                    const coords = selectedPos.match(/\((\d+),(\d+)\)/);
+                    if (coords) {
+                        handleCollectCommand(parseInt(coords[1]), parseInt(coords[2]));
+                    }
+                }
+            }
+        }
+        
+        async function handleCraftCommand(recipeId) {
+            if (!economyBackend) {
+                log('❌ Backend économie non disponible', 'error');
+                return;
+            }
+            
+            try {
+                log(`🧪 Création de la recette ${recipeId}...`, 'info');
+                const result = await economyBackend.craftPotion(recipeId);
+                log(`✅ Craft réussi: ${JSON.stringify(result.item)}`, 'success');
+                
+                // Rafraîchir l'inventaire UI
+                await refreshInventoryFromBackend();
+                
+            } catch (error) {
+                log(`❌ Erreur craft: ${error.message}`, 'error');
+            }
+        }
+        
+        async function handleChemistryCommand(formulaId) {
+            if (!minigames || !minigames.getActiveMinigame()) {
+                log('❌ Aucun laboratoire actif', 'error');
+                return;
+            }
+            
+            try {
+                const result = await minigames.performChemistry(formulaId);
+                log(`🧪 ${result.formula.name} créé avec succès !`, 'success');
+                log(`⚗️ ${result.quote}`, 'info');
+                
+            } catch (error) {
+                log(`❌ ${error.message}`, 'error');
+            }
+        }
+        
+        async function handleCollectCommand(x, y) {
+            if (!economyBackend) {
+                log('❌ Backend économie non disponible', 'error');
+                return;
+            }
+            
+            try {
+                // 🔧 CORRECTION: Utiliser spotId stables du backend au lieu de coordonnées
+                const gatheringSpots = map ? map.getGatheringSpotsAt(x, y) : [];
+                if (gatheringSpots.length === 0) {
+                    log(`❌ Aucun point de collecte trouvé en (${x}, ${y})`, 'warning');
+                    return;
+                }
+                
+                // Prendre le premier spot disponible
+                const spot = gatheringSpots.find(s => s.available) || gatheringSpots[0];
+                const spotId = spot.id;
+                log(`🌿 Collecte en cours au ${spotId} (${spot.type})...`, 'info');
+                
+                const result = await economyBackend.collectResource(spotId);
+                log(`✅ Collecté: ${JSON.stringify(result.added)}`, 'success');
+                
+                // 🔧 CORRECTION: Marquer le spot comme collecté dans map local
+                if (map) {
+                    map.markGatheringSpotCollected(spotId);
+                }
+                
+                // Rafraîchir l'inventaire UI 
+                await refreshInventoryFromBackend();
+                
+            } catch (error) {
+                log(`❌ Erreur collecte: ${error.message}`, 'error');
+            }
+        }
+        
+        // 📝 FONCTION COMMANDES
+        function executeCommand() {
+            const input = document.getElementById('commandInput');
+            const command = input.value.trim();
+            
+            if (!command) return;
+            
+            log(`💬 Commande: ${command}`, 'info');
+            
+            // Traiter la commande
+            handleMinigameCommand(command);
+            
+            // Vider le champ
+            input.value = '';
+        }
+        
+        // Mettre à jour l'affichage mini-games toutes les 2 secondes
+        setInterval(() => {
+            if (minigames) {
+                updateMinigameUI();
+                updateSkillsDisplay();
+            }
+        }, 2000);
+        
+        // Functions pour les autres boutons (à implémenter selon besoins)
+        function forkAgent() { log('🔀 forkAgent - À implémenter', 'info'); }
+    </script>
+  <script src="./map-actions-dock.js"></script>
+</body>
+</html>

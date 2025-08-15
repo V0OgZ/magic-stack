@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 AVALON BUBBLE - L'Univers Vivant !</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #universe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #001133 0%, #000 100%);
+        }
+        
+        .creature {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .creature.hidden {
+            opacity: 0.1;
+            animation: pulse 2s infinite;
+        }
+        
+        .creature.legendary {
+            width: 30px;
+            height: 30px;
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .quantum-state {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        #stats {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        #stats h2 {
+            color: #ff0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .stat-line {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-label {
+            color: #0ff;
+        }
+        
+        .stat-value {
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        #creatures-list {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #f0f;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        #creatures-list h3 {
+            color: #f0f;
+            margin-bottom: 10px;
+        }
+        
+        .creature-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 0, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .creature-info:hover {
+            background: rgba(255, 0, 255, 0.3);
+            transform: translateX(-5px);
+        }
+        
+        .creature-name {
+            color: #ff0;
+            font-weight: bold;
+        }
+        
+        .creature-stat {
+            font-size: 10px;
+            color: #aaa;
+        }
+        
+        #timeline {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 1000;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        
+        .timeline-event {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        
+        .paradox {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #f00;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 30px;
+            border: 2px solid #ff0;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        
+        button {
+            background: #111;
+            color: #ff0;
+            border: 2px solid #ff0;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #ff0;
+            color: #000;
+            transform: scale(1.1);
+        }
+        
+        #message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border: 3px solid #0ff;
+            border-radius: 15px;
+            font-size: 20px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div id="universe"></div>
+    
+    <div id="stats">
+        <h2 class="glow">🌌 AVALON BUBBLE 🌌</h2>
+        <div class="stat-line">
+            <span class="stat-label">Tick:</span>
+            <span class="stat-value" id="tick">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Temps:</span>
+            <span class="stat-value" id="time">0s</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Créatures:</span>
+            <span class="stat-value" id="creature-count">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">États Ψ:</span>
+            <span class="stat-value" id="quantum-count">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Paradoxes:</span>
+            <span class="stat-value" id="paradox-count">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">FPS:</span>
+            <span class="stat-value" id="fps">0</span>
+        </div>
+    </div>
+    
+    <div id="creatures-list">
+        <h3 class="glow">🧬 Créatures Temporelles</h3>
+        <div id="creatures-container"></div>
+    </div>
+    
+    <div id="timeline">
+        <h4 style="color: #0f0; margin-bottom: 5px;">📜 Ligne Temporelle</h4>
+        <div id="timeline-events"></div>
+    </div>
+    
+    <div id="controls">
+        <button onclick="avalon.togglePause()">⏯️ Pause/Play</button>
+        <button onclick="avalon.createParadox()">🌀 Créer Paradoxe</button>
+        <button onclick="avalon.revealAll()">👁️ Révéler Tout</button>
+        <button onclick="avalon.accelerate()">⚡ x10 Vitesse</button>
+    </div>
+    
+    <div id="message" class="glow"></div>
+    
+    <script src="AVALON_BUBBLE_ENGINE.js"></script>
+    <script>
+        // Extension pour le web
+        class AvalonBubbleWeb extends AvalonBubble {
+            constructor() {
+                super();
+                this.paused = false;
+                this.speedMultiplier = 1;
+                this.universeEl = document.getElementById('universe');
+                this.creatureElements = new Map();
+                this.quantumElements = new Map();
+                this.fps = 0;
+                this.frameCount = 0;
+                this.lastFpsUpdate = Date.now();
+            }
+            
+            tick() {
+                if (this.paused) return;
+                
+                // Appeler le tick parent
+                super.tick();
+                
+                // Mettre à jour l'affichage
+                this.updateDisplay();
+                
+                // Calculer FPS
+                this.frameCount++;
+                const now = Date.now();
+                if (now - this.lastFpsUpdate > 1000) {
+                    this.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastFpsUpdate = now;
+                    document.getElementById('fps').textContent = this.fps;
+                }
+            }
+            
+            updateDisplay() {
+                // Stats
+                document.getElementById('tick').textContent = this.tickCount;
+                document.getElementById('time').textContent = ((Date.now() - this.genesisTime) / 1000).toFixed(1) + 's';
+                document.getElementById('creature-count').textContent = this.creatures.size;
+                document.getElementById('quantum-count').textContent = this.quantumStates.size;
+                document.getElementById('paradox-count').textContent = 
+                    this.timelines.reduce((sum, t) => sum + t.paradoxes.length, 0);
+                
+                // Créatures
+                this.creatures.forEach(creature => {
+                    let el = this.creatureElements.get(creature.id);
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.className = 'creature';
+                        if (creature.consciousness > 0.8) el.classList.add('legendary');
+                        el.title = creature.name;
+                        this.universeEl.appendChild(el);
+                        this.creatureElements.set(creature.id, el);
+                    }
+                    
+                    // Position
+                    const x = (creature.position.x + 200) / 400 * window.innerWidth;
+                    const y = (creature.position.y + 200) / 400 * window.innerHeight;
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                    
+                    // Couleur selon la dimension temporelle
+                    const hue = creature.position.t * 60;
+                    el.style.background = `hsl(${hue}, 100%, 50%)`;
+                    
+                    // Visibilité
+                    if (creature.hidden) {
+                        el.classList.add('hidden');
+                    } else {
+                        el.classList.remove('hidden');
+                    }
+                    
+                    // Taille selon conscience
+                    const size = 20 + creature.consciousness * 20;
+                    el.style.width = size + 'px';
+                    el.style.height = size + 'px';
+                });
+                
+                // États quantiques
+                this.quantumStates.forEach((state, id) => {
+                    let el = this.quantumElements.get(id);
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.className = 'quantum-state';
+                        this.universeEl.appendChild(el);
+                        this.quantumElements.set(id, el);
+                    }
+                    
+                    // Position aléatoire mais stable
+                    const x = ((id * 137) % 100) / 100 * window.innerWidth;
+                    const y = ((id * 239) % 100) / 100 * window.innerHeight;
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                    
+                    // Opacité selon amplitude
+                    el.style.opacity = state.amplitude * (state.collapsed ? 0.3 : 1);
+                });
+                
+                // Liste des créatures
+                this.updateCreaturesList();
+                
+                // Timeline
+                this.updateTimeline();
+            }
+            
+            updateCreaturesList() {
+                const container = document.getElementById('creatures-container');
+                container.innerHTML = '';
+                
+                const sortedCreatures = Array.from(this.creatures.values())
+                    .sort((a, b) => b.consciousness - a.consciousness);
+                
+                sortedCreatures.forEach(creature => {
+                    const div = document.createElement('div');
+                    div.className = 'creature-info';
+                    div.innerHTML = `
+                        <div class="creature-name">${creature.name}</div>
+                        <div class="creature-stat">Conscience: ${(creature.consciousness * 100).toFixed(0)}%</div>
+                        <div class="creature-stat">Énergie: ${creature.energy.toFixed(0)}</div>
+                        <div class="creature-stat">But: ${creature.goal}</div>
+                        <div class="creature-stat">Dimension: T${Math.floor(creature.position.t)}</div>
+                        ${creature.hidden ? '<div class="creature-stat" style="color: #f0f;">🌀 Cachée</div>' : ''}
+                    `;
+                    
+                    div.onclick = () => {
+                        const el = this.creatureElements.get(creature.id);
+                        if (el) {
+                            el.style.animation = 'pulse 1s';
+                            setTimeout(() => el.style.animation = '', 1000);
+                        }
+                    };
+                    
+                    container.appendChild(div);
+                });
+            }
+            
+            updateTimeline() {
+                const container = document.getElementById('timeline-events');
+                const recentEvents = [];
+                
+                // Collecter les événements récents
+                this.timelines.forEach(timeline => {
+                    timeline.events.slice(-5).forEach(event => {
+                        recentEvents.push({ ...event, timeline: timeline.id });
+                    });
+                    timeline.paradoxes.slice(-3).forEach(paradox => {
+                        recentEvents.push({ 
+                            ...paradox, 
+                            timeline: timeline.id,
+                            isParadox: true 
+                        });
+                    });
+                });
+                
+                // Trier par tick
+                recentEvents.sort((a, b) => b.tick - a.tick);
+                
+                // Afficher
+                container.innerHTML = recentEvents.slice(0, 20).map(event => `
+                    <div class="timeline-event ${event.isParadox ? 'paradox' : ''}">
+                        T${event.timeline} - Tick ${event.tick}: ${event.description || event.type}
+                    </div>
+                `).join('');
+            }
+            
+            togglePause() {
+                this.paused = !this.paused;
+                this.showMessage(this.paused ? "⏸️ PAUSE" : "▶️ REPRISE");
+            }
+            
+            createParadox() {
+                // Forcer un paradoxe !
+                const timeline = this.timelines[Math.floor(Math.random() * 6)];
+                timeline.paradoxes.push({
+                    tick: this.tickCount,
+                    type: "user_induced",
+                    description: "Paradoxe créé par l'utilisateur !",
+                    resolution: "Bootstrap imminent..."
+                });
+                
+                this.resolveParadoxes();
+                this.showMessage("🌀 PARADOXE CRÉÉ !");
+            }
+            
+            revealAll() {
+                let revealed = 0;
+                this.creatures.forEach(creature => {
+                    if (creature.hidden) {
+                        creature.hidden = false;
+                        creature.consciousness = 1.0;
+                        creature.energy = 100;
+                        revealed++;
+                    }
+                });
+                
+                this.showMessage(`👁️ ${revealed} CRÉATURES RÉVÉLÉES !`);
+            }
+            
+            accelerate() {
+                this.speedMultiplier = this.speedMultiplier === 1 ? 10 : 1;
+                this.showMessage(`⚡ VITESSE x${this.speedMultiplier}`);
+            }
+            
+            showMessage(text) {
+                const msg = document.getElementById('message');
+                msg.textContent = text;
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 2000);
+            }
+            
+            async run() {
+                console.log("🚀 DÉMARRAGE INTERFACE WEB AVALON BUBBLE !");
+                
+                const gameLoop = () => {
+                    for (let i = 0; i < this.speedMultiplier; i++) {
+                        this.tick();
+                    }
+                    requestAnimationFrame(gameLoop);
+                };
+                
+                // Démarrer !
+                this.showMessage("🌌 GENESIS AVALON !");
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Créer et lancer l'univers
+        const avalon = new AvalonBubbleWeb();
+        avalon.run();
+        
+        // Message de bienvenue
+        setTimeout(() => {
+            avalon.showMessage("⚡ L'UNIVERS VIT !");
+        }, 3000);
+    </script>
+</body>
+</html>

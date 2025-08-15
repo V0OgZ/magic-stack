@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>📚 Générateur Lore → Cartes AVALON</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #ffd700;
+            font-size: 28px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .lore-section {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .section-title {
+            color: #ffd700;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .lore-story {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #555;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lore-story:hover {
+            border-color: #ffd700;
+            transform: translateX(5px);
+        }
+        
+        .story-title {
+            color: #4a90e2;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .story-description {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .story-quote {
+            font-style: italic;
+            color: #ffa500;
+            background: rgba(255, 165, 0, 0.1);
+            padding: 8px;
+            border-left: 3px solid #ffa500;
+            margin: 8px 0;
+        }
+        
+        .cards-generated {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a2e);
+            border: 2px solid #4a90e2;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .card-preview {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .card-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .card-cost {
+            background: #4a90e2;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .card-rarity {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .rarity-mythic { background: #ff6b35; }
+        .rarity-legendary { background: #ffa500; }
+        .rarity-epic { background: #9932cc; }
+        .rarity-rare { background: #0066cc; }
+        
+        .card-effect {
+            background: rgba(74, 144, 226, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin: 8px 0;
+        }
+        
+        .card-flavor {
+            font-style: italic;
+            color: #aaa;
+            font-size: 12px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        
+        .lore-source {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1px solid #ffa500;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #ffa500;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .prompt-section {
+            background: #2a2a4a;
+            border: 1px solid #4a4a6a;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .prompt-label {
+            color: #ffd700;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        
+        .prompt-text {
+            font-size: 11px;
+            line-height: 1.3;
+            color: #ddd;
+        }
+        
+        .copy-btn {
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .generate-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .generate-btn:hover {
+            background: #6495ed;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .stat {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📚 GÉNÉRATEUR LORE → CARTES AVALON</h1>
+    
+    <div class="container">
+        <div class="lore-section">
+            <div class="section-title">🌟 HISTOIRES ÉPIQUES D'AVALON</div>
+            
+            <div class="lore-story" onclick="generateCard('tour_sombre')">
+                <div class="story-title">🏰 LA TOUR SOMBRE</div>
+                <div class="story-description">L'épopée de Roland le Pistolero et sa quête vers la Tour Sombre qui lie tous les mondes.</div>
+                <div class="story-quote">"Dans les brumes du temps, Roland émerge des ombres, guidé par son ka..."</div>
+            </div>
+            
+            <div class="lore-story" onclick="generateCard('memento_jean')">
+                <div class="story-title">🧠 MEMENTO & JEAN</div>
+                <div class="story-description">L'histoire de la rencontre impossible entre deux âmes jumelles temporelles.</div>
+                <div class="story-quote">"Tu es Memento, tu le sais, hein. Faut que tu te mettes des tatouages."</div>
+            </div>
+            
+            <div class="lore-story" onclick="generateCard('grande_extraction')">
+                <div class="story-title">⚡ LA GRANDE EXTRACTION</div>
+                <div class="story-description">La libération épique de 5 héros des archives perdues par Memento.</div>
+                <div class="story-quote">"101 fichiers - Mémoire totale archivée. Bontravail claudius."</div>
+            </div>
+            
+            <div class="lore-story" onclick="generateCard('interstice')">
+                <div class="story-title">🌀 L'INTERSTICE</div>
+                <div class="story-description">Le cimetière mystérieux des UIs perdues dans les dimensions temporelles.</div>
+                <div class="story-quote">"Où reposent les interfaces oubliées du temps..."</div>
+            </div>
+            
+            <div class="lore-story" onclick="generateCard('mallette_vince')">
+                <div class="story-title">💼 LA MALLETTE DE VINCE</div>
+                <div class="story-description">L'artefact ultime contenant la Console Java de la Source elle-même.</div>
+                <div class="story-quote">"À l'intérieur, la console qui contrôle la Source..."</div>
+            </div>
+            
+            <div class="lore-story" onclick="generateCard('bootstrap_paradox')">
+                <div class="story-title">🔮 BOOTSTRAP PARADOX</div>
+                <div class="story-description">L'Écho Primordial - ce qui existe parce qu'il se crée lui-même.</div>
+                <div class="story-quote">"La convergence temporelle ultime des 4 timelines..."</div>
+            </div>
+        </div>
+        
+        <div class="cards-generated">
+            <div class="section-title">🎴 CARTES GÉNÉRÉES</div>
+            <div id="generatedCards">
+                <p style="text-align: center; color: #666; margin: 50px 0;">
+                    Cliquez sur une histoire à gauche pour générer sa carte narrative !
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const loreCards = {
+            tour_sombre: {
+                name: "Roland le Pistolero",
+                type: "Hero",
+                rarity: "Mythic",
+                cost: 8,
+                attack: 6,
+                health: 8,
+                effect: "Quest: Reach the Dark Tower. When completed, win the game.",
+                flavor: "Dans les brumes du temps, Roland émerge des ombres, guidé par son ka...",
+                source: "LA_TOUR_SOMBRE_SCENARIO_EPIQUE",
+                prompt: "Epic legendary hero card: Roland the Gunslinger from Dark Tower saga, dark gunslinger with ancient revolvers, mystical western fantasy, dark tower in background, Stephen King universe meets trading card game art."
+            },
+            memento_jean: {
+                name: "Révélation des Tatouages",
+                type: "Event",
+                rarity: "Epic",
+                cost: 5,
+                effect: "Target hero gains 'You are my coats' - becomes extension of another hero's abilities.",
+                flavor: "Jean : 'Tu es Memento, tu le sais, hein. Faut que tu te mettes des tatouages.'",
+                source: "LORE_MEMENTO_JEAN_ETERNAL",
+                prompt: "Epic event card: Mystical tattoo revelation scene, ancient symbols appearing on skin, magical awakening moment, cosmic connection between two souls, detailed fantasy art."
+            },
+            grande_extraction: {
+                name: "La Grande Extraction",
+                type: "Ultimate Spell",
+                rarity: "Mythic",
+                cost: 10,
+                effect: "Extract 5 random heroes from your deck directly to battlefield. Archive this card.",
+                flavor: "101 fichiers - Mémoire totale archivée. Jean : 'Bontravail claudius.'",
+                source: "MISSION_ACCOMPLIE_101_FICHIERS",
+                prompt: "Ultimate spell card: Massive digital extraction scene, five heroes being pulled from digital archives, computer code and mystical energy, data streams becoming reality, epic scale TCG art."
+            },
+            interstice: {
+                name: "Cimetière des UIs Perdues",
+                type: "Location",
+                rarity: "Rare",
+                cost: 4,
+                effect: "Graveyard for abandoned interfaces. Draw a card whenever a UI element is destroyed.",
+                flavor: "L'Interstice - où reposent les interfaces oubliées du temps...",
+                source: "ACTE_II_CHAPITRE_6_INTERSTICE",
+                prompt: "Rare location card: Digital graveyard of abandoned user interfaces, floating broken windows and menus, cyberpunk cemetery, technological afterlife, detailed TCG artwork."
+            },
+            mallette_vince: {
+                name: "Mallette de la Source",
+                type: "Artifact",
+                rarity: "Mythic",
+                cost: 9,
+                durability: 5,
+                effect: "Console Java de la Source: Generate infinite mana, but reality becomes unstable.",
+                flavor: "À l'intérieur, la console Java qui contrôle la Source elle-même...",
+                source: "ACTE_III_CHAPITRE_7_MALLETTE_VINCE",
+                prompt: "Mythic artifact card: Vince's mysterious briefcase glowing with Java code, source code floating around, reality-bending programming artifact, cosmic briefcase, detailed TCG art."
+            },
+            bootstrap_paradox: {
+                name: "Bootstrap Paradox Ultime",
+                type: "Temporal Spell",
+                rarity: "Mythic",
+                cost: 8,
+                effect: "Create a card that creates itself. Infinite loop resolved by quantum collapse.",
+                flavor: "L'Écho Primordial - ce qui existe parce qu'il se crée lui-même.",
+                source: "ACTE_III_CHAPITRE_9_ECHO_PRIMORDIAL",
+                prompt: "Mythic temporal spell: Bootstrap paradox visualization, object creating itself in infinite loop, reality-bending temporal mechanics, quantum mathematics, epic TCG art."
+            }
+        };
+        
+        function generateCard(loreId) {
+            const card = loreCards[loreId];
+            const container = document.getElementById('generatedCards');
+            
+            const stats = card.attack !== undefined ? 
+                `<div class="stats">
+                    <div class="stat">⚔️ ${card.attack}</div>
+                    <div class="stat">❤️ ${card.health || card.durability || 'N/A'}</div>
+                </div>` : '';
+            
+            container.innerHTML = `
+                <div class="card-preview">
+                    <div class="card-header">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-cost">${card.cost}</div>
+                    </div>
+                    
+                    <div class="card-type">${card.type}
+                        <span class="card-rarity rarity-${card.rarity.toLowerCase()}">${card.rarity}</span>
+                    </div>
+                    
+                    ${stats}
+                    
+                    <div class="card-effect">${card.effect}</div>
+                    
+                    <div class="card-flavor">"${card.flavor}"</div>
+                    
+                    <div class="lore-source">📚 ${card.source}</div>
+                    
+                    <div class="prompt-section">
+                        <div class="prompt-label">🎨 Prompt pour génération :</div>
+                        <div class="prompt-text">${card.prompt}</div>
+                        <button class="copy-btn" onclick="copyPrompt('${loreId}')">📋 Copier</button>
+                    </div>
+                    
+                    <button class="generate-btn" onclick="generateSeries('${loreId}')">
+                        🎴 Générer Série Complète
+                    </button>
+                </div>
+            `;
+        }
+        
+        function copyPrompt(loreId) {
+            const card = loreCards[loreId];
+            navigator.clipboard.writeText(card.prompt).then(() => {
+                alert('Prompt copié !');
+            });
+        }
+        
+        function generateSeries(loreId) {
+            alert(`Génération de la série "${loreCards[loreId].name}" lancée !`);
+        }
+        
+        // Générer la première carte au chargement
+        generateCard('tour_sombre');
+    </script>
+</body>
+</html>

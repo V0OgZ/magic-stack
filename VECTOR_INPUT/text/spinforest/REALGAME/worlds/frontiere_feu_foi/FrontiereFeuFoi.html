@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔥 Frontière de Feu et Foi - REALGAME</title>
+    <link rel="stylesheet" href="../../styles/vincent-theme.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #1a0f0a;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .world-info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(20,10,5,0.9);
+            border: 2px solid #FF6600;
+            border-radius: 10px;
+            padding: 15px;
+            color: #FFD700;
+            font-family: 'MedievalSharp', serif;
+        }
+        
+        .action-menu {
+            position: fixed;
+            background: rgba(20,10,5,0.95);
+            border: 3px solid #FF6600;
+            border-radius: 15px;
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #8B4513, #D2691E);
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #FF6600;
+        }
+        
+        .dialogue-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23342016" width="100" height="100"/><rect fill="%23FFD700" opacity="0.1" x="5" y="5" width="90" height="90"/></svg>');
+            border: 3px solid #D2691E;
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+        }
+        
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            color: #FFD700;
+        }
+        
+        /* Style HOMM3 pour les hexagones */
+        .hex-highlight {
+            stroke: #FFD700;
+            stroke-width: 2;
+            fill: rgba(255,215,0,0.2);
+            pointer-events: none;
+        }
+        
+        .danger-zone {
+            fill: rgba(255,0,0,0.3);
+            stroke: #FF0000;
+            stroke-width: 1;
+            animation: danger-pulse 2s infinite;
+        }
+        
+        @keyframes danger-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Effet de feu pour l'épée */
+        @keyframes fire-glow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 10px #FF6600) drop-shadow(0 0 20px #FF3300);
+            }
+            50% { 
+                filter: drop-shadow(0 0 20px #FF6600) drop-shadow(0 0 30px #FF3300);
+            }
+        }
+        
+        .fire-sword {
+            animation: fire-glow 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Interface du monde -->
+    <div class="world-info">
+        <h3>⚔️ Frontière de Feu et Foi</h3>
+        <div>Position: <span id="playerPos">10, 14</span></div>
+        <div>État: <span id="worldState">Exploration</span></div>
+    </div>
+    
+    <!-- Menu d'action contextuel -->
+    <div class="action-menu" id="actionMenu">
+        <h4 id="actionTitle">Actions</h4>
+        <div id="actionButtons"></div>
+    </div>
+    
+    <!-- Boîte de dialogue -->
+    <div class="dialogue-box" id="dialogueBox">
+        <div id="dialogueText"></div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls-hint">
+        <strong>Contrôles:</strong><br>
+        Clic: Déplacer<br>
+        Clic droit: Actions<br>
+        WASD: Caméra<br>
+        Espace: Interagir
+    </div>
+    
+    <script type="module">
+        // Import de la configuration du monde
+        const worldMeta = await fetch('meta_frontiere.json').then(r => r.json());
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État du jeu
+        const gameState = {
+            // Grille hexagonale
+            grid: {
+                width: worldMeta.visual_structure.grid.width,
+                height: worldMeta.visual_structure.grid.height,
+                hexSize: 40,
+                offsetX: canvas.width / 2 - 400,
+                offsetY: 100
+            },
+            
+            // Joueur
+            player: {
+                x: worldMeta.player_spawn.position.x,
+                y: worldMeta.player_spawn.position.y,
+                sprite: '🦸',
+                moving: false,
+                path: []
+            },
+            
+            // États des éléments
+            elements: {
+                swordTaken: false,
+                vortexActive: false,
+                churchLocked: true
+            },
+            
+            // Caméra
+            camera: {
+                x: 0,
+                y: 0,
+                zoom: 1
+            },
+            
+            // Sélection
+            hoveredHex: null,
+            selectedHex: null
+        };
+        
+        // 🎨 Rendu principal style HOMM3
+        function render() {
+            // Fond avec gradient dramatique
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width
+            );
+            gradient.addColorStop(0, '#2a1810');
+            gradient.addColorStop(0.5, '#1a0f0a');
+            gradient.addColorStop(1, '#0a0505');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille hexagonale
+            drawHexGrid();
+            
+            // Éléments fixes
+            drawChurch();
+            drawAncientTree();
+            drawStonePath();
+            
+            // Éléments dynamiques
+            drawLavaRift();
+            drawFireSword();
+            drawVortex();
+            
+            // Joueur
+            drawPlayer();
+            
+            // Effets
+            drawParticles();
+            
+            // UI
+            drawHoveredHex();
+        }
+        
+        // 🔷 Grille hexagonale isométrique
+        function drawHexGrid() {
+            ctx.strokeStyle = 'rgba(139,69,19,0.3)';
+            ctx.lineWidth = 1;
+            
+            for (let y = 0; y < gameState.grid.height; y++) {
+                for (let x = 0; x < gameState.grid.width; x++) {
+                    const pos = hexToPixel(x, y);
+                    drawHex(pos.x, pos.y, gameState.grid.hexSize);
+                }
+            }
+        }
+        
+        // Dessiner un hexagone
+        function drawHex(centerX, centerY, size, fillStyle = null) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + Math.PI / 6;
+                const x = centerX + size * Math.cos(angle);
+                const y = centerY + size * Math.sin(angle);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            ctx.stroke();
+        }
+        
+        // ⛪ Église en pierre
+        function drawChurch() {
+            const church = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'church');
+            const pos = hexToPixel(church.position.x, church.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Corps principal
+            ctx.fillStyle = '#8B7355';
+            ctx.fillRect(-60, -80, 120, 100);
+            
+            // Toit
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.moveTo(-70, -80);
+            ctx.lineTo(0, -120);
+            ctx.lineTo(70, -80);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Clocher
+            ctx.fillStyle = '#8B7355';
+            ctx.fillRect(-15, -120, 30, 40);
+            
+            // Croix
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, -130);
+            ctx.lineTo(0, -140);
+            ctx.moveTo(-5, -135);
+            ctx.lineTo(5, -135);
+            ctx.stroke();
+            
+            // Porte
+            ctx.fillStyle = gameState.elements.churchLocked ? '#4B2F20' : '#2F1F10';
+            ctx.fillRect(-20, -20, 40, 40);
+            
+            // Vitraux
+            ctx.fillStyle = 'rgba(255,215,0,0.5)';
+            ctx.beginPath();
+            ctx.arc(-30, -50, 10, 0, Math.PI * 2);
+            ctx.arc(30, -50, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 🌳 Arbre ancien
+        function drawAncientTree() {
+            const tree = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'ancient_tree');
+            const pos = hexToPixel(tree.position.x, tree.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Tronc
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(-20, -10, 40, 60);
+            
+            // Feuillage
+            ctx.fillStyle = '#228B22';
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(0, -40 - i * 20, 40 - i * 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Effet de lumière si l'épée est active
+            if (gameState.elements.swordTaken) {
+                ctx.fillStyle = 'rgba(255,102,0,0.2)';
+                ctx.beginPath();
+                ctx.arc(0, -60, 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🛤️ Chemin de pierre
+        function drawStonePath() {
+            const path = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'stone_path');
+            
+            ctx.strokeStyle = '#696969';
+            ctx.lineWidth = 20;
+            ctx.setLineDash([30, 10]);
+            
+            ctx.beginPath();
+            path.path.forEach((point, i) => {
+                const pos = hexToPixel(point.x, point.y);
+                if (i === 0) ctx.moveTo(pos.x, pos.y);
+                else ctx.lineTo(pos.x, pos.y);
+            });
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+        }
+        
+        // 🌋 Faille de lave
+        function drawLavaRift() {
+            const rift = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'lava_rift');
+            
+            ctx.save();
+            
+            // Lueur de base
+            ctx.shadowColor = '#FF3300';
+            ctx.shadowBlur = 20;
+            
+            rift.positions.forEach(pos => {
+                const pixelPos = hexToPixel(pos.x, pos.y);
+                
+                // Fissures
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 3;
+                
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(pixelPos.x - 20, pixelPos.y);
+                    ctx.lineTo(pixelPos.x + 20, pixelPos.y + (Math.random() - 0.5) * 40);
+                    ctx.stroke();
+                }
+                
+                // Lave bouillonnante
+                const time = Date.now() * 0.001;
+                for (let i = 0; i < 5; i++) {
+                    const offset = Math.sin(time + i) * 5;
+                    ctx.fillStyle = `rgba(255, ${100 + Math.random() * 50}, 0, ${0.5 + Math.random() * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(
+                        pixelPos.x + (Math.random() - 0.5) * 30,
+                        pixelPos.y + offset,
+                        Math.random() * 5 + 3,
+                        0, Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+            });
+            
+            ctx.restore();
+        }
+        
+        // ⚔️ Épée de feu
+        function drawFireSword() {
+            if (gameState.elements.swordTaken) return;
+            
+            const sword = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'fire_sword');
+            const pos = hexToPixel(sword.position.x, sword.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Halo de feu
+            const time = Date.now() * 0.001;
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 50 + Math.sin(time) * 10);
+            gradient.addColorStop(0, 'rgba(255,102,0,0.8)');
+            gradient.addColorStop(0.5, 'rgba(255,51,0,0.4)');
+            gradient.addColorStop(1, 'rgba(255,0,0,0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, 60, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Épée elle-même
+            ctx.shadowColor = '#FF6600';
+            ctx.shadowBlur = 30;
+            
+            // Lame
+            ctx.fillStyle = '#FF6600';
+            ctx.beginPath();
+            ctx.moveTo(0, -40);
+            ctx.lineTo(-5, 20);
+            ctx.lineTo(0, 30);
+            ctx.lineTo(5, 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Garde
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(-15, 20, 30, 5);
+            
+            // Pommeau
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(0, 30, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 🌀 Vortex orange
+        function drawVortex() {
+            const vortex = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'orange_vortex');
+            const pos = hexToPixel(vortex.position.x, vortex.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            if (gameState.elements.vortexActive) {
+                const time = Date.now() * 0.002;
+                
+                // Spirale tournante
+                for (let i = 0; i < 20; i++) {
+                    const angle = time + (i * Math.PI / 10);
+                    const radius = i * 3;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    ctx.fillStyle = `rgba(255, ${102 + i * 5}, 0, ${0.8 - i * 0.04})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5 - i * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Centre noir
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Vortex inactif
+                ctx.strokeStyle = 'rgba(255,102,0,0.3)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(0, 0, 40, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🦸 Joueur
+        function drawPlayer() {
+            const pos = hexToPixel(gameState.player.x, gameState.player.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Ombre
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath();
+            ctx.ellipse(0, 20, 20, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Personnage (style HOMM3)
+            ctx.font = '40px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(gameState.player.sprite, 0, 0);
+            
+            // Cape flottante
+            ctx.strokeStyle = '#8B0000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.quadraticCurveTo(-15, 10, -10, 20);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // ✨ Particules d'ambiance
+        const particles = [];
+        
+        function drawParticles() {
+            // Ajouter des particules de feu près de l'épée
+            if (!gameState.elements.swordTaken && Math.random() < 0.1) {
+                const sword = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'fire_sword');
+                const pos = hexToPixel(sword.position.x, sword.position.y);
+                
+                particles.push({
+                    x: pos.x + (Math.random() - 0.5) * 40,
+                    y: pos.y,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -Math.random() * 3 - 1,
+                    life: 60,
+                    color: `hsl(${Math.random() * 30}, 100%, 50%)`
+                });
+            }
+            
+            // Mettre à jour et dessiner
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // Gravité
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    return;
+                }
+                
+                ctx.save();
+                ctx.globalAlpha = p.life / 60;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+        
+        // 🔍 Hexagone survolé
+        function drawHoveredHex() {
+            if (!gameState.hoveredHex) return;
+            
+            const pos = hexToPixel(gameState.hoveredHex.x, gameState.hoveredHex.y);
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            drawHex(pos.x, pos.y, gameState.grid.hexSize);
+        }
+        
+        // 🧮 Conversion hex → pixel
+        function hexToPixel(hexX, hexY) {
+            const size = gameState.grid.hexSize;
+            const x = size * 3/2 * hexX + gameState.grid.offsetX;
+            const y = size * Math.sqrt(3) * (hexY + 0.5 * (hexX & 1)) + gameState.grid.offsetY;
+            return { x, y };
+        }
+        
+        // 🧮 Conversion pixel → hex
+        function pixelToHex(pixelX, pixelY) {
+            const size = gameState.grid.hexSize;
+            const x = (pixelX - gameState.grid.offsetX) * 2/3 / size;
+            const y = (pixelY - gameState.grid.offsetY - (x & 1) * size * Math.sqrt(3)/2) / (size * Math.sqrt(3));
+            
+            const rx = Math.round(x);
+            const ry = Math.round(y);
+            
+            return { x: rx, y: ry };
+        }
+        
+        // 🎮 Gestion des événements
+        canvas.addEventListener('click', (e) => {
+            const hex = pixelToHex(e.clientX, e.clientY);
+            
+            // Vérifier les interactions
+            checkInteractions(hex);
+            
+            // Déplacer le joueur
+            movePlayer(hex);
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            gameState.hoveredHex = pixelToHex(e.clientX, e.clientY);
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showActionMenu(e.clientX, e.clientY);
+        });
+        
+        // 🔍 Vérifier les interactions
+        function checkInteractions(hex) {
+            // Épée de feu
+            const sword = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'fire_sword');
+            if (!gameState.elements.swordTaken && 
+                Math.abs(hex.x - sword.position.x) <= 1 && 
+                Math.abs(hex.y - sword.position.y) <= 1) {
+                takeSword();
+            }
+            
+            // Église
+            const church = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'church');
+            if (Math.abs(hex.x - church.position.x) <= 1 && 
+                Math.abs(hex.y - church.position.y) <= 1) {
+                enterChurch();
+            }
+            
+            // Vortex
+            const vortex = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'orange_vortex');
+            if (gameState.elements.vortexActive &&
+                Math.abs(hex.x - vortex.position.x) <= 2 && 
+                Math.abs(hex.y - vortex.position.y) <= 2) {
+                approachVortex();
+            }
+        }
+        
+        // ⚔️ Prendre l'épée
+        function takeSword() {
+            showDialogue("Vous saisissez l'épée de feu ! Le sol tremble...");
+            
+            gameState.elements.swordTaken = true;
+            gameState.elements.vortexActive = true;
+            gameState.elements.churchLocked = false;
+            
+            // Effet de secousse
+            canvas.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                canvas.style.animation = '';
+            }, 500);
+            
+            // Choix
+            setTimeout(() => {
+                showActionMenu(canvas.width / 2, canvas.height / 2, [
+                    { text: "Affronter le danger", action: () => combat() },
+                    { text: "Fuir vers l'église", action: () => fleeTochurch() }
+                ]);
+            }, 2000);
+        }
+        
+        // ⛪ Entrer dans l'église
+        function enterChurch() {
+            if (gameState.elements.churchLocked) {
+                showDialogue("La porte est scellée par une force mystérieuse...");
+            } else {
+                showDialogue("Vous entrez dans l'église. Un grimoire ancien repose sur l'autel...");
+                // Transition vers sous-scénario
+            }
+        }
+        
+        // 🌀 Approcher le vortex
+        function approachVortex() {
+            showDialogue("Le vortex tourbillonne avec une énergie intense. Osez-vous entrer ?");
+            
+            showActionMenu(canvas.width / 2, canvas.height / 2, [
+                { text: "Plonger dans le vortex", action: () => enterVortex() },
+                { text: "Reculer", action: () => closeActionMenu() }
+            ]);
+        }
+        
+        // 🎯 Déplacer le joueur
+        function movePlayer(targetHex) {
+            // Animation simple pour l'instant
+            gameState.player.x = targetHex.x;
+            gameState.player.y = targetHex.y;
+            
+            document.getElementById('playerPos').textContent = `${targetHex.x}, ${targetHex.y}`;
+        }
+        
+        // 💬 Afficher un dialogue
+        function showDialogue(text) {
+            const dialogueBox = document.getElementById('dialogueBox');
+            const dialogueText = document.getElementById('dialogueText');
+            
+            dialogueText.textContent = text;
+            dialogueBox.style.display = 'block';
+            
+            setTimeout(() => {
+                dialogueBox.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 📋 Menu d'actions
+        function showActionMenu(x, y, actions = null) {
+            const menu = document.getElementById('actionMenu');
+            const buttons = document.getElementById('actionButtons');
+            
+            buttons.innerHTML = '';
+            
+            const defaultActions = actions || [
+                { text: "Observer", action: () => observe() },
+                { text: "Méditer", action: () => meditate() },
+                { text: "Annuler", action: () => closeActionMenu() }
+            ];
+            
+            defaultActions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = 'action-button';
+                btn.textContent = action.text;
+                btn.onclick = action.action;
+                buttons.appendChild(btn);
+            });
+            
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+        }
+        
+        function closeActionMenu() {
+            document.getElementById('actionMenu').style.display = 'none';
+        }
+        
+        // Actions
+        function combat() {
+            showDialogue("Le combat commence ! (Mode combat à implémenter)");
+            closeActionMenu();
+        }
+        
+        function fleeTochurch() {
+            gameState.player.x = 3;
+            gameState.player.y = 2;
+            showDialogue("Vous vous réfugiez dans l'église !");
+            closeActionMenu();
+        }
+        
+        function enterVortex() {
+            showDialogue("Vous plongez dans le vortex... Transition vers un monde fracturé !");
+            // Transition vers nouveau monde
+            closeActionMenu();
+        }
+        
+        function observe() {
+            showDialogue("Vous observez attentivement les environs...");
+            closeActionMenu();
+        }
+        
+        function meditate() {
+            showDialogue("Vous méditez pour restaurer votre énergie...");
+            closeActionMenu();
+        }
+        
+        // 🎮 Boucle de jeu
+        function gameLoop() {
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // CSS pour l'effet de secousse
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // 🚀 Lancement
+        gameLoop();
+    </script>
+</body>
+</html>

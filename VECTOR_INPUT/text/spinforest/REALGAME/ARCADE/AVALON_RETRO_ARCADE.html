@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕹️ AVALON RETRO ARCADE - 200+ Bornes Mystiques !</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            overflow: hidden;
+            position: relative;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="32" font-size="32">🕹️</text></svg>'), auto;
+        }
+        
+        /* FOND SALLE D'ARCADE */
+        .arcade-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(180deg, #000 0%, #1a0033 50%, #000 100%),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(255, 0, 255, 0.03) 100px,
+                    rgba(255, 0, 255, 0.03) 200px
+                );
+            z-index: 0;
+        }
+        
+        /* SOL CARRELÉ */
+        .arcade-floor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    #1a1a1a,
+                    #1a1a1a 50px,
+                    #0d0d0d 50px,
+                    #0d0d0d 100px
+                );
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            z-index: 1;
+        }
+        
+        /* NÉONS AU PLAFOND */
+        .neon-lights {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 200px,
+                rgba(255, 255, 255, 0.8) 200px,
+                rgba(255, 255, 255, 0.8) 210px
+            );
+            filter: blur(20px);
+            animation: flicker 3s infinite;
+            z-index: 2;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+            51% { opacity: 1; }
+            52% { opacity: 0.9; }
+        }
+        
+        /* CONTAINER PRINCIPAL */
+        .arcade-hall {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+            perspective: 1000px;
+        }
+        
+        /* ENSEIGNE NÉON */
+        .neon-sign {
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .neon-title {
+            font-size: 3em;
+            color: #ff00ff;
+            text-shadow: 
+                0 0 10px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 30px #ff00ff,
+                0 0 40px #ff00ff,
+                0 0 70px #ff00ff,
+                0 0 80px #ff00ff,
+                0 0 100px #ff00ff;
+            animation: neon-glow 2s ease-in-out infinite alternate;
+            letter-spacing: 5px;
+        }
+        
+        @keyframes neon-glow {
+            from {
+                text-shadow: 
+                    0 0 10px #ff00ff,
+                    0 0 20px #ff00ff,
+                    0 0 30px #ff00ff,
+                    0 0 40px #ff00ff;
+            }
+            to {
+                text-shadow: 
+                    0 0 20px #ff00ff,
+                    0 0 30px #ff00ff,
+                    0 0 40px #ff00ff,
+                    0 0 50px #ff00ff,
+                    0 0 60px #ff00ff;
+            }
+        }
+        
+        .subtitle {
+            font-size: 1em;
+            color: #00ffff;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #00ffff;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* RANGÉES DE BORNES */
+        .arcade-row {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin: 50px 0;
+            padding: 0 50px;
+            transform-style: preserve-3d;
+        }
+        
+        /* BORNE D'ARCADE */
+        .arcade-machine {
+            width: 250px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .arcade-machine:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+        
+        /* CABINET */
+        .cabinet {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 3px solid #333;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 
+                0 0 50px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* ÉCRAN CRT */
+        .screen {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 150px;
+            background: #000;
+            border: 10px solid #444;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.5),
+                0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        /* EFFET CRT */
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+        
+        /* CONTENU ÉCRAN */
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            text-align: center;
+            background: radial-gradient(ellipse at center, #001100 0%, #000 100%);
+        }
+        
+        .game-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px currentColor);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .game-title {
+            font-size: 0.7em;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            word-wrap: break-word;
+        }
+        
+        /* MARQUEE */
+        .marquee {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+        
+        .marquee-text {
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            animation: marquee-flash 0.5s infinite;
+        }
+        
+        @keyframes marquee-flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* PANNEAU DE CONTRÔLE */
+        .control-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 60px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        /* BOUTONS */
+        .arcade-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #666;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .arcade-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .btn-red { background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000); }
+        .btn-blue { background: radial-gradient(circle at 30% 30%, #6666ff, #0000cc); }
+        .btn-yellow { background: radial-gradient(circle at 30% 30%, #ffff66, #cccc00); }
+        .btn-green { background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00); }
+        
+        /* JOYSTICK */
+        .joystick {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: #333;
+            border-radius: 50%;
+            border: 3px solid #666;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .joystick-ball {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #ff0000, #800000);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* PIÈCES */
+        .coin-slot {
+            position: absolute;
+            bottom: 150px;
+            right: 20px;
+            width: 60px;
+            height: 10px;
+            background: #000;
+            border: 2px solid #666;
+            border-radius: 5px;
+        }
+        
+        .coin-text {
+            position: absolute;
+            bottom: 165px;
+            right: 15px;
+            font-size: 0.6em;
+            color: #ff0;
+            text-shadow: 0 0 5px #ff0;
+        }
+        
+        /* HAUT-PARLEURS */
+        .speakers {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: repeating-linear-gradient(
+                90deg,
+                #000,
+                #000 5px,
+                #333 5px,
+                #333 10px
+            );
+            border: 2px solid #444;
+            border-radius: 5px;
+        }
+        
+        /* EFFETS SPÉCIAUX */
+        .special-machine {
+            animation: rainbow-glow 3s linear infinite;
+        }
+        
+        @keyframes rainbow-glow {
+            0% { filter: drop-shadow(0 0 20px #ff0000); }
+            33% { filter: drop-shadow(0 0 20px #00ff00); }
+            66% { filter: drop-shadow(0 0 20px #0000ff); }
+            100% { filter: drop-shadow(0 0 20px #ff0000); }
+        }
+        
+        /* SONS (SIMULÉS) */
+        .sound-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+            z-index: 1000;
+            pointer-events: none;
+            animation: sound-pop 0.5s ease-out;
+        }
+        
+        @keyframes sound-pop {
+            0% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+        }
+        
+        /* MENU FLOTTANT */
+        .arcade-menu {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #ff0;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .menu-btn {
+            background: #000;
+            border: 2px solid #0f0;
+            color: #0f0;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 0.8em;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background: #0f0;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #0f0;
+        }
+        
+        /* SCORE */
+        .score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #000;
+            border: 3px solid #ff0;
+            padding: 15px;
+            font-size: 1.2em;
+            color: #ff0;
+            text-shadow: 0 0 10px #ff0;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- FOND -->
+    <div class="arcade-background"></div>
+    <div class="arcade-floor"></div>
+    <div class="neon-lights"></div>
+    
+    <!-- SALLE D'ARCADE -->
+    <div class="arcade-hall">
+        <!-- ENSEIGNE -->
+        <div class="neon-sign">
+            <h1 class="neon-title">AVALON ARCADE</h1>
+            <p class="subtitle">INSERT COIN TO PLAY</p>
+        </div>
+        
+        <!-- RANGÉES DE BORNES -->
+        <div id="arcade-machines">
+            <!-- Les bornes seront générées ici -->
+        </div>
+    </div>
+    
+    <!-- SCORE -->
+    <div class="score-display">
+        SCORE: <span id="score">000000</span><br>
+        COINS: <span id="coins">0</span>
+    </div>
+    
+    <!-- MENU -->
+    <div class="arcade-menu">
+        <button class="menu-btn" onclick="insertCoin()">INSERT COIN</button>
+        <button class="menu-btn" onclick="randomGame()">RANDOM</button>
+        <button class="menu-btn" onclick="activateAllMachines()">FRENZY</button>
+        <button class="menu-btn" onclick="generateBackground()">NEW BG</button>
+    </div>
+    
+    <script>
+        // Base de données des jeux
+        const games = [
+            // JEUX PRINCIPAUX
+            { icon: "🎮", title: "TCG BATTLE", type: "ACTION", url: "AVALON-TCG/tcg-battle-interface.html" },
+            { icon: "🌌", title: "BUBBLE UNIVERSE", type: "PUZZLE", url: "AVALON_BUBBLE_UNIVERSE.html" },
+            { icon: "⚔️", title: "HEROES ISO", type: "RPG", url: "maps/isometric-battle.html" },
+            { icon: "🗺️", title: "TACTICAL 3X3", type: "STRATEGY", url: "AVALON-TCG/tactical-combat-interface.html" },
+            { icon: "🚀", title: "MEGA LAUNCHER", type: "SPECIAL", url: "AVALON_MEGA_LAUNCHER.html" },
+            { icon: "🌀", title: "ARCADE CONNECTED", type: "SPECIAL", url: "AVALON_ARCADE_CONNECTED.html" },
+            
+            // HIDDEN GEMS
+            { icon: "⚛️", title: "REACT ZONE", type: "HIDDEN", url: "http://localhost:3000" },
+            { icon: "⏰", title: "TEMPORAL RIFT", type: "HIDDEN", url: "http://localhost:5173" },
+            { icon: "🏛️", title: "MUSEUM QUEST", type: "ADVENTURE", url: "../AVALON/🏛️ MUSEUM/archives/racine/dashboard.html" },
+            { icon: "👻", title: "GHOST MODE", type: "HIDDEN", url: "http://localhost:8000/ethereal-mode.html" },
+            
+            // TOOLS & UTILS
+            { icon: "🔮", title: "MAGIC DEMO", type: "DEMO", url: "demos/unified-magic-demo.html" },
+            { icon: "📜", title: "SCRIPT EDITOR", type: "TOOL", url: "../frontend/visual-script-editor.html" },
+            { icon: "🛠️", title: "TILE EXTRACT", type: "TOOL", url: "tools/tile-extractor.html" },
+            { icon: "🌊", title: "BRISURE NAV", type: "TOOL", url: "../frontend/brisure-navigator.html" },
+            
+            // 3D EXPERIENCES
+            { icon: "🎲", title: "PANOPTICON 3D", type: "3D", url: "http://localhost:8000/panopticon-3d/" },
+            { icon: "🔬", title: "QUANTUM VIZ", type: "3D", url: "http://localhost:8000/quantum-visualizer/" },
+            { icon: "👁️", title: "GRUT VISION", type: "3D", url: "../assets/panopticon-6d-grut.html" },
+            
+            // NARRATIVES
+            { icon: "📖", title: "HERO STORY", type: "STORY", url: "../AVALON/🏠 HOME/📚 MEMENTO/HISTOIRE_HEROES_OF_TIME.html" },
+            { icon: "📜", title: "SCRIBE TALE", type: "STORY", url: "../assets/scribe-sanctum.html" },
+            { icon: "🐻", title: "BEAR CHRONO", type: "STORY", url: "../assets/ours-chroniques.html" },
+            
+            // PORTALS
+            { icon: "🌀", title: "PORTAL 100", type: "PORTAL", url: "http://localhost:9000/portail-100-html-interfaces.html" },
+            { icon: "🎯", title: "VINCE MODE", type: "PORTAL", url: "http://localhost:9000/portail-vince-mode.html" },
+            { icon: "🔗", title: "JOINT PANOP", type: "PORTAL", url: "http://localhost:8000/joint-panopticon-interface.html" },
+            
+            // SPECIALS
+            { icon: "🎪", title: "ULTIMATE ARC", type: "SPECIAL", url: "AVALON_ULTIMATE_ARCADE.html" },
+            { icon: "🏰", title: "DARK FANTASY", type: "SPECIAL", url: "../AVALON_DARK_FANTASY_DASHBOARD.html" },
+            { icon: "🎮", title: "CENTRAL CMD", type: "SPECIAL", url: "../AVALON_CENTRAL_COMMAND.html" },
+            
+            // CLASSICS
+            { icon: "🕹️", title: "PONG MAGIC", type: "CLASSIC", url: "#pong" },
+            { icon: "👾", title: "SPACE RAID", type: "CLASSIC", url: "#space" },
+            { icon: "🐍", title: "SNAKE TIME", type: "CLASSIC", url: "#snake" },
+            { icon: "🧱", title: "BREAK WALL", type: "CLASSIC", url: "#break" }
+        ];
+        
+        // Variables
+        let score = 0;
+        let coins = 0;
+        
+        // Initialisation
+        function init() {
+            createArcadeMachines();
+            
+            // Son d'ambiance (simulé)
+            setInterval(() => {
+                if (Math.random() < 0.1) {
+                    showSound(['BEEP', 'BOOP', 'ZAP', 'DING', 'BUZZ'][Math.floor(Math.random() * 5)]);
+                }
+            }, 3000);
+        }
+        
+        // Créer les bornes
+        function createArcadeMachines() {
+            const container = document.getElementById('arcade-machines');
+            let rowDiv = null;
+            
+            games.forEach((game, index) => {
+                if (index % 4 === 0) {
+                    rowDiv = document.createElement('div');
+                    rowDiv.className = 'arcade-row';
+                    container.appendChild(rowDiv);
+                }
+                
+                const machine = createMachine(game);
+                rowDiv.appendChild(machine);
+            });
+        }
+        
+        // Créer une borne
+        function createMachine(game) {
+            const machine = document.createElement('div');
+            machine.className = 'arcade-machine';
+            if (game.type === 'SPECIAL' || game.type === 'HIDDEN') {
+                machine.classList.add('special-machine');
+            }
+            
+            machine.innerHTML = `
+                <div class="cabinet">
+                    <div class="marquee">
+                        <div class="marquee-text">${game.type}</div>
+                    </div>
+                    <div class="screen">
+                        <div class="screen-content">
+                            <div class="game-icon">${game.icon}</div>
+                            <div class="game-title">${game.title}</div>
+                        </div>
+                    </div>
+                    <div class="control-panel">
+                        <div class="arcade-button btn-red"></div>
+                        <div class="arcade-button btn-blue"></div>
+                        <div class="arcade-button btn-yellow"></div>
+                        <div class="arcade-button btn-green"></div>
+                    </div>
+                    <div class="joystick">
+                        <div class="joystick-ball"></div>
+                    </div>
+                    <div class="coin-slot"></div>
+                    <div class="coin-text">25¢</div>
+                    <div class="speakers"></div>
+                </div>
+            `;
+            
+            // Click events
+            machine.onclick = () => playGame(game);
+            
+            // Boutons
+            const buttons = machine.querySelectorAll('.arcade-button');
+            buttons.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    showSound('CLICK');
+                    score += 10;
+                    updateScore();
+                };
+            });
+            
+            return machine;
+        }
+        
+        // Jouer
+        function playGame(game) {
+            if (coins > 0 || game.type === 'HIDDEN') {
+                if (game.url.startsWith('#')) {
+                    showSound('COMING SOON!');
+                } else {
+                    showSound('START!');
+                    if (coins > 0) coins--;
+                    score += 100;
+                    updateScore();
+                    
+                    setTimeout(() => {
+                        window.open(game.url, '_blank');
+                    }, 500);
+                }
+            } else {
+                showSound('INSERT COIN!');
+            }
+        }
+        
+        // Insérer pièce
+        function insertCoin() {
+            coins++;
+            score += 25;
+            updateScore();
+            showSound('COIN!');
+            
+            // Animation pièce
+            const coin = document.createElement('div');
+            coin.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                width: 30px;
+                height: 30px;
+                background: radial-gradient(circle, #ffff00, #ffaa00);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                animation: coin-drop 1s ease-out;
+                z-index: 1000;
+            `;
+            document.body.appendChild(coin);
+            
+            setTimeout(() => coin.remove(), 1000);
+        }
+        
+        // Jeu aléatoire
+        function randomGame() {
+            const game = games[Math.floor(Math.random() * games.length)];
+            playGame(game);
+        }
+        
+        // Mode frénésie
+        function activateAllMachines() {
+            showSound('FRENZY!!!');
+            score += 1000;
+            updateScore();
+            
+            document.querySelectorAll('.arcade-machine').forEach((machine, i) => {
+                setTimeout(() => {
+                    machine.style.animation = 'shake 0.5s';
+                    const screen = machine.querySelector('.screen');
+                    screen.style.boxShadow = `
+                        inset 0 0 100px rgba(255, 0, 0, 0.8),
+                        0 0 50px rgba(255, 0, 0, 0.5)
+                    `;
+                }, i * 100);
+            });
+        }
+        
+        // Générer background (simulé)
+        function generateBackground() {
+            showSound('LOADING...');
+            
+            // Changer les couleurs du fond
+            const colors = [
+                ['#000', '#1a0033'],
+                ['#001a00', '#003300'],
+                ['#1a0000', '#330000'],
+                ['#00001a', '#000033'],
+                ['#1a001a', '#330033']
+            ];
+            
+            const [color1, color2] = colors[Math.floor(Math.random() * colors.length)];
+            
+            document.querySelector('.arcade-background').style.background = `
+                linear-gradient(180deg, ${color1} 0%, ${color2} 50%, ${color1} 100%),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(255, 0, 255, 0.03) 100px,
+                    rgba(255, 0, 255, 0.03) 200px
+                )
+            `;
+            
+            setTimeout(() => {
+                showSound('NEW WORLD!');
+            }, 1000);
+        }
+        
+        // Afficher son
+        function showSound(text) {
+            const sound = document.createElement('div');
+            sound.className = 'sound-effect';
+            sound.textContent = text;
+            document.body.appendChild(sound);
+            
+            setTimeout(() => sound.remove(), 500);
+        }
+        
+        // Mise à jour score
+        function updateScore() {
+            document.getElementById('score').textContent = score.toString().padStart(6, '0');
+            document.getElementById('coins').textContent = coins;
+        }
+        
+        // Animations CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+            
+            @keyframes coin-drop {
+                0% { 
+                    transform: translate(-50%, -200%) rotateY(0deg);
+                    opacity: 1;
+                }
+                100% { 
+                    transform: translate(-50%, 200%) rotateY(720deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Démarrage
+        init();
+        
+        // Easter egg : Konami Code
+        let konamiIndex = 0;
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    showSound('30 LIVES!');
+                    coins += 30;
+                    score += 30000;
+                    updateScore();
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+{
+  "temporalCreatures": {
+    "mapId": "avalon_central",
+    "version": "1.0",
+    "createdBy": "Phoenix Loumen + Claude Fusion",
+    "
+": "Créatures cachées dans les couches temporelles des maps",
+    
+    "revealPowers": {
+      "oeil_wigner": {
+        "name": "L'Œil de Wigner",
+        "description": "Révèle les superpositions quantiques",
+        "color": "#00FFFF",
+        "particle": "quantum_shimmer"
+      },
+      "memoire_memento": {
+        "name": "Mémoire de Mémento",
+        "description": "Révèle les souvenirs du passé",
+        "color": "#FFD700",
+        "particle": "memory_glow"
+      },
+      "accord_temporel": {
+        "name": "L'Accord",
+        "description": "Révèle les moments de courage",
+        "color": "#FF4500",
+        "particle": "courage_flame"
+      },
+      "vision_renaissance": {
+        "name": "Vision Renaissance",
+        "description": "Révèle les cycles de mort/renaissance",
+        "color": "#FF69B4",
+        "particle": "rebirth_aura"
+      },
+      "maitrise_absolue": {
+        "name": "Maîtrise Absolue",
+        "description": "Révèle les nexus temporels",
+        "color": "#9400D3",
+        "particle": "nexus_energy"
+      }
+    },
+
+    "hiddenCreatures": [
+      {
+        "id": "luciole_quantique_memory",
+        "baseCreature": "quantum_wisp",
+        "name": "Luciole des Souvenirs",
+        "location": {
+          "mapX": 15,
+          "mapY": 23,
+          "zone": "ancient_garden"
+        },
+        "temporalLayer": "past",
+        "revealPower": "memoire_memento",
+        "hiddenState": {
+          "opacity": 0.0,
+          "layer": "past_echoes"
+        },
+        "revealedState": {
+          "opacity": 0.8,
+          "glow": true,
+          "particles": "memory_sparkles"
+        },
+        "interaction": {
+          "type": "memory_fragment",
+          "message": "Cette luciole danse encore dans les jardins d'avant... Ses ailes portent les rires oubliés.",
+          "reward": "fragment_histoire_jardin",
+          "sound": "whisper_past.ogg"
+        },
+        "lore": "Gardienne des moments lumineux perdus dans la chute d'Avalon"
+      },
+
+      {
+        "id": "chat_schrodinger_nexus",
+        "baseCreature": "chat_schrodinger",
+        "name": "Whiskers l'Intemporel",
+        "location": {
+          "mapX": 31,
+          "mapY": 18,
+          "zone": "quantum_lab_ruins"
+        },
+        "temporalLayer": "superposition",
+        "revealPower": "oeil_wigner",
+        "hiddenState": {
+          "opacity": 0.0,
+          "state": "superposed"
+        },
+        "revealedState": {
+          "opacity": [0.6, 0.4, 0.8],
+          "flickering": true,
+          "multiState": ["alive", "dead", "observing"]
+        },
+        "interaction": {
+          "type": "quantum_choice",
+          "message": "Miaou... Je suis et ne suis pas. Observez-moi et choisissez ma réalité.",
+          "choices": [
+            {"text": "Chat vivant", "result": "blessing_curiosity"},
+            {"text": "Chat mort", "result": "wisdom_mortality"},
+            {"text": "Les deux", "result": "quantum_understanding"}
+          ],
+          "sound": "quantum_meow.ogg"
+        },
+        "lore": "Le chat paradoxal du Professeur Quantum, piégé entre les états"
+      },
+
+      {
+        "id": "chevalier_quantique_battlefield",
+        "baseCreature": "quantum_knight",
+        "name": "Sir Galahad l'Éternel",
+        "location": {
+          "mapX": 45,
+          "mapY": 12,
+          "zone": "frozen_battlefield"
+        },
+        "temporalLayer": "past",
+        "revealPower": "accord_temporel",
+        "hiddenState": {
+          "opacity": 0.0,
+          "layer": "battle_echoes"
+        },
+        "revealedState": {
+          "opacity": 0.9,
+          "aura": "heroic_silver",
+          "animation": "eternal_charge"
+        },
+        "interaction": {
+          "type": "trial_courage",
+          "message": "Jeune héros ! Prouvez votre courage dans cette bataille éternelle !",
+          "trial": {
+            "type": "combat_simulation",
+            "enemy": "shadow_of_doubt",
+            "reward": "quantum_armor_blessing"
+          },
+          "sound": "war_horn_echo.ogg"
+        },
+        "lore": "Chevalier tombé dans la Grande Bataille, désormais gardien du courage"
+      },
+
+      {
+        "id": "phenix_renaissance_future",
+        "baseCreature": "phoenix",
+        "name": "Ignis le Prophétique",
+        "location": {
+          "mapX": 28,
+          "mapY": 35,
+          "zone": "ashes_of_tomorrow"
+        },
+        "temporalLayer": "future",
+        "revealPower": "vision_renaissance",
+        "hiddenState": {
+          "opacity": 0.0,
+          "layer": "future_potential"
+        },
+        "revealedState": {
+          "opacity": 0.85,
+          "flames": "prophetic_fire",
+          "vision_trail": true
+        },
+        "interaction": {
+          "type": "prophecy_vision",
+          "message": "Je renais éternellement... Voyez ce qui sera dans les flammes de demain.",
+          "visions": [
+            "avalon_restored",
+            "new_heroes_rising", 
+            "technology_magic_fusion"
+          ],
+          "reward": "phoenix_feather_of_hope",
+          "sound": "phoenix_cry_future.ogg"
+        },
+        "lore": "Phénix voyant les futurs possibles d'Avalon depuis les cendres du présent"
+      },
+
+      {
+        "id": "archonte_probabilites_nexus",
+        "baseCreature": "probability_archon",
+        "name": "Cosmos l'Architecte du Destin",
+        "location": {
+          "mapX": 50,
+          "mapY": 50,
+          "zone": "temporal_nexus_center"
+        },
+        "temporalLayer": "interstice",
+        "revealPower": "maitrise_absolue",
+        "hiddenState": {
+          "opacity": 0.0,
+          "layer": "beyond_time"
+        },
+        "revealedState": {
+          "opacity": 1.0,
+          "reality_distortion": true,
+          "probability_aura": "infinite"
+        },
+        "interaction": {
+          "type": "destiny_choice",
+          "message": "Mortel... Vous avez atteint le Nexus. Choisissez le destin d'Avalon.",
+          "choices": [
+            {"text": "Restaurer le passé", "result": "timeline_restoration"},
+            {"text": "Embrasser le futur", "result": "evolutionary_leap"},
+            {"text": "Transcender le temps", "result": "temporal_mastery"}
+          ],
+          "sound": "cosmos_voice.ogg"
+        },
+        "lore": "Entité cosmique gardienne des probabilités ultimes d'Avalon"
+      }
+    ],
+
+    "revealSystem": {
+      "checkInterval": 1000,
+      "revealDistance": 3,
+      "fadeInDuration": 2000,
+      "particleEffects": true,
+      "soundEffects": true
+    },
+
+    "rewards": {
+      "fragment_histoire_jardin": {
+        "type": "lore",
+        "name": "Fragment : Les Jardins d'Avant",
+        "description": "Souvenir des jardins luxuriants d'Avalon avant la chute"
+      },
+      "quantum_understanding": {
+        "type": "ability",
+        "name": "Compréhension Quantique",
+        "effect": "+10% chance critique en combat quantique"
+      },
+      "quantum_armor_blessing": {
+        "type": "buff",
+        "name": "Bénédiction d'Armure",
+        "effect": "+15% résistance aux dégâts temporels"
+      },
+      "phoenix_feather_of_hope": {
+        "type": "item",
+        "name": "Plume de Phénix Prophétique",
+        "effect": "Résurrection automatique (1 usage)"
+      },
+      "temporal_mastery": {
+        "type": "power",
+        "name": "Maîtrise Temporelle",
+        "effect": "Accès à toutes les couches temporelles"
+      }
+    }
+  }
+}

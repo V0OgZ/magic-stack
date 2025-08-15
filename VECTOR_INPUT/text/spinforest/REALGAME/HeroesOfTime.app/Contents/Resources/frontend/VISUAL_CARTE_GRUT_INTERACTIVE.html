@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 CARTE GRUT - Interface Starfleet SpinForest</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Effet étoiles de fond */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        /* Panneau principal LCARS */
+        .lcars-frame {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 3px solid #ff9900;
+            border-radius: 30px;
+            background: rgba(0, 20, 40, 0.9);
+            padding: 20px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+        }
+        
+        /* En-tête */
+        .header {
+            background: linear-gradient(90deg, #ff9900, #ff6600);
+            padding: 15px 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            color: #000;
+            font-size: 2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px #0f0; }
+            50% { box-shadow: 0 0 20px #0f0, 0 0 30px #0f0; }
+        }
+        
+        /* Zone principale */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+        
+        /* Panneau latéral */
+        .side-panel {
+            background: rgba(0, 50, 100, 0.3);
+            border: 2px solid #0088ff;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .side-panel h2 {
+            color: #0088ff;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .system-status {
+            margin-bottom: 15px;
+        }
+        
+        .system-name {
+            color: #fff;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #003366;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: attr(data-percent);
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        /* Zone centrale - Carte hexagonale */
+        .hex-map {
+            background: radial-gradient(ellipse at center, rgba(0, 100, 200, 0.2), transparent);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hex-grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+        }
+        
+        .hex {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        
+        .hex:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        
+        .hex.special {
+            background: rgba(255, 100, 0, 0.3);
+            border-color: #ff6600;
+        }
+        
+        .hex.portal {
+            background: rgba(255, 0, 255, 0.3);
+            border-color: #ff00ff;
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Panneau de contrôle */
+        .control-panel {
+            background: linear-gradient(180deg, #003366, #001133);
+            border: 2px solid #0088ff;
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 15px;
+        }
+        
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(135deg, #0066cc, #003366);
+            border: 2px solid #00aaff;
+            border-radius: 10px;
+            padding: 10px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .control-btn:hover {
+            background: linear-gradient(135deg, #0088ff, #0066cc);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 136, 255, 0.5);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Terminal */
+        .terminal {
+            background: #000;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #0f0;
+            overflow-y: auto;
+            height: 200px;
+        }
+        
+        .terminal-line {
+            margin-bottom: 5px;
+        }
+        
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 15px;
+            background: #0f0;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Footer */
+        .footer {
+            background: #001133;
+            border-top: 2px solid #0088ff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .coordinates {
+            color: #00ffff;
+            font-size: 0.9em;
+        }
+        
+        .quantum-state {
+            color: #ff00ff;
+            font-size: 0.9em;
+        }
+        
+        /* Animations de démarrage */
+        @keyframes bootup {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .lcars-frame {
+            animation: bootup 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Étoiles de fond -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Interface LCARS principale -->
+    <div class="lcars-frame">
+        <!-- En-tête -->
+        <div class="header">
+            <h1>🌌 SPINFOREST ENGINE - CARTE GRUT</h1>
+            <div class="status-indicator"></div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="main-content">
+            <!-- Panneau gauche - Status systèmes -->
+            <div class="side-panel">
+                <h2>📊 Status Systèmes</h2>
+                <div class="system-status">
+                    <div class="system-name">🧠 GROEKEN Combat</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%" data-percent="85%"></div>
+                    </div>
+                </div>
+                <div class="system-status">
+                    <div class="system-name">🎯 SID Navigation</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%" data-percent="100%"></div>
+                    </div>
+                </div>
+                <div class="system-status">
+                    <div class="system-name">🕯️ LOUMEN Narrative</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%" data-percent="78%"></div>
+                    </div>
+                </div>
+                <div class="system-status">
+                    <div class="system-name">🐻 URZ Quantum</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 15%" data-percent="VEILLE"></div>
+                    </div>
+                </div>
+                <div class="system-status">
+                    <div class="system-name">🔮 Magic Stack</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%" data-percent="100%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zone centrale - Carte hexagonale -->
+            <div class="hex-map">
+                <div class="hex-grid" id="hexGrid">
+                    <!-- Les hexagones seront générés par JS -->
+                </div>
+            </div>
+            
+            <!-- Panneau droit - Contrôles -->
+            <div class="control-panel">
+                <h2 style="color: #0088ff; text-transform: uppercase; margin-bottom: 10px;">
+                    🎮 Contrôle Quantique
+                </h2>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="activatePortal()">Activer Portail</button>
+                    <button class="control-btn" onclick="scanSector()">Scanner Secteur</button>
+                    <button class="control-btn" onclick="engageWarp()">Warp 9.9</button>
+                    <button class="control-btn" onclick="quantumJump()">Saut Quantique</button>
+                </div>
+                <div class="terminal" id="terminal">
+                    <div class="terminal-line">> SYSTÈME SPINFOREST INITIALISÉ</div>
+                    <div class="terminal-line">> QUANTUM CORE: ONLINE</div>
+                    <div class="terminal-line">> GRUT PROTOCOL: ACTIF</div>
+                    <div class="terminal-line">> EN ATTENTE DE COMMANDES...</div>
+                    <div class="terminal-cursor"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="coordinates">COORDONNÉES: [Ψ: 47.3, λ: -122.5, τ: ∞]</div>
+            <div class="quantum-state">ÉTAT QUANTIQUE: SUPERPOSITION STABLE</div>
+        </div>
+    </div>
+    
+    <script>
+        // Générer les étoiles
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Générer la grille hexagonale
+        function createHexGrid() {
+            const grid = document.getElementById('hexGrid');
+            const hexPositions = [
+                {x: 50, y: 20, icon: '🏛️', class: 'special', name: 'NEXUS'},
+                {x: 30, y: 35, icon: '⛪', class: '', name: 'ÉGLISE'},
+                {x: 70, y: 35, icon: '🌀', class: 'portal', name: 'VORTEX'},
+                {x: 20, y: 50, icon: '⚔️', class: 'special', name: 'ÉPÉE'},
+                {x: 50, y: 50, icon: '🔥', class: '', name: 'FAILLE'},
+                {x: 80, y: 50, icon: '🚪', class: 'portal', name: 'PORTAIL'},
+                {x: 35, y: 65, icon: '🧍', class: '', name: 'HÉROS'},
+                {x: 65, y: 65, icon: '🗺️', class: '', name: 'CARTE'},
+                {x: 50, y: 80, icon: '🎯', class: 'special', name: 'OBJECTIF'}
+            ];
+            
+            hexPositions.forEach((pos, index) => {
+                const hex = document.createElement('div');
+                hex.className = `hex ${pos.class}`;
+                hex.style.left = pos.x + '%';
+                hex.style.top = pos.y + '%';
+                hex.style.transform = 'translate(-50%, -50%)';
+                hex.innerHTML = pos.icon;
+                hex.title = pos.name;
+                hex.onclick = () => selectHex(pos.name, pos.icon);
+                grid.appendChild(hex);
+            });
+        }
+        
+        // Terminal output
+        function terminalOutput(message) {
+            const terminal = document.getElementById('terminal');
+            const newLine = document.createElement('div');
+            newLine.className = 'terminal-line';
+            newLine.textContent = '> ' + message;
+            terminal.insertBefore(newLine, terminal.lastElementChild);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // Fonctions de contrôle
+        function activatePortal() {
+            terminalOutput('ACTIVATION PORTAIL BRISURE...');
+            setTimeout(() => terminalOutput('PORTAIL ACTIF - COORDONNÉES VERROUILLÉES'), 1000);
+        }
+        
+        function scanSector() {
+            terminalOutput('SCAN EN COURS...');
+            setTimeout(() => terminalOutput('9 ANOMALIES DÉTECTÉES'), 500);
+            setTimeout(() => terminalOutput('3 TIMELINES ALTERNATIVES IDENTIFIÉES'), 1000);
+        }
+        
+        function engageWarp() {
+            terminalOutput('PRÉPARATION WARP 9.9...');
+            setTimeout(() => terminalOutput('MOTEUR QUANTIQUE CHARGÉ'), 500);
+            setTimeout(() => terminalOutput('ENGAGEMENT!'), 1000);
+        }
+        
+        function quantumJump() {
+            terminalOutput('CALCUL TRAJECTOIRE QUANTIQUE...');
+            setTimeout(() => terminalOutput('Ψ∞ = Σᵢ αᵢ · Ê^i'), 500);
+            setTimeout(() => terminalOutput('SAUT INITIÉ'), 1000);
+        }
+        
+        function selectHex(name, icon) {
+            terminalOutput(`HEXAGONE SÉLECTIONNÉ: ${name} ${icon}`);
+        }
+        
+        // Initialisation
+        createStars();
+        createHexGrid();
+        
+        // Message de bienvenue après 2 secondes
+        setTimeout(() => {
+            terminalOutput('BIENVENUE, COMMANDANT');
+            terminalOutput('CARTE GRUT OPÉRATIONNELLE');
+        }, 2000);
+    </script>
+</body>
+</html>

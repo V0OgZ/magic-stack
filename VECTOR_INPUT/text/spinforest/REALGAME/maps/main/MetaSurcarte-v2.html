@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 REALGAME - Mode Méta / Surcarte V2</title>
+    <link rel="stylesheet" href="../../styles/vincent-theme.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            overflow: hidden;
+            font-family: 'MedievalSharp', serif;
+            color: #FFD700;
+        }
+        
+        #metaCanvas {
+            display: block;
+            cursor: pointer;
+            image-rendering: crisp-edges;
+        }
+        
+        /* Style amélioré façon HOMM3 */
+        .timeline-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23342016" width="100" height="100"/><rect fill="%238B4513" opacity="0.3" x="5" y="5" width="90" height="90"/></svg>');
+            border: 3px solid #D2691E;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        
+        .timeline-item {
+            margin: 10px 0;
+            padding: 15px;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: rgba(20,10,5,0.8);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .timeline-item.active::before {
+            background: #00FF00;
+            box-shadow: 0 0 10px #00FF00;
+        }
+        
+        .timeline-item.dead::before {
+            background: #FF0000;
+        }
+        
+        .timeline-item.phased::before {
+            background: #8A2BE2;
+            animation: phase-pulse 2s infinite;
+        }
+        
+        @keyframes phase-pulse {
+            0%, 100% { opacity: 0.3; box-shadow: 0 0 5px #8A2BE2; }
+            50% { opacity: 1; box-shadow: 0 0 20px #8A2BE2; }
+        }
+        
+        .timeline-item:hover {
+            border-color: #FFD700;
+            background: rgba(40,20,10,0.9);
+            transform: translateX(-5px);
+        }
+        
+        .world-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23342016" width="100" height="100"/><pattern id="wood" x="0" y="0" width="100" height="20" patternUnits="userSpaceOnUse"><rect fill="%238B4513" width="100" height="10"/><rect fill="%23654321" y="10" width="100" height="10"/></pattern><rect fill="url(%23wood)" opacity="0.3" width="100" height="100"/></svg>');
+            border: 3px solid #D2691E;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        
+        .world-info h4 {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 10px;
+        }
+        
+        .world-status {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 5px;
+            border: 1px solid #8B4513;
+        }
+        
+        /* Nouveau : Avatar amélioré */
+        .avatar-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s;
+            z-index: 100;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
+        }
+        
+        .avatar-marker::before {
+            content: '🦸';
+            font-size: 30px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .avatar-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 15px;
+            background: radial-gradient(ellipse, rgba(0,0,0,0.5), transparent);
+            border-radius: 50%;
+        }
+        
+        /* Style monde amélioré */
+        .world-node {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .world-node:hover {
+            filter: brightness(1.2) drop-shadow(0 0 20px currentColor);
+        }
+        
+        /* Légende améliorée */
+        .legend {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(20,10,5,0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+            border: 2px solid #8B4513;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Effet de zoom sur clic monde */
+        @keyframes world-zoom {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(10); opacity: 0; }
+        }
+        
+        .world-zooming {
+            animation: world-zoom 1s ease-in forwards;
+        }
+        
+        /* Nouveau : Indicateur de ressources */
+        .resources {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,10,5,0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            padding: 10px 30px;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .resource-icon {
+            font-size: 24px;
+        }
+        
+        .resource-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="metaCanvas"></canvas>
+    
+    <!-- Ressources du joueur (nouveau) -->
+    <div class="resources">
+        <div class="resource">
+            <span class="resource-icon">⚡</span>
+            <span class="resource-value" id="energyValue">100</span>
+        </div>
+        <div class="resource">
+            <span class="resource-icon">🔮</span>
+            <span class="resource-value" id="magicValue">50</span>
+        </div>
+        <div class="resource">
+            <span class="resource-icon">⏰</span>
+            <span class="resource-value" id="timeValue">∞</span>
+        </div>
+        <div class="resource">
+            <span class="resource-icon">🎒</span>
+            <span class="resource-value" id="invSummary">0</span>
+        </div>
+    </div>
+    
+    <!-- Statut backends -->
+    <div id="backendStatus" style="position:fixed; bottom:20px; right:20px; background: rgba(20,10,5,0.9); border:2px solid #8B4513; border-radius:10px; padding:8px 12px; display:flex; gap:12px;">
+        <span id="sJava" style="color:#f55">Java</span>
+        <span id="sRust" style="color:#f55">Rust</span>
+    </div>
+    
+    <!-- Sélecteur de Timeline amélioré -->
+    <div class="timeline-selector">
+        <h3>⏰ Lignes Temporelles</h3>
+        <div id="timelineList"></div>
+        <hr style="border-color: #8B4513; margin: 20px 0;">
+        <div style="font-size: 14px; opacity: 0.8;">
+            <div>Phase: <span id="phaseIndicator" style="color: #00FF00">0.00</span></div>
+            <div>Causalité: <span id="causalityStatus" style="color: #FFD700">Stable</span></div>
+            <div>Mondes actifs: <span id="activeWorlds" style="color: #00D9FF">6</span></div>
+        </div>
+    </div>
+    
+    <!-- Informations du Monde -->
+    <div class="world-info">
+        <h4 id="worldName">🌍 Sélectionnez une destination</h4>
+        <p id="worldDesc" style="font-size: 14px; opacity: 0.9; line-height: 1.5;">
+            Explorez les mondes interconnectés d'Avalon. Chaque monde contient ses propres mystères et défis.
+        </p>
+        <div class="world-status" id="worldStatus">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="statusIcon">❓</span>
+                <span id="statusText">En attente de sélection...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Légende améliorée -->
+    <div class="legend">
+        <strong style="color: #FFD700; font-size: 16px;">📜 Légende</strong>
+        <div class="legend-item">
+            <div class="legend-icon" style="background: #4A4A8A">
+                <span>🏰</span>
+            </div>
+            <span>Monde stable</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon" style="background: #8A2BE2; opacity: 0.6;">
+                <span>🌀</span>
+            </div>
+            <span>Monde phasé</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon" style="background: #2A2A2A; opacity: 0.3;">
+                <span>💀</span>
+            </div>
+            <span>Timeline morte</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon" style="background: #FF6600">
+                <span>🔥</span>
+            </div>
+            <span>Nouveau monde!</span>
+        </div>
+    </div>
+    
+    <!-- Avatar du joueur -->
+    <div class="avatar-marker" id="playerAvatar"></div>
+    
+    <script>
+        // 🌀 MODE MÉTA / SURCARTE V2 - Style HOMM3
+        
+        const canvas = document.getElementById('metaCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État de la surcarte amélioré
+        const metaState = {
+            // Mondes disponibles (avec le nouveau!)
+            worlds: [
+                {
+                    id: 'avalon_central',
+                    name: 'Avalon Central',
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    radius: 80,
+                    color: '#4A4A8A',
+                    timeline: 'main',
+                    active: true,
+                    description: 'Le nexus principal d\'Avalon, stable et accessible',
+                    mapFile: '../../adventure/index.html',
+                    icon: '🏰'
+                },
+                {
+                    id: 'temporal_nexus',
+                    name: 'Nexus Temporel',
+                    x: canvas.width * 0.3,
+                    y: canvas.height * 0.3,
+                    radius: 60,
+                    color: '#8A2BE2',
+                    timeline: 'temporal_flux',
+                    active: true,
+                    phased: true,
+                    description: 'Un monde où le temps s\'écoule différemment',
+                    mapFile: '../../foret-magique.html',
+                    icon: '⏳'
+                },
+                {
+                    id: 'memory_realm',
+                    name: 'Royaume des Souvenirs',
+                    x: canvas.width * 0.7,
+                    y: canvas.height * 0.3,
+                    radius: 70,
+                    color: '#4A8A6A',
+                    timeline: 'past_echo',
+                    active: true,
+                    description: 'Les échos du passé prennent forme ici',
+                    mapFile: 'memory-realm.html',
+                    icon: '🧠'
+                },
+                {
+                    id: 'void_domain',
+                    name: 'Domaine du Vide',
+                    x: canvas.width * 0.3,
+                    y: canvas.height * 0.7,
+                    radius: 50,
+                    color: '#2A2A2A',
+                    timeline: 'void',
+                    active: false,
+                    dead: true,
+                    description: 'Timeline effondrée - Accès interdit',
+                    mapFile: null,
+                    icon: '💀'
+                },
+                {
+                    id: 'crystal_dimension',
+                    name: 'Dimension Cristalline',
+                    x: canvas.width * 0.7,
+                    y: canvas.height * 0.7,
+                    radius: 65,
+                    color: '#8A6A8A',
+                    timeline: 'crystal',
+                    active: true,
+                    description: 'Un monde de pure énergie cristallisée',
+                    mapFile: '../../DARK_HOLOGRAPHIC_CARDS.html',
+                    icon: '💎'
+                },
+                {
+                    id: 'shadow_realm',
+                    name: 'Royaume des Ombres',
+                    x: canvas.width * 0.5,
+                    y: canvas.height * 0.8,
+                    radius: 55,
+                    color: '#1A1A1A',
+                    timeline: 'shadow',
+                    active: false,
+                    phased: true,
+                    description: 'Visible mais inaccessible... pour l\'instant',
+                    mapFile: null,
+                    icon: '🌑'
+                },
+                // NOUVEAU MONDE !
+                {
+                    id: 'frontiere_feu_foi',
+                    name: 'Frontière de Feu et Foi',
+                    x: canvas.width * 0.85,
+                    y: canvas.height * 0.5,
+                    radius: 75,
+                    color: '#FF6600',
+                    timeline: 'fire_faith',
+                    active: true,
+                    new: true,
+                    description: 'Une église mystérieuse, une épée de feu, un vortex orange...',
+                    mapFile: '../../worlds/frontiere_feu_foi/FrontiereFeuFoi.html',
+                    icon: '🔥'
+                }
+            ],
+            
+            // Connexions améliorées
+            connections: [
+                { from: 'avalon_central', to: 'temporal_nexus', active: true },
+                { from: 'avalon_central', to: 'memory_realm', active: true },
+                { from: 'avalon_central', to: 'crystal_dimension', active: true },
+                { from: 'avalon_central', to: 'frontiere_feu_foi', active: true, new: true },
+                { from: 'temporal_nexus', to: 'memory_realm', active: false, phased: true },
+                { from: 'crystal_dimension', to: 'shadow_realm', active: false },
+                { from: 'void_domain', to: 'shadow_realm', active: false, dead: true },
+                { from: 'frontiere_feu_foi', to: 'void_domain', active: false, locked: true }
+            ],
+            
+            // Joueur amélioré
+            player: {
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                targetX: canvas.width / 2,
+                targetY: canvas.height / 2,
+                speed: 4,
+                currentWorld: 'avalon_central',
+                resources: {
+                    energy: 100,
+                    magic: 50,
+                    time: Infinity
+                }
+            },
+            
+            // Timeline actuelle
+            currentTimeline: 'main',
+            availableTimelines: [
+                { id: 'main', name: 'Timeline Principale', status: 'active' },
+                { id: 'temporal_flux', name: 'Flux Temporel', status: 'active' },
+                { id: 'past_echo', name: 'Écho du Passé', status: 'active' },
+                { id: 'crystal', name: 'Ligne Cristalline', status: 'active' },
+                { id: 'fire_faith', name: 'Feu et Foi', status: 'active', new: true },
+                { id: 'void', name: 'Ligne du Vide', status: 'dead' },
+                { id: 'shadow', name: 'Ligne d\'Ombre', status: 'phased' },
+                { id: 'alternate_1', name: 'Alternative Alpha', status: 'locked' },
+                { id: 'alternate_2', name: 'Alternative Beta', status: 'locked' }
+            ],
+            
+            // Phase temporelle
+            phase: 0,
+            
+            // Particules améliorées
+            particles: [],
+            
+            // Effet de zoom
+            zoomTarget: null
+        };
+        
+        // 🎨 Initialisation améliorée
+        function init() {
+            // Créer la liste des timelines
+            updateTimelineList();
+            
+            // Générer des particules plus élaborées
+            for (let i = 0; i < 100; i++) {
+                metaState.particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 3 + 1,
+                    color: ['#FFD700', '#8A2BE2', '#00D9FF', '#FF6600'][Math.floor(Math.random() * 4)],
+                    alpha: Math.random() * 0.5 + 0.2,
+                    type: Math.random() < 0.3 ? 'glow' : 'normal'
+                });
+            }
+            
+            // Position initiale de l'avatar
+            updateAvatarPosition();
+            
+            // Démarrer l'animation
+            animate();
+
+            // Backend status + inventaire
+            refreshBackends();
+            refreshInventory();
+            setInterval(refreshBackends, 6000);
+            setInterval(refreshInventory, 10000);
+        }
+        
+        // 🎨 Rendu principal amélioré
+        function render() {
+            // Fond avec effet de profondeur style HOMM3
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width
+            );
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#0f0f1e');
+            gradient.addColorStop(1, '#050510');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Étoiles de fond
+            renderStars();
+            
+            // Grille subtile
+            renderSubtleGrid();
+            
+            // Particules améliorées
+            renderParticles();
+            
+            // Connexions avec style
+            renderConnections();
+            
+            // Mondes avec effets
+            renderWorlds();
+            
+            // Effet de zoom si actif
+            if (metaState.zoomTarget) {
+                renderZoomEffect();
+            }
+            
+            // UI mise à jour
+            updateUI();
+        }
+        
+        // ⭐ Étoiles de fond
+        function renderStars() {
+            ctx.save();
+            ctx.fillStyle = 'white';
+            
+            // Utiliser un seed fixe pour des étoiles statiques
+            const starSeed = 12345;
+            for (let i = 0; i < 200; i++) {
+                const x = ((starSeed * i * 9999) % canvas.width);
+                const y = ((starSeed * i * 7777) % canvas.height);
+                const size = ((starSeed * i) % 3) / 2;
+                const brightness = 0.3 + ((starSeed * i) % 70) / 100;
+                
+                ctx.globalAlpha = brightness;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+        
+        // 🔷 Grille subtile hexagonale
+        function renderSubtleGrid() {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(138,43,226,0.05)';
+            ctx.lineWidth = 1;
+            
+            const hexSize = 100;
+            const rows = Math.ceil(canvas.height / (hexSize * 1.5)) + 1;
+            const cols = Math.ceil(canvas.width / (hexSize * Math.sqrt(3))) + 1;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const x = col * hexSize * Math.sqrt(3) + (row % 2) * hexSize * Math.sqrt(3) / 2;
+                    const y = row * hexSize * 1.5;
+                    
+                    drawHexagon(x, y, hexSize);
+                }
+            }
+            
+            ctx.restore();
+        }
+        
+        // Dessiner un hexagone
+        function drawHexagon(centerX, centerY, size) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const x = centerX + size * Math.cos(angle);
+                const y = centerY + size * Math.sin(angle);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+        
+        // ✨ Particules améliorées
+        function renderParticles() {
+            metaState.particles.forEach((particle, index) => {
+                ctx.save();
+                ctx.globalAlpha = particle.alpha;
+                
+                if (particle.type === 'glow') {
+                    // Particule lumineuse
+                    const gradient = ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, particle.size * 3
+                    );
+                    gradient.addColorStop(0, particle.color);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(
+                        particle.x - particle.size * 3,
+                        particle.y - particle.size * 3,
+                        particle.size * 6,
+                        particle.size * 6
+                    );
+                } else {
+                    // Particule normale
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                
+                // Mise à jour
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // Rebond sur les bords avec effet
+                if (particle.x < 0 || particle.x > canvas.width) {
+                    particle.vx *= -1;
+                    particle.color = ['#FFD700', '#8A2BE2', '#00D9FF', '#FF6600'][Math.floor(Math.random() * 4)];
+                }
+                if (particle.y < 0 || particle.y > canvas.height) {
+                    particle.vy *= -1;
+                }
+                
+                // Decay pour certaines particules
+                if (particle.decay) {
+                    particle.alpha -= particle.decay;
+                    if (particle.alpha <= 0) {
+                        metaState.particles.splice(index, 1);
+                    }
+                }
+            });
+        }
+        
+        // 🔗 Connexions entre mondes améliorées
+        function renderConnections() {
+            metaState.connections.forEach(conn => {
+                const fromWorld = metaState.worlds.find(w => w.id === conn.from);
+                const toWorld = metaState.worlds.find(w => w.id === conn.to);
+                
+                if (!fromWorld || !toWorld) return;
+                
+                ctx.save();
+                
+                // Style selon l'état
+                if (conn.dead) {
+                    ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+                    ctx.setLineDash([5, 15]);
+                } else if (conn.locked) {
+                    ctx.strokeStyle = 'rgba(255,102,0,0.3)';
+                    ctx.setLineDash([10, 5]);
+                } else if (conn.phased) {
+                    ctx.strokeStyle = `rgba(138,43,226,${0.3 + Math.sin(metaState.phase) * 0.2})`;
+                    ctx.setLineDash([15, 10]);
+                } else if (conn.new) {
+                    // Nouvelle connexion animée!
+                    ctx.strokeStyle = `rgba(255,102,0,${0.5 + Math.sin(metaState.phase * 3) * 0.3})`;
+                    ctx.setLineDash([20, 5]);
+                } else if (conn.active) {
+                    ctx.strokeStyle = 'rgba(255,215,0,0.4)';
+                } else {
+                    ctx.strokeStyle = 'rgba(100,100,100,0.2)';
+                    ctx.setLineDash([5, 15]);
+                }
+                
+                ctx.lineWidth = conn.new ? 4 : 3;
+                
+                // Ligne courbe avec particules
+                ctx.beginPath();
+                const midX = (fromWorld.x + toWorld.x) / 2;
+                const midY = (fromWorld.y + toWorld.y) / 2;
+                const curve = 80 * Math.sin(metaState.phase * 0.5);
+                
+                ctx.moveTo(fromWorld.x, fromWorld.y);
+                ctx.quadraticCurveTo(
+                    midX + curve,
+                    midY - Math.abs(curve) / 2,
+                    toWorld.x, toWorld.y
+                );
+                ctx.stroke();
+                
+                // Particules le long des connexions actives
+                if (conn.active && Math.random() < 0.1) {
+                    const t = Math.random();
+                    const x = (1-t)*(1-t)*fromWorld.x + 2*(1-t)*t*(midX + curve) + t*t*toWorld.x;
+                    const y = (1-t)*(1-t)*fromWorld.y + 2*(1-t)*t*(midY - Math.abs(curve)/2) + t*t*toWorld.y;
+                    
+                    metaState.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        size: 2,
+                        color: conn.new ? '#FF6600' : '#FFD700',
+                        alpha: 1,
+                        decay: 0.02,
+                        type: 'glow'
+                    });
+                }
+                
+                ctx.restore();
+            });
+        }
+        
+        // 🌍 Rendu des mondes style HOMM3
+        function renderWorlds() {
+            metaState.worlds.forEach(world => {
+                ctx.save();
+                
+                // Effet de pulsation
+                let scale = 1;
+                if (world.phased) {
+                    scale = 1 + Math.sin(metaState.phase * 2) * 0.1;
+                } else if (world.new) {
+                    scale = 1 + Math.sin(metaState.phase * 5) * 0.15;
+                }
+                
+                // Ombre portée
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.beginPath();
+                ctx.arc(world.x + 8, world.y + 8, world.radius * scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Aura selon l'état
+                if (world.new) {
+                    // Aura de feu pour le nouveau monde
+                    const gradient = ctx.createRadialGradient(
+                        world.x, world.y, world.radius * 0.5,
+                        world.x, world.y, world.radius * 1.5
+                    );
+                    gradient.addColorStop(0, 'rgba(255,102,0,0.6)');
+                    gradient.addColorStop(0.5, 'rgba(255,51,0,0.3)');
+                    gradient.addColorStop(1, 'rgba(255,0,0,0)');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(world.x, world.y, world.radius * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Monde principal - style orbe
+                const worldGradient = ctx.createRadialGradient(
+                    world.x - world.radius * 0.3,
+                    world.y - world.radius * 0.3,
+                    0,
+                    world.x,
+                    world.y,
+                    world.radius
+                );
+                
+                if (world.dead) {
+                    worldGradient.addColorStop(0, 'rgba(80,80,80,0.8)');
+                    worldGradient.addColorStop(1, 'rgba(30,30,30,0.9)');
+                } else {
+                    const baseColor = world.color;
+                    worldGradient.addColorStop(0, baseColor + 'FF');
+                    worldGradient.addColorStop(0.7, baseColor + 'CC');
+                    worldGradient.addColorStop(1, baseColor + '88');
+                }
+                
+                ctx.fillStyle = worldGradient;
+                ctx.beginPath();
+                ctx.arc(world.x, world.y, world.radius * scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bordure stylisée
+                ctx.strokeStyle = world.dead ? '#FF0000' : 
+                                 world.new ? '#FF6600' :
+                                 world.phased ? '#8A2BE2' : 
+                                 '#FFD700';
+                ctx.lineWidth = world.new ? 5 : 3;
+                ctx.stroke();
+                
+                // Reflet lumineux
+                if (!world.dead) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.4;
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(
+                        world.x - world.radius * 0.3,
+                        world.y - world.radius * 0.3,
+                        world.radius * 0.3,
+                        0, Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Icône du monde
+                ctx.font = `${world.radius * 0.6}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = world.dead ? '#666' : '#FFF';
+                ctx.fillText(world.icon, world.x, world.y);
+                
+                // Nom du monde
+                ctx.font = 'bold 16px MedievalSharp, serif';
+                ctx.fillStyle = '#FFD700';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(world.name, world.x, world.y + world.radius + 20);
+                ctx.fillText(world.name, world.x, world.y + world.radius + 20);
+                
+                // Badge "NEW" pour le nouveau monde
+                if (world.new) {
+                    ctx.save();
+                    ctx.translate(world.x + world.radius * 0.7, world.y - world.radius * 0.7);
+                    ctx.rotate(-Math.PI / 6);
+                    
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(-25, -12, 50, 24);
+                    
+                    ctx.fillStyle = '#FFFF00';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('NEW!', 0, 0);
+                    
+                    ctx.restore();
+                }
+                
+                ctx.restore();
+            });
+        }
+        
+        // 🔍 Effet de zoom
+        function renderZoomEffect() {
+            if (!metaState.zoomTarget) return;
+            
+            const progress = metaState.zoomTarget.progress;
+            const world = metaState.zoomTarget.world;
+            
+            ctx.save();
+            ctx.globalAlpha = progress;
+            
+            // Cercle de transition qui grandit
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(world.x, world.y, canvas.width * progress * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // Mise à jour du progress
+            metaState.zoomTarget.progress += 0.02;
+            
+            if (metaState.zoomTarget.progress >= 1) {
+                // Transition terminée
+                window.location.href = world.mapFile;
+            }
+        }
+        
+        // 🔄 Mettre à jour la liste des timelines
+        function updateTimelineList() {
+            const list = document.getElementById('timelineList');
+            list.innerHTML = '';
+            
+            metaState.availableTimelines.forEach(timeline => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                
+                if (timeline.status === 'dead') item.classList.add('dead');
+                if (timeline.status === 'phased') item.classList.add('phased');
+                if (timeline.id === metaState.currentTimeline) item.classList.add('active');
+                
+                item.innerHTML = `
+                    <strong>${timeline.name}</strong>
+                    ${timeline.new ? '<span style="color: #FF6600; float: right;">NOUVEAU!</span>' : ''}
+                    <br>
+                    <small style="opacity: 0.7;">Status: ${
+                        timeline.status === 'active' ? '✅ Actif' :
+                        timeline.status === 'dead' ? '💀 Effondré' :
+                        timeline.status === 'phased' ? '🌀 Phasé' :
+                        '🔒 Verrouillé'
+                    }</small>
+                `;
+                
+                if (timeline.status === 'active') {
+                    item.onclick = () => selectTimeline(timeline.id);
+                }
+                
+                list.appendChild(item);
+            });
+        }
+        
+        // 🎯 Sélectionner une timeline
+        function selectTimeline(timelineId) {
+            metaState.currentTimeline = timelineId;
+            updateTimelineList();
+            
+            // Effet visuel de changement
+            createTimelineShift();
+            
+            // Mise à jour de l'UI
+            document.getElementById('causalityStatus').textContent = 
+                timelineId === 'void' ? 'EFFONDRÉ' :
+                timelineId === 'temporal_flux' ? 'Instable' :
+                timelineId === 'fire_faith' ? 'Brûlant' :
+                'Stable';
+        }
+        
+        // ✨ Effet de changement de timeline
+        function createTimelineShift() {
+            // Flash lumineux
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Explosion de particules
+            for (let i = 0; i < 50; i++) {
+                const angle = (Math.PI * 2 / 50) * i;
+                metaState.particles.push({
+                    x: metaState.player.x,
+                    y: metaState.player.y,
+                    vx: Math.cos(angle) * 10,
+                    vy: Math.sin(angle) * 10,
+                    size: Math.random() * 5 + 2,
+                    color: '#8A2BE2',
+                    alpha: 1,
+                    decay: 0.02,
+                    type: 'glow'
+                });
+            }
+        }
+        
+        // 📊 Mise à jour UI
+        function updateUI() {
+            // Phase
+            document.getElementById('phaseIndicator').textContent = metaState.phase.toFixed(2);
+            
+            // Mondes actifs
+            const activeCount = metaState.worlds.filter(w => w.active && !w.dead).length;
+            document.getElementById('activeWorlds').textContent = activeCount;
+            
+            // Ressources
+            document.getElementById('energyValue').textContent = metaState.player.resources.energy;
+            document.getElementById('magicValue').textContent = metaState.player.resources.magic;
+            document.getElementById('timeValue').textContent = 
+                metaState.player.resources.time === Infinity ? '∞' : metaState.player.resources.time;
+        }
+
+        async function refreshBackends(){
+            try{ const r = await fetch('http://localhost:8082/actuator/health'); document.getElementById('sJava').style.color = r.ok?'#5f5':'#f55'; }catch{ document.getElementById('sJava').style.color = '#f55'; }
+            try{ const r = await fetch('http://localhost:3001/health'); document.getElementById('sRust').style.color = r.ok?'#5f5':'#f55'; }catch{ document.getElementById('sRust').style.color = '#f55'; }
+        }
+
+        async function refreshInventory(){
+            try{ const r = await fetch('http://localhost:3001/api/economy/inventory'); if(!r.ok) return; const inv = await r.json(); document.getElementById('invSummary').textContent = (inv.items?inv.items.length:0); }catch{}
+        }
+        
+        // 🎮 Mise à jour de la position de l'avatar
+        function updateAvatarPosition() {
+            const avatar = document.getElementById('playerAvatar');
+            avatar.style.left = metaState.player.x + 'px';
+            avatar.style.top = metaState.player.y + 'px';
+        }
+        
+        // 🔄 Animation principale
+        function animate() {
+            // Mise à jour de la phase
+            metaState.phase += 0.01;
+            
+            // Déplacement fluide du joueur
+            const dx = metaState.player.targetX - metaState.player.x;
+            const dy = metaState.player.targetY - metaState.player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                metaState.player.x += (dx / distance) * metaState.player.speed;
+                metaState.player.y += (dy / distance) * metaState.player.speed;
+                updateAvatarPosition();
+                
+                // Traînée de particules
+                if (Math.random() < 0.3) {
+                    metaState.particles.push({
+                        x: metaState.player.x,
+                        y: metaState.player.y,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        size: 2,
+                        color: '#FFD700',
+                        alpha: 0.8,
+                        decay: 0.02
+                    });
+                }
+            }
+            
+            // Rendu
+            render();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 🎮 Gestion des événements
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Vérifier si on clique sur un monde
+            const clickedWorld = metaState.worlds.find(world => {
+                const dx = world.x - x;
+                const dy = world.y - y;
+                return Math.sqrt(dx * dx + dy * dy) < world.radius;
+            });
+            
+            if (clickedWorld) {
+                // Afficher les infos du monde
+                document.getElementById('worldName').innerHTML = 
+                    `${clickedWorld.icon} ${clickedWorld.name}`;
+                document.getElementById('worldDesc').textContent = clickedWorld.description;
+                
+                let statusIcon, statusText;
+                if (clickedWorld.dead) {
+                    statusIcon = '💀';
+                    statusText = 'Timeline morte - Accès impossible';
+                } else if (clickedWorld.phased) {
+                    statusIcon = '🌀';
+                    statusText = 'Monde phasé - Synchronisation requise';
+                } else if (clickedWorld.new) {
+                    statusIcon = '🔥';
+                    statusText = 'NOUVEAU MONDE ! Cliquez pour explorer';
+                } else if (clickedWorld.active) {
+                    statusIcon = '✅';
+                    statusText = 'Accessible - Cliquez pour entrer';
+                } else {
+                    statusIcon = '🔒';
+                    statusText = 'Verrouillé - Conditions non remplies';
+                }
+                
+                document.getElementById('statusIcon').textContent = statusIcon;
+                document.getElementById('statusText').textContent = statusText;
+                
+                // Si accessible, proposer d'entrer avec effet de zoom
+                if (clickedWorld.active && !clickedWorld.dead && clickedWorld.mapFile) {
+                    // Double-clic ou confirmation
+                    if (metaState.lastClickedWorld === clickedWorld.id && 
+                        Date.now() - metaState.lastClickTime < 500) {
+                        // Démarrer l'effet de zoom
+                        metaState.zoomTarget = {
+                            world: clickedWorld,
+                            progress: 0
+                        };
+                        
+                        // Son ou effet (à implémenter)
+                        console.log(`Entering ${clickedWorld.name}...`);
+                    }
+                    
+                    metaState.lastClickedWorld = clickedWorld.id;
+                    metaState.lastClickTime = Date.now();
+                }
+            } else {
+                // Déplacer le joueur
+                metaState.player.targetX = x;
+                metaState.player.targetY = y;
+            }
+        });
+        
+        // Survol pour effet
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const hoveredWorld = metaState.worlds.find(world => {
+                const dx = world.x - x;
+                const dy = world.y - y;
+                return Math.sqrt(dx * dx + dy * dy) < world.radius;
+            });
+            
+            canvas.style.cursor = hoveredWorld ? 'pointer' : 'crosshair';
+        });
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Repositionner les mondes proportionnellement
+            // (à implémenter si nécessaire)
+        });
+        
+        // 🚀 Lancement
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🧪 Test Intégration - HOMM3 6D</title>
+    <style>
+        body { background: #1a1a2e; color: #fff; font-family: monospace; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: rgba(40, 167, 69, 0.3); border: 1px solid #28a745; }
+        .error { background: rgba(220, 53, 69, 0.3); border: 1px solid #dc3545; }
+        .info { background: rgba(23, 162, 184, 0.3); border: 1px solid #17a2b8; }
+        button { 
+            background: linear-gradient(45deg, #8A2BE2, #FF1493);
+            border: none; color: white; padding: 10px 20px;
+            border-radius: 20px; cursor: pointer; margin: 5px;
+        }
+        #results { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Intégration HOMM3 6D Magic Stack</h1>
+    
+    <div>
+        <button onclick="testPathPlanning()">🧭 Test Planification</button>
+        <button onclick="testTimeVelocity()">⏰ Test Time Velocity</button>
+        <button onclick="testFogSync()">🌫️ Test Fog Sync</button>
+        <button onclick="testAllSystems()">🚀 Test Complet</button>
+        <button onclick="clearResults()">🗑️ Clear</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script src="map.js"></script>
+    <script src="movement.js"></script>
+    <script src="fog.js"></script>
+    
+    <script>
+        let map, movement, fog;
+        
+        // 🚀 INITIALISATION
+        async function init() {
+            try {
+                // Charger les ressources
+                const resourcesResponse = await fetch('resources.json');
+                const resources = await resourcesResponse.json();
+                
+                // Initialiser les modules
+                map = new HOMM3Map(resources.api_endpoints);
+                movement = new HOMM3Movement(map, resources.api_endpoints);
+                fog = new HOMM3CausalityFog(map, resources.api_endpoints);
+                
+                // Setup callbacks
+                setupCallbacks();
+                
+                logResult('✅ Modules initialisés avec succès', 'success');
+                
+            } catch (error) {
+                logResult(`❌ Erreur initialisation: ${error.message}`, 'error');
+            }
+        }
+        
+        function setupCallbacks() {
+            if (movement) {
+                movement.onPathPlanned = (agentId, path, timeVelocity) => {
+                    logResult(`✅ onPathPlanned: ${agentId}, ${path.length} étapes, velocity: ${timeVelocity}`, 'success');
+                };
+                
+                movement.onTimeInversion = (agentId, path) => {
+                    logResult(`⏰ onTimeInversion: ${agentId}`, 'info');
+                };
+            }
+            
+            if (fog) {
+                fog.onTileExplored = (x, y, causalLevel) => {
+                    logResult(`🔍 onTileExplored: (${x}, ${y}) causal: ${causalLevel.toFixed(3)}`, 'info');
+                };
+            }
+        }
+        
+        // 🧭 TEST PLANIFICATION
+        async function testPathPlanning() {
+            logResult('🧪 Test planification de chemin...', 'info');
+            
+            if (!map || !movement) {
+                logResult('❌ Modules non initialisés', 'error');
+                return;
+            }
+            
+            try {
+                // Générer une carte pour le test
+                await map.generateMap({ width: 20, height: 15, seed: 12345 });
+                logResult('✅ Carte générée pour test', 'success');
+                
+                // Planifier un chemin
+                const result = await movement.planPath('test_hero', 
+                    { x: 2, y: 2, timeline: 'principale' },
+                    { x: 8, y: 8, timeline: 'principale' },
+                    { speed_multiplier: 1.0, alpha_causal: 0.5, time_velocity: 1.0 }
+                );
+                
+                if (result.ok) {
+                    logResult(`✅ Planification réussie: ${result.path.length} étapes, coût: ${result.cost}`, 'success');
+                } else {
+                    logResult('❌ Planification échouée', 'error');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Erreur test planification: ${error.message}`, 'error');
+            }
+        }
+        
+        // ⏰ TEST TIME VELOCITY
+        async function testTimeVelocity() {
+            logResult('🧪 Test inversion temporelle...', 'info');
+            
+            if (!movement) {
+                logResult('❌ Module movement non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                // Test avec time_velocity négative (AXIS)
+                const result = await movement.planPath('axis_hero', 
+                    { x: 5, y: 5, timeline: 'principale' },
+                    { x: 10, y: 10, timeline: 'principale' },
+                    { speed_multiplier: 1.0, alpha_causal: 0.8, time_velocity: -1.0 }
+                );
+                
+                if (result.ok) {
+                    logResult('✅ Mode AXIS activé avec succès', 'success');
+                } else {
+                    logResult('❌ Mode AXIS échoué', 'error');
+                }
+                
+                // Test avec vitesse élevée
+                const fastResult = await movement.planPath('fast_hero', 
+                    { x: 1, y: 1, timeline: 'principale' },
+                    { x: 6, y: 6, timeline: 'principale' },
+                    { speed_multiplier: 2.0, alpha_causal: 0.3, time_velocity: 1.5 }
+                );
+                
+                if (fastResult.ok) {
+                    logResult('✅ Vitesse élevée testée avec succès', 'success');
+                } else {
+                    logResult('❌ Test vitesse élevée échoué', 'error');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Erreur test time velocity: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🌫️ TEST FOG SYNCHRONISATION
+        async function testFogSync() {
+            logResult('🧪 Test synchronisation brouillard...', 'info');
+            
+            if (!fog) {
+                logResult('❌ Module fog non initialisé', 'error');
+                return;
+            }
+            
+            try {
+                // Initialiser le fog
+                fog.initialize();
+                logResult('✅ Fog initialisé', 'success');
+                
+                // Test markObserved
+                fog.markObserved(5, 5, 2);
+                logResult('✅ markObserved testé (5, 5) radius 2', 'success');
+                
+                // Test exploration de tile
+                fog.exploreTile(8, 8, 1.0);
+                logResult('✅ exploreTile testé (8, 8)', 'success');
+                
+                // Test observation area avec collapse
+                await fog.observeArea(
+                    { x: 10, y: 10, z: 0, t: Date.now() / 1000, c: 0.5, psi: 0 },
+                    3,
+                    'test_observation'
+                );
+                logResult('✅ observeArea testé avec collapse backend', 'success');
+                
+            } catch (error) {
+                logResult(`❌ Erreur test fog: ${error.message}`, 'error');
+            }
+        }
+        
+        // 🚀 TEST COMPLET
+        async function testAllSystems() {
+            logResult('🚀 Lancement test complet du système...', 'info');
+            
+            await testPathPlanning();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testTimeVelocity();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testFogSync();
+            
+            logResult('🎉 Test complet terminé!', 'success');
+        }
+        
+        function logResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // 🚀 LANCER AU CHARGEMENT
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+  <script src="./map-actions-dock.js"></script>
+</body>
+</html>

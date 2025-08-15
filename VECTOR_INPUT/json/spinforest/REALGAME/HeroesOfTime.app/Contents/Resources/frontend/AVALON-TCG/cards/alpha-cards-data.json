@@ -1,0 +1,165 @@
+{
+  "alphaCards": [
+    {
+      "id": "urz-kom-cosmic",
+      "name": "URZ-KÔM Cosmique",
+      "type": "hero",
+      "cost": 10,
+      "attack": 8,
+      "defense": 12,
+      "image": "alphacards/Cosmic Bear Shaman in Starlit Expanse.png",
+      "ability": "Transformation: Ours (10/15) ou Chaman (5/8, pioche 3 cartes)",
+      "ultimate": "Portail Stellaire: Invoque 2 créatures cosmiques",
+      "formula": "ψ_COSMIC: (0.9+0.8i) ⊙(Transform ⟶ BEAR|SHAMAN)",
+      "description": "Le gardien des interstices, transcendé par l'énergie cosmique.",
+      "rarity": "legendary",
+      "effects": {
+        "onPlay": "cosmic_explosion",
+        "onTransform": "quantum_shift",
+        "onAttack": "stellar_strike"
+      }
+    },
+    {
+      "id": "grokaen-quantum-master",
+      "name": "GROKÆN, Maître Quantique",
+      "type": "hero",
+      "cost": 9,
+      "attack": 7,
+      "defense": 10,
+      "image": "alphacards/Grokæn_ Master of Quantum Realms.png",
+      "ability": "Vortex: Téléporte une unité + 3 dégâts de zone",
+      "ultimate": "Fusion Hexagonale: Transforme 6 hex en zone de pouvoir",
+      "formula": "ψ_VORTEX: ∇⊙(Zone ⟶ Teleport + AreaDamage(3))",
+      "description": "GRUUUU... JE CONTRÔLE LA RÉALITÉ !",
+      "rarity": "legendary",
+      "effects": {
+        "onPlay": "vortex_opening",
+        "onAbility": "quantum_teleport",
+        "onUltimate": "hexagonal_fusion"
+      }
+    },
+    {
+      "id": "vincent-time-traveler",
+      "name": "Vincent, le Voyageur Temporel",
+      "type": "hero",
+      "cost": 8,
+      "attack": 6,
+      "defense": 9,
+      "image": "alphacards/Vince – Le Voyageur Temporel.png",
+      "ability": "Retour Temporel: Annule la dernière action",
+      "ultimate": "PUTAIN MAIS C'EST MOI QUI AI TOUT CRÉÉ !",
+      "formula": "ψ_TIME: ∞⁺¹ ⊙(Timeline ⟶ Rewind + Create)",
+      "description": "Le créateur de toutes les réalités.",
+      "rarity": "legendary",
+      "effects": {
+        "onPlay": "temporal_arrival",
+        "onAbility": "time_rewind",
+        "onUltimate": "reality_creation"
+      }
+    },
+    {
+      "id": "temporal-echo",
+      "name": "Écho Temporel",
+      "type": "spell",
+      "cost": 5,
+      "image": "alphacards/Temporal Echoes of the Time Traveler.png",
+      "ability": "Copie la dernière carte jouée dans une timeline parallèle",
+      "formula": "ψ_ECHO: ⊙(LastCard ⟶ Duplicate(Timeline+1))",
+      "description": "Le temps se répète, mais différemment.",
+      "rarity": "epic",
+      "effects": {
+        "onCast": "temporal_ripple",
+        "visual": "echo_waves"
+      }
+    },
+    {
+      "id": "voyageur-echo-fr",
+      "name": "Le Voyageur Temporel en Écho",
+      "type": "creature",
+      "cost": 6,
+      "attack": 5,
+      "defense": 5,
+      "image": "alphacards/Le Voyageur Temporel en Écho.png",
+      "ability": "Phase: Existe dans 2 timelines simultanément",
+      "formula": "ψ_PHASE: (0.5+0.5i) ⊙(Exist ⟶ Timeline[T, T+1])",
+      "description": "Un écho du futur qui combat dans le présent.",
+      "rarity": "rare",
+      "effects": {
+        "onPlay": "phase_shift",
+        "onAttack": "double_strike"
+      }
+    },
+    {
+      "id": "mystical-tome",
+      "name": "Tome Mystique de Lumière et Ombre",
+      "type": "artifact",
+      "cost": 4,
+      "image": "alphacards/Mystical Tome of Light and Shadow.png",
+      "ability": "Chaque tour: Pioche 1 carte Lumière OU 1 carte Ombre",
+      "formula": "ψ_TOME: ⊙(Turn ⟶ Draw(Light XOR Shadow))",
+      "description": "La connaissance duale de l'univers.",
+      "rarity": "epic",
+      "effects": {
+        "onTurnStart": "tome_glow",
+        "onDraw": "light_or_shadow"
+      }
+    },
+    {
+      "id": "ancient-forest",
+      "name": "Forêt Ancienne et Spirale Lumineuse",
+      "type": "location",
+      "cost": 3,
+      "image": "alphacards/Forêt ancienne et spirale lumineuse.png",
+      "ability": "Les créatures gagnent +1/+1 et Régénération",
+      "formula": "ψ_FOREST: ⊙(Creatures ⟶ Buff(+1/+1) + Regenerate)",
+      "description": "Là où la magie ancienne pulse encore.",
+      "rarity": "rare",
+      "effects": {
+        "ambient": "forest_whispers",
+        "onCreatureEnter": "nature_blessing"
+      }
+    },
+    {
+      "id": "temperature-guardian",
+      "name": "Le Gardien de la Température",
+      "type": "creature",
+      "cost": 7,
+      "attack": 6,
+      "defense": 8,
+      "image": "alphacards/Le Gardien de la Température.png",
+      "ability": "Contrôle thermique: Gèle OU brûle une cible",
+      "formula": "ψ_TEMP: ⊙(Target ⟶ Freeze OR Burn)",
+      "description": "Maître de l'équilibre entre le feu et la glace.",
+      "rarity": "epic",
+      "effects": {
+        "onPlay": "temperature_shift",
+        "onAbility": "thermal_control"
+      }
+    }
+  ],
+  "effectsLibrary": {
+    "cosmic_explosion": {
+      "type": "particle_burst",
+      "color": ["#9400D3", "#4B0082", "#0000FF"],
+      "duration": 2000,
+      "particles": 500
+    },
+    "quantum_shift": {
+      "type": "reality_warp",
+      "distortion": 0.8,
+      "duration": 1500
+    },
+    "vortex_opening": {
+      "type": "spiral",
+      "color": ["#8A2BE2", "#9932CC"],
+      "rotation": 720,
+      "duration": 3000
+    },
+    "temporal_ripple": {
+      "type": "wave",
+      "amplitude": 50,
+      "frequency": 3,
+      "duration": 2000
+    }
+  }
+}

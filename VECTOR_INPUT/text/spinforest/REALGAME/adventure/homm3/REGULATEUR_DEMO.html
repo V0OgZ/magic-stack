@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Régulateur — Prototype</title>
+  <style>
+    body{margin:0;background:#0a0a1a;color:#e8d5b7;font-family:Courier,monospace}
+    #top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid #8A2BE2;background:#111831}
+    canvas{display:block;margin:12px auto;background:#121826;border:1px solid #2b3350;border-radius:8px}
+    .meta{max-width:900px;margin:8px auto;color:#9aa4c4;font-size:12px;padding:0 16px}
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div>Régulateur — boucle spawn → chasse → capture</div>
+    <div><a style="color:#FFD700;text-decoration:none" href="./hub-aventure.html">Hub</a></div>
+  </div>
+  <div class="meta">Flèches ← → ↑ ↓ pour déplacer le héros. Capture quand distance ≤ 1.2.</div>
+  <canvas id="cv" width="960" height="576"></canvas>
+  <script src="./orchestrator-client.js"></script>
+  <script src="./regulateur-system.js"></script>
+  <script>
+    const cv = document.getElementById('cv');
+    const ctx = cv.getContext('2d');
+    const W = 960, H = 576;
+    const scaleX = W / 40, scaleY = H / 24;
+    const sys = new RegulateurSystem({ baseUrl: 'http://localhost:3001' });
+    sys.onUpdate = draw;
+    sys.onCapture = (hero, target) => flash('#00ff88');
+    sys.start();
+
+    window.addEventListener('keydown', (e) => {
+      const step = 1.6;
+      if (e.key === 'ArrowLeft') sys.setHeroPosition(sys.hero.x - step, sys.hero.y);
+      if (e.key === 'ArrowRight') sys.setHeroPosition(sys.hero.x + step, sys.hero.y);
+      if (e.key === 'ArrowUp') sys.setHeroPosition(sys.hero.x, sys.hero.y - step);
+      if (e.key === 'ArrowDown') sys.setHeroPosition(sys.hero.x, sys.hero.y + step);
+    });
+
+    let overlayAlpha = 0;
+    function flash(color){
+      overlayAlpha = 0.8;
+      const interval = setInterval(() => {
+        overlayAlpha -= 0.05; if (overlayAlpha <= 0) { overlayAlpha = 0; clearInterval(interval); }
+      }, 16);
+    }
+
+    function draw(state){
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0,0,W,H);
+      // grid
+      ctx.strokeStyle = '#1b223b';
+      ctx.lineWidth = 1;
+      for(let x=0;x<=40;x++){ ctx.beginPath(); ctx.moveTo(x*scaleX,0); ctx.lineTo(x*scaleX,H); ctx.stroke(); }
+      for(let y=0;y<=24;y++){ ctx.beginPath(); ctx.moveTo(0,y*scaleY); ctx.lineTo(W,y*scaleY); ctx.stroke(); }
+      // target
+      ctx.fillStyle = '#ff476f';
+      ctx.beginPath();
+      ctx.arc(state.target.x*scaleX, state.target.y*scaleY, 8, 0, Math.PI*2); ctx.fill();
+      // hero
+      ctx.fillStyle = '#4ee3b2';
+      ctx.beginPath();
+      ctx.arc(state.hero.x*scaleX, state.hero.y*scaleY, 10, 0, Math.PI*2); ctx.fill();
+      // distance text
+      ctx.fillStyle = '#9aa4c4';
+      ctx.fillText('dist='+state.dist.toFixed(2), 12, 20);
+      // overlay
+      if (overlayAlpha > 0) {
+        ctx.fillStyle = `rgba(0,255,136,${overlayAlpha*0.2})`;
+        ctx.fillRect(0,0,W,H);
+      }
+    }
+  </script>
+</body>
+<!-- Simple prototype, no backend requirement beyond optional intents. -->
+</html>
+
+

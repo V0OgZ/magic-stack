@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 AVALON TCG - Card Template System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #3742fa, #5f27cd);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(55, 66, 250, 0.4);
+        }
+
+        .card-preview-area {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .card-template {
+            position: relative;
+            width: 300px;
+            height: 420px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .card-template:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .card-background {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.1) 0%,
+                rgba(0,0,0,0.2) 70%,
+                rgba(0,0,0,0.8) 100%
+            );
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-name {
+            background: rgba(0,0,0,0.8);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .card-cost {
+            background: linear-gradient(45deg, #3742fa, #5f27cd);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: white;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            background: rgba(0,0,0,0.9);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 2px solid;
+        }
+
+        .attack {
+            color: #ff4757;
+            border-color: #ff4757;
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+        }
+
+        .defense {
+            color: #2ed573;
+            border-color: #2ed573;
+            box-shadow: 0 0 10px rgba(46, 213, 115, 0.3);
+        }
+
+        .card-type {
+            background: rgba(0,0,0,0.8);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: #70a1ff;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .rarity-border {
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 18px;
+            padding: 3px;
+            background: linear-gradient(45deg, #333, #666);
+        }
+
+        .rarity-common { background: linear-gradient(45deg, #95a5a6, #bdc3c7); }
+        .rarity-rare { background: linear-gradient(45deg, #3498db, #74b9ff); }
+        .rarity-epic { background: linear-gradient(45deg, #9b59b6, #e84393); }
+        .rarity-legendary { background: linear-gradient(45deg, #f39c12, #fdcb6e); animation: glow-legendary 2s infinite; }
+        .rarity-mythic { background: linear-gradient(45deg, #e74c3c, #fd79a8, #fdcb6e, #00b894); animation: rainbow-glow 3s infinite; }
+
+        @keyframes glow-legendary {
+            0%, 100% { box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(243, 156, 18, 0.8); }
+        }
+
+        @keyframes rainbow-glow {
+            0% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+            25% { box-shadow: 0 0 25px rgba(253, 121, 168, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(253, 203, 110, 0.7); }
+            75% { box-shadow: 0 0 25px rgba(0, 184, 148, 0.6); }
+            100% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+        }
+
+        .card-abilities {
+            position: absolute;
+            bottom: 80px;
+            left: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            max-height: 60px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .temporal-indicator {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: rgba(95, 39, 205, 0.9);
+            padding: 5px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            animation: pulse-temporal 2s infinite;
+        }
+
+        @keyframes pulse-temporal {
+            0%, 100% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.1); }
+        }
+
+        .card-editor {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+
+        .editor-section {
+            margin-bottom: 20px;
+        }
+
+        .editor-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .editor-input, .editor-select, .editor-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .editor-input:focus, .editor-select:focus, .editor-textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .editor-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .editor-col {
+            flex: 1;
+        }
+
+        .generate-btn {
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .download-area {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🎴 AVALON TCG - Card Template System</h1>
+        <p>Générateur de cartes avec overlay de stats automatique</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="loadAlphaCard()">Charger Carte Alpha</button>
+        <button class="btn" onclick="showEditor()">Éditeur de Carte</button>
+        <button class="btn" onclick="generateBatch()">Génération Batch</button>
+        <button class="btn" onclick="window.location.href='../launcher.html'">Retour</button>
+    </div>
+
+    <div class="card-preview-area">
+        <div class="card-template" id="card-preview">
+            <div class="rarity-border rarity-legendary">
+                <img src="../alphacards/Vince – Le Voyageur Temporel.png" alt="Card Background" class="card-background" id="card-bg">
+                <div class="card-overlay">
+                    <div class="card-header">
+                        <div class="card-name" id="card-name">Vince – Le Voyageur Temporel</div>
+                        <div class="card-cost" id="card-cost">4</div>
+                    </div>
+                    <div class="temporal-indicator">🌀</div>
+                    <div class="card-abilities" id="card-abilities">
+                        ⚡ Tir Dimensionnel: Inflige 3 dégâts à travers les timelines<br>
+                        💼 Mallette Dorée: Pioche 1 carte supplémentaire
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-type" id="card-type">Hero • Legendary</div>
+                        <div class="card-stats">
+                            <div class="stat attack">⚔️ <span id="card-attack">3</span></div>
+                            <div class="stat defense">🛡️ <span id="card-defense">5</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-editor" id="card-editor" style="display: none;">
+        <h3 style="text-align: center; margin-bottom: 30px; color: #ffd700;">✨ Éditeur de Carte ✨</h3>
+        
+        <div class="editor-row">
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Nom de la carte</label>
+                    <input type="text" class="editor-input" id="edit-name" value="Vince – Le Voyageur Temporel">
+                </div>
+            </div>
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Coût</label>
+                    <input type="number" class="editor-input" id="edit-cost" value="4" min="0" max="20">
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-row">
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Type</label>
+                    <select class="editor-select" id="edit-type">
+                        <option value="hero">Hero</option>
+                        <option value="spell">Spell</option>
+                        <option value="creature">Creature</option>
+                        <option value="artifact">Artifact</option>
+                        <option value="terrain">Terrain</option>
+                    </select>
+                </div>
+            </div>
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Rareté</label>
+                    <select class="editor-select" id="edit-rarity">
+                        <option value="common">Common</option>
+                        <option value="rare">Rare</option>
+                        <option value="epic">Epic</option>
+                        <option value="legendary" selected>Legendary</option>
+                        <option value="mythic">Mythic</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-row">
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Attaque</label>
+                    <input type="number" class="editor-input" id="edit-attack" value="3" min="0" max="99">
+                </div>
+            </div>
+            <div class="editor-col">
+                <div class="editor-section">
+                    <label class="editor-label">Défense</label>
+                    <input type="number" class="editor-input" id="edit-defense" value="5" min="0" max="99">
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <label class="editor-label">Capacités</label>
+            <textarea class="editor-textarea" id="edit-abilities" rows="3">⚡ Tir Dimensionnel: Inflige 3 dégâts à travers les timelines
+💼 Mallette Dorée: Pioche 1 carte supplémentaire</textarea>
+        </div>
+
+        <div class="editor-section">
+            <label class="editor-label">Image de fond (URL ou chemin)</label>
+            <input type="text" class="editor-input" id="edit-image" value="../alphacards/Vince – Le Voyageur Temporel.png">
+        </div>
+
+        <button class="btn generate-btn" onclick="updateCardPreview()">🎨 Mettre à jour l'aperçu</button>
+    </div>
+
+    <div class="download-area" id="download-area" style="display: none;">
+        <h3 style="color: #ffd700; margin-bottom: 20px;">💾 Téléchargement</h3>
+        <button class="btn download-btn" onclick="downloadCard()">📥 Télécharger PNG</button>
+        <button class="btn download-btn" onclick="downloadJSON()">📄 Télécharger JSON</button>
+        <button class="btn download-btn" onclick="copyToClipboard()">📋 Copier Code</button>
+    </div>
+
+    <script>
+        // Données des cartes alpha
+        const alphaCards = [
+            {
+                name: "Vince – Le Voyageur Temporel",
+                image: "../alphacards/Vince – Le Voyageur Temporel.png",
+                type: "hero", rarity: "legendary", cost: 4, attack: 3, defense: 5,
+                abilities: "⚡ Tir Dimensionnel: Inflige 3 dégâts à travers les timelines\n💼 Mallette Dorée: Pioche 1 carte supplémentaire"
+            },
+            {
+                name: "Grokæn: Master of Quantum Realms",
+                image: "../alphacards/Grokæn_ Master of Quantum Realms.png",
+                type: "hero", rarity: "legendary", cost: 6, attack: 5, defense: 5,
+                abilities: "🗣️ Triple Voix: GRONDE (2 dmg) / PARLE (pioche 1) / CHANTE (heal 2)\n🌀 Forme Quantique: Change d'état chaque tour"
+            },
+            {
+                name: "Cosmic Bear Shaman",
+                image: "../alphacards/Cosmic Bear Shaman in Starlit Expanse.png",
+                type: "hero", rarity: "legendary", cost: 5, attack: 4, defense: 6,
+                abilities: "🐻 Transformation Cosmique: Devient Ours (6/8) ou Shaman (2/4)\n⭐ Connexion Stellaire: Invoque une constellation"
+            }
+        ];
+
+        let currentCardIndex = 0;
+
+        function loadAlphaCard() {
+            const card = alphaCards[currentCardIndex];
+            updateCardDisplay(card);
+            updateEditor(card);
+            currentCardIndex = (currentCardIndex + 1) % alphaCards.length;
+        }
+
+        function updateCardDisplay(card) {
+            document.getElementById('card-name').textContent = card.name;
+            document.getElementById('card-cost').textContent = card.cost;
+            document.getElementById('card-type').textContent = `${card.type} • ${card.rarity}`;
+            document.getElementById('card-attack').textContent = card.attack || '—';
+            document.getElementById('card-defense').textContent = card.defense || '—';
+            document.getElementById('card-abilities').innerHTML = card.abilities.replace(/\n/g, '<br>');
+            document.getElementById('card-bg').src = card.image;
+            
+            // Mettre à jour la bordure de rareté
+            const cardTemplate = document.getElementById('card-preview').querySelector('.rarity-border');
+            cardTemplate.className = `rarity-border rarity-${card.rarity}`;
+        }
+
+        function updateEditor(card) {
+            document.getElementById('edit-name').value = card.name;
+            document.getElementById('edit-cost').value = card.cost;
+            document.getElementById('edit-type').value = card.type;
+            document.getElementById('edit-rarity').value = card.rarity;
+            document.getElementById('edit-attack').value = card.attack || '';
+            document.getElementById('edit-defense').value = card.defense || '';
+            document.getElementById('edit-abilities').value = card.abilities;
+            document.getElementById('edit-image').value = card.image;
+        }
+
+        function showEditor() {
+            const editor = document.getElementById('card-editor');
+            const downloadArea = document.getElementById('download-area');
+            editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+            downloadArea.style.display = editor.style.display === 'none' ? 'none' : 'block';
+        }
+
+        function updateCardPreview() {
+            const card = {
+                name: document.getElementById('edit-name').value,
+                cost: parseInt(document.getElementById('edit-cost').value),
+                type: document.getElementById('edit-type').value,
+                rarity: document.getElementById('edit-rarity').value,
+                attack: parseInt(document.getElementById('edit-attack').value) || null,
+                defense: parseInt(document.getElementById('edit-defense').value) || null,
+                abilities: document.getElementById('edit-abilities').value,
+                image: document.getElementById('edit-image').value
+            };
+            updateCardDisplay(card);
+        }
+
+        function generateBatch() {
+            alert('🚀 Génération batch en développement !\n\nCette fonctionnalité permettra de générer automatiquement toutes les cartes alpha avec leurs templates.');
+        }
+
+        function downloadCard() {
+            // Simulation de téléchargement
+            alert('📥 Téléchargement PNG simulé !\n\nEn production, ceci capturerait la carte comme image PNG.');
+        }
+
+        function downloadJSON() {
+            const cardData = {
+                name: document.getElementById('edit-name').value,
+                cost: parseInt(document.getElementById('edit-cost').value),
+                type: document.getElementById('edit-type').value,
+                rarity: document.getElementById('edit-rarity').value,
+                attack: parseInt(document.getElementById('edit-attack').value) || null,
+                defense: parseInt(document.getElementById('edit-defense').value) || null,
+                abilities: document.getElementById('edit-abilities').value,
+                image: document.getElementById('edit-image').value
+            };
+            
+            const dataStr = JSON.stringify(cardData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${cardData.name.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+            link.click();
+        }
+
+        function copyToClipboard() {
+            const cardData = {
+                name: document.getElementById('edit-name').value,
+                cost: parseInt(document.getElementById('edit-cost').value),
+                type: document.getElementById('edit-type').value,
+                rarity: document.getElementById('edit-rarity').value,
+                attack: parseInt(document.getElementById('edit-attack').value) || null,
+                defense: parseInt(document.getElementById('edit-defense').value) || null,
+                abilities: document.getElementById('edit-abilities').value,
+                image: document.getElementById('edit-image').value
+            };
+            
+            navigator.clipboard.writeText(JSON.stringify(cardData, null, 2)).then(() => {
+                alert('📋 Données de la carte copiées dans le presse-papiers !');
+            });
+        }
+
+        // Charger la première carte au démarrage
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAlphaCard();
+        });
+    </script>
+</body>
+</html>

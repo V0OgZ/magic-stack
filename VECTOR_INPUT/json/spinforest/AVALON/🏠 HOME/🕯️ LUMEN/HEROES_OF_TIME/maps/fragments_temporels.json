@@ -1,0 +1,152 @@
+{
+  "id": "fragments_001",
+  "name": "Les Fragments Temporels",
+  "description": "Des îlots de réalité flottant dans le vide cosmique",
+  "dimensions": {
+    "width": 10,
+    "height": 10,
+    "tileSize": 128
+  },
+  "platforms": [
+    {
+      "id": "village_originel",
+      "position": { "x": 2, "y": 5 },
+      "size": { "w": 2, "h": 2 },
+      "height": 0,
+      "type": "settlement",
+      "visual": "village_medieval",
+      "content": {
+        "buildings": [
+          { "type": "taverne", "pos": [0,0], "name": "L'Auberge du Temps Perdu" },
+          { "type": "maison", "pos": [1,0] },
+          { "type": "forge", "pos": [0,1], "name": "Forge Causale" }
+        ],
+        "npcs": ["aubergiste_temporel", "forgeron_quantique"],
+        "resources": { "gold": 100, "temporal_crystals": 2 }
+      }
+    },
+    {
+      "id": "tour_des_mages",
+      "position": { "x": 7, "y": 7 },
+      "size": { "w": 1, "h": 1 },
+      "height": 2,
+      "type": "structure",
+      "visual": "tower_arcane",
+      "content": {
+        "buildings": [
+          { "type": "tour", "pos": [0,0], "name": "Tour de Chronomance" }
+        ],
+        "artifacts": ["orbe_de_vision_temporelle"],
+        "portal": {
+          "id": "portal_tour",
+          "destination": "bibliotheque_infinie",
+          "active": false,
+          "requirement": "clé_arcane"
+        }
+      }
+    },
+    {
+      "id": "arene_duel",
+      "position": { "x": 5, "y": 2 },
+      "size": { "w": 2, "h": 1 },
+      "height": 1,
+      "type": "battleground",
+      "visual": "arena_combat",
+      "content": {
+        "combatants": ["chevalier_temporal", "mage_causal"],
+        "reward": "épée_du_collapse",
+        "spectators": true
+      }
+    },
+    {
+      "id": "sanctuaire_epee",
+      "position": { "x": 8, "y": 4 },
+      "size": { "w": 1, "h": 1 },
+      "height": 3,
+      "type": "artifact_site",
+      "visual": "floating_sword",
+      "content": {
+        "artifact": {
+          "name": "Lame du Destin Brisé",
+          "type": "weapon",
+          "power": "collapse_radius_3",
+          "guarded": true,
+          "guardian": "gardien_temporel"
+        }
+      }
+    },
+    {
+      "id": "chateau_ruine",
+      "position": { "x": 1, "y": 8 },
+      "size": { "w": 2, "h": 2 },
+      "height": 1,
+      "type": "ruins",
+      "visual": "castle_destroyed",
+      "content": {
+        "explorable": true,
+        "treasures": ["coffre_ancien", "parchemin_oublié"],
+        "danger_level": 3
+      }
+    }
+  ],
+  "connections": [
+    {
+      "type": "bridge",
+      "from": "village_originel",
+      "to": "arene_duel",
+      "visual": "energy_bridge",
+      "passable": true
+    },
+    {
+      "type": "portal",
+      "from": "tour_des_mages",
+      "to": "sanctuaire_epee",
+      "visual": "vortex_blue",
+      "active": false
+    }
+  ],
+  "vortexes": [
+    {
+      "id": "vortex_central",
+      "position": { "x": 5, "y": 5 },
+      "type": "temporal_nexus",
+      "destinations": ["past_timeline", "future_timeline", "alternate_reality"],
+      "active": true,
+      "visual": "swirling_cosmos"
+    }
+  ],
+  "fog_of_causality": {
+    "initial_revealed": ["village_originel"],
+    "visibility_radius": 2,
+    "collapsed_areas": [],
+    "temporal_locks": []
+  },
+  "starting_position": {
+    "platform": "village_originel",
+    "tile": [0, 0],
+    "hero": {
+      "id": "chrono_walker",
+      "name": "Le Marcheur Temporel",
+      "class": "temporal_knight",
+      "movement": 5,
+      "temporal_charges": 3
+    }
+  },
+  "background": {
+    "type": "cosmic_void",
+    "elements": [
+      "nebula_purple",
+      "stars_twinkling",
+      "cosmic_dust",
+      "floating_debris"
+    ]
+  },
+  "ambient": {
+    "music": "cosmic_exploration",
+    "sounds": [
+      "void_whispers",
+      "temporal_echoes",
+      "crystal_chimes"
+    ]
+  }
+}

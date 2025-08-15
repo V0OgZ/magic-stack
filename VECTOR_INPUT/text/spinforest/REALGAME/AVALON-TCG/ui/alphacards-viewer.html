@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 AVALON TCG - Alpha Cards Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #70a1ff;
+            font-size: 1.2rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+
+        .card-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .card-container:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        .card-stats-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 20px;
+            color: white;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .card-cost {
+            background: #3742fa;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .attack-defense {
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .attack {
+            color: #ff4757;
+            text-shadow: 0 0 5px rgba(255, 71, 87, 0.5);
+        }
+
+        .defense {
+            color: #2ed573;
+            text-shadow: 0 0 5px rgba(46, 213, 115, 0.5);
+        }
+
+        .card-info {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .card-type {
+            color: #70a1ff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .card-abilities {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .ability {
+            margin-bottom: 5px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .ability::before {
+            content: '⚡';
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+        }
+
+        .temporal-effect {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid #ffd700;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        .formula {
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+            color: #5f27cd;
+            background: rgba(95, 39, 205, 0.1);
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5rem;
+            color: #70a1ff;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #3742fa, #5f27cd);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(55, 66, 250, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">AVALON TCG - Alpha Cards</h1>
+        <p class="subtitle">Cartes créées par Vincent - Avec stats de jeu intégrées</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="loadCards()">Recharger</button>
+        <button class="btn" onclick="window.location.href='../launcher.html'">Retour au Launcher</button>
+    </div>
+
+    <div id="cards-container" class="cards-grid">
+        <div class="loading">Chargement des cartes...</div>
+    </div>
+
+    <script>
+        // Données des cartes alpha avec stats
+        const alphaCards = [
+            {
+                id: "ALPHA-001",
+                name: "Vince – Le Voyageur Temporel",
+                image: "../alphacards/Vince – Le Voyageur Temporel.png",
+                type: "hero",
+                rarity: "legendary",
+                cost: 4,
+                attack: 3,
+                defense: 5,
+                abilities: [
+                    "Tir Dimensionnel: Inflige 3 dégâts à travers les timelines",
+                    "Mallette Dorée: Pioche 1 carte supplémentaire"
+                ],
+                temporal_effect: "Peut attaquer depuis n'importe quelle timeline",
+                formula: "ψ_VINCE: ⊙(Bullet ⟶ Wormhole ⟶ Target)"
+            },
+            {
+                id: "ALPHA-002",
+                name: "Grokæn: Master of Quantum Realms",
+                image: "../alphacards/Grokæn_ Master of Quantum Realms.png",
+                type: "hero",
+                rarity: "legendary",
+                cost: 6,
+                attack: 5,
+                defense: 5,
+                abilities: [
+                    "Triple Voix: GRONDE (2 dmg) / PARLE (pioche 1) / CHANTE (heal 2)",
+                    "Forme Quantique: Change d'état chaque tour"
+                ],
+                temporal_effect: "Existe dans 3 états superposés",
+                formula: "ψ_GROK: |GRONDE⟩ + |PARLE⟩ + |CHANTE⟩"
+            },
+            {
+                id: "ALPHA-003",
+                name: "Cosmic Bear Shaman",
+                image: "../alphacards/Cosmic Bear Shaman in Starlit Expanse.png",
+                type: "hero",
+                rarity: "legendary",
+                cost: 5,
+                attack: 4,
+                defense: 6,
+                abilities: [
+                    "Transformation Cosmique: Devient Ours (6/8) ou Shaman (2/4)",
+                    "Connexion Stellaire: Invoque une constellation"
+                ],
+                temporal_effect: "Les étoiles révèlent le futur",
+                formula: "ψ_URZ: ⊙(Bear ⟷ Shaman) × Stars"
+            },
+            {
+                id: "ALPHA-004",
+                name: "Le Voyageur Temporel en Écho",
+                image: "../alphacards/Le Voyageur Temporel en Écho.png",
+                type: "spell",
+                rarity: "epic",
+                cost: 3,
+                effect: "Créez une copie d'une créature avec Écho",
+                temporal_effect: "La copie existe dans une timeline parallèle",
+                formula: "ψ_ECHO: Creature → Echo(t+2)"
+            },
+            {
+                id: "ALPHA-005",
+                name: "Temporal Echoes",
+                image: "../alphacards/Temporal Echoes of the Time Traveler.png",
+                type: "spell",
+                rarity: "legendary",
+                cost: 7,
+                effect: "Rejouez les 3 derniers tours",
+                temporal_effect: "Annule et refait avec connaissance du futur",
+                formula: "ψ_REWIND: Timeline(t-3 → t)"
+            },
+            {
+                id: "ALPHA-006",
+                name: "Mystical Tome",
+                image: "../alphacards/Mystical Tome of Light and Shadow.png",
+                type: "artifact",
+                rarity: "epic",
+                cost: 3,
+                effect: "Lumière (heal 2) ou Ombre (damage 2)",
+                temporal_effect: "Alterne entre passé et futur"
+            },
+            {
+                id: "ALPHA-007",
+                name: "Forêt Ancienne",
+                image: "../alphacards/Forêt ancienne et spirale lumineuse.png",
+                type: "terrain",
+                rarity: "rare",
+                cost: 2,
+                effect: "Créatures +1/+1, Sorts temporels -1 coût",
+                temporal_effect: "La spirale accélère le temps"
+            },
+            {
+                id: "ALPHA-008",
+                name: "Le Gardien de la Température",
+                image: "../alphacards/Le Gardien de la Température.png",
+                type: "creature",
+                rarity: "epic",
+                cost: 4,
+                attack: 3,
+                defense: 5,
+                abilities: [
+                    "Contrôle Thermique: Gèle ou Brûle",
+                    "Équilibre: Immunisé aux sorts"
+                ],
+                temporal_effect: "Stabilise la température temporelle"
+            }
+        ];
+
+        function createCardElement(card) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card-container';
+            
+            let statsHtml = '';
+            if (card.attack !== undefined && card.defense !== undefined) {
+                statsHtml = `
+                    <div class="attack-defense">
+                        <span class="attack">⚔️ ${card.attack}</span>
+                        <span class="defense">🛡️ ${card.defense}</span>
+                    </div>
+                `;
+            }
+
+            let abilitiesHtml = '';
+            if (card.abilities) {
+                abilitiesHtml = `
+                    <div class="card-abilities">
+                        ${card.abilities.map(ability => 
+                            `<div class="ability">${ability}</div>`
+                        ).join('')}
+                    </div>
+                `;
+            } else if (card.effect) {
+                abilitiesHtml = `
+                    <div class="card-abilities">
+                        <div class="ability">${card.effect}</div>
+                    </div>
+                `;
+            }
+
+            let formulaHtml = '';
+            if (card.formula) {
+                formulaHtml = `<div class="formula">${card.formula}</div>`;
+            }
+
+            cardDiv.innerHTML = `
+                <div class="card-image-wrapper">
+                    <img src="${card.image}" alt="${card.name}" class="card-image" 
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"400\"><rect width=\"300\" height=\"400\" fill=\"%23333\"/><text x=\"150\" y=\"200\" text-anchor=\"middle\" fill=\"%23fff\" font-size=\"20\">Image non trouvée</text></svg>'">
+                    <div class="card-stats-overlay">
+                        <div class="stats-row">
+                            <div class="card-name">${card.name}</div>
+                            <div class="card-cost">${card.cost}</div>
+                        </div>
+                        ${statsHtml}
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-type">${card.type} - ${card.rarity}</div>
+                    ${abilitiesHtml}
+                    ${card.temporal_effect ? `
+                        <div class="temporal-effect">
+                            🌀 ${card.temporal_effect}
+                        </div>
+                    ` : ''}
+                    ${formulaHtml}
+                </div>
+            `;
+            
+            return cardDiv;
+        }
+
+        function loadCards() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+            
+            alphaCards.forEach(card => {
+                container.appendChild(createCardElement(card));
+            });
+        }
+
+        // Charger les cartes au démarrage
+        window.addEventListener('DOMContentLoaded', loadCards);
+    </script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 HEROES OF TIME - INDEX PRINCIPAL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0033 50%, #330066 100%);
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            margin-top: 10px;
+            color: rgba(255,255,255,0.9);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .ui-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .ui-card {
+            background: rgba(20, 20, 40, 0.95);
+            border: 3px solid #4ecdc4;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ui-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .ui-card:hover::before {
+            left: 100%;
+        }
+        
+        .ui-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.4);
+            border-color: #ffd700;
+        }
+        
+        .ui-card.favorite {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, rgba(40, 20, 60, 0.95), rgba(60, 30, 80, 0.95));
+        }
+        
+        .ui-card.favorite::after {
+            content: '⭐ PRÉFÉRÉ';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffd700;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .ui-title {
+            font-size: 1.5em;
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ui-icon {
+            font-size: 1.5em;
+        }
+        
+        .ui-description {
+            color: #b8b8b8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .ui-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .ui-features li {
+            padding: 5px 0;
+            color: #4ecdc4;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .ui-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+        
+        .ui-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .ui-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .stats {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .new-badge {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            transform: rotate(-5deg);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: rotate(-5deg) scale(1); }
+            50% { transform: rotate(-5deg) scale(1.1); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎮 HEROES OF TIME - CENTRAL HUB</h1>
+        <p class="subtitle">Toutes les interfaces de jeu en un seul endroit</p>
+    </div>
+    
+    <div class="ui-grid">
+        <!-- ULTIMATE TCG (Préféré de Vincent) -->
+        <div class="ui-card favorite">
+            <div class="ui-title">
+                <span class="ui-icon">⚔️</span>
+                ULTIMATE TCG CARD SYSTEM
+            </div>
+            <p class="ui-description">
+                Le système de cartes TCG complet avec 18 cartes épiques incluant des héros philosophes et physiciens.
+            </p>
+            <ul class="ui-features">
+                <li>18 cartes avec vraies stats</li>
+                <li>Héros légendaires et transcendants</li>
+                <li>Filtres par catégorie</li>
+                <li>Modals de détails interactifs</li>
+                <li>Animations de rareté</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Cartes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Catégories</div>
+                </div>
+            </div>
+            <a href="ULTIMATE_TCG_CARD_SYSTEM.html" class="ui-link">JOUER →</a>
+        </div>
+        
+        <!-- SYSTÈME QUANTIQUE -->
+        <div class="ui-card">
+            <div class="new-badge">NEW!</div>
+            <div class="ui-title">
+                <span class="ui-icon">⚛️</span>
+                QUANTUM SUPERPOSITION SYSTEM
+            </div>
+            <p class="ui-description">
+                Système révolutionnaire avec héros en états de superposition quantique et stats multiples.
+            </p>
+            <ul class="ui-features">
+                <li>Stats en superposition (50/100, ∞/0)</li>
+                <li>Chat de Schrödinger jouable</li>
+                <li>Lee Smolin et physiciens</li>
+                <li>Effets visuels quantiques</li>
+                <li>États multiples simultanés</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Héros</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">États</div>
+                </div>
+            </div>
+            <a href="HEROES_SUPERPOSITION_QUANTUM_SYSTEM.html" class="ui-link">EXPLORER →</a>
+        </div>
+        
+        <!-- CORE GAME TCG TACTICAL -->
+        <div class="ui-card">
+            <div class="ui-title">
+                <span class="ui-icon">🎯</span>
+                CORE GAME TCG TACTICAL
+            </div>
+            <p class="ui-description">
+                Combat tactique sur grille avec système de cartes TCG intégré. Vince Vega affronte BASILIK !
+            </p>
+            <ul class="ui-features">
+                <li>Grille tactique 10x10</li>
+                <li>Système de cartes TCG</li>
+                <li>Mode AUTO disponible</li>
+                <li>Combat Vince vs BASILIK</li>
+                <li>Système d'Écho Temporel</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">10x10</div>
+                    <div class="stat-label">Grille</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">2080</div>
+                    <div class="stat-label">Boss</div>
+                </div>
+            </div>
+            <a href="CORE_GAME_TCG_TACTICAL.html" class="ui-link">COMBATTRE →</a>
+        </div>
+        
+        <!-- GALERIE DE COMBAT -->
+        <div class="ui-card">
+            <div class="ui-title">
+                <span class="ui-icon">🎨</span>
+                COMBAT VISUAL GALLERY
+            </div>
+            <p class="ui-description">
+                Galerie interactive avec toutes les scènes de combat épiques en haute résolution.
+            </p>
+            <ul class="ui-features">
+                <li>9 scènes de combat épiques</li>
+                <li>URZ-KÔM + GRUT</li>
+                <li>Excalibur temporel</li>
+                <li>Guerrier des Trois Temps</li>
+                <li>Mode Vince Vega</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">9</div>
+                    <div class="stat-label">Scènes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">HD</div>
+                    <div class="stat-label">Qualité</div>
+                </div>
+            </div>
+            <a href="COMBAT_VISUAL_GALLERY.html" class="ui-link">VOIR →</a>
+        </div>
+        
+        <!-- PORTRAITS HD -->
+        <div class="ui-card">
+            <div class="ui-title">
+                <span class="ui-icon">🖼️</span>
+                HEROES HD PORTRAITS
+            </div>
+            <p class="ui-description">
+                Collection de portraits haute définition avec statistiques détaillées pour chaque héros.
+            </p>
+            <ul class="ui-features">
+                <li>7 portraits HD</li>
+                <li>Stats complètes</li>
+                <li>Navigation par badges</li>
+                <li>Viewer modal zoomable</li>
+                <li>Sélection d'avatar</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Portraits</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">HD</div>
+                    <div class="stat-label">Résolution</div>
+                </div>
+            </div>
+            <a href="HEROES_HD_PORTRAITS_GALLERY.html" class="ui-link">GALERIE →</a>
+        </div>
+        
+        <!-- SCRIPTS DE LANCEMENT -->
+        <div class="ui-card">
+            <div class="ui-title">
+                <span class="ui-icon">🚀</span>
+                SCRIPTS & OUTILS
+            </div>
+            <p class="ui-description">
+                Scripts bash pour lancer rapidement les différents modes de jeu et interfaces.
+            </p>
+            <ul class="ui-features">
+                <li>LANCE_CORE_GAME.sh</li>
+                <li>LANCE_GALERIE_COMBAT.sh</li>
+                <li>LANCE_TCG_HEROES_OF_TIME.sh</li>
+                <li>PUSH_TOUT.sh (Git)</li>
+                <li>SAUVEGARDE_TEMPORELLE_6D.sh</li>
+            </ul>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">5+</div>
+                    <div class="stat-label">Scripts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">✓</div>
+                    <div class="stat-label">Actifs</div>
+                </div>
+            </div>
+            <a href="#" onclick="alert('Utilise le terminal :\n./LANCE_CORE_GAME.sh\n./LANCE_GALERIE_COMBAT.sh\netc...'); return false;" class="ui-link">TERMINAL →</a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>🎮 HEROES OF TIME - AVALON 2 (SpinForest)</p>
+        <p style="margin-top: 10px; color: #666;">
+            Vincent's Collection • ${new Date().toLocaleDateString()} • Powered by Quantum Mechanics
+        </p>
+    </div>
+    
+    <script>
+        console.log(`
+╔═══════════════════════════════════════════════════════════╗
+║            🎮  HEROES OF TIME - HUB CENTRAL  🎮          ║
+║                                                           ║
+║  Toutes les interfaces en un seul endroit !              ║
+║                                                           ║
+║  • ULTIMATE TCG (Préféré de Vincent) ⭐                   ║
+║  • Système Quantique Superposition                       ║
+║  • Core Game TCG Tactical                                ║
+║  • Galeries visuelles HD                                 ║
+║  • Scripts de lancement                                  ║
+║                                                           ║
+║  Cliquez sur JOUER pour accéder à chaque interface !     ║
+╚═══════════════════════════════════════════════════════════╝
+        `);
+        
+        // Animation de particules quantiques en arrière-plan
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '0';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(78, 205, 196, ${p.opacity})`;
+                ctx.fill();
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

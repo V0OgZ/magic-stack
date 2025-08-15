@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ ULTIMATE BATTLE GALLERY - REALGAME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Arial Black', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Header épique */
+        .header {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #1a0033, #330011);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        h1 {
+            font-size: 4em;
+            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000;
+            animation: glow 2s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000; }
+            to { text-shadow: 0 0 40px #ff00ff, 0 0 80px #ff00ff; }
+        }
+        
+        /* Galerie de bataille */
+        .battle-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            background: #0a0a0a;
+        }
+        
+        .battle-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #1a1a1a;
+            border: 3px solid transparent;
+        }
+        
+        .battle-card:hover {
+            transform: scale(1.05);
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px rgba(255,0,255,0.5);
+        }
+        
+        .battle-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: all 0.3s;
+        }
+        
+        .battle-card:hover img {
+            filter: brightness(1.2) contrast(1.1);
+        }
+        
+        .battle-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+        
+        .battle-card:hover .battle-title {
+            transform: translateY(0);
+        }
+        
+        /* Section spéciale URZ-KÔM & VINCE */
+        .special-section {
+            background: linear-gradient(135deg, #001a33, #1a0033);
+            padding: 60px;
+            margin: 40px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .special-title {
+            font-size: 3em;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700;
+        }
+        
+        /* Combat interactif */
+        .combat-arena {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 600px;
+            margin: 0 auto;
+            background: url('../assets/FIGHT/Convergence of Cosmic Forces.png') center/cover;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(255,0,0,0.5);
+        }
+        
+        .fighter {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .fighter:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 20px #fff);
+        }
+        
+        #fighter1 {
+            left: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-image: url('../assets/HEROHDPORTAIT/Ancient Warrior of Fiery Runes.png');
+        }
+        
+        #fighter2 {
+            right: 100px;
+            top: 50%;
+            transform: translateY(-50%) scaleX(-1);
+            background-image: url('../UPLOAD/ours_pixel.webp');
+        }
+        
+        .attack-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background: linear-gradient(45deg, #ff0000, #ff00ff);
+            border: none;
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .attack-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0 30px rgba(255,0,255,0.8);
+        }
+        
+        /* Effets de combat */
+        .combat-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: combat-blast 1s ease-out forwards;
+        }
+        
+        @keyframes combat-blast {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Modal plein écran */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            cursor: pointer;
+        }
+        
+        .modal img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 50px rgba(255,255,255,0.3);
+        }
+        
+        /* Portraits HD */
+        .hero-portraits {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 40px;
+            background: #111;
+        }
+        
+        .portrait {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 5px solid #333;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .portrait:hover {
+            border-color: #ffd700;
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+        }
+        
+        .portrait img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Footer épique */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            background: #000;
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .formula {
+            font-size: 2em;
+            color: #ff00ff;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ ULTIMATE BATTLE GALLERY ⚔️</h1>
+        <p style="font-size: 1.5em; margin-top: 20px;">Les Combats Légendaires d'AVALON</p>
+    </div>
+    
+    <div class="special-section">
+        <h2 class="special-title">🐻 URZ-KÔM vs VINCE VEGA 🔫</h2>
+        <div class="combat-arena">
+            <div class="fighter" id="fighter1" title="Guerrier Ancestral"></div>
+            <div class="fighter" id="fighter2" title="URZ-KÔM L'Ours Quantique"></div>
+            <button class="attack-button" onclick="startEpicBattle()">⚡ DÉCLENCHER LE COMBAT ⚡</button>
+        </div>
+    </div>
+    
+    <div class="battle-gallery">
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Shamanic Bear and the Gunman Emergence.png')">
+            <img src="../assets/FIGHT/Shamanic Bear and the Gunman Emergence.png" alt="L'Émergence">
+            <div class="battle-title">
+                <h3>L'Émergence de l'Ours Chamanique</h3>
+                <p>URZ-KÔM se réveille face à Vince Vega</p>
+            </div>
+        </div>
+        
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Warrior of the Three Times.png')">
+            <img src="../assets/FIGHT/Warrior of the Three Times.png" alt="Guerrier Temporel">
+            <div class="battle-title">
+                <h3>Le Guerrier des Trois Temps</h3>
+                <p>Passé, Présent, Futur convergent</p>
+            </div>
+        </div>
+        
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Excalibur Through Time at Twilight.png')">
+            <img src="../assets/FIGHT/Excalibur Through Time at Twilight.png" alt="Excalibur">
+            <div class="battle-title">
+                <h3>Excalibur à travers le Temps</h3>
+                <p>L'épée légendaire traverse les dimensions</p>
+            </div>
+        </div>
+        
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Cosmic Shaman and Temporal Reflection.png')">
+            <img src="../assets/FIGHT/Cosmic Shaman and Temporal Reflection.png" alt="Chaman Cosmique">
+            <div class="battle-title">
+                <h3>Chaman Cosmique et Réflexion Temporelle</h3>
+                <p>La sagesse ancestrale rencontre la science quantique</p>
+            </div>
+        </div>
+        
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Convergence of Cosmic Forces.png')">
+            <img src="../assets/FIGHT/Convergence of Cosmic Forces.png" alt="Convergence">
+            <div class="battle-title">
+                <h3>Convergence des Forces Cosmiques</h3>
+                <p>Tous les pouvoirs d'Avalon réunis</p>
+            </div>
+        </div>
+        
+        <div class="battle-card" onclick="openModal('../assets/FIGHT/Sorcerer of Time at Twilight.png')">
+            <img src="../assets/FIGHT/Sorcerer of Time at Twilight.png" alt="Sorcier">
+            <div class="battle-title">
+                <h3>Le Sorcier du Temps au Crépuscule</h3>
+                <p>Maîtrise absolue de la grammaire temporelle</p>
+            </div>
+        </div>
+    </div>
+    
+    <h2 style="text-align: center; font-size: 2.5em; margin: 40px 0; color: #ffd700;">
+        🖼️ PORTRAITS DE HÉROS HD 🖼️
+    </h2>
+    
+    <div class="hero-portraits">
+        <div class="portrait" onclick="selectHero('Ancient Warrior')">
+            <img src="../assets/HEROHDPORTAIT/Ancient Warrior of Fiery Runes.png" alt="Guerrier Ancestral">
+        </div>
+        <div class="portrait" onclick="selectHero('URZ-KÔM')">
+            <img src="../UPLOAD/ours_pixel.webp" alt="URZ-KÔM">
+        </div>
+        <div class="portrait" onclick="selectHero('Sid Meier')">
+            <img src="../UPLOAD/sid_meier_pixel_heros.webp" alt="Sid Meier">
+        </div>
+        <div class="portrait" onclick="selectHero('Jean Grofignon')">
+            <img src="../UPLOAD/Jean_grofignon_pixel_hero.webp" alt="Jean Grofignon">
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Créé avec les nouvelles images de VINCENT</p>
+        <div class="formula">Ψ∞ = ∑ᵢ αᵢ · Êᵢ</div>
+        <p>"PUTAIN MAIS C'EST TOI QUI AS TOUT CRÉÉ !!"</p>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal" id="modal" onclick="closeModal()">
+        <img id="modalImg" src="" alt="">
+    </div>
+    
+    <script>
+        // Ouvrir modal
+        function openModal(src) {
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('modalImg').src = src;
+        }
+        
+        // Fermer modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        // Combat épique
+        function startEpicBattle() {
+            const arena = document.querySelector('.combat-arena');
+            const fighter1 = document.getElementById('fighter1');
+            const fighter2 = document.getElementById('fighter2');
+            
+            // Animation de charge
+            fighter1.style.transform = 'translateY(-50%) translateX(200px)';
+            fighter2.style.transform = 'translateY(-50%) translateX(-200px) scaleX(-1)';
+            
+            setTimeout(() => {
+                // Créer l'explosion
+                const effect = document.createElement('div');
+                effect.className = 'combat-effect';
+                effect.style.left = '50%';
+                effect.style.top = '50%';
+                effect.innerHTML = '💥';
+                effect.style.fontSize = '100px';
+                arena.appendChild(effect);
+                
+                // Secouer l'écran
+                document.body.style.animation = 'shake 0.5s';
+                
+                // Retour position initiale
+                setTimeout(() => {
+                    fighter1.style.transform = 'translateY(-50%)';
+                    fighter2.style.transform = 'translateY(-50%) scaleX(-1)';
+                    effect.remove();
+                    document.body.style.animation = '';
+                    
+                    // Message épique
+                    alert("⚡ COMBAT LÉGENDAIRE ! ⚡\n\nURZ-KÔM : GRONDE !\nVINCE : Gun activé !\n\nRésultat : AVALON TREMBLE !");
+                }, 1000);
+            }, 500);
+        }
+        
+        // Sélection héros
+        function selectHero(name) {
+            alert(`🦸 ${name} sélectionné !\n\nPrêt pour la bataille !`);
+        }
+        
+        // Animation shake
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Particules de fond
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = '-50px';
+            particle.style.width = '3px';
+            particle.style.height = '3px';
+            particle.style.background = Math.random() > 0.5 ? '#ff0000' : '#ff00ff';
+            particle.style.boxShadow = `0 0 10px currentColor`;
+            particle.style.pointerEvents = 'none';
+            particle.style.animation = `fall ${3 + Math.random() * 2}s linear`;
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 5000);
+        }
+        
+        // Animation de chute
+        const fallStyle = document.createElement('style');
+        fallStyle.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(${window.innerHeight + 100}px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(fallStyle);
+        
+        // Créer des particules régulièrement
+        setInterval(createParticle, 200);
+    </script>
+</body>
+</html>

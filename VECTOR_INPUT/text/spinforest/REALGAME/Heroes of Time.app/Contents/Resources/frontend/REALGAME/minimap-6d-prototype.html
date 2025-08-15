@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Mini-Map 6D - Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        .minimap-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            height: 300px;
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .minimap-title {
+            text-align: center;
+            color: #00ffff;
+            font-size: 14px;
+            margin: 10px 0;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        #minimap {
+            width: 100%;
+            height: 250px;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .timeline {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .timeline:hover {
+            transform: scale(1.2);
+            filter: brightness(1.5);
+        }
+        
+        .timeline.current {
+            box-shadow: 0 0 20px #ffdd00;
+            border: 3px solid #ffdd00;
+        }
+        
+        .timeline.accessible {
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+        }
+        
+        .timeline.phased {
+            border: 2px solid #ff6600;
+            background: rgba(255, 102, 0, 0.2);
+            opacity: 0.6;
+        }
+        
+        .timeline.dead {
+            border: 2px solid #ff0000;
+            background: rgba(255, 0, 0, 0.2);
+            opacity: 0.3;
+        }
+        
+        .causal-link {
+            position: absolute;
+            background: #00ffff;
+            height: 2px;
+            transform-origin: left center;
+            opacity: 0.6;
+        }
+        
+        .quantum-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            border-radius: 15px;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .dimension-selector {
+            margin: 10px 0;
+        }
+        
+        .dimension-selector button {
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .dimension-selector button.active {
+            background: #00ffff;
+            color: #000;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mini-Map 6D -->
+    <div class="minimap-container">
+        <div class="minimap-title">🌌 NAVIGATEUR TEMPOREL 6D</div>
+        <canvas id="minimap"></canvas>
+        <div class="quantum-overlay" id="quantumOverlay"></div>
+    </div>
+    
+    <!-- Légende -->
+    <div class="legend">
+        <h4>🧭 Légende Dimensionnelle</h4>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #ffdd00; box-shadow: 0 0 10px #ffdd00;"></div>
+            <span>Position Actuelle</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(0,255,0,0.5); border: 2px solid #00ff00;"></div>
+            <span>Timeline Accessible</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(255,102,0,0.5); border: 2px solid #ff6600;"></div>
+            <span>Timeline Phasée</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(255,0,0,0.3); border: 2px solid #ff0000;"></div>
+            <span>Timeline Morte</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #00ffff; width: 30px; height: 2px; border-radius: 0;"></div>
+            <span>Lien Causal</span>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls">
+        <h4>🎮 Contrôles Dimensionnels</h4>
+        <div class="dimension-selector">
+            <strong>Dimensions Visibles:</strong><br>
+            <button class="active" data-dim="spatial">🌍 Spatial</button>
+            <button data-dim="temporal">⏰ Temporel</button>
+            <button data-dim="quantum">🔮 Quantique</button>
+            <button data-dim="causal">🔗 Causal</button>
+            <button data-dim="narrative">📖 Narratif</button>
+            <button data-dim="identity">👤 Identité</button>
+        </div>
+        <div>
+            <strong>Énergie BRISURE:</strong> <span id="energy">100</span>/100
+        </div>
+        <div>
+            <strong>État Quantique:</strong> <span id="quantumState">Superposé</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 11px; opacity: 0.7;">
+            💡 Clic sur timeline = Téléportation<br>
+            💡 Double-clic = Voyage temporel<br>
+            💡 Maintenir = Aperçu dimensionnel
+        </div>
+    </div>
+    
+    <script>
+        // Configuration de la mini-map 6D
+        const canvas = document.getElementById('minimap');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 296;
+        canvas.height = 246;
+        
+        // État de la navigation 6D
+        const navigator6D = {
+            dimensions: {
+                spatial: { active: true, color: '#00ff00' },
+                temporal: { active: false, color: '#ffdd00' },
+                quantum: { active: false, color: '#ff00ff' },
+                causal: { active: false, color: '#00ffff' },
+                narrative: { active: false, color: '#ff6600' },
+                identity: { active: false, color: '#8a2be2' }
+            },
+            
+            timelines: [
+                {
+                    id: 'current',
+                    name: 'Avalon Prime',
+                    x: 150, y: 120,
+                    type: 'current',
+                    icon: '🏰',
+                    accessible: true,
+                    energy: 0
+                },
+                {
+                    id: 'past1',
+                    name: 'Passé -1',
+                    x: 100, y: 80,
+                    type: 'accessible',
+                    icon: '🌅',
+                    accessible: true,
+                    energy: 25
+                },
+                {
+                    id: 'future1',
+                    name: 'Futur +1',
+                    x: 200, y: 160,
+                    type: 'phased',
+                    icon: '🌆',
+                    accessible: false,
+                    energy: 50
+                },
+                {
+                    id: 'quantum1',
+                    name: 'Superposition A',
+                    x: 80, y: 180,
+                    type: 'accessible',
+                    icon: '🔮',
+                    accessible: true,
+                    energy: 75
+                },
+                {
+                    id: 'dead1',
+                    name: 'Timeline Effondrée',
+                    x: 220, y: 60,
+                    type: 'dead',
+                    icon: '💀',
+                    accessible: false,
+                    energy: 100
+                }
+            ],
+            
+            causalLinks: [
+                { from: 'current', to: 'past1' },
+                { from: 'current', to: 'future1' },
+                { from: 'current', to: 'quantum1' }
+            ],
+            
+            energy: 100,
+            quantumState: 'superposed'
+        };
+        
+        // Rendu de la mini-map
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fond quantique
+            renderQuantumBackground();
+            
+            // Liens causaux
+            renderCausalLinks();
+            
+            // Timelines
+            renderTimelines();
+            
+            // Effets dimensionnels
+            renderDimensionalEffects();
+        }
+        
+        function renderQuantumBackground() {
+            // Grille quantique
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function renderCausalLinks() {
+            navigator6D.causalLinks.forEach(link => {
+                const from = navigator6D.timelines.find(t => t.id === link.from);
+                const to = navigator6D.timelines.find(t => t.id === link.to);
+                
+                if (from && to) {
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.6;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(from.x, from.y);
+                    ctx.lineTo(to.x, to.y);
+                    ctx.stroke();
+                    
+                    ctx.globalAlpha = 1;
+                }
+            });
+        }
+        
+        function renderTimelines() {
+            navigator6D.timelines.forEach(timeline => {
+                // Cercle de la timeline
+                ctx.beginPath();
+                ctx.arc(timeline.x, timeline.y, 20, 0, Math.PI * 2);
+                
+                // Style selon le type
+                switch (timeline.type) {
+                    case 'current':
+                        ctx.fillStyle = 'rgba(255, 221, 0, 0.3)';
+                        ctx.strokeStyle = '#ffdd00';
+                        ctx.lineWidth = 3;
+                        break;
+                    case 'accessible':
+                        ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 2;
+                        break;
+                    case 'phased':
+                        ctx.fillStyle = 'rgba(255, 102, 0, 0.2)';
+                        ctx.strokeStyle = '#ff6600';
+                        ctx.lineWidth = 2;
+                        break;
+                    case 'dead':
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+                        ctx.strokeStyle = '#ff0000';
+                        ctx.lineWidth = 2;
+                        break;
+                }
+                
+                ctx.fill();
+                ctx.stroke();
+                
+                // Icône
+                ctx.font = '16px serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(timeline.icon, timeline.x, timeline.y + 5);
+                
+                // Nom
+                ctx.font = '10px Courier New';
+                ctx.fillStyle = '#ccc';
+                ctx.fillText(timeline.name, timeline.x, timeline.y + 35);
+            });
+        }
+        
+        function renderDimensionalEffects() {
+            // Effets selon les dimensions actives
+            Object.entries(navigator6D.dimensions).forEach(([dim, config]) => {
+                if (config.active) {
+                    ctx.strokeStyle = config.color;
+                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = 0.3;
+                    
+                    // Effet spécifique par dimension
+                    switch (dim) {
+                        case 'temporal':
+                            // Ondes temporelles
+                            for (let i = 0; i < 3; i++) {
+                                ctx.beginPath();
+                                ctx.arc(150, 120, 30 + i * 20, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                        case 'quantum':
+                            // Particules quantiques
+                            for (let i = 0; i < 10; i++) {
+                                ctx.beginPath();
+                                ctx.arc(
+                                    Math.random() * canvas.width,
+                                    Math.random() * canvas.height,
+                                    2, 0, Math.PI * 2
+                                );
+                                ctx.fill();
+                            }
+                            break;
+                    }
+                    
+                    ctx.globalAlpha = 1;
+                }
+            });
+        }
+        
+        // Gestion des clics
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Vérifier si on clique sur une timeline
+            navigator6D.timelines.forEach(timeline => {
+                const distance = Math.sqrt(
+                    Math.pow(x - timeline.x, 2) + 
+                    Math.pow(y - timeline.y, 2)
+                );
+                
+                if (distance <= 20) {
+                    if (timeline.accessible && navigator6D.energy >= timeline.energy) {
+                        // Téléportation !
+                        navigator6D.energy -= timeline.energy;
+                        document.getElementById('energy').textContent = navigator6D.energy;
+                        
+                        // Effet visuel
+                        showTeleportEffect(timeline);
+                        
+                        alert(`🌀 Téléportation vers ${timeline.name} !`);
+                    } else {
+                        alert(`❌ Énergie insuffisante ou timeline inaccessible !`);
+                    }
+                }
+            });
+        });
+        
+        // Contrôles des dimensions
+        document.querySelectorAll('[data-dim]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dim = btn.dataset.dim;
+                navigator6D.dimensions[dim].active = !navigator6D.dimensions[dim].active;
+                btn.classList.toggle('active');
+                render();
+            });
+        });
+        
+        function showTeleportEffect(timeline) {
+            // Animation de téléportation
+            const effect = document.createElement('div');
+            effect.style.position = 'absolute';
+            effect.style.left = timeline.x + 'px';
+            effect.style.top = timeline.y + 'px';
+            effect.style.width = '40px';
+            effect.style.height = '40px';
+            effect.style.borderRadius = '50%';
+            effect.style.background = 'radial-gradient(circle, #00ffff, transparent)';
+            effect.style.transform = 'translate(-50%, -50%)';
+            effect.style.animation = 'teleport 1s ease-out';
+            
+            document.querySelector('.minimap-container').appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+        
+        // Régénération d'énergie
+        setInterval(() => {
+            if (navigator6D.energy < 100) {
+                navigator6D.energy += 1;
+                document.getElementById('energy').textContent = navigator6D.energy;
+            }
+        }, 1000);
+        
+        // Rendu initial
+        render();
+        
+        // Animation continue
+        setInterval(render, 100);
+        
+        // Style pour l'animation de téléportation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes teleport {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+                50% { transform: translate(-50%, -50%) scale(2); opacity: 0.5; }
+                100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 Entraînement TCG - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #111;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Container principal */
+        .game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* En-tête */
+        .header {
+            height: 60px;
+            background: linear-gradient(to bottom, #222, #111);
+            border-bottom: 2px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .mode-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .training-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Zone de jeu */
+        .battlefield {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Terrain de l'adversaire */
+        .enemy-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .enemy-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .enemy-portrait {
+            width: 80px;
+            height: 80px;
+            background: #333;
+            border: 3px solid #666;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .enemy-stats {
+            flex: 1;
+        }
+
+        .enemy-name {
+            font-size: 20px;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .hp-bar {
+            width: 200px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff4757, #ff6b6b);
+            transition: width 0.5s ease;
+        }
+
+        .hp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Zone des créatures */
+        .creature-zones {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .creature-slot {
+            width: 100px;
+            height: 140px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .creature-slot.occupied {
+            border-style: solid;
+            border-color: #666;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .creature {
+            text-align: center;
+        }
+
+        .creature-icon {
+            font-size: 50px;
+            margin-bottom: 5px;
+        }
+
+        .creature-stats {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .creature-atk {
+            color: #ff6b6b;
+        }
+
+        .creature-def {
+            color: #4ecdc4;
+        }
+
+        /* Ligne de séparation */
+        .divider {
+            height: 4px;
+            background: linear-gradient(to right, transparent, #666, transparent);
+            margin: 20px 0;
+        }
+
+        /* Zone du joueur */
+        .player-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        /* Main du joueur */
+        .hand-area {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border: 2px solid #555;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .card:hover {
+            transform: translateY(-20px) scale(1.1);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .card.selected {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .card-cost {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 30px;
+            height: 30px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        .card-image {
+            flex: 1;
+            background: #444;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .card-type {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: #444;
+            border-color: #888;
+        }
+
+        .btn.primary {
+            background: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .btn.primary:hover {
+            background: #2ecc71;
+        }
+
+        /* Messages de combat */
+        .combat-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: combat-message 2s ease forwards;
+            pointer-events: none;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        @keyframes combat-message {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Tutoriel */
+        .tutorial {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 300px;
+            display: none;
+        }
+
+        .tutorial.active {
+            display: block;
+        }
+
+        .tutorial h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .tutorial p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .tutorial-close {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: #333;
+            border: 1px solid #666;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Indicateur de mana */
+        .mana-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mana-crystal {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .mana-empty {
+            background: #222;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- En-tête -->
+        <div class="header">
+            <div class="mode-title">ENTRAÎNEMENT TCG</div>
+            
+            <div class="training-stats">
+                <div class="stat">
+                    <span class="stat-label">Victoires:</span>
+                    <span class="stat-value" id="wins">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Niveau:</span>
+                    <span class="stat-value" id="level">1</span>
+                </div>
+                <div class="mana-display" id="mana-display">
+                    <span class="stat-label">Mana:</span>
+                    <!-- Cristaux de mana ajoutés dynamiquement -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zone de combat -->
+        <div class="battlefield">
+            <!-- Terrain ennemi -->
+            <div class="enemy-field">
+                <div class="enemy-info">
+                    <div class="enemy-portrait" id="enemy-portrait">🤖</div>
+                    <div class="enemy-stats">
+                        <div class="enemy-name" id="enemy-name">Mannequin d'Entraînement</div>
+                        <div class="hp-bar">
+                            <div class="hp-fill" id="enemy-hp-fill" style="width: 100%"></div>
+                            <div class="hp-text" id="enemy-hp-text">30/30</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="creature-zones" id="enemy-creatures">
+                    <!-- Slots de créatures ennemies -->
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- Terrain joueur -->
+            <div class="player-field">
+                <div class="creature-zones" id="player-creatures">
+                    <!-- Slots de créatures du joueur -->
+                </div>
+                
+                <div class="hand-area" id="hand">
+                    <!-- Cartes en main -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+            <button class="btn" onclick="showTutorial()">Tutoriel</button>
+            <button class="btn primary" onclick="endTurn()">Fin du Tour</button>
+            <button class="btn" onclick="exitTraining()">Quitter</button>
+        </div>
+        
+        <!-- Tutoriel -->
+        <div class="tutorial" id="tutorial">
+            <h3>Comment jouer</h3>
+            <p>1. Utilisez votre mana pour jouer des cartes</p>
+            <p>2. Les créatures peuvent attaquer au tour suivant</p>
+            <p>3. Réduisez les PV ennemis à 0 pour gagner</p>
+            <p>4. Gagnez 1 mana par tour (max 10)</p>
+            <button class="tutorial-close" onclick="closeTutorial()">Compris !</button>
+        </div>
+    </div>
+
+    <script>
+        // État du jeu
+        const gameState = {
+            turn: 1,
+            playerTurn: true,
+            playerMana: 1,
+            playerMaxMana: 1,
+            enemyHP: 30,
+            enemyMaxHP: 30,
+            playerCreatures: [],
+            enemyCreatures: [],
+            hand: [],
+            selectedCard: null,
+            wins: 0,
+            level: 1
+        };
+
+        // Decks d'entraînement
+        const trainingCards = [
+            { id: 1, name: 'Gobelin', cost: 1, type: 'creature', atk: 2, def: 1, icon: '👺' },
+            { id: 2, name: 'Loup', cost: 2, type: 'creature', atk: 3, def: 2, icon: '🐺' },
+            { id: 3, name: 'Ours', cost: 3, type: 'creature', atk: 4, def: 4, icon: '🐻' },
+            { id: 4, name: 'Dragon', cost: 5, type: 'creature', atk: 6, def: 5, icon: '🐉' },
+            { id: 5, name: 'Éclair', cost: 2, type: 'spell', damage: 3, icon: '⚡' },
+            { id: 6, name: 'Boule de Feu', cost: 3, type: 'spell', damage: 5, icon: '🔥' },
+            { id: 7, name: 'Soin', cost: 1, type: 'spell', heal: 3, icon: '💚' },
+            { id: 8, name: 'Bouclier', cost: 1, type: 'spell', buff: 'defense', icon: '🛡️' }
+        ];
+
+        // Ennemis d'entraînement
+        const trainingEnemies = [
+            { name: 'Mannequin d\'Entraînement', hp: 30, icon: '🤖', deck: [1, 1, 2, 5] },
+            { name: 'Apprenti Mage', hp: 25, icon: '🧙', deck: [1, 2, 5, 6] },
+            { name: 'Garde Novice', hp: 35, icon: '⚔️', deck: [2, 3, 7, 8] },
+            { name: 'Bête Sauvage', hp: 40, icon: '🦁', deck: [2, 3, 3, 4] }
+        ];
+
+        // Initialisation
+        function init() {
+            createCreatureSlots();
+            drawInitialHand();
+            updateManaDisplay();
+            updateUI();
+            
+            // Afficher le tutoriel au premier lancement
+            if (localStorage.getItem('tcg_tutorial_seen') !== 'true') {
+                showTutorial();
+            }
+        }
+
+        // Créer les slots de créatures
+        function createCreatureSlots() {
+            const playerZone = document.getElementById('player-creatures');
+            const enemyZone = document.getElementById('enemy-creatures');
+            
+            for (let i = 0; i < 5; i++) {
+                // Slots joueur
+                const playerSlot = document.createElement('div');
+                playerSlot.className = 'creature-slot';
+                playerSlot.dataset.index = i;
+                playerSlot.onclick = () => playCreature(i);
+                playerZone.appendChild(playerSlot);
+                
+                // Slots ennemi
+                const enemySlot = document.createElement('div');
+                enemySlot.className = 'creature-slot';
+                enemySlot.dataset.index = i;
+                enemyZone.appendChild(enemySlot);
+            }
+        }
+
+        // Piocher la main initiale
+        function drawInitialHand() {
+            for (let i = 0; i < 3; i++) {
+                drawCard();
+            }
+        }
+
+        // Piocher une carte
+        function drawCard() {
+            if (gameState.hand.length < 10) {
+                const card = { ...trainingCards[Math.floor(Math.random() * trainingCards.length)] };
+                card.uid = Date.now() + Math.random();
+                gameState.hand.push(card);
+                updateHandDisplay();
+            }
+        }
+
+        // Afficher la main
+        function updateHandDisplay() {
+            const handEl = document.getElementById('hand');
+            handEl.innerHTML = '';
+            
+            gameState.hand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                if (gameState.selectedCard === index) {
+                    cardEl.classList.add('selected');
+                }
+                
+                cardEl.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-image">${card.icon}</div>
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-type">${card.type === 'creature' ? 'Créature' : 'Sort'}</div>
+                    ${card.type === 'creature' ? 
+                        `<div class="card-stats">
+                            <span class="creature-atk">${card.atk}</span>
+                            /
+                            <span class="creature-def">${card.def}</span>
+                        </div>` : ''}
+                `;
+                
+                cardEl.onclick = () => selectCard(index);
+                handEl.appendChild(cardEl);
+            });
+        }
+
+        // Sélectionner une carte
+        function selectCard(index) {
+            const card = gameState.hand[index];
+            if (card.cost <= gameState.playerMana) {
+                gameState.selectedCard = index;
+                updateHandDisplay();
+            } else {
+                showMessage('Pas assez de mana !', '#ff6b6b');
+            }
+        }
+
+        // Jouer une créature
+        function playCreature(slotIndex) {
+            if (gameState.selectedCard === null) return;
+            
+            const card = gameState.hand[gameState.selectedCard];
+            if (card.type !== 'creature') {
+                // Si c'est un sort, l'appliquer
+                if (card.damage) {
+                    gameState.enemyHP -= card.damage;
+                    showMessage(`-${card.damage}`, '#ff6b6b');
+                } else if (card.heal && gameState.playerCreatures.length > 0) {
+                    // Soigner une créature
+                    showMessage(`+${card.heal}`, '#4ecdc4');
+                }
+                
+                // Retirer la carte et dépenser le mana
+                gameState.playerMana -= card.cost;
+                gameState.hand.splice(gameState.selectedCard, 1);
+                gameState.selectedCard = null;
+                updateHandDisplay();
+                updateUI();
+                
+                checkVictory();
+                return;
+            }
+            
+            // Vérifier si le slot est vide
+            if (!gameState.playerCreatures[slotIndex]) {
+                // Placer la créature
+                gameState.playerCreatures[slotIndex] = {
+                    ...card,
+                    canAttack: false // Ne peut pas attaquer ce tour
+                };
+                
+                // Retirer la carte de la main
+                gameState.playerMana -= card.cost;
+                gameState.hand.splice(gameState.selectedCard, 1);
+                gameState.selectedCard = null;
+                
+                updateCreatureDisplay();
+                updateHandDisplay();
+                updateUI();
+            }
+        }
+
+        // Afficher les créatures
+        function updateCreatureDisplay() {
+            // Créatures du joueur
+            const playerSlots = document.querySelectorAll('#player-creatures .creature-slot');
+            playerSlots.forEach((slot, index) => {
+                const creature = gameState.playerCreatures[index];
+                if (creature) {
+                    slot.classList.add('occupied');
+                    slot.innerHTML = `
+                        <div class="creature">
+                            <div class="creature-icon">${creature.icon}</div>
+                            <div class="creature-stats">
+                                <span class="creature-atk">${creature.atk}</span>
+                                /
+                                <span class="creature-def">${creature.def}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (creature.canAttack && gameState.playerTurn) {
+                        slot.style.cursor = 'pointer';
+                        slot.onclick = () => attackWithCreature(index);
+                    }
+                } else {
+                    slot.classList.remove('occupied');
+                    slot.innerHTML = '';
+                    slot.style.cursor = 'default';
+                    slot.onclick = () => playCreature(index);
+                }
+            });
+            
+            // Créatures ennemies
+            const enemySlots = document.querySelectorAll('#enemy-creatures .creature-slot');
+            enemySlots.forEach((slot, index) => {
+                const creature = gameState.enemyCreatures[index];
+                if (creature) {
+                    slot.classList.add('occupied');
+                    slot.innerHTML = `
+                        <div class="creature">
+                            <div class="creature-icon">${creature.icon}</div>
+                            <div class="creature-stats">
+                                <span class="creature-atk">${creature.atk}</span>
+                                /
+                                <span class="creature-def">${creature.def}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    slot.classList.remove('occupied');
+                    slot.innerHTML = '';
+                }
+            });
+        }
+
+        // Attaquer avec une créature
+        function attackWithCreature(index) {
+            const creature = gameState.playerCreatures[index];
+            if (!creature || !creature.canAttack) return;
+            
+            // Attaque directe si pas de créatures ennemies
+            if (gameState.enemyCreatures.filter(c => c).length === 0) {
+                gameState.enemyHP -= creature.atk;
+                showMessage(`-${creature.atk}`, '#ff6b6b');
+                creature.canAttack = false;
+                updateUI();
+                checkVictory();
+            }
+        }
+
+        // Fin du tour
+        function endTurn() {
+            // Activer les créatures pour le prochain tour
+            gameState.playerCreatures.forEach(creature => {
+                if (creature) creature.canAttack = true;
+            });
+            
+            // Tour de l'ennemi
+            enemyTurn();
+            
+            // Nouveau tour
+            gameState.turn++;
+            gameState.playerMaxMana = Math.min(10, gameState.playerMaxMana + 1);
+            gameState.playerMana = gameState.playerMaxMana;
+            
+            // Piocher une carte
+            drawCard();
+            
+            updateUI();
+        }
+
+        // IA ennemie simple
+        function enemyTurn() {
+            const enemy = trainingEnemies[gameState.level - 1] || trainingEnemies[0];
+            
+            // Jouer une créature aléatoire si possible
+            if (Math.random() < 0.7 && gameState.enemyCreatures.filter(c => c).length < 5) {
+                const slot = gameState.enemyCreatures.findIndex(c => !c);
+                if (slot !== -1) {
+                    const cardId = enemy.deck[Math.floor(Math.random() * enemy.deck.length)];
+                    const card = trainingCards.find(c => c.id === cardId);
+                    if (card && card.type === 'creature') {
+                        gameState.enemyCreatures[slot] = { ...card };
+                    }
+                }
+            }
+            
+            // Attaquer avec les créatures
+            gameState.enemyCreatures.forEach(creature => {
+                if (creature && Math.random() < 0.8) {
+                    // Attaque aléatoire
+                    showMessage('Attaque ennemie !', '#ff6b6b');
+                }
+            });
+            
+            updateCreatureDisplay();
+        }
+
+        // Mise à jour de l'interface
+        function updateUI() {
+            // HP ennemi
+            const hpPercent = (gameState.enemyHP / gameState.enemyMaxHP) * 100;
+            document.getElementById('enemy-hp-fill').style.width = hpPercent + '%';
+            document.getElementById('enemy-hp-text').textContent = `${gameState.enemyHP}/${gameState.enemyMaxHP}`;
+            
+            // Stats
+            document.getElementById('wins').textContent = gameState.wins;
+            document.getElementById('level').textContent = gameState.level;
+            
+            updateManaDisplay();
+            updateCreatureDisplay();
+        }
+
+        // Afficher les cristaux de mana
+        function updateManaDisplay() {
+            const manaDisplay = document.getElementById('mana-display');
+            manaDisplay.innerHTML = '<span class="stat-label">Mana:</span>';
+            
+            for (let i = 0; i < gameState.playerMaxMana; i++) {
+                const crystal = document.createElement('div');
+                crystal.className = 'mana-crystal';
+                if (i >= gameState.playerMana) {
+                    crystal.classList.add('mana-empty');
+                }
+                manaDisplay.appendChild(crystal);
+            }
+        }
+
+        // Vérifier la victoire
+        function checkVictory() {
+            if (gameState.enemyHP <= 0) {
+                showMessage('VICTOIRE !', '#4ecdc4');
+                gameState.wins++;
+                
+                // Niveau suivant
+                setTimeout(() => {
+                    gameState.level++;
+                    nextBattle();
+                }, 2000);
+            }
+        }
+
+        // Bataille suivante
+        function nextBattle() {
+            const enemy = trainingEnemies[Math.min(gameState.level - 1, trainingEnemies.length - 1)];
+            
+            gameState.enemyHP = enemy.hp;
+            gameState.enemyMaxHP = enemy.hp;
+            gameState.enemyCreatures = [];
+            gameState.playerCreatures = [];
+            gameState.turn = 1;
+            gameState.playerMana = 1;
+            gameState.playerMaxMana = 1;
+            
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('enemy-portrait').textContent = enemy.icon;
+            
+            drawInitialHand();
+            updateUI();
+        }
+
+        // Afficher un message
+        function showMessage(text, color = '#ffd700') {
+            const msg = document.createElement('div');
+            msg.className = 'combat-message';
+            msg.textContent = text;
+            msg.style.color = color;
+            document.querySelector('.battlefield').appendChild(msg);
+            
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        // Tutoriel
+        function showTutorial() {
+            document.getElementById('tutorial').classList.add('active');
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorial').classList.remove('active');
+            localStorage.setItem('tcg_tutorial_seen', 'true');
+        }
+
+        // Quitter l'entraînement
+        function exitTraining() {
+            if (confirm('Retourner à la forêt ?')) {
+                window.location.href = '../foret-magique.html';
+            }
+        }
+
+        // Démarrage
+        init();
+    </script>
+</body>
+</html>

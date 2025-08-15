@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 AVALON ARCADE CONNECTED - Portails & Brisures !</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* EFFET BRISURE */
+        .brisure-effect {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.03) 2px,
+                    rgba(0, 255, 255, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 0, 255, 0.03) 2px,
+                    rgba(255, 0, 255, 0.03) 4px
+                );
+            animation: brisure-scan 4s linear infinite;
+        }
+        
+        @keyframes brisure-scan {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(4px, 4px); }
+        }
+        
+        /* PORTAILS FLOTTANTS */
+        .portal {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.8), transparent);
+            border: 3px solid #8a2be2;
+            animation: portal-spin 10s linear infinite;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .portal::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent, rgba(138, 43, 226, 0.3));
+            animation: portal-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes portal-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        
+        .portal:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 50px #8a2be2;
+        }
+        
+        /* CONTAINER PRINCIPAL */
+        #arcade {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        /* HEADER BRISURE */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #8a2be2, #00ffff, #ff00ff);
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+        
+        h1 {
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 
+                0 0 10px #8a2be2,
+                0 0 20px #00ffff,
+                0 0 30px #ff00ff;
+            animation: glitch-text 3s infinite;
+        }
+        
+        @keyframes glitch-text {
+            0%, 100% { 
+                text-shadow: 
+                    0 0 10px #8a2be2,
+                    0 0 20px #00ffff,
+                    0 0 30px #ff00ff;
+            }
+            25% { 
+                text-shadow: 
+                    -2px 0 10px #ff00ff,
+                    2px 0 20px #00ffff,
+                    0 0 30px #8a2be2;
+            }
+            50% { 
+                text-shadow: 
+                    2px -2px 10px #00ffff,
+                    -2px 2px 20px #ff00ff,
+                    0 0 30px #8a2be2;
+            }
+        }
+        
+        /* STATUS BACKEND */
+        .backend-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0f0;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            z-index: 100;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #f00;
+            animation: pulse-dot 2s infinite;
+        }
+        
+        .status-dot.active {
+            background: #0f0;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* MONDE BRISURES */
+        .brisures-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.2), transparent),
+                radial-gradient(circle at 80% 50%, rgba(0, 255, 255, 0.2), transparent),
+                radial-gradient(circle at 50% 80%, rgba(255, 0, 255, 0.2), transparent);
+        }
+        
+        /* CARTE INTERFACE */
+        .interface-card {
+            position: absolute;
+            width: 180px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #8a2be2;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: grab;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        
+        .interface-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #8a2be2;
+            z-index: 100;
+        }
+        
+        .interface-card.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+        }
+        
+        .card-icon {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .card-title {
+            font-size: 1.1em;
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .card-type {
+            font-size: 0.8em;
+            color: #8a2be2;
+            text-align: center;
+        }
+        
+        /* LIGNE DE CONNEXION */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #8a2be2, #00ffff, #ff00ff);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: flow 2s linear infinite;
+        }
+        
+        @keyframes flow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        
+        /* PANNEAU DE CONTRÔLE */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #8a2be2;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+        
+        .control-btn {
+            background: rgba(138, 43, 226, 0.2);
+            border: 2px solid #8a2be2;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1em;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(138, 43, 226, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s;
+        }
+        
+        .control-btn:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
+        }
+        
+        .control-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* MESSAGES FLOTTANTS */
+        .floating-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ffff;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 1.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            z-index: 1000;
+            animation: message-appear 0.5s ease-out;
+        }
+        
+        @keyframes message-appear {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        /* MINI MAP */
+        .mini-map {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8a2be2;
+            border-radius: 10px;
+            z-index: 100;
+            overflow: hidden;
+        }
+        
+        .mini-map-dot {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #00ffff;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- EFFET BRISURE -->
+    <div class="brisure-effect"></div>
+    
+    <!-- CONTAINER PRINCIPAL -->
+    <div id="arcade">
+        <div class="header">
+            <h1>🌀 AVALON ARCADE CONNECTED 🌀</h1>
+            <p style="font-size: 1.2em;">Naviguez entre les Brisures Dimensionnelles !</p>
+        </div>
+        
+        <!-- STATUS BACKEND -->
+        <div class="backend-status">
+            <h3>📡 Connexions</h3>
+            <div class="status-item">
+                <div class="status-dot" id="backend-status"></div>
+                <span>Backend API</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot" id="magic-status"></div>
+                <span>Magic Stack</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot" id="portal-status"></div>
+                <span>Portails</span>
+            </div>
+        </div>
+        
+        <!-- MINI MAP -->
+        <div class="mini-map" id="minimap">
+            <!-- Points seront ajoutés dynamiquement -->
+        </div>
+        
+        <!-- MONDE BRISURES -->
+        <div class="brisures-container" id="brisures">
+            <!-- Les cartes et portails seront générés ici -->
+        </div>
+    </div>
+    
+    <!-- PANNEAU DE CONTRÔLE -->
+    <div class="control-panel">
+        <button class="control-btn" onclick="createPortal()">
+            <span>🌀 Créer Portail</span>
+        </button>
+        <button class="control-btn" onclick="connectInterfaces()">
+            <span>🔗 Connecter</span>
+        </button>
+        <button class="control-btn" onclick="activateBrisure()">
+            <span>⚡ Brisure</span>
+        </button>
+        <button class="control-btn" onclick="castMagic()">
+            <span>🔮 Magie</span>
+        </button>
+        <button class="control-btn" onclick="scanDimensions()">
+            <span>📡 Scanner</span>
+        </button>
+    </div>
+    
+    <script>
+        // Configuration
+        const BACKEND_URL = 'http://localhost:8082'; // Magic Stack backend
+        const MAGIC_API_URL = 'http://localhost:3000';
+        
+        // Base de données des interfaces
+        const interfaces = [
+            { id: 1, icon: "🎮", title: "TCG Battle", type: "game", url: "AVALON-TCG/tcg-battle-interface.html", x: 100, y: 100 },
+            { id: 2, icon: "🌌", title: "Bubble Universe", type: "game", url: "AVALON_BUBBLE_UNIVERSE.html", x: 300, y: 200 },
+            { id: 3, icon: "⚔️", title: "Heroes ISO", type: "game", url: "maps/isometric-battle.html", x: 500, y: 150 },
+            { id: 4, icon: "🔮", title: "Magic Stack", type: "api", url: "demos/unified-magic-demo.html", x: 200, y: 300 },
+            { id: 5, icon: "🌊", title: "Brisure Nav", type: "tool", url: "../frontend/brisure-navigator.html", x: 400, y: 350 },
+            { id: 6, icon: "🏛️", title: "Museum", type: "portal", url: "../AVALON/🏛️ MUSEUM/archives/racine/dashboard.html", x: 600, y: 250 },
+            { id: 7, icon: "👻", title: "Hidden React", type: "hidden", url: "http://localhost:3000", x: 350, y: 450 },
+            { id: 8, icon: "⏰", title: "Temporal", type: "hidden", url: "http://localhost:5173", x: 150, y: 400 }
+        ];
+        
+        // État
+        let connections = [];
+        let portals = [];
+        let selectedCard = null;
+        let isDragging = false;
+        
+        // Initialisation
+        async function init() {
+            checkBackendStatus();
+            renderInterfaces();
+            initDragAndDrop();
+            updateMiniMap();
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                showMessage("🌀 Bienvenue dans l'Arcade Connecté !");
+            }, 1000);
+            
+            // Vérification périodique
+            setInterval(checkBackendStatus, 5000);
+        }
+        
+        // Vérifier status backend
+        async function checkBackendStatus() {
+            // Backend principal
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                if (response.ok) {
+                    document.getElementById('backend-status').classList.add('active');
+                }
+            } catch (e) {
+                document.getElementById('backend-status').classList.remove('active');
+            }
+            
+            // Magic API
+            try {
+                const response = await fetch(`${MAGIC_API_URL}/api/status`);
+                if (response.ok) {
+                    document.getElementById('magic-status').classList.add('active');
+                }
+            } catch (e) {
+                document.getElementById('magic-status').classList.remove('active');
+            }
+            
+            // Portails (simulé)
+            document.getElementById('portal-status').classList.add('active');
+        }
+        
+        // Rendu des interfaces
+        function renderInterfaces() {
+            const container = document.getElementById('brisures');
+            
+            interfaces.forEach(interface => {
+                const card = document.createElement('div');
+                card.className = 'interface-card';
+                card.id = `card-${interface.id}`;
+                card.style.left = interface.x + 'px';
+                card.style.top = interface.y + 'px';
+                card.innerHTML = `
+                    <div class="card-icon">${interface.icon}</div>
+                    <div class="card-title">${interface.title}</div>
+                    <div class="card-type">${interface.type}</div>
+                `;
+                
+                card.onclick = () => selectCard(interface);
+                card.ondblclick = () => window.open(interface.url, '_blank');
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Sélection de carte
+        function selectCard(interface) {
+            if (selectedCard && selectedCard.id !== interface.id) {
+                // Créer connexion
+                createConnection(selectedCard, interface);
+                selectedCard = null;
+                document.querySelectorAll('.interface-card').forEach(c => 
+                    c.style.borderColor = '#8a2be2'
+                );
+            } else {
+                selectedCard = interface;
+                document.getElementById(`card-${interface.id}`).style.borderColor = '#00ffff';
+            }
+        }
+        
+        // Créer connexion
+        function createConnection(from, to) {
+            connections.push({ from, to });
+            
+            const line = document.createElement('div');
+            line.className = 'connection-line';
+            
+            const x1 = from.x + 90;
+            const y1 = from.y + 75;
+            const x2 = to.x + 90;
+            const y2 = to.y + 75;
+            
+            const length = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+            const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+            
+            line.style.width = length + 'px';
+            line.style.left = x1 + 'px';
+            line.style.top = y1 + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            document.getElementById('brisures').appendChild(line);
+            
+            showMessage(`🔗 ${from.title} ↔ ${to.title} connectés !`);
+        }
+        
+        // Créer portail
+        function createPortal() {
+            const x = Math.random() * (window.innerWidth - 200) + 100;
+            const y = Math.random() * (window.innerHeight - 400) + 200;
+            
+            const portal = document.createElement('div');
+            portal.className = 'portal';
+            portal.style.left = x + 'px';
+            portal.style.top = y + 'px';
+            portal.onclick = () => enterPortal(portal);
+            
+            document.getElementById('brisures').appendChild(portal);
+            portals.push({ x, y, element: portal });
+            
+            showMessage("🌀 Portail créé ! Cliquez pour entrer...");
+            updateMiniMap();
+        }
+        
+        // Entrer dans un portail
+        function enterPortal(portal) {
+            portal.style.animation = 'portal-spin 0.5s linear infinite, scale 0.5s ease-in';
+            portal.style.transform = 'scale(3)';
+            
+            setTimeout(() => {
+                // Téléporter vers une interface aléatoire
+                const randomInterface = interfaces[Math.floor(Math.random() * interfaces.length)];
+                window.open(randomInterface.url, '_blank');
+                portal.remove();
+            }, 500);
+        }
+        
+        // Activer brisure
+        function activateBrisure() {
+            document.body.style.animation = 'shake 0.5s';
+            
+            // Mélanger les positions
+            interfaces.forEach(interface => {
+                interface.x = Math.random() * (window.innerWidth - 200);
+                interface.y = Math.random() * (window.innerHeight - 400) + 100;
+                
+                const card = document.getElementById(`card-${interface.id}`);
+                card.style.transition = 'all 1s ease-out';
+                card.style.left = interface.x + 'px';
+                card.style.top = interface.y + 'px';
+            });
+            
+            showMessage("⚡ BRISURE DIMENSIONNELLE ACTIVÉE !");
+            updateMiniMap();
+        }
+        
+        // Lancer magie
+        async function castMagic() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/game/magic/cast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formulaType: "GROFI",
+                        formula: "PORTAL_OPENING",
+                        parameters: { intensity: "maximum" }
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage("🔮 Sort lancé avec succès !");
+                    createPortal();
+                } else {
+                    showMessage("🔮 Simulation de magie...");
+                    createPortal();
+                }
+            } catch (e) {
+                showMessage("🔮 Magie hors-ligne - Mode simulation");
+                createPortal();
+            }
+        }
+        
+        // Scanner dimensions
+        function scanDimensions() {
+            const scanner = document.createElement('div');
+            scanner.style.position = 'fixed';
+            scanner.style.top = '0';
+            scanner.style.left = '0';
+            scanner.style.width = '100%';
+            scanner.style.height = '4px';
+            scanner.style.background = 'linear-gradient(90deg, transparent, #00ffff, transparent)';
+            scanner.style.animation = 'scan-down 2s ease-out';
+            scanner.style.zIndex = '9999';
+            
+            document.body.appendChild(scanner);
+            
+            setTimeout(() => {
+                scanner.remove();
+                showMessage(`📡 ${interfaces.length} interfaces détectées dans cette dimension !`);
+            }, 2000);
+        }
+        
+        // Connecter interfaces
+        function connectInterfaces() {
+            // Créer des connexions aléatoires
+            for (let i = 0; i < 3; i++) {
+                const from = interfaces[Math.floor(Math.random() * interfaces.length)];
+                const to = interfaces[Math.floor(Math.random() * interfaces.length)];
+                if (from.id !== to.id) {
+                    createConnection(from, to);
+                }
+            }
+        }
+        
+        // Drag and Drop
+        function initDragAndDrop() {
+            let draggedElement = null;
+            let draggedInterface = null;
+            let offsetX = 0;
+            let offsetY = 0;
+            
+            document.querySelectorAll('.interface-card').forEach(card => {
+                card.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.interface-card')) {
+                        draggedElement = e.target.closest('.interface-card');
+                        const id = parseInt(draggedElement.id.split('-')[1]);
+                        draggedInterface = interfaces.find(i => i.id === id);
+                        
+                        const rect = draggedElement.getBoundingClientRect();
+                        offsetX = e.clientX - rect.left;
+                        offsetY = e.clientY - rect.top;
+                        
+                        draggedElement.classList.add('dragging');
+                        isDragging = true;
+                    }
+                });
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && draggedElement) {
+                    const x = e.clientX - offsetX;
+                    const y = e.clientY - offsetY - 100; // Ajuster pour le header
+                    
+                    draggedElement.style.left = x + 'px';
+                    draggedElement.style.top = y + 'px';
+                    
+                    draggedInterface.x = x;
+                    draggedInterface.y = y;
+                    
+                    updateMiniMap();
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (draggedElement) {
+                    draggedElement.classList.remove('dragging');
+                }
+                isDragging = false;
+                draggedElement = null;
+                draggedInterface = null;
+            });
+        }
+        
+        // Mini map
+        function updateMiniMap() {
+            const minimap = document.getElementById('minimap');
+            minimap.innerHTML = '';
+            
+            // Interfaces
+            interfaces.forEach(interface => {
+                const dot = document.createElement('div');
+                dot.className = 'mini-map-dot';
+                dot.style.left = (interface.x / window.innerWidth * 200) + 'px';
+                dot.style.top = (interface.y / window.innerHeight * 200) + 'px';
+                dot.style.background = interface.type === 'hidden' ? '#ff00ff' : '#00ffff';
+                minimap.appendChild(dot);
+            });
+            
+            // Portails
+            portals.forEach(portal => {
+                const dot = document.createElement('div');
+                dot.className = 'mini-map-dot';
+                dot.style.left = (portal.x / window.innerWidth * 200) + 'px';
+                dot.style.top = (portal.y / window.innerHeight * 200) + 'px';
+                dot.style.background = '#8a2be2';
+                dot.style.width = '8px';
+                dot.style.height = '8px';
+                minimap.appendChild(dot);
+            });
+        }
+        
+        // Afficher message
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'floating-message';
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            
+            setTimeout(() => {
+                msg.style.animation = 'message-appear 0.5s ease-out reverse';
+                setTimeout(() => msg.remove(), 500);
+            }, 2000);
+        }
+        
+        // Animations CSS supplémentaires
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+            
+            @keyframes scan-down {
+                from { top: 0; }
+                to { top: 100%; }
+            }
+            
+            @keyframes scale {
+                to { transform: scale(3); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Démarrage
+        init();
+    </script>
+</body>
+</html>

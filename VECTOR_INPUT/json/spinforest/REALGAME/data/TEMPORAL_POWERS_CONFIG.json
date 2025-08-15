@@ -1,0 +1,126 @@
+{
+  "temporal_powers": {
+    "version": "1.0",
+    "description": "Pouvoirs temporels permettant de révéler les créatures cachées",
+    
+    "powers": {
+      "oeil_wigner": {
+        "id": "oeil_wigner",
+        "name": "L'Œil de Wigner",
+        "description": "Permet de voir à travers les superpositions quantiques et révéler ce qui existe dans plusieurs états simultanément",
+        "type": "vision",
+        "cost": {
+          "mana": 3,
+          "temporal_energy": 1
+        },
+        "duration": 60,
+        "cooldown": 30,
+        "reveals": ["superposition", "quantum"],
+        "visual_effect": {
+          "color": "#00FFFF",
+          "particle": "quantum_shimmer",
+          "screen_filter": "quantum_vision"
+        },
+        "unlock_condition": "complete_quantum_physics_quest"
+      },
+      
+      "memoire_memento": {
+        "id": "memoire_memento",
+        "name": "Mémoire de Mémento",
+        "description": "Révèle les échos du passé et les souvenirs oubliés imprégnés dans les lieux",
+        "type": "memory",
+        "cost": {
+          "mana": 2,
+          "memory_fragments": 3
+        },
+        "duration": 45,
+        "cooldown": 20,
+        "reveals": ["past", "memory", "echo"],
+        "visual_effect": {
+          "color": "#FFD700",
+          "particle": "memory_glow",
+          "screen_filter": "sepia_nostalgia"
+        },
+        "unlock_condition": "find_memento_archive"
+      },
+      
+      "accord_temporel": {
+        "id": "accord_temporel",
+        "name": "L'Accord",
+        "description": "Harmonise le courage du présent avec les échos héroïques du passé",
+        "type": "courage",
+        "cost": {
+          "mana": 4,
+          "courage_points": 10
+        },
+        "duration": 30,
+        "cooldown": 60,
+        "reveals": ["heroic", "battle", "courage"],
+        "visual_effect": {
+          "color": "#FF4500",
+          "particle": "courage_flame",
+          "screen_filter": "heroic_aura"
+        },
+        "unlock_condition": "defeat_shadow_of_doubt"
+      },
+      
+      "vision_renaissance": {
+        "id": "vision_renaissance",
+        "name": "Vision Renaissance",
+        "description": "Perçoit les cycles de mort et renaissance, révélant les futurs potentiels",
+        "type": "prophecy",
+        "cost": {
+          "mana": 5,
+          "phoenix_feather": 1
+        },
+        "duration": 40,
+        "cooldown": 90,
+        "reveals": ["future", "rebirth", "prophecy"],
+        "visual_effect": {
+          "color": "#FF69B4",
+          "particle": "rebirth_aura",
+          "screen_filter": "future_sight"
+        },
+        "unlock_condition": "witness_phoenix_rebirth"
+      },
+      
+      "maitrise_absolue": {
+        "id": "maitrise_absolue",
+        "name": "Maîtrise Absolue",
+        "description": "Transcende les limites temporelles pour percevoir tous les nexus et interstices",
+        "type": "mastery",
+        "cost": {
+          "mana": 10,
+          "temporal_mastery": 1
+        },
+        "duration": 120,
+        "cooldown": 300,
+        "reveals": ["all", "nexus", "interstice", "hidden"],
+        "visual_effect": {
+          "color": "#9400D3",
+          "particle": "nexus_energy",
+          "screen_filter": "reality_transcendence"
+        },
+        "unlock_condition": "master_all_timelines"
+      }
+    },
+    
+    "synergies": [
+      {
+        "powers": ["oeil_wigner", "memoire_memento"],
+        "effect": "Révèle les souvenirs quantiques",
+        "bonus": "+50% durée pour les deux pouvoirs"
+      },
+      {
+        "powers": ["accord_temporel", "vision_renaissance"],
+        "effect": "Courage éternel",
+        "bonus": "Résurrection automatique si mort héroïque"
+      },
+      {
+        "powers": ["all"],
+        "effect": "Maître du Temps",
+        "bonus": "Accès à toutes les créatures cachées + timeline manipulation"
+      }
+    ]
+  }
+}

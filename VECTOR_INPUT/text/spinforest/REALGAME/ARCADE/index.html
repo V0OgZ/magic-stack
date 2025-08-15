@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🕹️ AVALON ARCADE CENTRAL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a1a3a, #2a2a4a);
+            border-bottom: 3px solid #4ecdc4;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .category-btn {
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid #4ecdc4;
+            color: #4ecdc4;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: #4ecdc4;
+            color: #0a0a1a;
+            transform: scale(1.05);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .game-card {
+            background: rgba(30, 30, 50, 0.9);
+            border: 2px solid #666;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: #4ecdc4;
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+        }
+        
+        .game-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .game-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+        
+        .game-desc {
+            color: #aaa;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .play-btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.5);
+        }
+        
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #4ecdc4;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4ecdc4;
+            color: #4ecdc4;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #4ecdc4;
+            color: #0a0a1a;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../play.html'">
+        ← Retour au jeu
+    </button>
+    
+    <div class="header">
+        <h1>🕹️ AVALON ARCADE CENTRAL 🕹️</h1>
+        <p>La collection ultime de mini-jeux temporels!</p>
+    </div>
+    
+    <div class="categories">
+        <button class="category-btn active" data-category="all">🌟 Tous</button>
+        <button class="category-btn" data-category="classic">👾 Classiques</button>
+        <button class="category-btn" data-category="avalon">🏰 Avalon</button>
+        <button class="category-btn" data-category="experimental">🔬 Experimental</button>
+        <button class="category-btn" data-category="multiplayer">👥 Multijoueur</button>
+    </div>
+    
+    <div class="games-grid" id="gamesGrid">
+        <!-- Les jeux seront générés ici -->
+    </div>
+    
+    <div class="stats">
+        <div>🎮 Jeux disponibles: <span id="gameCount">0</span></div>
+        <div>⭐ Score total: <span id="totalScore">0</span></div>
+        <div>🏆 Succès: <span id="achievements">0/50</span></div>
+    </div>
+    
+    <script>
+        // Base de données des jeux
+        const games = [
+            // CLASSIQUES
+            {
+                id: 'snake',
+                icon: '🐍',
+                title: 'Snake Temporel',
+                desc: 'Le serpent classique avec des pouvoirs temporels!',
+                category: 'classic',
+                url: 'classics/snake.html',
+                new: false
+            },
+            {
+                id: 'tetris',
+                icon: '🧱',
+                title: 'Tetris 6D',
+                desc: 'Tetris dans les 6 dimensions d\'Avalon',
+                category: 'classic',
+                url: 'classics/tetris.html',
+                new: true
+            },
+            {
+                id: 'pong',
+                icon: '🏓',
+                title: 'Pong Quantique',
+                desc: 'La balle existe dans plusieurs états!',
+                category: 'classic',
+                url: 'classics/pong.html',
+                new: false
+            },
+            
+            // AVALON
+            {
+                id: 'bubble',
+                icon: '🌌',
+                title: 'Bubble Universe',
+                desc: 'Créez des univers en fusionnant des bulles',
+                category: 'avalon',
+                url: '../AVALON_BUBBLE_UNIVERSE.html',
+                new: false
+            },
+            {
+                id: 'tcg-rush',
+                icon: '🎴',
+                title: 'TCG Card Rush',
+                desc: 'Mode survie avec les cartes TCG!',
+                category: 'avalon',
+                url: 'avalon/tcg-rush.html',
+                new: true
+            },
+            {
+                id: 'temporal-puzzle',
+                icon: '⏰',
+                title: 'Puzzle Temporel',
+                desc: 'Résolvez des énigmes à travers le temps',
+                category: 'avalon',
+                url: 'avalon/temporal-puzzle.html',
+                new: true
+            },
+            
+            // EXPERIMENTAL
+            {
+                id: 'quantum-maze',
+                icon: '🌀',
+                title: 'Labyrinthe Quantique',
+                desc: 'Naviguez dans un labyrinthe qui change',
+                category: 'experimental',
+                url: 'experimental/quantum-maze.html',
+                new: true
+            },
+            {
+                id: 'ai-chess',
+                icon: '♟️',
+                title: 'Échecs vs IA',
+                desc: 'Affrontez l\'IA d\'Avalon aux échecs',
+                category: 'experimental',
+                url: 'experimental/ai-chess.html',
+                new: false
+            },
+            
+            // MULTIPLAYER
+            {
+                id: 'tcg-pvp',
+                icon: '⚔️',
+                title: 'TCG Arena PvP',
+                desc: 'Combat de cartes contre d\'autres joueurs',
+                category: 'multiplayer',
+                url: 'multiplayer/tcg-arena.html',
+                new: true
+            },
+            {
+                id: 'race-6d',
+                icon: '🏁',
+                title: 'Course 6D',
+                desc: 'Course multijoueur à travers les dimensions',
+                category: 'multiplayer',
+                url: 'multiplayer/race-6d.html',
+                new: true
+            }
+        ];
+        
+        let currentCategory = 'all';
+        let totalScore = parseInt(localStorage.getItem('arcadeTotalScore') || '0');
+        let achievements = parseInt(localStorage.getItem('arcadeAchievements') || '0');
+        
+        // Initialisation
+        function init() {
+            renderGames();
+            updateStats();
+            
+            // Gestionnaire de catégories
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelector('.category-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderGames();
+                });
+            });
+        }
+        
+        // Afficher les jeux
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = '';
+            
+            const filteredGames = currentCategory === 'all' 
+                ? games 
+                : games.filter(g => g.category === currentCategory);
+            
+            filteredGames.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = `
+                    ${game.new ? '<div class="new-badge">NOUVEAU!</div>' : ''}
+                    <div class="game-icon">${game.icon}</div>
+                    <h3 class="game-title">${game.title}</h3>
+                    <p class="game-desc">${game.desc}</p>
+                    <button class="play-btn" onclick="launchGame('${game.id}')">
+                        JOUER
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        // Lancer un jeu
+        function launchGame(gameId) {
+            const game = games.find(g => g.id === gameId);
+            if (game) {
+                // Sauvegarder la dernière partie jouée
+                localStorage.setItem('lastPlayedGame', gameId);
+                
+                // Vérifier si le fichier existe
+                if (game.url.startsWith('http://') || game.url.startsWith('../')) {
+                    window.location.href = game.url;
+                } else {
+                    // Pour les jeux pas encore créés
+                    alert(`🚧 ${game.title} arrive bientôt! 🚧\n\nCe mini-jeu est en cours de développement.`);
+                }
+            }
+        }
+        
+        // Mettre à jour les stats
+        function updateStats() {
+            document.getElementById('gameCount').textContent = games.length;
+            document.getElementById('totalScore').textContent = totalScore.toLocaleString();
+            document.getElementById('achievements').textContent = `${achievements}/50`;
+        }
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.location.href = '../play.html';
+            }
+        });
+        
+        // Lancer
+        init();
+    </script>
+</body>
+</html>

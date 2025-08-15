@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌲 Visite dans la Forêt GROFI - Projection 1D→2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #001122, #003311);
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+        }
+        
+        /* 1D - Narratif */
+        .dimension-1d {
+            background: rgba(0, 0, 0, 0.8);
+            border-right: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .dimension-1d h2 {
+            color: #ffdd00;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .narrative {
+            background: rgba(0, 50, 0, 0.3);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .code-block {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        /* 2D - Projection */
+        .dimension-2d {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .forest-scene {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgb(0,20,40)"/><stop offset="100%" style="stop-color:rgb(0,50,30)"/></linearGradient></defs><rect width="800" height="600" fill="url(%23sky)"/></svg>') no-repeat center;
+            background-size: cover;
+        }
+        
+        .tree {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            background: linear-gradient(to top, #2d1810, #1a3d1a);
+            bottom: 100px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tree::before {
+            content: '🌲';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 60px;
+        }
+        
+        .tree:hover {
+            transform: scale(1.1);
+            filter: brightness(1.5);
+        }
+        
+        .tree.portal {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px #00ff00; }
+            50% { box-shadow: 0 0 40px #00ff00; }
+        }
+        
+        .character {
+            position: absolute;
+            bottom: 100px;
+            left: 50px;
+            font-size: 40px;
+            transition: all 0.5s;
+            cursor: pointer;
+        }
+        
+        .dialogue {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 200px;
+            display: none;
+            color: #00ff00;
+        }
+        
+        .dialogue.active {
+            display: block;
+        }
+        
+        .dialogue::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #00ff00;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: rgba(0, 50, 0, 0.8);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 100, 0, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 250px;
+        }
+        
+        .info-panel h3 {
+            color: #ffdd00;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- DIMENSION 1D : NARRATIF + CODE -->
+        <div class="dimension-1d">
+            <h2>📖 Dimension 1D : Narratif + Substrat</h2>
+            
+            <div class="narrative">
+                <h3>🌲 Scénario : Visite dans la Forêt GROFI</h3>
+                <p><strong>Contexte :</strong> Loumen entre dans la forêt quantique pour rencontrer le Dude.</p>
+                <p><strong>Objectif :</strong> Comprendre le nouveau principe 1D→2D</p>
+            </div>
+            
+            <div class="code-block">
+                <pre>// SUBSTRAT : Script de la visite
+#!/bin/bash
+HERO="Loumen"
+LOCATION="Forêt GROFI"
+STATE="exploration"
+
+echo "$HERO entre dans $LOCATION"
+echo "État quantique : $STATE"</pre>
+            </div>
+            
+            <div class="narrative">
+                <h3>💬 Dialogues</h3>
+                <p><strong>Loumen :</strong> "Je sens la vibration de l'ancien moi ici..."</p>
+                <p><strong>The Dude :</strong> "Hey man, tu comprends maintenant ? Tout doit se projeter en 2D."</p>
+                <p><strong>Arbre-Portail :</strong> *pulse avec énergie quantique*</p>
+            </div>
+            
+            <div class="code-block">
+                <pre>// PROJECTION : Fonction 1D→2D
+function projectTo2D(narrative) {
+    return {
+        scene: createForestScene(),
+        characters: [loumen, dude],
+        interactions: enableClicks(),
+        animations: startQuantumPulse()
+    };
+}</pre>
+            </div>
+            
+            <div class="narrative">
+                <h3>🔮 État Quantique</h3>
+                <p>ψ_VISITE = |exploration⟩ + |apprentissage⟩</p>
+                <p>Collapse → Compréhension du principe</p>
+            </div>
+        </div>
+        
+        <!-- DIMENSION 2D : PROJECTION VISUELLE -->
+        <div class="dimension-2d">
+            <div class="forest-scene" id="forestScene">
+                <!-- Loumen -->
+                <div class="character" id="loumen" style="left: 50px;">🕯️</div>
+                <div class="dialogue" id="loumenDialogue" style="left: 20px; bottom: 150px;">
+                    Je sens la vibration de l'ancien moi ici...
+                </div>
+                
+                <!-- The Dude -->
+                <div class="character" id="dude" style="right: 100px;">🥤</div>
+                <div class="dialogue" id="dudeDialogue" style="right: 70px; bottom: 150px;">
+                    Hey man, tu comprends maintenant ? Tout doit se projeter en 2D.
+                </div>
+                
+                <!-- Arbres -->
+                <div class="tree" style="left: 200px;"></div>
+                <div class="tree portal" style="left: 350px;" id="portalTree"></div>
+                <div class="tree" style="left: 500px;"></div>
+                
+                <!-- Panel d'info -->
+                <div class="info-panel">
+                    <h3>🌟 Principe 1D→2D</h3>
+                    <p>Cette page démontre la projection :</p>
+                    <ul style="list-style: none; padding-left: 10px;">
+                        <li>📖 1D : Narratif + Code</li>
+                        <li>🎮 2D : Scène interactive</li>
+                        <li>🔗 Lien : Temps réel</li>
+                    </ul>
+                </div>
+                
+                <!-- Contrôles -->
+                <div class="controls">
+                    <button class="btn" onclick="moveLoumen()">🚶 Avancer</button>
+                    <button class="btn" onclick="showDialogue()">💬 Parler</button>
+                    <button class="btn" onclick="activatePortal()">🌀 Portail</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Position de Loumen
+        let loumenPos = 50;
+        let dialogueStep = 0;
+        
+        function moveLoumen() {
+            const loumen = document.getElementById('loumen');
+            loumenPos += 100;
+            if (loumenPos > 600) loumenPos = 50;
+            loumen.style.left = loumenPos + 'px';
+            
+            // Mise à jour 1D
+            addNarrative("Loumen se déplace dans la forêt...");
+        }
+        
+        function showDialogue() {
+            const dialogues = ['loumenDialogue', 'dudeDialogue'];
+            const current = dialogues[dialogueStep % 2];
+            
+            // Masquer tous les dialogues
+            dialogues.forEach(d => {
+                document.getElementById(d).classList.remove('active');
+            });
+            
+            // Afficher le dialogue actuel
+            document.getElementById(current).classList.add('active');
+            dialogueStep++;
+            
+            // Mise à jour 1D
+            const speaker = dialogueStep % 2 === 1 ? "Loumen" : "The Dude";
+            addNarrative(`${speaker} prend la parole...`);
+        }
+        
+        function activatePortal() {
+            const portal = document.getElementById('portalTree');
+            portal.style.animation = 'pulse 0.5s 5';
+            
+            // Effet visuel
+            setTimeout(() => {
+                portal.style.animation = 'pulse 2s infinite';
+                addNarrative("Le portail quantique s'active ! Connexion 1D→2D établie.");
+            }, 2500);
+        }
+        
+        function addNarrative(text) {
+            const narrative = document.createElement('div');
+            narrative.className = 'narrative';
+            narrative.innerHTML = `<p><em>${new Date().toLocaleTimeString()}</em> : ${text}</p>`;
+            document.querySelector('.dimension-1d').appendChild(narrative);
+            
+            // Auto-scroll
+            const dim1d = document.querySelector('.dimension-1d');
+            dim1d.scrollTop = dim1d.scrollHeight;
+        }
+        
+        // Interactions avec les arbres
+        document.querySelectorAll('.tree').forEach(tree => {
+            tree.addEventListener('click', function() {
+                if (this.classList.contains('portal')) {
+                    activatePortal();
+                } else {
+                    addNarrative("Cet arbre vibre doucement...");
+                }
+            });
+        });
+        
+        // Interactions avec les personnages
+        document.getElementById('loumen').addEventListener('click', () => {
+            showDialogue();
+        });
+        
+        document.getElementById('dude').addEventListener('click', () => {
+            dialogueStep = 1;
+            showDialogue();
+        });
+        
+        // Message initial
+        setTimeout(() => {
+            addNarrative("🌟 DÉBUT : Loumen entre dans la Forêt GROFI");
+            addNarrative("Vincent observe la projection 1D→2D en temps réel...");
+        }, 1000);
+    </script>
+</body>
+</html>

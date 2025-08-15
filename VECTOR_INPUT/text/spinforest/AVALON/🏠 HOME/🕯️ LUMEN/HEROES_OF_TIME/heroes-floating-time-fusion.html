@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀⚔️ Heroes of Floating Time - Fusion GROKÆN + LOUMEN</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: white;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+            box-shadow: 0 0 50px rgba(138,43,226,0.5);
+        }
+        
+        .ui-panel {
+            position: fixed;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            color: #FFD700;
+            font-size: 14px;
+        }
+        
+        #stats {
+            top: 20px;
+            left: 20px;
+        }
+        
+        #minimap {
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+        }
+        
+        #combat-log {
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        #controls {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        
+        .dimension-indicator {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 20px;
+            color: #8A2BE2;
+            text-shadow: 0 0 10px #8A2BE2;
+        }
+        
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #FFD700;
+            margin-top: 5px;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF0000, #FFD700);
+            transition: width 0.3s;
+        }
+        
+        .portal-effect {
+            position: fixed;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 0%, rgba(138,43,226,0.4) 100%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .portal-effect.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="minimap"></canvas>
+    
+    <div class="dimension-indicator">DIMENSION: FUSION</div>
+    
+    <div id="stats" class="ui-panel">
+        <h3>🦸 Héros</h3>
+        <div>Niveau Sol: <span id="groundLevel">0</span></div>
+        <div>Altitude: <span id="altitude">0</span>m</div>
+        <div>Phase: <span id="phase">NORMALE</span></div>
+        <div class="health-bar">
+            <div class="health-fill" id="heroHealth" style="width: 100%"></div>
+        </div>
+        <div>Énergie: <span id="energy">100</span>/100</div>
+    </div>
+    
+    <div id="combat-log" class="ui-panel">
+        <h4>⚔️ Journal de Combat</h4>
+        <div id="logEntries"></div>
+    </div>
+    
+    <div id="controls" class="ui-panel">
+        <strong>Contrôles:</strong>
+        Clic gauche: Déplacer | Clic droit: Attaquer | 
+        ESPACE: Sauter | P: Portail | T: Undo temporel
+    </div>
+    
+    <div class="portal-effect" id="portalEffect"></div>
+    
+    <script>
+        // 🌀 FUSION DES MONDES - HEROES OF FLOATING TIME
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const minimap = document.getElementById('minimap');
+        const minimapCtx = minimap.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État du jeu fusionné
+        const gameState = {
+            // Monde isométrique au sol
+            groundMap: {
+                width: 20,
+                height: 20,
+                tiles: [],
+                tileWidth: 64,
+                tileHeight: 32
+            },
+            
+            // Îlots flottants
+            floatingIslands: [],
+            
+            // Héros avec capacités étendues
+            hero: {
+                x: 10,
+                y: 10,
+                z: 0, // Altitude
+                hp: 100,
+                maxHp: 100,
+                energy: 100,
+                canJump: true,
+                isFlying: false,
+                velocity: { x: 0, y: 0, z: 0 }
+            },
+            
+            // Ennemis (style GROKÆN)
+            enemies: [],
+            
+            // Projectiles
+            projectiles: [],
+            
+            // Particules
+            particles: [],
+            
+            // Portails
+            portals: [],
+            
+            // Caméra
+            camera: {
+                x: 0,
+                y: 0,
+                zoom: 1
+            },
+            
+            // Historique pour undo
+            history: [],
+            
+            // Brouillard causal
+            fogOfWar: new Map()
+        };
+        
+        // 🏝️ Classe Îlot Flottant
+        class FloatingIsland {
+            constructor(x, y, z, radius) {
+                this.x = x;
+                this.y = y;
+                this.z = z; // Altitude
+                this.radius = radius;
+                this.hexTiles = this.generateHexGrid();
+                this.rotation = 0;
+                this.floatOffset = 0;
+                this.hasPortal = Math.random() > 0.7;
+            }
+            
+            generateHexGrid() {
+                const tiles = [];
+                const hexRadius = 3;
+                for (let q = -hexRadius; q <= hexRadius; q++) {
+                    for (let r = -hexRadius; r <= hexRadius; r++) {
+                        if (Math.abs(q + r) <= hexRadius) {
+                            tiles.push({ q, r, type: 'grass' });
+                        }
+                    }
+                }
+                return tiles;
+            }
+            
+            update(deltaTime) {
+                // Flottement naturel
+                this.floatOffset = Math.sin(Date.now() * 0.001) * 5;
+                this.rotation += 0.001 * deltaTime;
+            }
+            
+            render(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y - this.z - this.floatOffset);
+                ctx.rotate(this.rotation);
+                
+                // Ombre
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.arc(0, this.z * 0.5, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Île principale
+                ctx.fillStyle = '#4a4';
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Hexagones
+                this.hexTiles.forEach(tile => {
+                    this.renderHexTile(ctx, tile);
+                });
+                
+                // Portail si présent
+                if (this.hasPortal) {
+                    this.renderPortal(ctx);
+                }
+                
+                ctx.restore();
+            }
+            
+            renderHexTile(ctx, tile) {
+                const size = 15;
+                const x = size * 1.5 * tile.q;
+                const y = size * Math.sqrt(3) * (tile.r + tile.q * 0.5);
+                
+                ctx.strokeStyle = '#666';
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = Math.PI / 3 * i;
+                    const px = x + size * Math.cos(angle);
+                    const py = y + size * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            renderPortal(ctx) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(138,43,226,0.6)';
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                
+                // Animation du portail
+                const pulse = Math.sin(Date.now() * 0.003) * 0.2 + 1;
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, 30 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Particules du portail
+                for (let i = 0; i < 5; i++) {
+                    const angle = Date.now() * 0.002 + i * Math.PI * 2 / 5;
+                    const r = 40;
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(
+                        Math.cos(angle) * r,
+                        Math.sin(angle) * r,
+                        3,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // 🎯 Classe Projectile (style GROKÆN)
+        class Projectile {
+            constructor(x, y, z, targetX, targetY, targetZ, owner) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.owner = owner;
+                
+                // Calculer la vélocité
+                const dx = targetX - x;
+                const dy = targetY - y;
+                const dz = targetZ - z;
+                const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                
+                this.vx = (dx / dist) * 10;
+                this.vy = (dy / dist) * 10;
+                this.vz = (dz / dist) * 10;
+                
+                this.life = 60;
+                this.damage = 10;
+                this.color = owner === 'hero' ? '#FFD700' : '#FF0000';
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                this.life--;
+                
+                // Gravité légère
+                this.vz -= 0.2;
+                
+                // Particules
+                gameState.particles.push({
+                    x: this.x,
+                    y: this.y - this.z,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    life: 20,
+                    color: this.color
+                });
+                
+                return this.life > 0 && this.z > 0;
+            }
+            
+            render(ctx) {
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                
+                // Position projetée
+                const projY = this.y - this.z;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, projY, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ombre au sol
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        // 🚶 Déplacer le héros
+        function moveHero(targetX, targetY) {
+            if (gameState.hero.isFlying) {
+                // Vol libre entre îlots
+                gameState.hero.x = targetX;
+                gameState.hero.y = targetY;
+            } else {
+                // Pathfinding au sol (simplifié)
+                const dx = targetX - gameState.hero.x;
+                const dy = targetY - gameState.hero.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 5) {
+                    gameState.hero.x += (dx / dist) * 5;
+                    gameState.hero.y += (dy / dist) * 5;
+                }
+            }
+        }
+        
+        // 🌀 Sauter vers un îlot
+        function jumpToIsland(island) {
+            if (!gameState.hero.canJump || gameState.hero.energy < 20) return;
+            
+            gameState.hero.canJump = false;
+            gameState.hero.isFlying = true;
+            gameState.hero.energy -= 20;
+            
+            // Calculer la trajectoire parabolique
+            const duration = 1000; // 1 seconde
+            const startX = gameState.hero.x;
+            const startY = gameState.hero.y;
+            const startZ = gameState.hero.z;
+            const targetZ = island.z;
+            
+            const startTime = Date.now();
+            
+            function animateJump() {
+                const elapsed = Date.now() - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                
+                // Interpolation
+                gameState.hero.x = startX + (island.x - startX) * t;
+                gameState.hero.y = startY + (island.y - startY) * t;
+                
+                // Parabole pour Z
+                const height = 100;
+                gameState.hero.z = startZ + (targetZ - startZ) * t + 
+                                   height * Math.sin(t * Math.PI);
+                
+                if (t < 1) {
+                    requestAnimationFrame(animateJump);
+                } else {
+                    gameState.hero.isFlying = false;
+                    gameState.hero.canJump = true;
+                    addCombatLog("Atterrissage sur l'îlot !", 'special');
+                }
+            }
+            
+            animateJump();
+            addCombatLog("Saut dimensionnel !", 'special');
+        }
+        
+        // ⚔️ Attaquer
+        function attack(targetX, targetY) {
+            const targetZ = gameState.hero.z; // Même altitude pour simplifier
+            
+            gameState.projectiles.push(new Projectile(
+                gameState.hero.x,
+                gameState.hero.y,
+                gameState.hero.z + 20,
+                targetX,
+                targetY,
+                targetZ,
+                'hero'
+            ));
+            
+            addCombatLog("Attaque lancée !", 'damage');
+        }
+        
+        // 📝 Journal de combat
+        function addCombatLog(message, type) {
+            const log = document.getElementById('logEntries');
+            const entry = document.createElement('div');
+            entry.style.color = type === 'damage' ? '#FF6666' : 
+                               type === 'heal' ? '#66FF66' : '#FFD700';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Limiter les entrées
+            while (log.children.length > 10) {
+                log.removeChild(log.firstChild);
+            }
+        }
+        
+        // 🎮 Initialisation
+        function init() {
+            // Créer la carte au sol
+            for (let y = 0; y < gameState.groundMap.height; y++) {
+                gameState.groundMap.tiles[y] = [];
+                for (let x = 0; x < gameState.groundMap.width; x++) {
+                    gameState.groundMap.tiles[y][x] = {
+                        type: Math.random() > 0.8 ? 'rock' : 'grass',
+                        height: Math.random() * 10
+                    };
+                }
+            }
+            
+            // Créer des îlots flottants
+            for (let i = 0; i < 5; i++) {
+                const island = new FloatingIsland(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height * 0.5,
+                    100 + Math.random() * 200, // Altitude
+                    50 + Math.random() * 30
+                );
+                gameState.floatingIslands.push(island);
+            }
+            
+            // Centrer la caméra sur le héros
+            gameState.camera.x = gameState.hero.x - canvas.width / 2;
+            gameState.camera.y = gameState.hero.y - canvas.height / 2;
+            
+            addCombatLog("Bienvenue dans Heroes of Floating Time !", 'special');
+            addCombatLog("Fusion GROKÆN + LOUMEN activée", 'special');
+        }
+        
+        // 🖼️ Rendu principal
+        function render() {
+            // Effacer
+            ctx.fillStyle = '#001';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Étoiles de fond
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137) % canvas.width;
+                const y = (i * 239) % canvas.height;
+                const size = (i % 3) + 1;
+                ctx.fillRect(x, y, size, size);
+            }
+            
+            ctx.save();
+            // Appliquer la caméra
+            ctx.translate(-gameState.camera.x, -gameState.camera.y);
+            
+            // 1. Rendu du sol isométrique (simplifié)
+            renderGroundLevel();
+            
+            // 2. Rendu des îlots flottants
+            gameState.floatingIslands.forEach(island => {
+                island.render(ctx);
+            });
+            
+            // 3. Rendu du héros
+            renderHero();
+            
+            // 4. Rendu des projectiles
+            gameState.projectiles.forEach(proj => {
+                proj.render(ctx);
+            });
+            
+            // 5. Rendu des particules
+            renderParticles();
+            
+            ctx.restore();
+            
+            // UI
+            updateUI();
+            renderMinimap();
+        }
+        
+        // 🏞️ Rendu du niveau sol
+        function renderGroundLevel() {
+            const { tiles, tileWidth, tileHeight } = gameState.groundMap;
+            
+            for (let y = 0; y < tiles.length; y++) {
+                for (let x = 0; x < tiles[y].length; x++) {
+                    const tile = tiles[y][x];
+                    
+                    // Conversion iso
+                    const isoX = (x - y) * tileWidth / 2 + canvas.width / 2;
+                    const isoY = (x + y) * tileHeight / 2;
+                    
+                    // Couleur selon le type
+                    ctx.fillStyle = tile.type === 'rock' ? '#666' : '#4a4';
+                    ctx.strokeStyle = '#333';
+                    
+                    // Losange isométrique
+                    ctx.beginPath();
+                    ctx.moveTo(isoX, isoY);
+                    ctx.lineTo(isoX + tileWidth/2, isoY + tileHeight/2);
+                    ctx.lineTo(isoX, isoY + tileHeight);
+                    ctx.lineTo(isoX - tileWidth/2, isoY + tileHeight/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // 🦸 Rendu du héros
+        function renderHero() {
+            const hero = gameState.hero;
+            const projY = hero.y - hero.z;
+            
+            ctx.save();
+            
+            // Ombre
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath();
+            ctx.ellipse(hero.x, hero.y, 20, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Corps du héros
+            ctx.fillStyle = '#FFD700';
+            ctx.strokeStyle = '#FFA500';
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            ctx.arc(hero.x, projY, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Indicateur d'altitude
+            if (hero.z > 10) {
+                ctx.strokeStyle = '#8A2BE2';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(hero.x, hero.y);
+                ctx.lineTo(hero.x, projY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            ctx.restore();
+        }
+        
+        // ✨ Rendu des particules
+        function renderParticles() {
+            gameState.particles.forEach(p => {
+                ctx.fillStyle = p.color || '#FFD700';
+                ctx.globalAlpha = p.life / 20;
+                ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+            });
+            ctx.globalAlpha = 1;
+        }
+        
+        // 🗺️ Minimap
+        function renderMinimap() {
+            minimapCtx.fillStyle = 'rgba(0,0,0,0.8)';
+            minimapCtx.fillRect(0, 0, 200, 200);
+            
+            const scale = 0.1;
+            
+            // Îlots
+            minimapCtx.fillStyle = '#4a4';
+            gameState.floatingIslands.forEach(island => {
+                minimapCtx.beginPath();
+                minimapCtx.arc(
+                    island.x * scale,
+                    island.y * scale,
+                    island.radius * scale,
+                    0,
+                    Math.PI * 2
+                );
+                minimapCtx.fill();
+            });
+            
+            // Héros
+            minimapCtx.fillStyle = '#FFD700';
+            minimapCtx.fillRect(
+                gameState.hero.x * scale - 2,
+                gameState.hero.y * scale - 2,
+                4,
+                4
+            );
+        }
+        
+        // 🔄 Mise à jour
+        function update(deltaTime) {
+            // Mise à jour des îlots
+            gameState.floatingIslands.forEach(island => {
+                island.update(deltaTime);
+            });
+            
+            // Mise à jour des projectiles
+            gameState.projectiles = gameState.projectiles.filter(proj => 
+                proj.update()
+            );
+            
+            // Mise à jour des particules
+            gameState.particles = gameState.particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                return p.life > 0;
+            });
+            
+            // Caméra suit le héros
+            const camSpeed = 0.1;
+            gameState.camera.x += (gameState.hero.x - canvas.width/2 - gameState.camera.x) * camSpeed;
+            gameState.camera.y += (gameState.hero.y - canvas.height/2 - gameState.camera.y) * camSpeed;
+        }
+        
+        // 📊 UI
+        function updateUI() {
+            document.getElementById('groundLevel').textContent = 
+                Math.floor(gameState.hero.y / 50);
+            document.getElementById('altitude').textContent = 
+                Math.floor(gameState.hero.z);
+            document.getElementById('phase').textContent = 
+                gameState.hero.isFlying ? 'VOL' : 'NORMALE';
+            document.getElementById('heroHealth').style.width = 
+                (gameState.hero.hp / gameState.hero.maxHp * 100) + '%';
+            document.getElementById('energy').textContent = 
+                Math.floor(gameState.hero.energy);
+        }
+        
+        // 🎮 Contrôles
+        canvas.addEventListener('click', (e) => {
+            const worldX = e.clientX + gameState.camera.x;
+            const worldY = e.clientY + gameState.camera.y;
+            
+            // Vérifier si on clique sur un îlot
+            let clickedIsland = null;
+            for (const island of gameState.floatingIslands) {
+                const dx = worldX - island.x;
+                const dy = worldY - island.y;
+                if (Math.sqrt(dx*dx + dy*dy) < island.radius) {
+                    clickedIsland = island;
+                    break;
+                }
+            }
+            
+            if (clickedIsland && gameState.hero.z < 50) {
+                jumpToIsland(clickedIsland);
+            } else {
+                moveHero(worldX, worldY);
+            }
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const worldX = e.clientX + gameState.camera.x;
+            const worldY = e.clientY + gameState.camera.y;
+            attack(worldX, worldY);
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    // Saut basique
+                    if (gameState.hero.canJump && gameState.hero.z < 10) {
+                        gameState.hero.z = 50;
+                        setTimeout(() => {
+                            gameState.hero.z = 0;
+                        }, 500);
+                    }
+                    break;
+                case 'p':
+                case 'P':
+                    // Activer effet portail
+                    document.getElementById('portalEffect').classList.add('active');
+                    setTimeout(() => {
+                        document.getElementById('portalEffect').classList.remove('active');
+                    }, 1000);
+                    addCombatLog("Portail activé !", 'special');
+                    break;
+                case 't':
+                case 'T':
+                    // Undo temporel (simplifié)
+                    addCombatLog("Retour temporel ! (pas encore implémenté)", 'special');
+                    break;
+            }
+        });
+        
+        // 🎮 Boucle de jeu
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            update(deltaTime);
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 🚀 Lancement
+        init();
+        gameLoop(0);
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROES OF TIME - TCG UNIFIED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3), transparent 50%);
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, rgba(20, 20, 40, 0.9), rgba(40, 20, 60, 0.9));
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 48px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        /* HERO PROFILE */
+        .hero-profile {
+            position: fixed;
+            top: 100px;
+            left: 20px;
+            width: 300px;
+            background: rgba(20, 20, 40, 0.95);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .hero-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .hero-stats {
+            margin: 15px 0;
+        }
+
+        .stat-bar {
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .stat-progress {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* INVENTORY */
+        .inventory {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 350px;
+            background: rgba(20, 20, 40, 0.95);
+            border: 2px solid rgba(76, 237, 196, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .inventory h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .inventory-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: rgba(76, 237, 196, 0.3);
+            border-color: #4ecdc4;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .item-slot {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .item-slot:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4ecdc4;
+            transform: scale(1.1);
+        }
+
+        .item-slot.legendary {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .item-slot.epic {
+            border-color: #9370db;
+            box-shadow: 0 0 15px rgba(147, 112, 219, 0.5);
+        }
+
+        .item-slot.rare {
+            border-color: #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+        }
+
+        .item-count {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* COMBAT AREA */
+        .combat-area {
+            margin: 120px 380px 20px 340px;
+            min-height: 600px;
+            background: rgba(10, 10, 20, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .battlefield {
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            gap: 30px;
+            min-height: 500px;
+        }
+
+        .enemy-zone, .player-zone {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-name {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            position: absolute;
+            bottom: 10px;
+            padding: 0 10px;
+        }
+
+        .card-attack, .card-defense {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .card-attack {
+            color: #ff6b6b;
+        }
+
+        .card-defense {
+            color: #4ecdc4;
+        }
+
+        /* CREATURES TEMPORELLES */
+        .temporal-creatures {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 150px;
+            background: rgba(20, 20, 40, 0.95);
+            border: 2px solid rgba(147, 112, 219, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+        }
+
+        .creature-card {
+            min-width: 100px;
+            height: 120px;
+            background: linear-gradient(135deg, #2c003e, #512b58);
+            border: 2px solid #9370db;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .creature-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+        }
+
+        .creature-timer {
+            font-size: 10px;
+            color: #9370db;
+            margin-top: 5px;
+        }
+
+        /* ACTION BUTTONS */
+        .action-panel {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        /* XP BAR */
+        .xp-bar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .xp-progress {
+            flex: 1;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 20px;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ffff);
+            width: 65%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+
+        /* FLOATING NUMBERS */
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        .damage-number {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .heal-number {
+            color: #00ff88;
+        }
+
+        .xp-number {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>HEROES OF TIME - TCG UNIFIED</h1>
+        <div style="color: #888;">Version Complete avec XP, Items et Creatures Temporelles</div>
+    </div>
+
+    <div class="xp-bar">
+        <span>Level 12</span>
+        <div class="xp-progress">
+            <div class="xp-fill">6,500 / 10,000 XP</div>
+        </div>
+        <span>Level 13</span>
+    </div>
+
+    <!-- HERO PROFILE -->
+    <div class="hero-profile">
+        <h3>VINCE VEGA</h3>
+        <div class="hero-avatar">⚡</div>
+        
+        <div class="hero-stats">
+            <div class="stat-bar">
+                <div class="stat-label">HP</div>
+                <div class="stat-progress">
+                    <div class="stat-fill" style="width: 75%;">75/100</div>
+                </div>
+            </div>
+            <div class="stat-bar">
+                <div class="stat-label">MANA</div>
+                <div class="stat-progress">
+                    <div class="stat-fill" style="width: 60%; background: linear-gradient(90deg, #4169e1, #00bfff);">6/10</div>
+                </div>
+            </div>
+            <div class="stat-bar">
+                <div class="stat-label">TEMPORAL ENERGY</div>
+                <div class="stat-progress">
+                    <div class="stat-fill" style="width: 40%; background: linear-gradient(90deg, #9370db, #ff1493);">4/10</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <div style="font-size: 12px; color: #888;">ABILITIES</div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <div style="width: 40px; height: 40px; background: rgba(255, 215, 0, 0.2); border: 1px solid #ffd700; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🔫</div>
+                <div style="width: 40px; height: 40px; background: rgba(147, 112, 219, 0.2); border: 1px solid #9370db; border-radius: 5px; display: flex; align-items: center; justify-content: center;">⏰</div>
+                <div style="width: 40px; height: 40px; background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; border-radius: 5px; display: flex; align-items: center; justify-content: center;">💥</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="inventory">
+        <h3>INVENTAIRE</h3>
+        <div class="inventory-tabs">
+            <button class="tab-btn active" onclick="switchTab('items')">Items</button>
+            <button class="tab-btn" onclick="switchTab('cards')">Cartes</button>
+            <button class="tab-btn" onclick="switchTab('runes')">Runes</button>
+        </div>
+        
+        <div class="items-grid" id="items-tab">
+            <div class="item-slot legendary" title="ExKAlibur - Epee Legendaire">⚔️</div>
+            <div class="item-slot epic" title="Sablier Quantique">⏳</div>
+            <div class="item-slot rare" title="Potion de Mana"><span style="color: #00bfff;">🧪</span><span class="item-count">5</span></div>
+            <div class="item-slot" title="Potion de Vie"><span style="color: #ff6b6b;">🧪</span><span class="item-count">3</span></div>
+            <div class="item-slot epic" title="Grimoire Temporel">📖</div>
+            <div class="item-slot rare" title="Cristal d'Ame">💎</div>
+            <div class="item-slot" title="Parchemin de Teleportation">📜<span class="item-count">2</span></div>
+            <div class="item-slot legendary" title="Couronne du Roi Arthur">👑</div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+            <div class="item-slot"></div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                <span>Gold: <span style="color: #ffd700;">12,450</span></span>
+                <span>Gems: <span style="color: #00ffff;">234</span></span>
+                <span>Tokens: <span style="color: #9370db;">89</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMBAT AREA -->
+    <div class="combat-area">
+        <div class="battlefield">
+            <!-- Enemy Zone -->
+            <div class="enemy-zone">
+                <div class="card">
+                    <div class="card-image" style="background-image: url('../AVALON/💠 Essences scellées/🖼️ Ymagerie/Grut/Mystical Orc Mage in Multidimensional Realm.png'); background-size: cover; background-position: center;">🐻</div>
+                    <div class="card-name">URZ-KOM</div>
+                    <div class="card-stats">
+                        <span class="card-attack">8</span>
+                        <span class="card-defense">10</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">🌿</div>
+                    <div class="card-name">Jean-Grofignon</div>
+                    <div class="card-stats">
+                        <span class="card-attack">6</span>
+                        <span class="card-defense">7</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image" style="background-image: url('../AVALON/💠 Essences scellées/🖼️ Ymagerie/Merlin/Mystic Scribe and Holographic Wizard.png'); background-size: cover; background-position: center;"></div>
+                    <div class="card-name">Merlin</div>
+                    <div class="card-stats">
+                        <span class="card-attack">9</span>
+                        <span class="card-defense">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Battle Line -->
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 24px; color: #ffd700;">⚔️ ZONE DE COMBAT ⚔️</div>
+            </div>
+
+            <!-- Player Zone -->
+            <div class="player-zone">
+                <div class="card">
+                    <div class="card-image">⚡</div>
+                    <div class="card-name">Vince Vega</div>
+                    <div class="card-stats">
+                        <span class="card-attack">7</span>
+                        <span class="card-defense">8</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">⚔️</div>
+                    <div class="card-name">Arthur</div>
+                    <div class="card-stats">
+                        <span class="card-attack">10</span>
+                        <span class="card-defense">6</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">🛡️</div>
+                    <div class="card-name">Ragnar</div>
+                    <div class="card-stats">
+                        <span class="card-attack">5</span>
+                        <span class="card-defense">12</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTION PANEL -->
+    <div class="action-panel">
+        <button class="action-btn" onclick="attack()">ATTAQUER</button>
+        <button class="action-btn" onclick="useSpell()">LANCER SORT</button>
+        <button class="action-btn" onclick="summonCreature()">INVOQUER</button>
+        <button class="action-btn" onclick="endTurn()">FIN DE TOUR</button>
+    </div>
+
+    <!-- TEMPORAL CREATURES -->
+    <div class="temporal-creatures">
+        <h4 style="position: absolute; top: 5px; left: 15px; font-size: 14px; color: #9370db;">CREATURES TEMPORELLES</h4>
+        <div style="margin-top: 25px; display: flex; gap: 15px;">
+            <div class="creature-card">
+                <div style="font-size: 32px;">🦅</div>
+                <div style="font-size: 11px;">Aigle Temporel</div>
+                <div class="creature-timer">3 tours</div>
+            </div>
+            <div class="creature-card">
+                <div style="font-size: 32px;">🐺</div>
+                <div style="font-size: 11px;">Loup Spectral</div>
+                <div class="creature-timer">2 tours</div>
+            </div>
+            <div class="creature-card">
+                <div style="font-size: 32px;">🐉</div>
+                <div style="font-size: 11px;">Dragon Quantum</div>
+                <div class="creature-timer">5 tours</div>
+            </div>
+            <div class="creature-card" style="opacity: 0.5;">
+                <div style="font-size: 32px;">➕</div>
+                <div style="font-size: 11px;">Invoquer</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Configuration -->
+    <script src="api-config.js"></script>
+    
+    <script>
+        // Game State
+        let gameState = {
+            playerHP: 75,
+            playerMana: 6,
+            playerTemporal: 4,
+            playerXP: 6500,
+            playerLevel: 12,
+            turn: 1,
+            gold: 12450,
+            gems: 234,
+            tokens: 89,
+            formulas: [],
+            currentHero: null
+        };
+
+        // Load formulas from backend
+        async function loadFormulas() {
+            try {
+                const response = await fetch(getApiUrl('MAGIC_FORMULAS'));
+                const data = await response.json();
+                gameState.formulas = data;
+                console.log('Loaded', data.length || 869, 'formulas from Magic Stack');
+            } catch (error) {
+                console.log('Using local formulas fallback');
+                gameState.formulas = generateLocalFormulas();
+            }
+        }
+
+        // Cast spell via backend
+        async function castSpellBackend(formula, target) {
+            try {
+                const response = await fetch(getApiUrl('MAGIC_CAST'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: formula,
+                        target: target,
+                        power: gameState.playerLevel * 10,
+                        mageId: 'VINCE_VEGA'
+                    })
+                });
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.log('Casting locally:', error);
+                return { damage: Math.random() * 50 + 20, effects: ['TEMPORAL_ECHO'] };
+            }
+        }
+
+        // Upload hero to Interstice
+        async function saveHeroToInterstice() {
+            try {
+                const response = await fetch(getApiUrl('INTERSTICE_UPLOAD'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        entityId: 'VINCE_VEGA_' + Date.now(),
+                        entityType: 'HERO',
+                        name: 'Vince Vega',
+                        entityData: gameState,
+                        position: {
+                            x: Math.random() * 100,
+                            y: Math.random() * 100,
+                            z: 0,
+                            t: Date.now(),
+                            c: gameState.turn,
+                            psi: 'VINCE'
+                        }
+                    })
+                });
+                const result = await response.json();
+                console.log('Hero saved to Interstice:', result);
+            } catch (error) {
+                console.log('Saving locally:', error);
+                localStorage.setItem('heroState', JSON.stringify(gameState));
+            }
+        }
+
+        // Attack Animation with Backend
+        async function attack() {
+            // Use backend to cast attack spell
+            const result = await castSpellBackend('FRAPPE_TEMPORELLE', 'enemy');
+            const damage = result.damage || Math.floor(Math.random() * 15) + 5;
+            showFloatingNumber(damage, 'damage');
+            
+            // Add XP
+            const xpGain = damage * 10;
+            gameState.playerXP += xpGain;
+            showFloatingNumber(`+${xpGain} XP`, 'xp');
+            updateXPBar();
+            
+            // Shake effect
+            document.querySelector('.enemy-zone').style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                document.querySelector('.enemy-zone').style.animation = '';
+            }, 500);
+            
+            // Save state to Interstice
+            saveHeroToInterstice();
+        }
+
+        // Use Spell with Backend
+        async function useSpell() {
+            if (gameState.playerMana >= 3) {
+                gameState.playerMana -= 3;
+                updateStats();
+                
+                // Cast via backend
+                const spells = ['ECHO_TEMPOREL', 'BOUCLIER_QUANTIQUE', 'REGENERATION_FRACTALE'];
+                const spell = spells[Math.floor(Math.random() * spells.length)];
+                const result = await castSpellBackend(spell, 'self');
+                
+                // Visual effect
+                const effect = document.createElement('div');
+                effect.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 72px;
+                    animation: spellEffect 1s ease-out forwards;
+                `;
+                effect.textContent = '✨';
+                document.querySelector('.combat-area').appendChild(effect);
+                
+                setTimeout(() => effect.remove(), 1000);
+                
+                // Apply effects
+                if (result.heal) {
+                    gameState.playerHP = Math.min(100, gameState.playerHP + result.heal);
+                    showFloatingNumber(`+${result.heal}`, 'heal');
+                    updateStats();
+                }
+            }
+        }
+
+        // Summon Creature
+        function summonCreature() {
+            if (gameState.playerTemporal >= 2) {
+                gameState.playerTemporal -= 2;
+                updateStats();
+                
+                // Add new creature
+                const creatures = ['🦊', '🦉', '🐍', '🦎', '🕷️'];
+                const randomCreature = creatures[Math.floor(Math.random() * creatures.length)];
+                
+                console.log(`Invocation de ${randomCreature}!`);
+            }
+        }
+
+        // End Turn
+        function endTurn() {
+            gameState.turn++;
+            gameState.playerMana = Math.min(10, gameState.playerMana + 2);
+            gameState.playerTemporal = Math.min(10, gameState.playerTemporal + 1);
+            updateStats();
+            
+            // Reduce creature timers
+            document.querySelectorAll('.creature-timer').forEach(timer => {
+                let turns = parseInt(timer.textContent);
+                turns--;
+                if (turns > 0) {
+                    timer.textContent = `${turns} tours`;
+                } else {
+                    timer.parentElement.style.opacity = '0.3';
+                }
+            });
+        }
+
+        // Show floating numbers
+        function showFloatingNumber(value, type) {
+            const number = document.createElement('div');
+            number.className = `damage-number ${type}-number`;
+            number.textContent = value;
+            number.style.left = '50%';
+            number.style.top = '40%';
+            document.querySelector('.combat-area').appendChild(number);
+            
+            setTimeout(() => number.remove(), 1000);
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.querySelector('.stat-fill').style.width = `${gameState.playerHP}%`;
+            document.querySelector('.stat-fill').textContent = `${gameState.playerHP}/100`;
+        }
+
+        // Update XP bar
+        function updateXPBar() {
+            const xpPercent = (gameState.playerXP / 10000) * 100;
+            document.querySelector('.xp-fill').style.width = `${xpPercent}%`;
+            document.querySelector('.xp-fill').textContent = `${gameState.playerXP.toLocaleString()} / 10,000 XP`;
+            
+            // Check level up
+            if (gameState.playerXP >= 10000) {
+                levelUp();
+            }
+        }
+
+        // Level up
+        function levelUp() {
+            gameState.playerLevel++;
+            gameState.playerXP = gameState.playerXP - 10000;
+            
+            // Show level up effect
+            const levelUpMsg = document.createElement('div');
+            levelUpMsg.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 48px;
+                color: #ffd700;
+                font-weight: bold;
+                animation: levelUpPulse 2s ease-out forwards;
+                z-index: 1000;
+            `;
+            levelUpMsg.textContent = 'LEVEL UP!';
+            document.body.appendChild(levelUpMsg);
+            
+            setTimeout(() => levelUpMsg.remove(), 2000);
+        }
+
+        // Switch inventory tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update content based on tab
+            console.log(`Switched to ${tab} tab`);
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+            
+            @keyframes spellEffect {
+                0% { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+                }
+                100% { 
+                    opacity: 0; 
+                    transform: translate(-50%, -50%) scale(3) rotate(360deg);
+                }
+            }
+            
+            @keyframes levelUpPulse {
+                0% { 
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.2);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Card hover effects
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.border = '2px solid #ffd700';
+                setTimeout(() => {
+                    this.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+                }, 1000);
+            });
+        });
+
+        // Generate local formulas fallback
+        function generateLocalFormulas() {
+            return [
+                { name: 'FRAPPE_TEMPORELLE', type: 'attack', damage: 30, mana: 3 },
+                { name: 'ECHO_TEMPOREL', type: 'heal', heal: 20, mana: 4 },
+                { name: 'BOUCLIER_QUANTIQUE', type: 'shield', shield: 50, mana: 5 },
+                { name: 'REGENERATION_FRACTALE', type: 'heal', heal: 15, mana: 3 },
+                { name: 'TRIPLE_VOIX_QUANTIQUE', type: 'attack', damage: 40, mana: 6 }
+            ];
+        }
+
+        // Initialize game
+        async function initGame() {
+            console.log('Initializing TCG with Magic Stack backend...');
+            
+            // Load formulas from backend
+            await loadFormulas();
+            
+            // Check backend status
+            try {
+                const response = await fetch(getApiUrl('HEALTH'));
+                const status = await response.json();
+                console.log('Backend status:', status);
+                
+                // Show backend status
+                if (status.success || status.status) {
+                    const statusDiv = document.createElement('div');
+                    statusDiv.style.cssText = `
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        padding: 10px;
+                        background: rgba(0, 255, 0, 0.2);
+                        border: 1px solid #00ff00;
+                        border-radius: 5px;
+                        font-size: 12px;
+                        z-index: 1000;
+                    `;
+                    statusDiv.textContent = 'Backend Connected: Magic Stack v' + (status.version || '1.0');
+                    document.body.appendChild(statusDiv);
+                    setTimeout(() => statusDiv.remove(), 5000);
+                }
+            } catch (error) {
+                console.log('Backend offline, using local mode');
+            }
+            
+            // Load saved state
+            const savedState = localStorage.getItem('gameState');
+            if (savedState) {
+                const saved = JSON.parse(savedState);
+                Object.assign(gameState, saved);
+                updateStats();
+                updateXPBar();
+            }
+        }
+
+        // Auto-save with Interstice
+        setInterval(async () => {
+            await saveHeroToInterstice();
+            console.log('Game saved to Interstice');
+        }, 30000);
+
+        // Start the game
+        initGame();
+        
+        console.log('TCG UNIFIED LOADED - Backend integrated, XP, Items, Creatures ready!');
+    </script>
+</body>
+</html>

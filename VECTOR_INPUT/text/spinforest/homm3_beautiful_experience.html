@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes III - Beautiful SpinForest Experience</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            font-family: 'MedievalSharp', serif;
+            overflow: hidden;
+        }
+        
+        /* Canvas principal avec effet */
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 5px solid transparent;
+            background: linear-gradient(45deg, #8B4513, #D2691E, #FFD700, #D2691E, #8B4513);
+            background-size: 400% 400%;
+            animation: borderGlow 3s ease infinite;
+            padding: 3px;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6),
+                        inset 0 0 20px rgba(255, 215, 0, 0.3);
+            cursor: crosshair;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* HUD amélioré */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4),
+                        inset 0 0 20px rgba(255, 215, 0, 0.1);
+            min-width: 200px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .resource-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 15px;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+        }
+        
+        /* Mini-map stylée */
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+            border: 3px solid #FFD700;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4),
+                        inset 0 0 20px rgba(255, 215, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+        
+        /* Info panel amélioré */
+        #infoPanel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 350px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4),
+                        inset 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        
+        #infoPanel h3 {
+            margin: 0 0 15px 0;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Contrôles stylés */
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4),
+                        inset 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 8px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #A0522D 0%, #CD853F 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.7);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        /* Loader amélioré */
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+        }
+        
+        #loader h2 {
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
+        }
+        
+        .loading-bar {
+            width: 400px;
+            height: 30px;
+            background: #1a1a1a;
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+            background-size: 200% 100%;
+            animation: loadingPulse 2s ease-in-out infinite;
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+        
+        @keyframes loadingPulse {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 10px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            font-size: 14px;
+            max-width: 300px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Effet de particules */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules de fond -->
+    <canvas id="particles"></canvas>
+    
+    <!-- Loader -->
+    <div id="loader">
+        <h2>✨ Chargement du Monde de SpinForest ✨</h2>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+        <p id="loadingStatus">Initialisation de la magie...</p>
+    </div>
+
+    <!-- Canvas de jeu -->
+    <canvas id="gameCanvas" style="display: none;"></canvas>
+    
+    <!-- HUD -->
+    <div id="hud" style="display: none;">
+        <h3 style="color: #FFD700; margin: 0 0 15px 0;">Royaume de SpinForest</h3>
+        <div class="resource">
+            <span class="resource-icon">💰</span>
+            <span id="gold">10000</span> Or
+        </div>
+        <div class="resource">
+            <span class="resource-icon">🪵</span>
+            <span id="wood">20</span> Bois
+        </div>
+        <div class="resource">
+            <span class="resource-icon">⛏️</span>
+            <span id="ore">20</span> Minerai
+        </div>
+        <div class="resource">
+            <span class="resource-icon">💎</span>
+            <span id="gems">10</span> Gemmes
+        </div>
+        <div class="resource">
+            <span class="resource-icon">🔮</span>
+            <span id="crystal">5</span> Cristaux
+        </div>
+        <hr style="border-color: #FFD700; opacity: 0.5;">
+        <div style="font-size: 16px;">
+            <div>⏰ Tour: <span id="turn" style="color: #FFD700;">1</span></div>
+            <div>📅 Semaine: <span id="week" style="color: #FFD700;">1</span></div>
+            <div>🌙 Mois: <span id="month" style="color: #FFD700;">1</span></div>
+        </div>
+    </div>
+    
+    <!-- Mini-map -->
+    <div id="minimap" style="display: none;">
+        <canvas id="minimapCanvas"></canvas>
+    </div>
+    
+    <!-- Panel d'info -->
+    <div id="infoPanel" style="display: none;">
+        <h3>Informations du Terrain</h3>
+        <div id="tileInfo">
+            <p style="color: #888;">Survolez la carte pour explorer...</p>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div id="controls" style="display: none;">
+        <h4 style="color: #FFD700; margin: 0 0 10px 0;">Contrôles</h4>
+        <button onclick="game.toggleGrid()">🔲 Grille</button>
+        <button onclick="game.toggleTextures()">🎨 Textures</button>
+        <button onclick="game.centerCamera()">🎯 Centrer</button>
+        <button onclick="game.endTurn()">⏭️ Fin Tour</button>
+        <button onclick="game.saveGame()">💾 Sauver</button>
+    </div>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Configuration améliorée
+        const CONFIG = {
+            tileSize: 64,
+            mapWidth: 50,
+            mapHeight: 50,
+            viewportWidth: 15,
+            viewportHeight: 11,
+            animationSpeed: 100,
+            particleCount: 50
+        };
+        
+        // Types de terrain avec textures
+        const TERRAIN_TYPES = {
+            GRASS: {
+                id: 0,
+                name: 'Plaines Verdoyantes',
+                color: '#4a7c3c',
+                texture: 'grass',
+                movement: 1,
+                symbol: '🌿',
+                description: 'Des plaines fertiles, idéales pour voyager rapidement.'
+            },
+            FOREST: {
+                id: 1,
+                name: 'Forêt Mystique',
+                color: '#2d5016',
+                texture: 'forest',
+                movement: 1.5,
+                symbol: '🌲',
+                description: 'Une forêt dense qui ralentit la progression mais offre du bois.'
+            },
+            MOUNTAIN: {
+                id: 2,
+                name: 'Montagnes Rocheuses',
+                color: '#8b7355',
+                texture: 'mountain',
+                movement: 3,
+                symbol: '⛰️',
+                description: 'Des pics escarpés difficiles à franchir, riches en minerai.'
+            },
+            WATER: {
+                id: 3,
+                name: 'Eaux Profondes',
+                color: '#4682b4',
+                texture: 'water',
+                movement: Infinity,
+                symbol: '🌊',
+                description: 'Des eaux infranchissables sans navire.'
+            },
+            SWAMP: {
+                id: 4,
+                name: 'Marais Putrides',
+                color: '#556b2f',
+                texture: 'swamp',
+                movement: 2,
+                symbol: '🌫️',
+                description: 'Un terrain traître qui épuise les troupes.'
+            },
+            ROAD: {
+                id: 5,
+                name: 'Route Pavée',
+                color: '#d2691e',
+                texture: 'road',
+                movement: 0.75,
+                symbol: '🛤️',
+                description: 'Une route bien entretenue pour des déplacements rapides.'
+            },
+            LAVA: {
+                id: 6,
+                name: 'Terres Volcaniques',
+                color: '#ff4500',
+                texture: 'lava',
+                movement: 2.5,
+                symbol: '🌋',
+                description: 'Des terres brûlantes dangereuses à traverser.'
+            },
+            SNOW: {
+                id: 7,
+                name: 'Toundra Gelée',
+                color: '#f0f8ff',
+                texture: 'snow',
+                movement: 1.8,
+                symbol: '❄️',
+                description: 'Un désert de glace qui ralentit la progression.'
+            }
+        };
+        
+        // Classe principale améliorée
+        class BeautifulHeroesGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.minimapCanvas = document.getElementById('minimapCanvas');
+                this.minimapCtx = this.minimapCanvas.getContext('2d');
+                
+                this.camera = { x: 0, y: 0 };
+                this.showGrid = true;
+                this.showTextures = true;
+                this.selectedTile = null;
+                this.hoveredTile = null;
+                
+                this.resources = {
+                    gold: 10000,
+                    wood: 20,
+                    ore: 20,
+                    gems: 10,
+                    crystal: 5
+                };
+                
+                this.turn = 1;
+                this.week = 1;
+                this.month = 1;
+                
+                this.map = null;
+                this.objects = null;
+                this.textures = {};
+                this.animations = {};
+                
+                this.setupCanvas();
+                this.initParticles();
+                this.loadAssets();
+            }
+            
+            setupCanvas() {
+                // Canvas principal
+                this.canvas.width = CONFIG.viewportWidth * CONFIG.tileSize;
+                this.canvas.height = CONFIG.viewportHeight * CONFIG.tileSize;
+                
+                // Mini-map
+                this.minimapCanvas.width = 250;
+                this.minimapCanvas.height = 250;
+                
+                // Events
+                this.canvas.addEventListener('click', (e) => this.handleClick(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+                
+                // Animation loop
+                this.lastTime = 0;
+                this.animationFrame = 0;
+            }
+            
+            initParticles() {
+                const particleCanvas = document.getElementById('particles');
+                particleCanvas.width = window.innerWidth;
+                particleCanvas.height = window.innerHeight;
+                const pCtx = particleCanvas.getContext('2d');
+                
+                const particles = [];
+                for (let i = 0; i < CONFIG.particleCount; i++) {
+                    particles.push({
+                        x: Math.random() * particleCanvas.width,
+                        y: Math.random() * particleCanvas.height,
+                        size: Math.random() * 3 + 1,
+                        speedX: (Math.random() - 0.5) * 0.5,
+                        speedY: (Math.random() - 0.5) * 0.5,
+                        opacity: Math.random() * 0.5 + 0.2
+                    });
+                }
+                
+                const animateParticles = () => {
+                    pCtx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+                    pCtx.fillRect(0, 0, particleCanvas.width, particleCanvas.height);
+                    
+                    particles.forEach(p => {
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        
+                        if (p.x < 0) p.x = particleCanvas.width;
+                        if (p.x > particleCanvas.width) p.x = 0;
+                        if (p.y < 0) p.y = particleCanvas.height;
+                        if (p.y > particleCanvas.height) p.y = 0;
+                        
+                        pCtx.fillStyle = `rgba(255, 215, 0, ${p.opacity})`;
+                        pCtx.beginPath();
+                        pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        pCtx.fill();
+                    });
+                    
+                    requestAnimationFrame(animateParticles);
+                };
+                
+                animateParticles();
+            }
+            
+            async loadAssets() {
+                try {
+                    this.updateLoading(10, 'Chargement des textures...');
+                    
+                    // Charger les textures (simulé pour l'instant)
+                    await this.loadTextures();
+                    
+                    this.updateLoading(40, 'Chargement de la carte...');
+                    
+                    // Charger la map
+                    await this.loadMap();
+                    
+                    this.updateLoading(70, 'Préparation des créatures...');
+                    
+                    // Charger les sprites
+                    await this.loadSprites();
+                    
+                    this.updateLoading(90, 'Finalisation...');
+                    
+                    setTimeout(() => {
+                        this.updateLoading(100, 'Bienvenue dans SpinForest !');
+                        setTimeout(() => this.startGame(), 500);
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Erreur de chargement:', error);
+                    this.generateBeautifulTestMap();
+                    this.startGame();
+                }
+            }
+            
+            async loadTextures() {
+                // Simuler le chargement des textures
+                // Dans la vraie version, on chargerait les images découpées
+                const textureNames = ['grass', 'forest', 'mountain', 'water', 'swamp', 'road', 'lava', 'snow'];
+                
+                for (const name of textureNames) {
+                    // Pour l'instant, on crée des patterns de couleur
+                    const canvas = document.createElement('canvas');
+                    canvas.width = CONFIG.tileSize;
+                    canvas.height = CONFIG.tileSize;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Créer un pattern unique pour chaque terrain
+                    const terrain = Object.values(TERRAIN_TYPES).find(t => t.texture === name);
+                    if (terrain) {
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(0, 0, CONFIG.tileSize, CONFIG.tileSize);
+                        
+                        // Ajouter des détails
+                        ctx.globalAlpha = 0.3;
+                        for (let i = 0; i < 20; i++) {
+                            ctx.fillStyle = i % 2 ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                            ctx.fillRect(
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * 10 + 5,
+                                Math.random() * 10 + 5
+                            );
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+                    
+                    this.textures[name] = canvas;
+                }
+            }
+            
+            async loadSprites() {
+                // Charger les sprites des créatures et objets
+                // Pour l'instant on utilise des emojis
+                this.sprites = {
+                    castle: '🏰',
+                    treasure: '💰',
+                    creature: '🐉',
+                    artifact: '⚔️',
+                    anchor: '⚓',
+                    temple: '🏛️',
+                    mine: '⛏️',
+                    hero: '🦸',
+                    portal: '🌀'
+                };
+            }
+            
+            async loadMap() {
+                try {
+                    const response = await fetch('homm3_spinforest_map.json');
+                    const mapData = await response.json();
+                    
+                    this.map = mapData.terrain;
+                    this.objects = mapData.objects;
+                    this.objectData = mapData.object_data;
+                    
+                } catch (error) {
+                    console.log('Génération d\'une map de test...');
+                    this.generateBeautifulTestMap();
+                }
+            }
+            
+            generateBeautifulTestMap() {
+                this.map = [];
+                this.objects = [];
+                this.objectData = {};
+                
+                // Générer une map plus intéressante avec des biomes
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    this.map[y] = [];
+                    this.objects[y] = [];
+                    
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        // Créer des biomes basés sur la position
+                        let terrain = 0; // Grass par défaut
+                        
+                        // Zone de forêt au nord-ouest
+                        if (x < 20 && y < 20) {
+                            terrain = Math.random() < 0.7 ? 1 : 0; // Forest
+                        }
+                        // Montagnes au nord-est
+                        else if (x > 30 && y < 15) {
+                            terrain = Math.random() < 0.6 ? 2 : 0; // Mountain
+                        }
+                        // Lac au centre
+                        else if (Math.abs(x - 25) < 5 && Math.abs(y - 25) < 5) {
+                            terrain = 3; // Water
+                        }
+                        // Marais au sud
+                        else if (y > 35) {
+                            terrain = Math.random() < 0.4 ? 4 : 0; // Swamp
+                        }
+                        // Zone volcanique au sud-est
+                        else if (x > 35 && y > 30) {
+                            terrain = Math.random() < 0.3 ? 6 : terrain; // Lava
+                        }
+                        // Toundra au nord
+                        else if (y < 5) {
+                            terrain = Math.random() < 0.5 ? 7 : terrain; // Snow
+                        }
+                        
+                        this.map[y][x] = terrain;
+                        this.objects[y][x] = 0;
+                    }
+                }
+                
+                // Ajouter des routes qui connectent les zones
+                this.createRoad(10, 10, 40, 40);
+                this.createRoad(40, 10, 10, 40);
+                
+                // Placer des objets intéressants
+                this.placeObject(10, 10, 1, { type: 'castle', name: 'Château du Nord' });
+                this.placeObject(40, 40, 1, { type: 'castle', name: 'Forteresse du Sud' });
+                this.placeObject(25, 5, 3, { type: 'creature', name: 'Dragon de Glace' });
+                this.placeObject(25, 45, 3, { type: 'creature', name: 'Hydre des Marais' });
+                
+                // Trésors cachés
+                for (let i = 0; i < 10; i++) {
+                    const x = Math.floor(Math.random() * CONFIG.mapWidth);
+                    const y = Math.floor(Math.random() * CONFIG.mapHeight);
+                    if (this.map[y][x] !== 3 && this.objects[y][x] === 0) {
+                        this.placeObject(x, y, 2, { type: 'treasure', gold: Math.floor(Math.random() * 5000) + 1000 });
+                    }
+                }
+            }
+            
+            createRoad(x1, y1, x2, y2) {
+                // Algorithme de ligne simple pour créer une route
+                const dx = Math.abs(x2 - x1);
+                const dy = Math.abs(y2 - y1);
+                const sx = x1 < x2 ? 1 : -1;
+                const sy = y1 < y2 ? 1 : -1;
+                let err = dx - dy;
+                let x = x1;
+                let y = y1;
+                
+                while (x !== x2 || y !== y2) {
+                    if (this.map[y][x] !== 3) { // Pas sur l'eau
+                        this.map[y][x] = 5; // Road
+                    }
+                    
+                    const e2 = 2 * err;
+                    if (e2 > -dy) {
+                        err -= dy;
+                        x += sx;
+                    }
+                    if (e2 < dx) {
+                        err += dx;
+                        y += sy;
+                    }
+                }
+            }
+            
+            placeObject(x, y, type, data) {
+                this.objects[y][x] = type;
+                this.objectData[`${x},${y}`] = data;
+            }
+            
+            updateLoading(percent, status) {
+                document.getElementById('loadingProgress').style.width = percent + '%';
+                document.getElementById('loadingStatus').textContent = status;
+            }
+            
+            startGame() {
+                // Cacher le loader
+                document.getElementById('loader').style.display = 'none';
+                
+                // Afficher les éléments
+                this.canvas.style.display = 'block';
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('minimap').style.display = 'block';
+                document.getElementById('infoPanel').style.display = 'block';
+                document.getElementById('controls').style.display = 'block';
+                
+                // Centrer et démarrer
+                this.centerCamera();
+                this.animate();
+            }
+            
+            animate(currentTime = 0) {
+                const deltaTime = currentTime - this.lastTime;
+                this.lastTime = currentTime;
+                
+                // Mettre à jour l'animation frame
+                if (deltaTime > CONFIG.animationSpeed) {
+                    this.animationFrame = (this.animationFrame + 1) % 60;
+                }
+                
+                this.render();
+                this.renderMinimap();
+                
+                requestAnimationFrame((time) => this.animate(time));
+            }
+            
+            render() {
+                // Clear avec gradient
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                gradient.addColorStop(0, '#0a0a0a');
+                gradient.addColorStop(1, '#1a1a2e');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Zone visible
+                const startX = Math.floor(this.camera.x / CONFIG.tileSize);
+                const startY = Math.floor(this.camera.y / CONFIG.tileSize);
+                const endX = Math.min(startX + CONFIG.viewportWidth + 1, CONFIG.mapWidth);
+                const endY = Math.min(startY + CONFIG.viewportHeight + 1, CONFIG.mapHeight);
+                
+                // Dessiner les tiles
+                for (let y = Math.max(0, startY); y < endY; y++) {
+                    for (let x = Math.max(0, startX); x < endX; x++) {
+                        this.drawTile(x, y);
+                    }
+                }
+                
+                // Grille
+                if (this.showGrid) {
+                    this.drawGrid();
+                }
+                
+                // Sélection et hover
+                if (this.hoveredTile) {
+                    this.highlightTile(this.hoveredTile.x, this.hoveredTile.y, 'rgba(255, 255, 255, 0.3)');
+                }
+                if (this.selectedTile) {
+                    this.highlightTile(this.selectedTile.x, this.selectedTile.y, '#FFD700');
+                }
+            }
+            
+            drawTile(x, y) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                // Terrain
+                const terrainId = this.map[y][x];
+                const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                
+                if (terrain) {
+                    if (this.showTextures && this.textures[terrain.texture]) {
+                        // Dessiner la texture
+                        this.ctx.drawImage(this.textures[terrain.texture], screenX, screenY);
+                        
+                        // Effet d'animation pour l'eau et la lave
+                        if (terrain.texture === 'water' || terrain.texture === 'lava') {
+                            this.ctx.globalAlpha = 0.3 + Math.sin(this.animationFrame * 0.1 + x + y) * 0.1;
+                            this.ctx.fillStyle = terrain.texture === 'water' ? '#4682b4' : '#ff6600';
+                            this.ctx.fillRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                            this.ctx.globalAlpha = 1;
+                        }
+                    } else {
+                        // Couleur de base
+                        this.ctx.fillStyle = terrain.color;
+                        this.ctx.fillRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                    }
+                    
+                    // Bordures subtiles
+                    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                }
+                
+                // Objets
+                const objectId = this.objects[y][x];
+                if (objectId > 0) {
+                    this.drawObject(x, y, objectId);
+                }
+            }
+            
+            drawObject(x, y, objectType) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                const objectSymbols = {
+                    1: this.sprites.castle,
+                    2: this.sprites.treasure,
+                    3: this.sprites.creature,
+                    4: this.sprites.artifact,
+                    5: this.sprites.anchor,
+                    6: this.sprites.temple,
+                    7: this.sprites.mine
+                };
+                
+                const symbol = objectSymbols[objectType] || '❓';
+                
+                // Ombre
+                this.ctx.font = '36px serif';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillText(
+                    symbol,
+                    screenX + CONFIG.tileSize / 2 + 2,
+                    screenY + CONFIG.tileSize / 2 + 2
+                );
+                
+                // Symbole avec animation
+                const bounce = Math.sin(this.animationFrame * 0.1) * 2;
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillText(
+                    symbol,
+                    screenX + CONFIG.tileSize / 2,
+                    screenY + CONFIG.tileSize / 2 - bounce
+                );
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = 'rgba(255, 215, 0, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                for (let x = 0; x <= CONFIG.viewportWidth; x++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x * CONFIG.tileSize, 0);
+                    this.ctx.lineTo(x * CONFIG.tileSize, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = 0; y <= CONFIG.viewportHeight; y++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y * CONFIG.tileSize);
+                    this.ctx.lineTo(this.canvas.width, y * CONFIG.tileSize);
+                    this.ctx.stroke();
+                }
+            }
+            
+            highlightTile(x, y, color) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = 3;
+                this.ctx.strokeRect(screenX + 2, screenY + 2, CONFIG.tileSize - 4, CONFIG.tileSize - 4);
+                
+                // Effet de glow
+                this.ctx.shadowColor = color;
+                this.ctx.shadowBlur = 10;
+                this.ctx.strokeRect(screenX + 2, screenY + 2, CONFIG.tileSize - 4, CONFIG.tileSize - 4);
+                this.ctx.shadowBlur = 0;
+            }
+            
+            renderMinimap() {
+                const scale = this.minimapCanvas.width / CONFIG.mapWidth;
+                
+                // Background
+                this.minimapCtx.fillStyle = '#0a0a0a';
+                this.minimapCtx.fillRect(0, 0, this.minimapCanvas.width, this.minimapCanvas.height);
+                
+                // Map
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        const terrainId = this.map[y][x];
+                        const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                        
+                        if (terrain) {
+                            this.minimapCtx.fillStyle = terrain.color;
+                            this.minimapCtx.fillRect(
+                                Math.floor(x * scale),
+                                Math.floor(y * scale),
+                                Math.ceil(scale),
+                                Math.ceil(scale)
+                            );
+                        }
+                        
+                        // Objets importants
+                        if (this.objects[y][x] === 1) { // Châteaux
+                            this.minimapCtx.fillStyle = '#FFD700';
+                            this.minimapCtx.fillRect(
+                                Math.floor(x * scale),
+                                Math.floor(y * scale),
+                                Math.ceil(scale * 2),
+                                Math.ceil(scale * 2)
+                            );
+                        }
+                    }
+                }
+                
+                // Viewport
+                const viewX = (this.camera.x / CONFIG.tileSize) * scale;
+                const viewY = (this.camera.y / CONFIG.tileSize) * scale;
+                const viewW = CONFIG.viewportWidth * scale;
+                const viewH = CONFIG.viewportHeight * scale;
+                
+                this.minimapCtx.strokeStyle = '#FFD700';
+                this.minimapCtx.lineWidth = 2;
+                this.minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
+            }
+            
+            handleClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const tileX = Math.floor((x + this.camera.x) / CONFIG.tileSize);
+                const tileY = Math.floor((y + this.camera.y) / CONFIG.tileSize);
+                
+                if (tileX >= 0 && tileX < CONFIG.mapWidth && tileY >= 0 && tileY < CONFIG.mapHeight) {
+                    this.selectTile(tileX, tileY);
+                }
+            }
+            
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const tileX = Math.floor((x + this.camera.x) / CONFIG.tileSize);
+                const tileY = Math.floor((y + this.camera.y) / CONFIG.tileSize);
+                
+                if (tileX >= 0 && tileX < CONFIG.mapWidth && tileY >= 0 && tileY < CONFIG.mapHeight) {
+                    this.hoveredTile = { x: tileX, y: tileY };
+                    this.updateTooltip(e.clientX, e.clientY, tileX, tileY);
+                }
+            }
+            
+            handleMouseLeave() {
+                this.hoveredTile = null;
+                document.getElementById('tooltip').style.display = 'none';
+            }
+            
+            updateTooltip(mouseX, mouseY, tileX, tileY) {
+                const tooltip = document.getElementById('tooltip');
+                const terrainId = this.map[tileY][tileX];
+                const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                
+                if (terrain) {
+                    let content = `<strong>${terrain.name}</strong><br>`;
+                    content += `${terrain.description}<br>`;
+                    content += `<em>Coût mouvement: ${terrain.movement}x</em>`;
+                    
+                    const objectId = this.objects[tileY][tileX];
+                    if (objectId > 0 && this.objectData) {
+                        const objData = this.objectData[`${tileX},${tileY}`];
+                        if (objData) {
+                            content += `<hr><strong>${objData.name || objData.type}</strong>`;
+                        }
+                    }
+                    
+                    tooltip.innerHTML = content;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = mouseX + 10 + 'px';
+                    tooltip.style.top = mouseY - 50 + 'px';
+                }
+            }
+            
+            selectTile(x, y) {
+                this.selectedTile = { x, y };
+                
+                const terrainId = this.map[y][x];
+                const terrain = Object.values(TERRAIN_TYPES).find(t => t.id === terrainId);
+                const objectId = this.objects[y][x];
+                
+                let info = `<h4>📍 Position: (${x}, ${y})</h4>`;
+                info += `<p><strong>${terrain.symbol} ${terrain.name}</strong></p>`;
+                info += `<p style="color: #aaa;">${terrain.description}</p>`;
+                info += `<p>💨 <strong>Coût de mouvement:</strong> ${terrain.movement}x</p>`;
+                
+                if (objectId > 0 && this.objectData) {
+                    const objData = this.objectData[`${x},${y}`];
+                    if (objData) {
+                        info += '<hr style="border-color: #FFD700; opacity: 0.3;">';
+                        info += '<h4>🏆 Objet Spécial</h4>';
+                        info += `<p><strong>${objData.name || objData.type}</strong></p>`;
+                        if (objData.gold) info += `<p>💰 Or: ${objData.gold}</p>`;
+                    }
+                }
+                
+                document.getElementById('tileInfo').innerHTML = info;
+            }
+            
+            handleKeyboard(e) {
+                const moveSpeed = CONFIG.tileSize;
+                let moved = false;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        this.camera.y = Math.max(0, this.camera.y - moveSpeed);
+                        moved = true;
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        this.camera.y = Math.min(
+                            (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize,
+                            this.camera.y + moveSpeed
+                        );
+                        moved = true;
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        this.camera.x = Math.max(0, this.camera.x - moveSpeed);
+                        moved = true;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        this.camera.x = Math.min(
+                            (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize,
+                            this.camera.x + moveSpeed
+                        );
+                        moved = true;
+                        break;
+                    case 'g':
+                    case 'G':
+                        this.toggleGrid();
+                        break;
+                    case 't':
+                    case 'T':
+                        this.toggleTextures();
+                        break;
+                    case 'c':
+                    case 'C':
+                        this.centerCamera();
+                        break;
+                    case 'Enter':
+                        this.endTurn();
+                        break;
+                    case 'Escape':
+                        this.selectedTile = null;
+                        break;
+                }
+                
+                if (moved) {
+                    e.preventDefault();
+                }
+            }
+            
+            toggleGrid() {
+                this.showGrid = !this.showGrid;
+            }
+            
+            toggleTextures() {
+                this.showTextures = !this.showTextures;
+            }
+            
+            centerCamera() {
+                this.camera.x = (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize / 2;
+                this.camera.y = (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize / 2;
+            }
+            
+            endTurn() {
+                this.turn++;
+                
+                // Gestion des semaines et mois
+                if (this.turn % 7 === 1 && this.turn > 1) {
+                    this.week++;
+                    if (this.week % 4 === 1 && this.week > 1) {
+                        this.month++;
+                    }
+                }
+                
+                // Production de ressources
+                this.resources.gold += 1000 + (this.month * 100);
+                this.resources.wood += 2;
+                this.resources.ore += 2;
+                this.resources.gems += Math.floor(Math.random() * 2);
+                this.resources.crystal += Math.random() < 0.3 ? 1 : 0;
+                
+                this.updateHUD();
+                
+                // Événements spéciaux
+                if (this.week % 4 === 0) {
+                    this.showNotification('🐉 Semaine des Dragons !', 'La croissance des créatures est doublée !');
+                }
+                
+                if (this.month % 3 === 0 && this.week === 1 && this.turn % 7 === 1) {
+                    this.showNotification('🌟 Saison Magique !', 'Les cristaux magiques apparaissent plus fréquemment !');
+                }
+            }
+            
+            showNotification(title, message) {
+                // Créer une notification stylée
+                const notif = document.createElement('div');
+                notif.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(40,20,60,0.95) 100%);
+                    border: 3px solid #FFD700;
+                    border-radius: 20px;
+                    padding: 30px 50px;
+                    text-align: center;
+                    box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+                    z-index: 2000;
+                    animation: notifPop 0.5s ease-out;
+                `;
+                
+                notif.innerHTML = `
+                    <h2 style="color: #FFD700; margin: 0 0 15px 0; font-size: 28px;">${title}</h2>
+                    <p style="margin: 0; font-size: 18px;">${message}</p>
+                `;
+                
+                document.body.appendChild(notif);
+                
+                setTimeout(() => {
+                    notif.style.animation = 'notifFade 0.5s ease-out forwards';
+                    setTimeout(() => notif.remove(), 500);
+                }, 2000);
+            }
+            
+            updateHUD() {
+                document.getElementById('gold').textContent = this.resources.gold.toLocaleString();
+                document.getElementById('wood').textContent = this.resources.wood;
+                document.getElementById('ore').textContent = this.resources.ore;
+                document.getElementById('gems').textContent = this.resources.gems;
+                document.getElementById('crystal').textContent = this.resources.crystal;
+                document.getElementById('turn').textContent = this.turn;
+                document.getElementById('week').textContent = this.week;
+                document.getElementById('month').textContent = this.month;
+            }
+            
+            saveGame() {
+                const saveData = {
+                    version: '1.0',
+                    timestamp: new Date().toISOString(),
+                    camera: this.camera,
+                    resources: this.resources,
+                    turn: this.turn,
+                    week: this.week,
+                    month: this.month,
+                    selectedTile: this.selectedTile
+                };
+                
+                localStorage.setItem('homm3_beautiful_save', JSON.stringify(saveData));
+                this.showNotification('💾 Partie Sauvegardée !', 'Votre progression a été enregistrée.');
+            }
+        }
+        
+        // CSS pour les animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes notifPop {
+                0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+                100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            }
+            @keyframes notifFade {
+                0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Démarrer le jeu
+        let game;
+        window.onload = () => {
+            game = new BeautifulHeroesGame();
+        };
+    </script>
+</body>
+</html>

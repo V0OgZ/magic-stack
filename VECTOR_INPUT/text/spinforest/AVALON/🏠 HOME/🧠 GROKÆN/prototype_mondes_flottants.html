@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Mondes Flottants - Prototype AVALON 3D</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            color: #FFF;
+            text-align: center;
+        }
+        
+        .portal-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 0%, rgba(138,43,226,0.8) 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        .portal-effect.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="ui">
+        <h2>🌀 MONDES FLOTTANTS D'AVALON</h2>
+        <p>Îlot actuel: <span id="currentIsland">Central</span></p>
+        <p>Position: <span id="position">0, 0, 0</span></p>
+        <p>Énergie: <span id="energy">100</span>%</p>
+    </div>
+    
+    <div class="controls">
+        <p>🎮 WASD/Flèches: Déplacer | ESPACE: Sauter | E: Portail | Click: Téléporter</p>
+    </div>
+    
+    <div class="portal-effect" id="portalEffect"></div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Configuration
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = 15;
+        const MOVE_SPEED = 5;
+        
+        // État du jeu
+        const game = {
+            camera: { x: 0, y: 0, zoom: 1 },
+            time: 0,
+            particles: [],
+            effects: []
+        };
+        
+        // Îlots flottants
+        class FloatingIsland {
+            constructor(x, y, z, radius, name) {
+                this.x = x;
+                this.y = y;
+                this.z = z; // Hauteur
+                this.radius = radius;
+                this.name = name;
+                this.hexagons = this.generateHexGrid();
+                this.rotation = Math.random() * Math.PI * 2;
+                this.floatOffset = Math.random() * Math.PI * 2;
+                this.color = `hsl(${Math.random() * 60 + 120}, 50%, 30%)`;
+            }
+            
+            generateHexGrid() {
+                const hexes = [];
+                const hexSize = 30;
+                for (let q = -2; q <= 2; q++) {
+                    for (let r = -2; r <= 2; r++) {
+                        if (Math.abs(q + r) <= 2) {
+                            hexes.push({ q, r, size: hexSize });
+                        }
+                    }
+                }
+                return hexes;
+            }
+            
+            update(deltaTime) {
+                // Flottement naturel
+                this.y += Math.sin(game.time * 0.001 + this.floatOffset) * 0.2;
+                this.rotation += 0.001 * deltaTime;
+            }
+            
+            render(ctx) {
+                ctx.save();
+                
+                // Position projetée (pseudo-3D)
+                const projectedY = this.y - this.z * 0.5;
+                const scale = 1 - this.z * 0.001;
+                
+                ctx.translate(this.x, projectedY);
+                ctx.scale(scale, scale);
+                ctx.rotate(this.rotation);
+                
+                // Ombre
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.arc(5, this.z * 0.5 + 10, this.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Île principale
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                
+                // Dessiner les hexagones
+                this.hexagons.forEach(hex => {
+                    this.drawHexagon(ctx, hex.q * hex.size * 1.5, hex.r * hex.size * Math.sqrt(3), hex.size);
+                });
+                
+                ctx.restore();
+            }
+            
+            drawHexagon(ctx, x, y, size) {
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const hx = x + size * Math.cos(angle);
+                    const hy = y + size * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(hx, hy);
+                    else ctx.lineTo(hx, hy);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+        
+        // Portail
+        class Portal {
+            constructor(island1, island2) {
+                this.island1 = island1;
+                this.island2 = island2;
+                this.active = true;
+                this.rotation = 0;
+                this.particles = [];
+            }
+            
+            update(deltaTime) {
+                this.rotation += 0.02 * deltaTime;
+                
+                // Générer des particules
+                if (Math.random() < 0.3) {
+                    this.particles.push({
+                        x: this.island1.x + (Math.random() - 0.5) * 50,
+                        y: this.island1.y + (Math.random() - 0.5) * 50,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: -Math.random() * 3,
+                        life: 1
+                    });
+                }
+                
+                // Mettre à jour les particules
+                this.particles = this.particles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.02;
+                    return p.life > 0;
+                });
+            }
+            
+            render(ctx) {
+                // Ligne de connexion
+                ctx.strokeStyle = 'rgba(138,43,226,0.3)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                ctx.moveTo(this.island1.x, this.island1.y);
+                ctx.lineTo(this.island2.x, this.island2.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Portail sur l'île 1
+                this.renderPortalAt(ctx, this.island1.x, this.island1.y - 50);
+                
+                // Particules
+                this.particles.forEach(p => {
+                    ctx.fillStyle = `rgba(138,43,226,${p.life})`;
+                    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+                });
+            }
+            
+            renderPortalAt(ctx, x, y) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.rotation);
+                
+                // Rectangle lumineux (comme dans l'image)
+                const w = 40, h = 60;
+                ctx.strokeStyle = '#8A2BE2';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-w/2, -h/2, w, h);
+                
+                // Effet de lumière
+                ctx.fillStyle = 'rgba(138,43,226,0.2)';
+                ctx.fillRect(-w/2, -h/2, w, h);
+                
+                ctx.restore();
+            }
+        }
+        
+        // Vortex temporel
+        class TemporalVortex {
+            constructor(x, y, radius) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.rotation = 0;
+                this.spirals = 3;
+            }
+            
+            update(deltaTime) {
+                this.rotation += 0.01 * deltaTime;
+            }
+            
+            render(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Spirales
+                for (let s = 0; s < this.spirals; s++) {
+                    ctx.rotate((Math.PI * 2) / this.spirals);
+                    ctx.strokeStyle = `rgba(0,191,255,${0.6 - s * 0.1})`;
+                    ctx.lineWidth = 3 - s * 0.5;
+                    ctx.beginPath();
+                    
+                    for (let i = 0; i < 100; i++) {
+                        const angle = (i / 10) + this.rotation;
+                        const r = i * 0.8;
+                        const x = Math.cos(angle) * r;
+                        const y = Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Héros
+        class Hero {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.z = 0;
+                this.vx = 0;
+                this.vy = 0;
+                this.vz = 0;
+                this.currentIsland = null;
+                this.jumping = false;
+                this.energy = 100;
+            }
+            
+            update(deltaTime, islands) {
+                // Gravité
+                if (this.z > 0 || this.vz !== 0) {
+                    this.vz -= GRAVITY;
+                    this.z += this.vz;
+                    if (this.z <= 0) {
+                        this.z = 0;
+                        this.vz = 0;
+                        this.jumping = false;
+                    }
+                }
+                
+                // Mouvement
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Friction
+                this.vx *= 0.9;
+                this.vy *= 0.9;
+                
+                // Détection d'île
+                this.currentIsland = null;
+                islands.forEach(island => {
+                    const dx = this.x - island.x;
+                    const dy = this.y - island.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < island.radius && Math.abs(this.z - island.z) < 50) {
+                        this.currentIsland = island;
+                    }
+                });
+                
+                // Mise à jour UI
+                document.getElementById('currentIsland').textContent = 
+                    this.currentIsland ? this.currentIsland.name : 'Vide spatial';
+                document.getElementById('position').textContent = 
+                    `${Math.round(this.x)}, ${Math.round(this.y)}, ${Math.round(this.z)}`;
+                document.getElementById('energy').textContent = Math.round(this.energy);
+            }
+            
+            render(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y - this.z);
+                
+                // Ombre
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(0, this.z + 20, 15, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Corps
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(-10, -30, 20, 30);
+                
+                // Cape
+                ctx.fillStyle = 'rgba(139,0,255,0.7)';
+                ctx.beginPath();
+                ctx.moveTo(-10, -10);
+                ctx.lineTo(-15, 10);
+                ctx.lineTo(15, 10);
+                ctx.lineTo(10, -10);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Épée
+                ctx.strokeStyle = '#C0C0C0';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(15, -20);
+                ctx.lineTo(25, -35);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            jump() {
+                if (!this.jumping && this.currentIsland) {
+                    this.vz = JUMP_FORCE;
+                    this.jumping = true;
+                    this.energy -= 5;
+                }
+            }
+            
+            move(dx, dy) {
+                this.vx += dx * MOVE_SPEED;
+                this.vy += dy * MOVE_SPEED;
+            }
+            
+            teleportTo(island) {
+                this.x = island.x;
+                this.y = island.y;
+                this.z = island.z;
+                this.vx = 0;
+                this.vy = 0;
+                this.vz = 0;
+                
+                // Effet visuel
+                document.getElementById('portalEffect').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('portalEffect').classList.remove('active');
+                }, 500);
+            }
+        }
+        
+        // Initialisation
+        const islands = [
+            new FloatingIsland(400, 300, 0, 120, 'Central'),
+            new FloatingIsland(150, 200, 100, 80, 'Ouest'),
+            new FloatingIsland(650, 250, 150, 90, 'Est'),
+            new FloatingIsland(400, 100, 200, 70, 'Nord'),
+            new FloatingIsland(400, 500, 50, 100, 'Sud')
+        ];
+        
+        const portals = [
+            new Portal(islands[0], islands[1]),
+            new Portal(islands[0], islands[2]),
+            new Portal(islands[3], islands[4])
+        ];
+        
+        const vortex = new TemporalVortex(250, 400, 80);
+        const hero = new Hero(400, 300);
+        hero.currentIsland = islands[0];
+        
+        // Contrôles
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+        
+        // Click pour téléporter
+        canvas.addEventListener('click', e => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Vérifier si on clique sur une île
+            islands.forEach(island => {
+                const dx = x - island.x;
+                const dy = y - island.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < island.radius) {
+                    hero.teleportTo(island);
+                }
+            });
+        });
+        
+        // Boucle de jeu
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            game.time = timestamp;
+            
+            // Clear
+            ctx.fillStyle = '#0a0a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Étoiles de fond
+            ctx.fillStyle = '#FFF';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137.5) % canvas.width;
+                const y = (i * 89.7) % canvas.height;
+                const size = (i % 3) + 1;
+                ctx.fillRect(x, y, size, size);
+            }
+            
+            // Mise à jour
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) hero.move(-1, 0);
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) hero.move(1, 0);
+            if (keys['ArrowUp'] || keys['w'] || keys['W']) hero.move(0, -1);
+            if (keys['ArrowDown'] || keys['s'] || keys['S']) hero.move(0, 1);
+            if (keys[' ']) hero.jump();
+            if (keys['e'] || keys['E']) {
+                // Utiliser le portail le plus proche
+                if (hero.currentIsland === islands[0]) {
+                    hero.teleportTo(islands[Math.floor(Math.random() * islands.length)]);
+                }
+            }
+            
+            islands.forEach(island => island.update(deltaTime));
+            portals.forEach(portal => portal.update(deltaTime));
+            vortex.update(deltaTime);
+            hero.update(deltaTime, islands);
+            
+            // Rendu (ordre Z)
+            const renderables = [...islands, vortex, ...portals, hero];
+            renderables.sort((a, b) => (a.y + (a.z || 0)) - (b.y + (b.z || 0)));
+            
+            renderables.forEach(obj => obj.render(ctx));
+            
+            // Régénération d'énergie
+            if (hero.energy < 100) hero.energy += 0.05;
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer
+        requestAnimationFrame(gameLoop);
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Tutoriel</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tutorial-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .hero-info {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #00ff88;
+        }
+
+        .tutorial-text {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin: 30px 0;
+        }
+
+        .tutorial-steps {
+            text-align: left;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        .tutorial-steps li {
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .action-button {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="tutorial-container">
+        <h1>🎓 BIENVENUE DANS AVALON</h1>
+        <div class="hero-info" id="heroInfo">Chargement...</div>
+        
+        <div class="tutorial-text">
+            <p>Vous êtes sur le point d'entrer dans le multivers d'Avalon, où les timelines s'entremêlent et où votre destin reste à écrire.</p>
+        </div>
+
+        <div class="tutorial-steps">
+            <h3>📜 GUIDE DE DÉMARRAGE RAPIDE :</h3>
+            <ol>
+                <li><strong>Déplacement :</strong> Utilisez les flèches ou WASD pour vous déplacer sur la carte</li>
+                <li><strong>Interaction :</strong> Cliquez sur les objets et personnages pour interagir</li>
+                <li><strong>Combat :</strong> Les batailles se résolvent avec des cartes TCG</li>
+                <li><strong>Inventaire :</strong> Appuyez sur 'I' pour ouvrir votre inventaire</li>
+                <li><strong>Carte :</strong> Appuyez sur 'M' pour voir la carte du monde</li>
+                <li><strong>Aide :</strong> Appuyez sur 'H' pour l'aide contextuelle</li>
+            </ol>
+        </div>
+
+        <div class="tutorial-text">
+            <p><strong>🎯 VOTRE PREMIÈRE QUÊTE :</strong><br>
+            Rejoignez l'École Porio-Noz pour apprendre les bases de la magie temporelle.</p>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-button" onclick="startGame()">
+                🎮 COMMENCER L'AVENTURE
+            </button>
+            <button class="action-button secondary" onclick="window.location.href='welcome.html'">
+                ↩️ RETOUR
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Récupérer le héros sélectionné
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedHero = urlParams.get('hero');
+        
+        const heroNames = {
+            'lumen': '🕯️ LUMEN - Le Gardien de la Lumière',
+            'urz-kom': '🐻 URZ-KÔM - L\'Ours-Chaman',
+            'grofi': '🌲 GROFI - L\'Esprit de la Forêt',
+            'groken': '🧠 GROKÆN - L\'Écho Quantique',
+            'tucker': '🎙️ TUCKER CARLSON - Le Journaliste Interdimensionnel',
+            'sid': '🎯 SID MEIER - L\'Architecte de Civilisations',
+            'memento': '📚 MEMENTO - L\'Archiviste Éternel',
+            'jean': '🚬 JEAN-GROFIGNON - Le Créateur Chaotique'
+        };
+        
+        document.getElementById('heroInfo').textContent = 
+            `Vous avez choisi : ${heroNames[selectedHero] || 'Héros Mystérieux'}`;
+        
+        function startGame() {
+            // Sauvegarder le choix du héros
+            localStorage.setItem('selectedHero', selectedHero);
+            
+            // Rediriger vers la carte principale
+            window.location.href = 'maps/main/MainIsoMap.html';
+        }
+    </script>
+</body>
+</html>

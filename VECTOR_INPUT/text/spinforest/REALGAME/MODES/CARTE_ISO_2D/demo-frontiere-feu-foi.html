@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Frontière de Feu et Foi - Demo Hexagonale</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(135deg, #2d3561 0%, #1a1a2e 100%);
+            cursor: pointer;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .info {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff6b35;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #ff8555;
+        }
+        
+        #tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ff6b35;
+            display: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div class="info">
+            <div class="info-item">
+                <span>🧍 Héros</span>
+                <span id="heroPos">Position: (10, 10)</span>
+            </div>
+            <div class="info-item">
+                <span>🌀 Mode:</span>
+                <span id="gameMode">Exploration</span>
+            </div>
+        </div>
+        <h1 style="margin: 0; color: #ff6b35;">🔥 Frontière de Feu et Foi</h1>
+    </div>
+    
+    <div class="controls">
+        <button onclick="toggleFog()">🌫️ Toggle Fog</button>
+        <button onclick="activateVortex()">🌀 Activer Vortex</button>
+        <button onclick="changeTimeline()">⏰ Changer Timeline</button>
+        <button onclick="resetMap()">🔄 Reset</button>
+    </div>
+    
+    <div id="tooltip"></div>
+    
+    <script src="hex-grid-system.js"></script>
+    <script>
+        // Configuration canvas
+        const canvas = document.getElementById('gameCanvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Initialiser la grille hexagonale
+        const grid = new HexGrid(canvas, {
+            hexSize: 35,
+            gridWidth: 25,
+            gridHeight: 20,
+            isoAngle: 30
+        });
+        
+        // Position du héros
+        let heroPos = { q: 10, r: 14 };
+        let vortexActive = false;
+        let currentTimeline = 'present';
+        
+        // Initialiser la carte "Frontière de Feu et Foi"
+        function initMap() {
+            // Terrain de base
+            for (let q = 0; q < 25; q++) {
+                for (let r = 0; r < 20; r++) {
+                    grid.setTerrain(q, r, 'grass');
+                }
+            }
+            
+            // Chemin de pierre
+            for (let i = 0; i < 15; i++) {
+                grid.setTerrain(5 + i, 8, 'stone');
+                grid.setTerrain(6 + i, 9, 'stone');
+            }
+            
+            // Zone de lave autour de l'épée
+            for (let dq = -2; dq <= 2; dq++) {
+                for (let dr = -2; dr <= 2; dr++) {
+                    if (Math.abs(dq) + Math.abs(dr) <= 2) {
+                        grid.setTerrain(15 + dq, 10 + dr, 'lava');
+                    }
+                }
+            }
+            
+            // Placer les objets
+            grid.placeObject(5, 5, { type: 'church', name: 'Église Ancienne' });
+            grid.placeObject(15, 10, { type: 'sword', name: 'Épée de Feu' });
+            grid.placeObject(20, 5, { type: 'vortex', name: 'Vortex Dimensionnel' });
+            grid.placeObject(heroPos.q, heroPos.r, { type: 'hero', name: 'Vous' });
+            
+            // Révéler autour du héros
+            grid.revealFog(heroPos.q, heroPos.r, 3);
+            
+            grid.render();
+        }
+        
+        // Gestion des clics
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const hex = grid.handleClick(x, y);
+            if (hex && !hex.fogOfWar) {
+                moveHero(hex.q, hex.r);
+            }
+        });
+        
+        // Tooltip au survol
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const hex = grid.pixelToHex(x, y);
+            const hexData = grid.hexMap.get(`${hex.q},${hex.r}`);
+            
+            const tooltip = document.getElementById('tooltip');
+            if (hexData && !hexData.fogOfWar && hexData.object) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY + 10 + 'px';
+                tooltip.innerHTML = `<strong>${hexData.object.name}</strong><br>Cliquez pour interagir`;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+        
+        // Déplacer le héros
+        function moveHero(q, r) {
+            const oldHex = grid.hexMap.get(`${heroPos.q},${heroPos.r}`);
+            if (oldHex) oldHex.object = null;
+            
+            heroPos = { q, r };
+            grid.placeObject(q, r, { type: 'hero', name: 'Vous' });
+            grid.revealFog(q, r, 3);
+            
+            document.getElementById('heroPos').textContent = `Position: (${q}, ${r})`;
+            
+            // Vérifier les interactions
+            checkInteractions(q, r);
+            
+            grid.render();
+        }
+        
+        // Vérifier les interactions
+        function checkInteractions(q, r) {
+            // Près de l'épée
+            if (Math.abs(q - 15) <= 1 && Math.abs(r - 10) <= 1) {
+                if (confirm("⚔️ Prendre l'Épée de Feu ? Cela activera le vortex !")) {
+                    activateVortex();
+                    grid.hexMap.get('15,10').object = null;
+                }
+            }
+            
+            // Près du vortex actif
+            if (vortexActive && Math.abs(q - 20) <= 2 && Math.abs(r - 5) <= 2) {
+                if (confirm("🌀 Entrer dans le vortex ?")) {
+                    changeTimeline();
+                }
+            }
+            
+            // Près de l'église
+            if (Math.abs(q - 5) <= 2 && Math.abs(r - 5) <= 2) {
+                alert("⛪ L'église est verrouillée par une force mystérieuse...");
+            }
+        }
+        
+        // Fonctions UI
+        function toggleFog() {
+            const allFog = Array.from(grid.hexMap.values()).every(h => h.fogOfWar);
+            grid.hexMap.forEach(hex => {
+                hex.fogOfWar = !allFog;
+            });
+            if (!allFog) {
+                grid.revealFog(heroPos.q, heroPos.r, 3);
+            }
+            grid.render();
+        }
+        
+        function activateVortex() {
+            vortexActive = true;
+            const vortexHex = grid.hexMap.get('20,5');
+            if (vortexHex) {
+                vortexHex.object = { type: 'vortex', name: '🔥 Vortex Actif !' };
+            }
+            document.getElementById('gameMode').textContent = 'Vortex Activé !';
+            alert("🌀 Le vortex s'active dans un tourbillon de feu !");
+            grid.render();
+        }
+        
+        function changeTimeline() {
+            const timelines = ['past', 'present', 'future'];
+            const currentIndex = timelines.indexOf(currentTimeline);
+            currentTimeline = timelines[(currentIndex + 1) % timelines.length];
+            
+            grid.hexMap.forEach(hex => {
+                hex.timeline = currentTimeline;
+            });
+            
+            document.getElementById('gameMode').textContent = `Timeline: ${currentTimeline}`;
+            grid.render();
+        }
+        
+        function resetMap() {
+            vortexActive = false;
+            currentTimeline = 'present';
+            heroPos = { q: 10, r: 14 };
+            grid.hexMap.clear();
+            grid.init();
+            initMap();
+            document.getElementById('gameMode').textContent = 'Exploration';
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            grid.offsetX = canvas.width / 2;
+            grid.render();
+        });
+        
+        // Initialisation
+        initMap();
+    </script>
+</body>
+</html>

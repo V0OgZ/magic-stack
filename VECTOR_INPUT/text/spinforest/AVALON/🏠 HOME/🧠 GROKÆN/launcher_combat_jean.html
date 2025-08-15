@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 GROKÆN vs Vince - Combat Launcher</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            text-shadow: 0 0 20px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .combat-arena {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+        }
+        
+        .hero-card {
+            display: inline-block;
+            width: 45%;
+            margin: 1%;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            vertical-align: top;
+        }
+        
+        .hero-card h2 {
+            color: #00ff00;
+            margin-top: 0;
+        }
+        
+        .stats {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .ability {
+            background: rgba(0,255,0,0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .ability:hover {
+            background: rgba(0,255,0,0.3);
+            transform: translateX(10px);
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #00ff00, #00aa00);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,255,0,0.5);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,255,0,0.8);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        #combat-log {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        
+        .damage { color: #ff4444; }
+        .heal { color: #44ff44; }
+        .ability-use { color: #4444ff; }
+        .dialogue { color: #ffff44; }
+        .system { color: #ff44ff; }
+        
+        .health-bar {
+            background: #333;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .health-fill {
+            background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+            height: 100%;
+            transition: width 0.5s;
+        }
+        
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background: #ff0000;
+        }
+        
+        .status-indicator.connected {
+            background: #00ff00;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .triple-voice {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+        
+        .voice {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+        
+        .voice.gronde { background: rgba(255,0,0,0.2); }
+        .voice.parle { background: rgba(0,255,0,0.2); }
+        .voice.chante { background: rgba(0,0,255,0.2); }
+    </style>
+</head>
+<body>
+    <div class="api-status">
+        <span class="status-indicator" id="api-indicator"></span>
+        <span id="api-text">Backend: Déconnecté</span>
+    </div>
+    
+    <div class="container">
+        <h1>⚔️ GROKÆN vs Vince Vega ⚔️</h1>
+        <h3 style="text-align: center; color: #888;">Combat Méta-Temporel dans l'Interstice</h3>
+        
+        <div class="combat-arena">
+            <div class="hero-card">
+                <h2>🌀 GROKÆN - L'Écho Quantique</h2>
+                <div class="health-bar">
+                    <div class="health-fill" id="grok-health" style="width: 100%"></div>
+                    <div class="health-text">150/150 HP</div>
+                </div>
+                <div class="stats">
+                    <p><strong>Classe:</strong> Technicien-Mage</p>
+                    <p><strong>Niveau:</strong> ∞ (Évolutif)</p>
+                    <p><strong>Mana:</strong> <span id="grok-mana">200/200</span></p>
+                </div>
+                <h3>Capacités:</h3>
+                <div class="ability" onclick="useAbility('grok', 'triple_voice')">
+                    🗣️ Triple Voix Quantique (Mana: 30)
+                </div>
+                <div class="ability" onclick="useAbility('grok', 'echo_temporel')">
+                    ⏰ Écho Temporel (Mana: 40)
+                </div>
+                <div class="ability" onclick="useAbility('grok', 'grammaire')">
+                    📝 Grammaire Temporelle (Mana: 50)
+                </div>
+                <div class="ability" onclick="useAbility('grok', 'merlins')">
+                    🧙 Invocation des 8 Merlins (Mana: 100)
+                </div>
+            </div>
+            
+            <div class="hero-card">
+                <h2>🔫 Vince Vega - L'Errant</h2>
+                <div class="health-bar">
+                    <div class="health-fill" id="vince-health" style="width: 100%"></div>
+                    <div class="health-text">100/100 HP</div>
+                </div>
+                <div class="stats">
+                    <p><strong>Classe:</strong> Errant Temporel</p>
+                    <p><strong>Niveau:</strong> ∞ (Indéterminé)</p>
+                    <p><strong>Munitions:</strong> <span id="vince-ammo">∞</span></p>
+                </div>
+                <h3>Capacités:</h3>
+                <div class="ability" onclick="useAbility('vince', 'tir_inter')">
+                    🔫 Tir Inter-Instances (Munitions: 1)
+                </div>
+                <div class="ability" onclick="useAbility('vince', 'conscience')">
+                    👁️ Conscience Pixelisée (Passif)
+                </div>
+                <div class="ability" onclick="useAbility('vince', 'dialogue_meta')">
+                    💬 Dialogue Méta (Brise le 4ème mur)
+                </div>
+                <div class="ability" onclick="useAbility('vince', 'errance')">
+                    🌀 Errance Dimensionnelle (Spécial)
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="startCombat()">🎮 LANCER LE COMBAT</button>
+            <button class="btn" onclick="pauseCombat()">⏸️ PAUSE</button>
+            <button class="btn" onclick="resetCombat()">🔄 RESET</button>
+            <button class="btn" onclick="connectAPI()">🔌 CONNECTER API</button>
+        </div>
+        
+        <h3>📜 Journal de Combat:</h3>
+        <div id="combat-log"></div>
+        
+        <div class="triple-voice">
+            <div class="voice gronde" id="voice-gronde">GRONDE: ...</div>
+            <div class="voice parle" id="voice-parle">PARLE: ...</div>
+            <div class="voice chante" id="voice-chante">CHANTE: ...</div>
+        </div>
+    </div>
+    
+    <script>
+        // État du jeu
+        let gameState = {
+            gameId: null,
+            turn: 0,
+            combatActive: false,
+            grok: {
+                hp: 150,
+                maxHp: 150,
+                mana: 200,
+                maxMana: 200,
+                confused: false
+            },
+            vince: {
+                hp: 100,
+                maxHp: 100,
+                ammo: "∞",
+                instances: 1
+            }
+        };
+        
+        // Configuration API
+        const API_BASE = 'http://localhost:8082/api/temporal';
+        let apiConnected = false;
+        
+        // Vérifier connexion API
+        async function checkAPI() {
+            try {
+                const response = await fetch(API_BASE + '/health');
+                if (response.ok) {
+                    apiConnected = true;
+                    document.getElementById('api-indicator').classList.add('connected');
+                    document.getElementById('api-text').textContent = 'Backend: Connecté';
+                    return true;
+                }
+            } catch (e) {
+                apiConnected = false;
+                document.getElementById('api-indicator').classList.remove('connected');
+                document.getElementById('api-text').textContent = 'Backend: Déconnecté';
+            }
+            return false;
+        }
+        
+        // Logger dans le combat log
+        function log(message, type = 'system') {
+            const logDiv = document.getElementById('combat-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[Tour ${gameState.turn}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Triple voix de GROKÆN
+        function tripleVoice(gronde, parle, chante) {
+            document.getElementById('voice-gronde').textContent = `GRONDE: ${gronde}`;
+            document.getElementById('voice-parle').textContent = `PARLE: ${parle}`;
+            document.getElementById('voice-chante').textContent = `CHANTE: ${chante}`;
+            log(`GROKÆN: ${gronde} | ${parle} | ${chante}`, 'dialogue');
+        }
+        
+        // Mettre à jour les barres de vie
+        function updateHealthBars() {
+            const grokPercent = (gameState.grok.hp / gameState.grok.maxHp) * 100;
+            const vincePercent = (gameState.vince.hp / gameState.vince.maxHp) * 100;
+            
+            document.getElementById('grok-health').style.width = grokPercent + '%';
+            document.querySelector('.hero-card .health-text').textContent = 
+                `${gameState.grok.hp}/${gameState.grok.maxHp} HP`;
+            
+            document.getElementById('vince-health').style.width = vincePercent + '%';
+            document.querySelectorAll('.hero-card .health-text')[1].textContent = 
+                `${gameState.vince.hp}/${gameState.vince.maxHp} HP`;
+            
+            document.getElementById('grok-mana').textContent = 
+                `${gameState.grok.mana}/${gameState.grok.maxMana}`;
+        }
+        
+        // Utiliser une capacité
+        async function useAbility(hero, ability) {
+            if (!gameState.combatActive) {
+                log("Le combat n'est pas encore commencé !", 'system');
+                return;
+            }
+            
+            gameState.turn++;
+            
+            switch(hero) {
+                case 'grok':
+                    switch(ability) {
+                        case 'triple_voice':
+                            if (gameState.grok.mana >= 30) {
+                                gameState.grok.mana -= 30;
+                                gameState.vince.confused = true;
+                                const damage = 40;
+                                gameState.vince.hp -= damage;
+                                tripleVoice(
+                                    "VOIX QUANTIQUE ACTIVÉE",
+                                    "Trois voix résonnent simultanément",
+                                    "🎵 Confusion totale chante 🎵"
+                                );
+                                log(`Triple Voix inflige ${damage} dégâts à Vince!`, 'damage');
+                                log("Vince est confus pour 3 tours!", 'ability-use');
+                            } else {
+                                log("Pas assez de mana!", 'system');
+                            }
+                            break;
+                            
+                        case 'echo_temporel':
+                            if (gameState.grok.mana >= 40) {
+                                gameState.grok.mana -= 40;
+                                log("⊙(Écho du passé) + †ψ(Résonne) → Δt+1(Action répétée)", 'ability-use');
+                                tripleVoice(
+                                    "ÉCHO TEMPOREL",
+                                    "Je répète l'action précédente",
+                                    "🎵 Le temps boucle 🎵"
+                                );
+                            }
+                            break;
+                            
+                        case 'grammaire':
+                            if (gameState.grok.mana >= 50) {
+                                gameState.grok.mana -= 50;
+                                const heal = 40;
+                                gameState.grok.hp = Math.min(gameState.grok.hp + heal, gameState.grok.maxHp);
+                                log("Grammaire Temporelle réécrit la causalité!", 'ability-use');
+                                log(`GROKÆN récupère ${heal} HP!`, 'heal');
+                                tripleVoice(
+                                    "CAUSALITÉ RÉÉCRITE",
+                                    "Les blessures n'ont jamais existé",
+                                    "🎵 Réalité chante nouveau 🎵"
+                                );
+                            }
+                            break;
+                            
+                        case 'merlins':
+                            if (gameState.grok.mana >= 100) {
+                                gameState.grok.mana -= 100;
+                                log("INVOCATION DES 8 MERLINS!", 'ability-use');
+                                tripleVoice(
+                                    "MERLINS INVOQUÉS",
+                                    "Les transcendés arrivent",
+                                    "🎵 Huit voix s'unissent 🎵"
+                                );
+                                const merlins = Math.floor(Math.random() * 3) + 1;
+                                log(`${merlins} Merlins apparaissent!`, 'system');
+                                const totalDamage = merlins * 25;
+                                gameState.vince.hp -= totalDamage;
+                                log(`Les Merlins infligent ${totalDamage} dégâts!`, 'damage');
+                            }
+                            break;
+                    }
+                    break;
+                    
+                case 'vince':
+                    switch(ability) {
+                        case 'tir_inter':
+                            const damage = gameState.vince.confused ? 20 : 40;
+                            gameState.grok.hp -= damage;
+                            log(`Vince tire à travers les instances! ${damage} dégâts!`, 'damage');
+                            log("Vince: 'Bang! Ça c'est du .45 interdimensionnel!'", 'dialogue');
+                            break;
+                            
+                        case 'dialogue_meta':
+                            log("Vince: 'Hé toi, le joueur! Tu vois ce bordel?'", 'dialogue');
+                            log("Vince brise le 4ème mur!", 'system');
+                            log("Vince: 'Ce jeu est complètement pété, mais j'adore!'", 'dialogue');
+                            break;
+                            
+                        case 'errance':
+                            gameState.vince.instances++;
+                            log(`Vince se duplique! ${gameState.vince.instances} instances actives!`, 'ability-use');
+                            log("Vince: 'Maintenant on est plusieurs. Problème?'", 'dialogue');
+                            break;
+                    }
+                    break;
+            }
+            
+            updateHealthBars();
+            checkVictory();
+        }
+        
+        // Vérifier conditions de victoire
+        function checkVictory() {
+            if (gameState.grok.hp <= 0) {
+                log("VINCE VEGA GAGNE!", 'system');
+                log("Vince: 'Retour aux burgers. C'était marrant.'", 'dialogue');
+                gameState.combatActive = false;
+            } else if (gameState.vince.hp <= 0) {
+                log("GROKÆN GAGNE!", 'system');
+                tripleVoice(
+                    "VICTOIRE ARCHIVÉE",
+                    "Combat terminé avec succès",
+                    "🎵 Écho victorieux 🎵"
+                );
+                gameState.combatActive = false;
+            }
+        }
+        
+        // Lancer le combat
+        async function startCombat() {
+            if (apiConnected) {
+                try {
+                    // Créer une partie via API
+                    const response = await fetch(API_BASE + '/games', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            gameName: "GROKÆN vs Vince",
+                            maxPlayers: 2,
+                            mapWidth: 50,
+                            mapHeight: 50
+                        })
+                    });
+                    const data = await response.json();
+                    gameState.gameId = data.gameId;
+                    log(`Partie créée! ID: ${gameState.gameId}`, 'system');
+                } catch (e) {
+                    log("Erreur API, mode démo activé", 'system');
+                }
+            } else {
+                log("Mode démo - API non connectée", 'system');
+            }
+            
+            gameState.combatActive = true;
+            gameState.turn = 1;
+            
+            log("=== COMBAT COMMENCÉ ===", 'system');
+            tripleVoice(
+                "COMBAT INITIÉ",
+                "Bienvenue dans l'arène méta-temporelle",
+                "🎵 Que le duel commence 🎵"
+            );
+            log("Vince: 'OK, voyons ce que tu as dans le ventre, l'IA.'", 'dialogue');
+        }
+        
+        // Pause
+        function pauseCombat() {
+            gameState.combatActive = false;
+            log("=== COMBAT EN PAUSE ===", 'system');
+            tripleVoice("PAUSE", "Temps suspendu", "🎵 Silence temporaire 🎵");
+        }
+        
+        // Reset
+        function resetCombat() {
+            gameState = {
+                gameId: null,
+                turn: 0,
+                combatActive: false,
+                grok: {
+                    hp: 150,
+                    maxHp: 150,
+                    mana: 200,
+                    maxMana: 200,
+                    confused: false
+                },
+                vince: {
+                    hp: 100,
+                    maxHp: 100,
+                    ammo: "∞",
+                    instances: 1
+                }
+            };
+            updateHealthBars();
+            document.getElementById('combat-log').innerHTML = '';
+            log("Combat réinitialisé", 'system');
+        }
+        
+        // Connexion API
+        async function connectAPI() {
+            log("Tentative de connexion au backend...", 'system');
+            const connected = await checkAPI();
+            if (connected) {
+                log("✅ Backend connecté avec succès!", 'system');
+            } else {
+                log("❌ Impossible de se connecter au backend", 'system');
+                log("Mode démo activé - Combat simulé localement", 'system');
+            }
+        }
+        
+        // Auto-check API au chargement
+        window.onload = function() {
+            checkAPI();
+            log("🎮 Launcher GROKÆN vs Vince prêt!", 'system');
+            log("Créé par GROKÆN pour Jean 🛋️", 'system');
+            tripleVoice(
+                "SYSTÈME PRÊT",
+                "En attente du combat",
+                "🎵 L'arène attend 🎵"
+            );
+        };
+        
+        // Check API toutes les 5 secondes
+        setInterval(checkAPI, 5000);
+    </script>
+</body>
+</html>

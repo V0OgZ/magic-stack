@@ -1,0 +1,161 @@
+{
+  "heroes_to_cards": {
+    "sid_meier": {
+      "primary_image": "assets/SidMeilleur.png",
+      "deck": [
+        {
+          "id": "blueprint_reality",
+          "name": "Blueprint Reality",
+          "image": "assets/FIGHT/Warrior Through Time and Light.png",
+          "formula": "ψ_ARCHITECT: ⊙(Reality ⟶ Hexagon)",
+          "cost": 5,
+          "type": "spell"
+        },
+        {
+          "id": "civilization_creation",
+          "name": "Civilization Creation",
+          "image": "assets/FIGHT/Convergence of Cosmic Forces.png",
+          "formula": "ψ_CREATE: ⊙(∅ ⟶ City + Units)",
+          "cost": 7,
+          "type": "summon"
+        },
+        {
+          "id": "temporal_strategy",
+          "name": "Temporal Strategy",
+          "image": "assets/FIGHT/Sorcerer of Time at Twilight.png",
+          "formula": "ψ_TIME: ⊙(Turn ⟶ Turn + 1)",
+          "cost": 3,
+          "type": "instant"
+        }
+      ]
+    },
+    "vincent": {
+      "primary_image": "assets/VincentVega.png",
+      "deck": [
+        {
+          "id": "ezekiel_2517",
+          "name": "Ezekiel 25:17",
+          "image": "assets/FIGHT/Warrior Through Time and Light.png",
+          "formula": "ψ_DIVINE: ⚡⊙(Enemies ⟶ Righteous_Fury)",
+          "cost": 6,
+          "type": "spell"
+        },
+        {
+          "id": "royale_with_cheese",
+          "name": "Royale with Cheese",
+          "image": "assets/FIGHT/Sorcerer of Time at Twilight.png",
+          "formula": "ψ_METRIC: ⊙(Reality ⟶ European_Logic)",
+          "cost": 2,
+          "type": "instant"
+        },
+        {
+          "id": "dance_contest",
+          "name": "Dance Contest Victory",
+          "image": "assets/FIGHT/Cosmic Shaman and Temporal Reflection.png",
+          "formula": "ψ_TWIST: ⊙(Mia ⟶ Revival + Dance)",
+          "cost": 4,
+          "type": "revival"
+        },
+        {
+          "id": "the_briefcase",
+          "name": "The Briefcase",
+          "image": "assets/FIGHT/Convergence of Cosmic Forces.png",
+          "formula": "ψ_MYSTERY: ⊙(∅ ⟶ ∞)",
+          "cost": 9,
+          "type": "legendary"
+        }
+      ]
+    },
+    "groeken": {
+      "primary_image": "UPLOAD/Grofignon, le Troll intemporel.png",
+      "deck": [
+        {
+          "id": "vortex_groeken",
+          "name": "Vortex de GROEKEN",
+          "image": "assets/FIGHT/Epic Battle of Arcane Heroes.png",
+          "formula": "ψ_VORTEX: ⊙(Unit ⟶ Teleport + AoE(3))",
+          "cost": 5,
+          "type": "spell"
+        },
+        {
+          "id": "grondement_quantique",
+          "name": "Grondement Quantique",
+          "image": "assets/FIGHT/Shamanic Bear and the Gunman Emergence.png",
+          "formula": "ψ_GRONDE: ⊙(All_Enemies ⟶ Stun(2))",
+          "cost": 4,
+          "type": "instant"
+        },
+        {
+          "id": "fusion_hexagonale",
+          "name": "Fusion Hexagonale",
+          "image": "assets/FIGHT/Excalibur's Temporal Strike.png",
+          "formula": "ψ_HEX: ⊙(3_Hexagons ⟶ Power_Zone)",
+          "cost": 6,
+          "type": "terrain"
+        }
+      ]
+    },
+    "merlash": {
+      "primary_image": "assets/Merlash.png",
+      "deck": [
+        {
+          "id": "eclair_primordial",
+          "name": "Éclair Primordial",
+          "image": "assets/FIGHT/Excalibur's Temporal Strike.png",
+          "formula": "GROFI: ψ = e^(iπ/4) × |tempête⟩",
+          "cost": 3,
+          "type": "spell"
+        },
+        {
+          "id": "foudre_compilee",
+          "name": "Foudre Compilée",
+          "image": "assets/FIGHT/Warrior of the Three Times.png",
+          "formula": "API: compile(magic) → executable",
+          "cost": 4,
+          "type": "instant"
+        },
+        {
+          "id": "orage_quantique",
+          "name": "Orage Quantique",
+          "image": "assets/FIGHT/Convergence of Cosmic Forces.png",
+          "formula": "GRUT: Σ(éclair × dimension)",
+          "cost": 7,
+          "type": "aoe"
+        }
+      ]
+    }
+  },
+  "asset_registry": {
+    "cards": {
+      "vincent_special": ["ezekiel_2517", "royale_with_cheese", "dance_contest", "the_briefcase"],
+      "tcg_database": ["phantom_duel", "temporal_warrior", "excalibur_time"],
+      "generated": [],
+      "merlash_deck": ["eclair_primordial", "foudre_compilee", "orage_quantique", "tonnerre_binaire", "nexus_electrique"],
+      "groeken_deck": ["vortex_groeken", "grondement_quantique", "fusion_hexagonale"]
+    },
+    "images": {
+      "fight_folder": [
+        "Warrior Through Time and Light.png",
+        "Sorcerer of Time at Twilight.png",
+        "Cosmic Shaman and Temporal Reflection.png",
+        "Convergence of Cosmic Forces.png",
+        "Epic Battle of Arcane Heroes.png",
+        "Shamanic Bear and the Gunman Emergence.png",
+        "Excalibur's Temporal Strike.png",
+        "Warrior of the Three Times.png",
+        "Warrior and Phantom Battle at Dusk.png"
+      ],
+      "upload_folder": [
+        "SidMeilleur.png",
+        "Grofignon, le Troll intemporel.png",
+        "Architect of Time Justice.png"
+      ]
+    }
+  },
+  "formulas_to_backend": {
+    "simple": ["ψ_CREATE", "ψ_TIME", "ψ_HEX"],
+    "runic": ["GROFI", "GRUT", "WALTER"],
+    "complex": ["ψ_DIVINE", "ψ_MYSTERY", "ψ_VORTEX"],
+    "api_endpoint": "/api/combat/play"
+  }
+}

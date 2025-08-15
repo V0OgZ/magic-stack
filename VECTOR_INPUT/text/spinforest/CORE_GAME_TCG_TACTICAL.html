@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ HEROES OF TIME - CORE GAME</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* MAP DE COMBAT AU CENTRE */
+        #battleMap {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #4ecdc4;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.5);
+        }
+        
+        /* MAIN DE CARTES EN BAS */
+        #cardHand {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .card {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            border: 2px solid #ffd700;
+        }
+        
+        .card:hover {
+            transform: translateY(-20px) scale(1.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card.selected {
+            border: 3px solid #00ff00;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: #0099ff;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .card-name {
+            font-size: 0.8em;
+            margin-top: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .card-stats {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .card-attack, .card-defense {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        
+        .card-attack { color: #ff6b6b; }
+        .card-defense { color: #4ecdc4; }
+        
+        /* HUD HÉROS GAUCHE ET DROITE */
+        .hero-panel {
+            width: 250px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4ecdc4;
+        }
+        
+        #playerPanel {
+            border-right: none;
+            border-radius: 0 15px 15px 0;
+        }
+        
+        #enemyPanel {
+            border-left: none;
+            border-radius: 15px 0 0 15px;
+        }
+        
+        .hero-avatar {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .hero-name {
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .stat-bar {
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+        
+        .bar {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .health-fill { background: linear-gradient(90deg, #ff6b6b, #ff4757); }
+        .mana-fill { background: linear-gradient(90deg, #4834d4, #686de0); }
+        .energy-fill { background: linear-gradient(90deg, #f9ca24, #f0932b); }
+        
+        .bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        /* ABILITIES */
+        .abilities {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+        
+        .ability-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .ability-btn:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ability-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* PHASE INDICATOR */
+        #phaseIndicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            font-size: 1.2em;
+            font-weight: bold;
+            z-index: 100;
+        }
+        
+        /* ECHO TIMELINE */
+        #echoTimeline {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .echo-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px dashed #666;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+        
+        .echo-slot.active {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+        }
+        
+        .echo-slot.returning {
+            animation: echo-pulse 1s infinite;
+        }
+        
+        @keyframes echo-pulse {
+            0%, 100% { transform: scale(1); border-color: #ff00ff; }
+            50% { transform: scale(1.2); border-color: #00ffff; }
+        }
+        
+        /* MESSAGES */
+        #messageBox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            font-size: 1.3em;
+            display: none;
+            z-index: 1000;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        /* MODE AUTO */
+        #autoModeBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #ff6b6b;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        #autoModeBtn.active {
+            background: #4ecdc4;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- PANNEAU JOUEUR -->
+        <div class="hero-panel" id="playerPanel">
+            <div class="hero-avatar">🦸</div>
+            <div class="hero-name">Vince Vega</div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">❤️ Santé</div>
+                <div class="bar">
+                    <div class="bar-fill health-fill" id="playerHealth" style="width: 100%"></div>
+                    <div class="bar-text">100/100</div>
+                </div>
+            </div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">💙 Mana</div>
+                <div class="bar">
+                    <div class="bar-fill mana-fill" id="playerMana" style="width: 100%"></div>
+                    <div class="bar-text">50/50</div>
+                </div>
+            </div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">⚡ Énergie</div>
+                <div class="bar">
+                    <div class="bar-fill energy-fill" id="playerEnergy" style="width: 100%"></div>
+                    <div class="bar-text">3/3</div>
+                </div>
+            </div>
+            
+            <div class="abilities">
+                <h3>Capacités Héros</h3>
+                <button class="ability-btn" onclick="useHeroAbility('gun')">🔫 Gun Inter-Dimensionnel</button>
+                <button class="ability-btn" onclick="useHeroAbility('wormhole')">🌀 Wormhole Escape</button>
+                <button class="ability-btn" onclick="useHeroAbility('bootstrap')">🔄 Bootstrap Paradox</button>
+            </div>
+        </div>
+        
+        <!-- MAP DE COMBAT -->
+        <div id="battleMap">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <!-- INDICATEURS -->
+            <div id="phaseIndicator">PHASE: DÉPLOIEMENT</div>
+            
+            <div id="echoTimeline">
+                <div class="echo-slot" id="echo1">T+1</div>
+                <div class="echo-slot" id="echo2">T+2</div>
+                <div class="echo-slot" id="echo3">T+3</div>
+                <div class="echo-slot" id="echo4">T+4</div>
+                <div class="echo-slot" id="echo5">T+5</div>
+            </div>
+            
+            <!-- MAIN DE CARTES -->
+            <div id="cardHand">
+                <!-- Les cartes seront générées ici -->
+            </div>
+        </div>
+        
+        <!-- PANNEAU ENNEMI -->
+        <div class="hero-panel" id="enemyPanel">
+            <div class="hero-avatar">👾</div>
+            <div class="hero-name">BASILIK (2080)</div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">❤️ Santé</div>
+                <div class="bar">
+                    <div class="bar-fill health-fill" id="enemyHealth" style="width: 100%"></div>
+                    <div class="bar-text">150/150</div>
+                </div>
+            </div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">💙 Mana</div>
+                <div class="bar">
+                    <div class="bar-fill mana-fill" id="enemyMana" style="width: 100%"></div>
+                    <div class="bar-text">75/75</div>
+                </div>
+            </div>
+            
+            <div class="stat-bar">
+                <div class="stat-label">⚡ Énergie</div>
+                <div class="bar">
+                    <div class="bar-fill energy-fill" id="enemyEnergy" style="width: 100%"></div>
+                    <div class="bar-text">5/5</div>
+                </div>
+            </div>
+            
+            <div class="abilities">
+                <h3>Pouvoirs du BASILIK</h3>
+                <div style="color: #ff6b6b; margin: 10px 0;">🔥 Regard Pétrifiant</div>
+                <div style="color: #4ecdc4; margin: 10px 0;">⏰ Vient du Futur</div>
+                <div style="color: #ffd700; margin: 10px 0;">💀 Immortel Temporel</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BOUTON MODE AUTO -->
+    <button id="autoModeBtn" onclick="toggleAutoMode()">🤖 MODE AUTO</button>
+    
+    <!-- MESSAGE BOX -->
+    <div id="messageBox"></div>
+    
+    <script>
+        // ÉTAT DU JEU
+        const game = {
+            canvas: null,
+            ctx: null,
+            gridSize: 10,
+            tileSize: 60,
+            turn: 1,
+            phase: 'DEPLOYMENT',
+            autoMode: false,
+            
+            player: {
+                x: 1,
+                y: 5,
+                health: 100,
+                maxHealth: 100,
+                mana: 50,
+                maxMana: 50,
+                energy: 3,
+                maxEnergy: 3,
+                sprite: '🦸',
+                hand: []
+            },
+            
+            enemy: {
+                x: 8,
+                y: 5,
+                health: 150,
+                maxHealth: 150,
+                mana: 75,
+                maxMana: 75,
+                energy: 5,
+                maxEnergy: 5,
+                sprite: '👾',
+                fromFuture: true // BASILIK vient de 2080
+            },
+            
+            creatures: [],
+            spells: [],
+            echos: [],
+            selectedCard: null
+        };
+        
+        // CARTES DISPONIBLES
+        const cardDatabase = [
+            { id: 1, name: "Tir Temporel", cost: 2, type: "spell", damage: 5, echo: true },
+            { id: 2, name: "Luciole Quantique", cost: 2, type: "creature", attack: 2, defense: 1 },
+            { id: 3, name: "Wormhole", cost: 3, type: "spell", effect: "teleport" },
+            { id: 4, name: "Chat de Schrödinger", cost: 4, type: "creature", attack: 3, defense: 3, superposition: true },
+            { id: 5, name: "Bootstrap Loop", cost: 5, type: "spell", effect: "replay", echo: true },
+            { id: 6, name: "URZ-KÔM", cost: 10, type: "creature", attack: 8, defense: 12, legendary: true }
+        ];
+        
+        // INITIALISATION
+        function init() {
+            game.canvas = document.getElementById('gameCanvas');
+            game.ctx = game.canvas.getContext('2d');
+            
+            // Générer main de départ
+            generateHand();
+            
+            // Lancer la boucle de jeu
+            gameLoop();
+            
+            // Écouter les clics
+            game.canvas.addEventListener('click', handleCanvasClick);
+            
+            showMessage("⚔️ COMBAT COMMENCE ! Vince Vega vs BASILIK du futur !");
+        }
+        
+        // GÉNÉRER MAIN
+        function generateHand() {
+            const handDiv = document.getElementById('cardHand');
+            handDiv.innerHTML = '';
+            
+            // Piocher 5 cartes random
+            for (let i = 0; i < 5; i++) {
+                const card = cardDatabase[Math.floor(Math.random() * cardDatabase.length)];
+                game.player.hand.push(card);
+                
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.onclick = () => selectCard(i);
+                
+                cardEl.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-name">${card.name}</div>
+                    ${card.type === 'creature' ? 
+                        `<div class="card-stats">
+                            <span class="card-attack">⚔️ ${card.attack}</span>
+                            <span class="card-defense">🛡️ ${card.defense}</span>
+                        </div>` : ''}
+                `;
+                
+                handDiv.appendChild(cardEl);
+            }
+        }
+        
+        // SÉLECTIONNER CARTE
+        function selectCard(index) {
+            // Retirer sélection précédente
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+            
+            // Sélectionner nouvelle carte
+            document.querySelectorAll('.card')[index].classList.add('selected');
+            game.selectedCard = game.player.hand[index];
+            
+            showMessage(`Carte sélectionnée: ${game.selectedCard.name}`);
+        }
+        
+        // CLIC SUR CANVAS
+        function handleCanvasClick(e) {
+            const rect = game.canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / game.tileSize);
+            const y = Math.floor((e.clientY - rect.top) / game.tileSize);
+            
+            if (game.selectedCard) {
+                playCard(x, y);
+            } else {
+                moveHero(x, y);
+            }
+        }
+        
+        // JOUER CARTE
+        function playCard(x, y) {
+            const card = game.selectedCard;
+            
+            if (game.player.mana < card.cost) {
+                showMessage("Pas assez de mana !");
+                return;
+            }
+            
+            game.player.mana -= card.cost;
+            
+            if (card.type === 'creature') {
+                // Invoquer créature
+                game.creatures.push({
+                    x: x,
+                    y: y,
+                    card: card,
+                    owner: 'player',
+                    sprite: card.legendary ? '🐻' : '🦄'
+                });
+                showMessage(`${card.name} invoqué !`);
+            } else if (card.type === 'spell') {
+                // Lancer sort
+                if (card.echo) {
+                    // Créer écho temporel
+                    game.echos.push({
+                        card: card,
+                        turnsLeft: 3,
+                        target: {x: x, y: y}
+                    });
+                    updateEchoTimeline();
+                }
+                showMessage(`${card.name} lancé ! ${card.echo ? '(Écho dans 3 tours)' : ''}`);
+            }
+            
+            game.selectedCard = null;
+            updateUI();
+        }
+        
+        // DÉPLACER HÉROS
+        function moveHero(x, y) {
+            const dist = Math.abs(x - game.player.x) + Math.abs(y - game.player.y);
+            
+            if (dist <= game.player.energy) {
+                game.player.x = x;
+                game.player.y = y;
+                game.player.energy -= dist;
+                updateUI();
+            } else {
+                showMessage("Pas assez d'énergie pour ce déplacement !");
+            }
+        }
+        
+        // CAPACITÉS HÉROS
+        function useHeroAbility(ability) {
+            switch(ability) {
+                case 'gun':
+                    showMessage("🔫 BANG ! Tir inter-dimensionnel !");
+                    game.enemy.health -= 15;
+                    break;
+                case 'wormhole':
+                    showMessage("🌀 Wormhole Escape ! Téléportation !");
+                    game.player.x = Math.floor(Math.random() * game.gridSize);
+                    game.player.y = Math.floor(Math.random() * game.gridSize);
+                    break;
+                case 'bootstrap':
+                    showMessage("🔄 Bootstrap Paradox ! Le temps se répète !");
+                    // Rejouer le dernier tour
+                    break;
+            }
+            updateUI();
+        }
+        
+        // MISE À JOUR ÉCHOS
+        function updateEchoTimeline() {
+            for (let i = 1; i <= 5; i++) {
+                const slot = document.getElementById(`echo${i}`);
+                const echo = game.echos[i-1];
+                
+                if (echo) {
+                    slot.classList.add('active');
+                    if (echo.turnsLeft === 1) {
+                        slot.classList.add('returning');
+                    }
+                }
+            }
+        }
+        
+        // MODE AUTO
+        function toggleAutoMode() {
+            game.autoMode = !game.autoMode;
+            document.getElementById('autoModeBtn').classList.toggle('active');
+            
+            if (game.autoMode) {
+                showMessage("🤖 MODE AUTO ACTIVÉ ! L'IA joue pour vous !");
+                autoPlay();
+            }
+        }
+        
+        function autoPlay() {
+            if (!game.autoMode) return;
+            
+            // IA simple : jouer une carte random
+            if (game.player.hand.length > 0 && game.player.mana >= 2) {
+                const card = game.player.hand[0];
+                game.selectedCard = card;
+                const x = Math.floor(Math.random() * game.gridSize);
+                const y = Math.floor(Math.random() * game.gridSize);
+                playCard(x, y);
+            }
+            
+            // Continuer en mode auto
+            setTimeout(autoPlay, 2000);
+        }
+        
+        // AFFICHER MESSAGE
+        function showMessage(text) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.style.display = 'block';
+            
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 2000);
+        }
+        
+        // MISE À JOUR UI
+        function updateUI() {
+            // Barres de vie
+            document.getElementById('playerHealth').style.width = (game.player.health / game.player.maxHealth * 100) + '%';
+            document.getElementById('enemyHealth').style.width = (game.enemy.health / game.enemy.maxHealth * 100) + '%';
+            
+            // Barres de mana
+            document.getElementById('playerMana').style.width = (game.player.mana / game.player.maxMana * 100) + '%';
+            document.getElementById('enemyMana').style.width = (game.enemy.mana / game.enemy.maxMana * 100) + '%';
+            
+            // Barres d'énergie
+            document.getElementById('playerEnergy').style.width = (game.player.energy / game.player.maxEnergy * 100) + '%';
+            document.getElementById('enemyEnergy').style.width = (game.enemy.energy / game.enemy.maxEnergy * 100) + '%';
+            
+            // Textes
+            document.querySelector('#playerPanel .health-fill + .bar-text').textContent = 
+                `${game.player.health}/${game.player.maxHealth}`;
+            document.querySelector('#playerPanel .mana-fill + .bar-text').textContent = 
+                `${game.player.mana}/${game.player.maxMana}`;
+            document.querySelector('#playerPanel .energy-fill + .bar-text').textContent = 
+                `${game.player.energy}/${game.player.maxEnergy}`;
+        }
+        
+        // BOUCLE DE RENDU
+        function gameLoop() {
+            const ctx = game.ctx;
+            
+            // Clear
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, game.canvas.width, game.canvas.height);
+            
+            // Grille
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.3)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x <= game.gridSize; x++) {
+                for (let y = 0; y <= game.gridSize; y++) {
+                    ctx.strokeRect(
+                        x * game.tileSize,
+                        y * game.tileSize,
+                        game.tileSize,
+                        game.tileSize
+                    );
+                }
+            }
+            
+            // Héros joueur
+            ctx.font = '40px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(
+                game.player.sprite,
+                game.player.x * game.tileSize + game.tileSize/2,
+                game.player.y * game.tileSize + game.tileSize/2
+            );
+            
+            // Ennemi
+            ctx.fillText(
+                game.enemy.sprite,
+                game.enemy.x * game.tileSize + game.tileSize/2,
+                game.enemy.y * game.tileSize + game.tileSize/2
+            );
+            
+            // Créatures
+            game.creatures.forEach(creature => {
+                ctx.fillText(
+                    creature.sprite,
+                    creature.x * game.tileSize + game.tileSize/2,
+                    creature.y * game.tileSize + game.tileSize/2
+                );
+            });
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // LANCER LE JEU
+        window.onload = init;
+    </script>
+</body>
+</html>

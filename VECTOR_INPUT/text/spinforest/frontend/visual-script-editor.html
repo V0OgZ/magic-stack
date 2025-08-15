@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎨 Visual Script Editor - HOTS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(45deg, rgba(78,204,196,0.1), rgba(69,183,209,0.1));
+            border-bottom: 3px solid #4eccc4;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #4eccc4;
+            text-shadow: 0 0 10px #4eccc4;
+        }
+        .back-btn {
+            background: linear-gradient(45deg, #ff69b4, #8a2be2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255,105,180,0.5);
+        }
+        .editor-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            height: calc(100vh - 80px);
+        }
+        .toolbox {
+            background: rgba(0,0,0,0.3);
+            border-right: 2px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .toolbox h3 {
+            color: #4eccc4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .tool-category {
+            margin-bottom: 25px;
+        }
+        .tool-category h4 {
+            color: #ffdd00;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .tool-item {
+            background: linear-gradient(45deg, rgba(255,215,0,0.1), rgba(78,204,196,0.1));
+            border: 1px solid #4eccc4;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            cursor: grab;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .tool-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(78,204,196,0.5);
+        }
+        .tool-item:active {
+            cursor: grabbing;
+        }
+        .canvas-area {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            position: relative;
+            overflow: hidden;
+            border-left: 2px solid #333;
+            border-right: 2px solid #333;
+        }
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .script-node {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(78,204,196,0.2));
+            border: 2px solid #4eccc4;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+            cursor: move;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .script-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(78,204,196,0.4);
+        }
+        .script-node.selected {
+            border-color: #ff69b4;
+            box-shadow: 0 0 20px rgba(255,105,180,0.6);
+        }
+        .node-title {
+            font-weight: bold;
+            color: #ffdd00;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .node-content {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        .properties-panel {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .properties-panel h3 {
+            color: #ff69b4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .property-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 3px solid #ff69b4;
+        }
+        .property-group h4 {
+            color: #ffdd00;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .property-input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 8px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+        }
+        .property-input:focus {
+            border-color: #4eccc4;
+            outline: none;
+            box-shadow: 0 0 10px rgba(78,204,196,0.3);
+        }
+        .generate-btn {
+            background: linear-gradient(45deg, #32cd32, #228b22);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .generate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(50,205,50,0.5);
+        }
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #333;
+        }
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Visual Script Editor - Heroes of Time</h1>
+        <button class="back-btn" onclick="window.close()">← Retour</button>
+    </div>
+
+    <div class="editor-container">
+        <!-- Toolbox -->
+        <div class="toolbox">
+            <h3>🔧 Outils HOTS</h3>
+            
+            <div class="tool-category">
+                <h4>⚡ Actions de Base</h4>
+                <div class="tool-item" draggable="true" data-type="HERO">
+                    🎯 HERO<br><small>Définir héros</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="MOV">
+                    🚶 MOV<br><small>Mouvement</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="CREATE">
+                    ⭐ CREATE<br><small>Création</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="USE">
+                    🔧 USE<br><small>Utilisation</small>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <h4>🌟 Actions Avancées</h4>
+                <div class="tool-item" draggable="true" data-type="CAST">
+                    🔮 CAST<br><small>Lancer sort</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="BATTLE">
+                    ⚔️ BATTLE<br><small>Combat</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="BUILD">
+                    🏗️ BUILD<br><small>Construction</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="EXPLORE">
+                    🗺️ EXPLORE<br><small>Exploration</small>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <h4>🎭 Contrôle</h4>
+                <div class="tool-item" draggable="true" data-type="IF">
+                    🔀 IF<br><small>Condition</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="LOOP">
+                    🔄 LOOP<br><small>Boucle</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="EVENT">
+                    📢 EVENT<br><small>Événement</small>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <h4>⚡ Temporal Grammar</h4>
+                <div class="tool-item" draggable="true" data-type="PSI">
+                    ψ État<br><small>Quantum</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="DELTA">
+                    Δt Temps<br><small>Evolution</small>
+                </div>
+                <div class="tool-item" draggable="true" data-type="ARROW">
+                    ⟶ Causal<br><small>Lien</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-area" id="canvas">
+            <div class="canvas-grid"></div>
+            <svg id="connections" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+            </svg>
+        </div>
+
+        <!-- Properties Panel -->
+        <div class="properties-panel">
+            <h3>⚙️ Propriétés</h3>
+            
+            <div class="property-group">
+                <h4>📝 Node Sélectionné</h4>
+                <input type="text" class="property-input" id="node-name" placeholder="Nom du node" />
+                <input type="text" class="property-input" id="node-params" placeholder="Paramètres" />
+                <textarea class="property-input" id="node-description" placeholder="Description" rows="3"></textarea>
+            </div>
+
+            <div class="property-group">
+                <h4>🎯 Héros Principal</h4>
+                <select class="property-input" id="main-hero">
+                    <option value="sid_meier">🎯 Sid Meier</option>
+                    <option value="jean_grofignon">🚬 Jean Grofignon</option>
+                    <option value="walter_sec">🔒 Walter SEC</option>
+                    <option value="lumen">🕯️ Lumen</option>
+                    <option value="groeken">🧠 Groeken</option>
+                </select>
+            </div>
+
+            <div class="property-group">
+                <h4>🌍 Environnement</h4>
+                <select class="property-input" id="environment">
+                    <option value="avalon">🏰 Avalon</option>
+                    <option value="crypte">🔮 Crypte AR</option>
+                    <option value="foret">🌲 Forêt Interstice</option>
+                    <option value="pocket">🌀 Pocket Instance</option>
+                </select>
+            </div>
+
+            <div class="property-group">
+                <h4>⚡ Grammaire Temporelle</h4>
+                <input type="text" class="property-input" id="temporal-formula" placeholder="⊙(HERO) + ψ_ACTION → Δt+1" />
+            </div>
+
+            <button class="generate-btn" onclick="generateScript()">
+                🚀 Générer Script HOTS
+            </button>
+
+            <div class="property-group" style="margin-top: 20px;">
+                <h4>📊 Script Généré</h4>
+                <textarea class="property-input" id="generated-script" rows="8" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="status-text">✅ Éditeur prêt - Glissez des outils sur le canvas</span>
+        <span>Nodes: <span id="node-count">0</span> | Connexions: <span id="connection-count">0</span></span>
+    </div>
+
+    <script>
+        let nodeCounter = 0;
+        let selectedNode = null;
+        let nodes = [];
+        let connections = [];
+
+        // Drag and Drop des outils
+        document.querySelectorAll('.tool-item').forEach(tool => {
+            tool.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', tool.dataset.type);
+            });
+        });
+
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const toolType = e.dataTransfer.getData('text/plain');
+            createNode(toolType, e.offsetX, e.offsetY);
+        });
+
+        function createNode(type, x, y) {
+            nodeCounter++;
+            const node = document.createElement('div');
+            node.className = 'script-node';
+            node.id = `node-${nodeCounter}`;
+            node.style.left = x + 'px';
+            node.style.top = y + 'px';
+            
+            const typeEmojis = {
+                'HERO': '🎯', 'MOV': '🚶', 'CREATE': '⭐', 'USE': '🔧',
+                'CAST': '🔮', 'BATTLE': '⚔️', 'BUILD': '🏗️', 'EXPLORE': '🗺️',
+                'IF': '🔀', 'LOOP': '🔄', 'EVENT': '📢',
+                'PSI': 'ψ', 'DELTA': 'Δt', 'ARROW': '⟶'
+            };
+
+            node.innerHTML = `
+                <div class="node-title">${typeEmojis[type] || '⚡'} ${type}</div>
+                <div class="node-content">Node ${nodeCounter}</div>
+            `;
+
+            // Rendre draggable
+            makeDraggable(node);
+            
+            // Sélection du node
+            node.addEventListener('click', () => selectNode(node, type));
+
+            canvas.appendChild(node);
+            nodes.push({id: node.id, type: type, element: node});
+            updateStatus();
+        }
+
+        function makeDraggable(element) {
+            let isDragging = false;
+            let currentX, currentY, initialX, initialY;
+
+            element.addEventListener('mousedown', (e) => {
+                if (e.target === element || e.target.parentNode === element) {
+                    isDragging = true;
+                    initialX = e.clientX - element.offsetLeft;
+                    initialY = e.clientY - element.offsetTop;
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    element.style.left = currentX + 'px';
+                    element.style.top = currentY + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        function selectNode(node, type) {
+            // Déselectionner le précédent
+            if (selectedNode) {
+                selectedNode.classList.remove('selected');
+            }
+            
+            // Sélectionner le nouveau
+            selectedNode = node;
+            node.classList.add('selected');
+            
+            // Mettre à jour le panel des propriétés
+            document.getElementById('node-name').value = node.querySelector('.node-content').textContent;
+            document.getElementById('node-params').value = type;
+        }
+
+        function generateScript() {
+            let script = "// Generated HOTS Script\n";
+            script += "// Heroes of Time Script Language\n\n";
+            
+            const hero = document.getElementById('main-hero').value;
+            const environment = document.getElementById('environment').value;
+            const temporalFormula = document.getElementById('temporal-formula').value;
+            
+            script += `HERO ${hero}\n`;
+            script += `ENV ${environment}\n\n`;
+            
+            if (temporalFormula) {
+                script += `// Temporal Grammar Formula\n`;
+                script += `TEMPORAL_FORMULA: ${temporalFormula}\n\n`;
+            }
+            
+            // Générer le script basé sur les nodes
+            nodes.forEach((node, index) => {
+                script += `// Node ${index + 1}: ${node.type}\n`;
+                script += `${node.type} `;
+                
+                switch(node.type) {
+                    case 'HERO':
+                        script += `${hero} "Héros principal"\n`;
+                        break;
+                    case 'MOV':
+                        script += `(x: 10, y: 10) "Mouvement"\n`;
+                        break;
+                    case 'CREATE':
+                        script += `artifact "Nouvel objet"\n`;
+                        break;
+                    case 'CAST':
+                        script += `spell_fireball target_enemy\n`;
+                        break;
+                    case 'BATTLE':
+                        script += `${hero} vs enemy_dragon\n`;
+                        break;
+                    default:
+                        script += `param1 param2 "Action ${node.type}"\n`;
+                }
+                script += '\n';
+            });
+            
+            script += `\n// End of script - ${nodes.length} nodes generated`;
+            document.getElementById('generated-script').value = script;
+            document.getElementById('status-text').textContent = `✅ Script généré avec ${nodes.length} nodes`;
+        }
+
+        function updateStatus() {
+            document.getElementById('node-count').textContent = nodes.length;
+            document.getElementById('connection-count').textContent = connections.length;
+        }
+
+        // Mise à jour des propriétés en temps réel
+        document.getElementById('node-name').addEventListener('input', (e) => {
+            if (selectedNode) {
+                selectedNode.querySelector('.node-content').textContent = e.target.value;
+            }
+        });
+
+        // Animation d'ouverture
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('status-text').textContent = '🎨 Visual Script Editor initialisé - Glissez des outils HOTS !';
+            setTimeout(() => {
+                document.querySelector('.toolbox').style.animation = 'pulse 2s infinite';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

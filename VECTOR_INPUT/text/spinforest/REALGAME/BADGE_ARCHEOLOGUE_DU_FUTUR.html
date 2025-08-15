@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏺 ARCHÉOLOGUE DU FUTUR QUI N'EST PLUS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .temporal-static {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255,255,255,0.03) 2px,
+                rgba(255,255,255,0.03) 4px
+            );
+            animation: staticFlicker 0.1s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes staticFlicker {
+            0%, 100% { opacity: 0.05; }
+            50% { opacity: 0.1; }
+        }
+
+        .badge-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            border: 3px solid #e74c3c;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 30px rgba(231, 76, 60, 0.5),
+                inset 0 0 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: badgeGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes badgeGlow {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(231, 76, 60, 0.5), inset 0 0 20px rgba(0,0,0,0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(231, 76, 60, 0.8), inset 0 0 30px rgba(231, 76, 60, 0.1);
+                transform: scale(1.02);
+            }
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #e74c3c;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+            animation: textGlitch 4s infinite;
+        }
+
+        @keyframes textGlitch {
+            0%, 90%, 100% { 
+                transform: translateX(0); 
+                color: #e74c3c;
+            }
+            95% { 
+                transform: translateX(-2px); 
+                color: #3498db;
+            }
+            96% { 
+                transform: translateX(2px); 
+                color: #f39c12;
+            }
+        }
+
+        .archaeologist-icon {
+            font-size: 80px;
+            animation: iconFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(231, 76, 60, 0.6));
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .paradox-status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(52, 73, 94, 0.8);
+            border: 1px solid #34495e;
+            border-radius: 10px;
+            text-align: center;
+            animation: statusBlink 2s infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 50% { background: rgba(52, 73, 94, 0.8); }
+            51%, 100% { background: rgba(231, 76, 60, 0.2); }
+        }
+
+        .temporal-countdown {
+            font-size: 18px;
+            color: #f39c12;
+            text-shadow: 0 0 5px rgba(243, 156, 18, 0.8);
+            margin: 10px 0;
+        }
+
+        .activate-button {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .activate-button:hover {
+            background: linear-gradient(45deg, #c0392b, #a93226);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        .activate-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.8);
+        }
+
+        .badge-details {
+            position: absolute;
+            bottom: 20px;
+            font-size: 12px;
+            color: #95a5a6;
+            text-align: center;
+            width: 100%;
+        }
+
+        .temporal-particles {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #e74c3c;
+            border-radius: 50%;
+            animation: particleFloat 6s infinite linear;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.1) 50%, transparent 100%);
+            animation: glitchSweep 8s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes glitchSweep {
+            0%, 90% { transform: translateX(-100%); opacity: 0; }
+            95% { transform: translateX(0%); opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e74c3c;
+            max-width: 500px;
+            text-align: center;
+            animation: modalAppear 0.5s ease-out;
+        }
+
+        @keyframes modalAppear {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="temporal-static"></div>
+    
+    <!-- Particules temporelles -->
+    <div class="temporal-particles" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="temporal-particles" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="temporal-particles" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="temporal-particles" style="left: 70%; animation-delay: 1s;"></div>
+    <div class="temporal-particles" style="left: 90%; animation-delay: 3s;"></div>
+
+    <div class="badge-container">
+        <div class="glitch-overlay"></div>
+        
+        <div class="title">
+            🏺 ARCHÉOLOGUE DU FUTUR<br>
+            <span style="font-size: 16px; color: #95a5a6;">QUI N'EST PLUS</span>
+        </div>
+
+        <div class="archaeologist-icon">
+            ⚱️🔍⏳
+        </div>
+
+        <div class="paradox-status">
+            <strong>STATUT PARADOXAL:</strong> ACTIF<br>
+            <span style="color: #f39c12;">Fouille des artefacts qui n'existeront jamais</span>
+        </div>
+
+        <div class="temporal-countdown" id="countdown">
+            TEMPS RESTANT AVANT EFFACEMENT: <span id="timer">∞</span>
+        </div>
+
+        <button class="activate-button" onclick="activateBadge()">
+            🔮 ACTIVER FOUILLES TEMPORELLES
+        </button>
+
+        <div class="badge-details">
+            Badge #404 | Classe: PARADOXAL | Rareté: IMPOSSIBLE<br>
+            "Il cherche ce qui a été perdu avant d'être trouvé"
+        </div>
+    </div>
+
+    <!-- Modal d'activation -->
+    <div class="modal" id="activationModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 style="color: #e74c3c;">🏺 FOUILLES ACTIVÉES</h2>
+            <p>L'Archéologue du Futur commence ses fouilles dans les timeline effacées...</p>
+            <div id="discoveryText">
+                <strong>ARTEFACTS DÉCOUVERTS:</strong><br>
+                <span id="artifacts"></span>
+            </div>
+            <button onclick="launchGame()" style="margin-top: 20px; padding: 10px 20px; background: #27ae60; border: none; border-radius: 5px; color: white; cursor: pointer;">
+                🚀 REJOINDRE L'AVENTURE
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let countdownValue = 999;
+        let artifacts = [
+            "Fragment de Mémoire Future",
+            "Clé Temporelle Rouillée",
+            "Cristal d'Écho Paradoxal", 
+            "Parchemin Auto-Effaçant",
+            "Sablier Inversé",
+            "Miroir du Temps Révolu",
+            "Compas Dimensionnel Brisé"
+        ];
+
+        function updateCountdown() {
+            countdownValue--;
+            document.getElementById('timer').textContent = countdownValue;
+            
+            if (countdownValue <= 0) {
+                document.getElementById('timer').textContent = "PARADOXE RÉSOLU";
+                countdownValue = 999; // Reset
+            }
+        }
+
+        function activateBadge() {
+            document.getElementById('activationModal').style.display = 'flex';
+            
+            // Animation de découverte d'artefacts
+            let artifactList = document.getElementById('artifacts');
+            let discovered = [];
+            
+            let discoveryInterval = setInterval(() => {
+                if (discovered.length < artifacts.length) {
+                    let randomArtifact = artifacts[Math.floor(Math.random() * artifacts.length)];
+                    if (!discovered.includes(randomArtifact)) {
+                        discovered.push(randomArtifact);
+                        artifactList.innerHTML = discovered.map(a => `✨ ${a}`).join('<br>');
+                    }
+                } else {
+                    clearInterval(discoveryInterval);
+                }
+            }, 800);
+        }
+
+        function closeModal() {
+            document.getElementById('activationModal').style.display = 'none';
+        }
+
+        function launchGame() {
+            // Redirection vers le jeu principal
+            window.open('HOMM3_6D_DEMO.html', '_blank');
+            closeModal();
+        }
+
+        // Lancement du countdown
+        setInterval(updateCountdown, 100);
+
+        // 🔊 SYSTÈME AUDIO AVANCÉ ARCHÉOLOGUE DU FUTUR
+        class ArchaeologistAudioSystem {
+            constructor() {
+                this.audioContext = null;
+                this.sounds = new Map();
+                this.init();
+            }
+
+            async init() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.loadTemporalSounds();
+                console.log('🏺 Archéologue Audio System initialized');
+            }
+
+            loadTemporalSounds() {
+                // Sons FreeSound.org optimisés pour l'archéologie temporelle
+                this.sounds.set('temporal_dig', 'https://freesound.org/data/previews/316/316847_4990298-lq.mp3');
+                this.sounds.set('artifact_found', 'https://freesound.org/data/previews/203/203557_3162775-lq.mp3');
+                this.sounds.set('paradox_warning', 'https://freesound.org/data/previews/173/173859_2437358-lq.mp3');
+                this.sounds.set('future_portal', 'https://freesound.org/data/previews/249/249816_4404552-lq.mp3');
+            }
+
+            playTemporalDigging() {
+                this.createArchaeologicalSequence();
+                if (typeof Howl !== 'undefined') {
+                    const digSound = new Howl({
+                        src: [this.sounds.get('temporal_dig')],
+                        volume: 0.4,
+                        rate: 0.8,
+                        onloaderror: () => this.createDiggingSoundFallback()
+                    });
+                    digSound.play();
+                }
+            }
+
+            playArtifactDiscovery() {
+                this.createDiscoveryChimes();
+                if (typeof Howl !== 'undefined') {
+                    const discoverySound = new Howl({
+                        src: [this.sounds.get('artifact_found')],
+                        volume: 0.5,
+                        rate: 1.2,
+                        onloaderror: () => this.createDiscoverySoundFallback()
+                    });
+                    discoverySound.play();
+                }
+            }
+
+            playParadoxAlert() {
+                this.createParadoxGlitch();
+                if (typeof Howl !== 'undefined') {
+                    const alertSound = new Howl({
+                        src: [this.sounds.get('paradox_warning')],
+                        volume: 0.6,
+                        rate: 1.5,
+                        onloaderror: () => this.createAlertSoundFallback()
+                    });
+                    alertSound.play();
+                }
+            }
+
+            playFuturePortal() {
+                this.createPortalResonance();
+                if (typeof Howl !== 'undefined') {
+                    const portalSound = new Howl({
+                        src: [this.sounds.get('future_portal')],
+                        volume: 0.7,
+                        rate: 0.9,
+                        onloaderror: () => this.createPortalSoundFallback()
+                    });
+                    portalSound.play();
+                }
+            }
+
+            // 🎵 GÉNÉRATEURS DE SONS PROCÉDURAUX
+            createArchaeologicalSequence() {
+                // Séquence de fouille temporelle
+                const frequencies = [220, 165, 110, 82.5]; // Notes basses pour l'archéologie
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        this.createResonantBeep(freq, 0.3, 'sawtooth');
+                    }, index * 150);
+                });
+            }
+
+            createDiscoveryChimes() {
+                // Carillon de découverte mystique
+                const chimes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                chimes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        this.createCrystallineChime(freq, 0.8);
+                    }, index * 200);
+                });
+            }
+
+            createParadoxGlitch() {
+                // Glitch temporel chaotique
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const randomFreq = 100 + Math.random() * 800;
+                        this.createGlitchPulse(randomFreq, 0.1);
+                    }, i * 50);
+                }
+            }
+
+            createPortalResonance() {
+                // Résonance de portail interdimensionnel
+                const fundamentalFreq = 55; // A1
+                const harmonics = [1, 2, 3, 5, 7, 11]; // Harmoniques non-linéaires
+                
+                harmonics.forEach((harmonic, index) => {
+                    setTimeout(() => {
+                        this.createResonantBeep(fundamentalFreq * harmonic, 1.5, 'sine');
+                    }, index * 300);
+                });
+            }
+
+            // 🎛️ GÉNÉRATEURS AUDIO DE BASE
+            createResonantBeep(frequency, duration, waveType = 'sine') {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+                
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = waveType;
+                
+                filter.type = 'lowpass';
+                filter.frequency.value = frequency * 2;
+                filter.Q.value = 5;
+                
+                gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, this.audioContext.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            createCrystallineChime(frequency, duration) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const delay = this.audioContext.createDelay();
+                const feedback = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(delay);
+                delay.connect(feedback);
+                feedback.connect(delay);
+                gainNode.connect(this.audioContext.destination);
+                delay.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'triangle';
+                
+                delay.delayTime.value = 0.3;
+                feedback.gain.value = 0.3;
+                
+                gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            createGlitchPulse(frequency, duration) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'square';
+                
+                // Modulation de fréquence chaotique
+                oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(frequency * (0.5 + Math.random()), this.audioContext.currentTime + duration);
+                
+                gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            // 🔄 FALLBACKS PROCÉDURAUX
+            createDiggingSoundFallback() {
+                this.createArchaeologicalSequence();
+            }
+
+            createDiscoverySoundFallback() {
+                this.createDiscoveryChimes();
+            }
+
+            createAlertSoundFallback() {
+                this.createParadoxGlitch();
+            }
+
+            createPortalSoundFallback() {
+                this.createPortalResonance();
+            }
+        }
+
+        // Instance globale du système audio
+        let archaeologistAudio = null;
+
+        function playFutureSound() {
+            if (!archaeologistAudio) {
+                archaeologistAudio = new ArchaeologistAudioSystem();
+            }
+            archaeologistAudio.playTemporalDigging();
+        }
+
+        // Auto-play de sons d'ambiance
+        document.addEventListener('click', () => {
+            playFutureSound();
+        }, { once: true });
+
+        console.log("🏺 ARCHÉOLOGUE DU FUTUR ACTIVÉ");
+        console.log("Recherche d'artefacts temporels en cours...");
+        console.log("ATTENTION: Cet archéologue n'existe peut-être pas.");
+    </script>
+</body>
+</html>

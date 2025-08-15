@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 Déformation Spatio-Temporelle - WorldStateGraph</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .worldstate-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 300px;
+            z-index: 100;
+        }
+        
+        .dimension-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+        }
+        
+        .map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0f0f23, #000);
+        }
+        
+        .hex-grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1s ease-in-out;
+        }
+        
+        .hex-tile {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 1px solid #00ffff;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+        
+        .hex-tile.active {
+            background: rgba(255, 107, 107, 0.6);
+            border-color: #ff6b6b;
+            transform: translateZ(20px) scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+        }
+        
+        .temporal-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: all 1s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ffff00;
+            border-radius: 50%;
+            animation: quantumFloat 3s infinite ease-in-out;
+        }
+        
+        @keyframes quantumFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+        
+        .causal-link {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            transform-origin: left center;
+            animation: causalPulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes causalPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .dimension-slider {
+            width: 100%;
+            margin: 10px 0;
+            background: #333;
+            outline: none;
+            height: 5px;
+            border-radius: 5px;
+        }
+        
+        .dimension-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+        }
+        
+        .formula-display {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #ffff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #ffff00;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #00cccc, #0099cc);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(45deg, #00ffff, #00ccff);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Panneau WorldStateGraph -->
+        <div class="worldstate-panel">
+            <h3>🌍 WorldStateGraph</h3>
+            <div id="worldStateInfo">
+                <p><strong>Nœuds Temporels:</strong> <span id="temporalNodes">0</span></p>
+                <p><strong>Liens Causaux:</strong> <span id="causalLinks">0</span></p>
+                <p><strong>États Quantiques:</strong> <span id="quantumStates">0</span></p>
+                <p><strong>Jour Global:</strong> <span id="globalDay">1</span></p>
+                <p><strong>Désync Temporelle:</strong> <span id="temporalDesync">0.0</span></p>
+            </div>
+            
+            <div class="formula-display" id="formulaDisplay">
+                ⊙(Carte_2D) + †ψ(Déformation) → Δt+N(Espace_3D)
+            </div>
+            
+            <button class="btn" onclick="startDeformation()">🌀 Démarrer Déformation</button>
+            <button class="btn" onclick="resetMap()">🔄 Reset</button>
+        </div>
+        
+        <!-- Contrôles de Dimensions -->
+        <div class="dimension-controls">
+            <h3>📐 Contrôles N-Dimensionnels</h3>
+            
+            <label>Dimension X (Espace):</label>
+            <input type="range" class="dimension-slider" id="dimX" min="0" max="100" value="50" 
+                   oninput="updateDimension('x', this.value)">
+            
+            <label>Dimension Y (Espace):</label>
+            <input type="range" class="dimension-slider" id="dimY" min="0" max="100" value="50" 
+                   oninput="updateDimension('y', this.value)">
+            
+            <label>Dimension Z (Profondeur 3D):</label>
+            <input type="range" class="dimension-slider" id="dimZ" min="0" max="100" value="0" 
+                   oninput="updateDimension('z', this.value)">
+            
+            <label>Dimension T (Temps):</label>
+            <input type="range" class="dimension-slider" id="dimT" min="0" max="100" value="50" 
+                   oninput="updateDimension('t', this.value)">
+            
+            <label>Dimension ψ (Probabilité):</label>
+            <input type="range" class="dimension-slider" id="dimPsi" min="0" max="100" value="50" 
+                   oninput="updateDimension('psi', this.value)">
+            
+            <label>Dimension 👁️ (Conscience):</label>
+            <input type="range" class="dimension-slider" id="dimEye" min="0" max="100" value="50" 
+                   oninput="updateDimension('eye', this.value)">
+            
+            <p><strong>Mode:</strong> <span id="currentMode">2D → 3D</span></p>
+        </div>
+        
+        <!-- Canvas de la Carte -->
+        <div class="map-canvas" id="mapCanvas">
+            <div class="temporal-layer" id="temporalLayer">
+                <div class="hex-grid" id="hexGrid">
+                    <!-- Les hexagones seront générés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // WorldStateGraph Simulator
+        class WorldStateGraph {
+            constructor() {
+                this.temporalNodes = new Map();
+                this.causalLinks = new Map();
+                this.quantumStates = new Map();
+                this.globalDay = 1;
+                this.temporalDesync = 0.0;
+                this.hexGrid = [];
+                this.dimensions = {
+                    x: 50, y: 50, z: 0, t: 50, psi: 50, eye: 50
+                };
+            }
+            
+            addTemporalNode(id, position, data) {
+                this.temporalNodes.set(id, {
+                    id, position, data,
+                    timestamp: Date.now(),
+                    quantumState: Math.random()
+                });
+                this.updateUI();
+            }
+            
+            createCausalLink(sourceId, targetId) {
+                const linkId = `${sourceId}->${targetId}`;
+                this.causalLinks.set(linkId, {
+                    source: sourceId,
+                    target: targetId,
+                    strength: Math.random(),
+                    created: Date.now()
+                });
+                this.updateUI();
+            }
+            
+            updateQuantumState(nodeId, newState) {
+                if (this.temporalNodes.has(nodeId)) {
+                    const node = this.temporalNodes.get(nodeId);
+                    node.quantumState = newState;
+                    this.propagateCausalEffects(nodeId);
+                }
+            }
+            
+            propagateCausalEffects(sourceId) {
+                for (const [linkId, link] of this.causalLinks) {
+                    if (link.source === sourceId) {
+                        const targetNode = this.temporalNodes.get(link.target);
+                        if (targetNode) {
+                            targetNode.quantumState *= link.strength;
+                        }
+                    }
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('temporalNodes').textContent = this.temporalNodes.size;
+                document.getElementById('causalLinks').textContent = this.causalLinks.size;
+                document.getElementById('quantumStates').textContent = 
+                    Array.from(this.temporalNodes.values()).filter(n => n.quantumState > 0.5).length;
+                document.getElementById('globalDay').textContent = this.globalDay;
+                document.getElementById('temporalDesync').textContent = this.temporalDesync.toFixed(2);
+            }
+        }
+        
+        // Instance globale
+        const worldGraph = new WorldStateGraph();
+        let deformationActive = false;
+        let animationId = null;
+        
+        // Générer grille hexagonale
+        function generateHexGrid() {
+            const grid = document.getElementById('hexGrid');
+            grid.innerHTML = '';
+            
+            const gridSize = 8;
+            const hexSize = 40;
+            const hexSpacing = 35;
+            
+            for (let q = -gridSize; q <= gridSize; q++) {
+                for (let r = -gridSize; r <= gridSize; r++) {
+                    if (Math.abs(q + r) <= gridSize) {
+                        const hex = document.createElement('div');
+                        hex.className = 'hex-tile';
+                        hex.id = `hex-${q}-${r}`;
+                        
+                        // Position hexagonale
+                        const x = hexSpacing * (3/2 * q);
+                        const y = hexSpacing * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+                        
+                        hex.style.left = `${x + 200}px`;
+                        hex.style.top = `${y + 200}px`;
+                        
+                        // Propriétés du terrain
+                        const elevation = Math.random() * 100;
+                        const biome = ['forest', 'water', 'mountain', 'desert'][Math.floor(Math.random() * 4)];
+                        
+                        hex.dataset.elevation = elevation;
+                        hex.dataset.biome = biome;
+                        hex.dataset.q = q;
+                        hex.dataset.r = r;
+                        
+                        // Couleur selon biome
+                        const biomeColors = {
+                            forest: 'rgba(0, 255, 0, 0.3)',
+                            water: 'rgba(0, 100, 255, 0.3)',
+                            mountain: 'rgba(128, 128, 128, 0.3)',
+                            desert: 'rgba(255, 255, 0, 0.3)'
+                        };
+                        hex.style.background = biomeColors[biome];
+                        
+                        hex.onclick = () => activateHex(q, r);
+                        
+                        grid.appendChild(hex);
+                        
+                        // Ajouter au WorldStateGraph
+                        worldGraph.addTemporalNode(`hex-${q}-${r}`, {x, y}, {
+                            elevation, biome, q, r
+                        });
+                    }
+                }
+            }
+            
+            // Créer liens causaux entre hexagones adjacents
+            createCausalLinks();
+        }
+        
+        function createCausalLinks() {
+            const hexes = document.querySelectorAll('.hex-tile');
+            hexes.forEach(hex => {
+                const q = parseInt(hex.dataset.q);
+                const r = parseInt(hex.dataset.r);
+                
+                // Voisins hexagonaux
+                const neighbors = [
+                    [q+1, r], [q-1, r], [q, r+1], 
+                    [q, r-1], [q+1, r-1], [q-1, r+1]
+                ];
+                
+                neighbors.forEach(([nq, nr]) => {
+                    const neighborHex = document.getElementById(`hex-${nq}-${nr}`);
+                    if (neighborHex) {
+                        worldGraph.createCausalLink(`hex-${q}-${r}`, `hex-${nq}-${nr}`);
+                    }
+                });
+            });
+        }
+        
+        function activateHex(q, r) {
+            const hex = document.getElementById(`hex-${q}-${r}`);
+            hex.classList.toggle('active');
+            
+            // Mettre à jour état quantique
+            const nodeId = `hex-${q}-${r}`;
+            worldGraph.updateQuantumState(nodeId, Math.random());
+            
+            // Créer particules quantiques
+            createQuantumParticles(hex);
+        }
+        
+        function createQuantumParticles(hex) {
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = hex.style.left;
+                particle.style.top = hex.style.top;
+                particle.style.animationDelay = `${i * 0.2}s`;
+                
+                document.getElementById('temporalLayer').appendChild(particle);
+                
+                // Supprimer après animation
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 3000);
+            }
+        }
+        
+        function updateDimension(dim, value) {
+            worldGraph.dimensions[dim] = parseInt(value);
+            applyDimensionalTransformation();
+            updateFormulaDisplay();
+        }
+        
+        function applyDimensionalTransformation() {
+            const grid = document.getElementById('hexGrid');
+            const layer = document.getElementById('temporalLayer');
+            const dims = worldGraph.dimensions;
+            
+            // Transformation 2D → 3D basée sur les dimensions
+            const scaleX = dims.x / 50;
+            const scaleY = dims.y / 50;
+            const rotateX = (dims.z - 50) * 2; // 3D depth
+            const rotateY = (dims.t - 50) * 1; // Temporal rotation
+            const opacity = dims.psi / 100; // Probabilité
+            const hue = dims.eye * 3.6; // Conscience (couleur)
+            
+            grid.style.transform = `
+                scale(${scaleX}, ${scaleY}) 
+                rotateX(${rotateX}deg) 
+                rotateY(${rotateY}deg)
+                perspective(1000px)
+            `;
+            
+            layer.style.opacity = opacity;
+            layer.style.filter = `hue-rotate(${hue}deg)`;
+            
+            // Mode affiché
+            let mode = '2D';
+            if (dims.z > 10) mode = '3D';
+            if (dims.t !== 50) mode += ' Temporel';
+            if (dims.psi < 80) mode += ' Quantique';
+            if (dims.eye !== 50) mode += ' Conscient';
+            
+            document.getElementById('currentMode').textContent = mode;
+        }
+        
+        function updateFormulaDisplay() {
+            const dims = worldGraph.dimensions;
+            const formula = `⊙(X:${dims.x} Y:${dims.y} Z:${dims.z}) + †ψ(T:${dims.t} ψ:${dims.psi} 👁️:${dims.eye}) → Δt+N(Déformation_Active)`;
+            document.getElementById('formulaDisplay').textContent = formula;
+        }
+        
+        function startDeformation() {
+            if (deformationActive) return;
+            
+            deformationActive = true;
+            
+            // Animation de déformation progressive
+            let progress = 0;
+            const deformationLoop = () => {
+                progress += 0.02;
+                
+                // Déformation spatio-temporelle
+                worldGraph.dimensions.z = Math.sin(progress) * 50 + 50;
+                worldGraph.dimensions.t = Math.cos(progress * 0.5) * 30 + 50;
+                worldGraph.dimensions.psi = Math.sin(progress * 2) * 20 + 70;
+                
+                // Mettre à jour sliders
+                document.getElementById('dimZ').value = worldGraph.dimensions.z;
+                document.getElementById('dimT').value = worldGraph.dimensions.t;
+                document.getElementById('dimPsi').value = worldGraph.dimensions.psi;
+                
+                applyDimensionalTransformation();
+                updateFormulaDisplay();
+                
+                // Avancer jour global
+                worldGraph.globalDay += 0.1;
+                worldGraph.temporalDesync = Math.sin(progress) * 2;
+                worldGraph.updateUI();
+                
+                if (deformationActive) {
+                    animationId = requestAnimationFrame(deformationLoop);
+                }
+            };
+            
+            deformationLoop();
+        }
+        
+        function resetMap() {
+            deformationActive = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // Reset dimensions
+            worldGraph.dimensions = { x: 50, y: 50, z: 0, t: 50, psi: 50, eye: 50 };
+            
+            // Reset sliders
+            Object.keys(worldGraph.dimensions).forEach(dim => {
+                const slider = document.getElementById(`dim${dim.charAt(0).toUpperCase() + dim.slice(1)}`);
+                if (slider) slider.value = worldGraph.dimensions[dim];
+            });
+            
+            applyDimensionalTransformation();
+            updateFormulaDisplay();
+            
+            // Désactiver tous les hexagones
+            document.querySelectorAll('.hex-tile.active').forEach(hex => {
+                hex.classList.remove('active');
+            });
+        }
+        
+        // Initialisation
+        generateHexGrid();
+        updateFormulaDisplay();
+        
+        // Animation de particules de fond
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = Math.random() * window.innerHeight + 'px';
+                document.getElementById('temporalLayer').appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 3000);
+            }
+        }, 1000);
+        
+        console.log("🌀 Carte de Déformation Spatio-Temporelle initialisée");
+        console.log("🌍 WorldStateGraph actif avec", worldGraph.temporalNodes.size, "nœuds");
+    </script>
+</body>
+</html>

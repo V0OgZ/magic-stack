@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎨 TILE CUTTER - Découpe d'Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+        }
+        
+        .controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: inline-block;
+            margin: 10px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffd43b;
+        }
+        
+        input, button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+        }
+        
+        button {
+            background: #ff6b6b;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #ff5252;
+        }
+        
+        #canvas-container {
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            overflow: auto;
+            max-height: 600px;
+        }
+        
+        #canvas {
+            border: 1px solid #666;
+            cursor: crosshair;
+        }
+        
+        #output {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .tile-preview {
+            display: inline-block;
+            margin: 5px;
+            border: 2px solid #444;
+            background: #222;
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .tile-preview canvas {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .tile-preview span {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        #status {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 TILE CUTTER - Outil de Découpe pour REALGAME</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>📁 Charger une image :</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+            
+            <div class="control-group">
+                <label>📏 Largeur tile (px) :</label>
+                <input type="number" id="tileWidth" value="64" min="8" max="512">
+            </div>
+            
+            <div class="control-group">
+                <label>📐 Hauteur tile (px) :</label>
+                <input type="number" id="tileHeight" value="64" min="8" max="512">
+            </div>
+            
+            <div class="control-group">
+                <label>➡️ Espacement X (px) :</label>
+                <input type="number" id="gapX" value="0" min="0" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label>⬇️ Espacement Y (px) :</label>
+                <input type="number" id="gapY" value="0" min="0" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label>🔲 Afficher grille :</label>
+                <input type="checkbox" id="showGrid" checked>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="updateGrid()">🔄 Actualiser Grille</button>
+                <button onclick="cutTiles()">✂️ Découper Tiles</button>
+                <button onclick="downloadAll()">💾 Télécharger Tout</button>
+                <button onclick="clearOutput()">🗑️ Effacer</button>
+            </div>
+        </div>
+        
+        <div id="status">💡 Chargez une image pour commencer...</div>
+        
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div id="output">
+            <h2>📦 Tiles Découpées</h2>
+            <div id="tiles-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let image = null;
+        let tiles = [];
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const tilesContainer = document.getElementById('tiles-container');
+        const status = document.getElementById('status');
+        
+        // Charger image
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                image = new Image();
+                image.onload = function() {
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    updateGrid();
+                    status.textContent = `✅ Image chargée : ${image.width}x${image.height}px`;
+                };
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Actualiser grille
+        function updateGrid() {
+            if (!image) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            
+            if (document.getElementById('showGrid').checked) {
+                drawGrid();
+            }
+        }
+        
+        // Dessiner grille
+        function drawGrid() {
+            const tileWidth = parseInt(document.getElementById('tileWidth').value);
+            const tileHeight = parseInt(document.getElementById('tileHeight').value);
+            const gapX = parseInt(document.getElementById('gapX').value);
+            const gapY = parseInt(document.getElementById('gapY').value);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.lineWidth = 1;
+            
+            // Lignes verticales
+            for (let x = 0; x < canvas.width; x += tileWidth + gapX) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Lignes horizontales
+            for (let y = 0; y < canvas.height; y += tileHeight + gapY) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // Découper tiles
+        function cutTiles() {
+            if (!image) {
+                alert('Chargez d\'abord une image !');
+                return;
+            }
+            
+            tiles = [];
+            tilesContainer.innerHTML = '';
+            
+            const tileWidth = parseInt(document.getElementById('tileWidth').value);
+            const tileHeight = parseInt(document.getElementById('tileHeight').value);
+            const gapX = parseInt(document.getElementById('gapX').value);
+            const gapY = parseInt(document.getElementById('gapY').value);
+            
+            let tileIndex = 0;
+            
+            for (let y = 0; y + tileHeight <= image.height; y += tileHeight + gapY) {
+                for (let x = 0; x + tileWidth <= image.width; x += tileWidth + gapX) {
+                    const tileCanvas = document.createElement('canvas');
+                    tileCanvas.width = tileWidth;
+                    tileCanvas.height = tileHeight;
+                    const tileCtx = tileCanvas.getContext('2d');
+                    
+                    tileCtx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+                    
+                    // Vérifier si la tile n'est pas vide
+                    const imageData = tileCtx.getImageData(0, 0, tileWidth, tileHeight);
+                    const pixels = imageData.data;
+                    let isEmpty = true;
+                    
+                    for (let i = 3; i < pixels.length; i += 4) {
+                        if (pixels[i] > 0) {
+                            isEmpty = false;
+                            break;
+                        }
+                    }
+                    
+                    if (!isEmpty) {
+                        tiles.push({
+                            canvas: tileCanvas,
+                            index: tileIndex,
+                            x: x,
+                            y: y
+                        });
+                        
+                        // Créer preview
+                        const preview = document.createElement('div');
+                        preview.className = 'tile-preview';
+                        preview.appendChild(tileCanvas.cloneNode(true));
+                        const label = document.createElement('span');
+                        label.textContent = `Tile ${tileIndex}`;
+                        preview.appendChild(label);
+                        
+                        // Download individuel
+                        preview.onclick = function() {
+                            downloadTile(tileIndex);
+                        };
+                        
+                        tilesContainer.appendChild(preview);
+                    }
+                    
+                    tileIndex++;
+                }
+            }
+            
+            status.textContent = `✂️ ${tiles.length} tiles découpées !`;
+        }
+        
+        // Télécharger une tile
+        function downloadTile(index) {
+            const tile = tiles.find(t => t.index === index);
+            if (!tile) return;
+            
+            tile.canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tile_${index}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Télécharger tout
+        function downloadAll() {
+            tiles.forEach((tile, i) => {
+                setTimeout(() => downloadTile(tile.index), i * 100);
+            });
+        }
+        
+        // Effacer
+        function clearOutput() {
+            tiles = [];
+            tilesContainer.innerHTML = '';
+            status.textContent = '🗑️ Tiles effacées';
+        }
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'g') document.getElementById('showGrid').checked = !document.getElementById('showGrid').checked;
+            if (e.key === 'u') updateGrid();
+            if (e.key === 'c') cutTiles();
+        });
+    </script>
+</body>
+</html>

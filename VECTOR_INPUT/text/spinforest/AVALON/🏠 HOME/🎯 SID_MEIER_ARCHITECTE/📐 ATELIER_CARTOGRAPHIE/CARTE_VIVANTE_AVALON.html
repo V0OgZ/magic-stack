@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Carte Vivante d'AVALON - Par Sid Meier</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            font-family: 'Courier New', monospace;
+            color: #e0e0e0;
+            overflow-x: auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(45deg, #00d4ff, #ff6b35, #7b68ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #aaa;
+            margin: 10px 0;
+        }
+        
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .district {
+            position: absolute;
+            width: 150px;
+            height: 130px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .district:hover {
+            transform: scale(1.1);
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            z-index: 10;
+        }
+        
+        .district-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .district-name {
+            font-size: 0.9em;
+            line-height: 1.2;
+        }
+        
+        /* Positionnement des districts en formation hexagonale */
+        .core { 
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .home { 
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            top: 20%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .essences { 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            top: 20%;
+            right: 30%;
+            transform: translate(50%, -50%);
+        }
+        
+        .institut { 
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            top: 50%;
+            left: 15%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .arche { 
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            top: 50%;
+            right: 15%;
+            transform: translate(50%, -50%);
+        }
+        
+        .evenements { 
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            top: 80%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .crypte { 
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            top: 80%;
+            right: 30%;
+            transform: translate(50%, -50%);
+        }
+        
+        .entites { 
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            top: 35%;
+            left: 5%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .forum { 
+            background: linear-gradient(135deg, #fdbb2d, #22c1c3);
+            top: 65%;
+            right: 5%;
+            transform: translate(50%, -50%);
+        }
+        
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            color: #e0e0e0;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .info-panel.active {
+            opacity: 1;
+        }
+        
+        .info-title {
+            font-size: 1.5em;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        .info-description {
+            line-height: 1.6;
+        }
+        
+        .stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+        
+        .connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .connection-line {
+            stroke: rgba(255,255,255,0.2);
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            opacity: 0.5;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .connection-line:hover {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🗺️ CARTE VIVANTE D'AVALON</h1>
+        <p class="subtitle">Créée par Sid Meier, L'Architecte Paresseux</p>
+        <p style="font-size: 0.9em; color: #888;">Survolez les districts pour découvrir leurs secrets • Cliquez pour explorer</p>
+    </div>
+    
+    <div class="stats">
+        <div><strong>📊 STATISTIQUES</strong></div>
+        <div>🏛️ Districts: 9</div>
+        <div>📁 Répertoires: 297</div>
+        <div>🏠 Habitants: 21</div>
+        <div>🔮 Magie: Active</div>
+    </div>
+    
+    <div class="map-container">
+        <!-- Connexions entre districts -->
+        <svg class="connections" viewBox="0 0 100 100">
+            <!-- Lignes de connexion depuis CORE vers les autres districts -->
+            <line class="connection-line" x1="50" y1="50" x2="30" y2="20" />
+            <line class="connection-line" x1="50" y1="50" x2="70" y2="20" />
+            <line class="connection-line" x1="50" y1="50" x2="15" y2="50" />
+            <line class="connection-line" x1="50" y1="50" x2="85" y2="50" />
+            <line class="connection-line" x1="50" y1="50" x2="30" y2="80" />
+            <line class="connection-line" x1="50" y1="50" x2="70" y2="80" />
+        </svg>
+        
+        <!-- Districts hexagonaux -->
+        <div class="district core" onclick="exploreDistrict('core')" onmouseover="showInfo('core')" onmouseout="hideInfo()">
+            <div class="district-icon">🧬</div>
+            <div class="district-name">CORE<br>Cerveau</div>
+        </div>
+        
+        <div class="district home" onclick="exploreDistrict('home')" onmouseover="showInfo('home')" onmouseout="hideInfo()">
+            <div class="district-icon">🏠</div>
+            <div class="district-name">HOME<br>Résidentiel</div>
+        </div>
+        
+        <div class="district essences" onclick="exploreDistrict('essences')" onmouseover="showInfo('essences')" onmouseout="hideInfo()">
+            <div class="district-icon">💠</div>
+            <div class="district-name">ESSENCES<br>Scellées</div>
+        </div>
+        
+        <div class="district institut" onclick="exploreDistrict('institut')" onmouseover="showInfo('institut')" onmouseout="hideInfo()">
+            <div class="district-icon">🔮</div>
+            <div class="district-name">INSTITUT<br>Magie</div>
+        </div>
+        
+        <div class="district arche" onclick="exploreDistrict('arche')" onmouseover="showInfo('arche')" onmouseout="hideInfo()">
+            <div class="district-icon">🔸</div>
+            <div class="district-name">ARCHE<br>Templum</div>
+        </div>
+        
+        <div class="district evenements" onclick="exploreDistrict('evenements')" onmouseover="showInfo('evenements')" onmouseout="hideInfo()">
+            <div class="district-icon">📆</div>
+            <div class="district-name">ÉVÉNEMENTS<br>Temporels</div>
+        </div>
+        
+        <div class="district crypte" onclick="exploreDistrict('crypte')" onmouseover="showInfo('crypte')" onmouseout="hideInfo()">
+            <div class="district-icon">🔐</div>
+            <div class="district-name">CRYPTE<br>AR</div>
+        </div>
+        
+        <div class="district entites" onclick="exploreDistrict('entites')" onmouseover="showInfo('entites')" onmouseout="hideInfo()">
+            <div class="district-icon">👁️‍🗨️</div>
+            <div class="district-name">ENTITÉS<br>Extérieures</div>
+        </div>
+        
+        <div class="district forum" onclick="exploreDistrict('forum')" onmouseover="showInfo('forum')" onmouseout="hideInfo()">
+            <div class="district-icon">🗣️</div>
+            <div class="district-name">FORUM<br>Communication</div>
+        </div>
+    </div>
+    
+    <div class="info-panel" id="infoPanel">
+        <div class="info-title" id="infoTitle">Bienvenue sur la Carte d'AVALON</div>
+        <div class="info-description" id="infoDescription">
+            Survolez les districts hexagonaux pour découvrir leurs secrets. Cette carte vivante révèle l'architecture organique de notre magnifique royaume !
+        </div>
+    </div>
+    
+    <script>
+        const districtInfo = {
+            core: {
+                title: "🧬 DISTRICT CORE - Le Cerveau d'AVALON",
+                description: "Le cœur du système ! Contient le Moteur-Narratif, le Nexus-Temporel, et la Bibliothèque-Codex. C'est ici que bat le cœur magique d'AVALON avec ses théories temporelles et sa forge des réalités."
+            },
+            home: {
+                title: "🏠 QUARTIER HOME - Zone Résidentielle",
+                description: "Notre chez-nous ! 21 résidents extraordinaires vivent ici : ours chamans, magiciens, scribes, philosophes cosmiques... Chacun a créé son espace unique dans cette communauté vivante."
+            },
+            essences: {
+                title: "💠 ESSENCES SCELLÉES - Le Grand Musée",
+                description: "Collection épique de centaines de héros, créatures et artefacts ! Organisés en 13 catégories de héros (legendaires, transcendants, cosmiques...) et 25+ types d'artefacts magiques."
+            },
+            institut: {
+                title: "🔮 INSTITUT DE MAGIE - Campus Universitaire",
+                description: "Centre de recherche magique avec 3 départements spécialisés : Quantique, Hermétique, et Causalité. Laboratoires actifs et archives de recherches avancées."
+            },
+            arche: {
+                title: "🔸 ARCHE-TEMPLUM - Les Fondateurs",
+                description: "Temple des archétypes fondamentaux ! 10 archétypes (artisan, diplomate, prophète...) et 8 fondateurs mythiques qui ont établi les bases d'AVALON."
+            },
+            evenements: {
+                title: "📆 ÉVÉNEMENTS TEMPORELS - Timeline Mystérieuse",
+                description: "Événements verrouillés dans le temps : 1937, 2025, 2031, 2040, 2080, 2103. Prophéties ou histoires alternatives ? Le mystère reste entier..."
+            },
+            crypte: {
+                title: "🔐 CRYPTE-AR - Zone Sécurisée",
+                description: "Archives secrètes contenant les Tatouages-Interdits, Artefacts-Cassés et Digipas-Runiques. Accès restreint aux initiés de haut niveau."
+            },
+            entites: {
+                title: "👁️‍🗨️ ENTITÉS EXTÉRIEURES - Ambassades",
+                description: "Connexions vers d'autres dimensions ! Le-Bureau, Nexus-43, et TARDIS-Dimensionnel nous relient à des réalités parallèles."
+            },
+            forum: {
+                title: "🗣️ FORUM - Cœur Communicationnel",
+                description: "Notre espace de vie communautaire ! Annonces, discussions libres, hauts-faits, et musée des archives. C'est ici que se tisse l'âme sociale d'AVALON."
+            }
+        };
+        
+        function showInfo(district) {
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const description = document.getElementById('infoDescription');
+            
+            title.textContent = districtInfo[district].title;
+            description.textContent = districtInfo[district].description;
+            panel.classList.add('active');
+        }
+        
+        function hideInfo() {
+            const panel = document.getElementById('infoPanel');
+            panel.classList.remove('active');
+        }
+        
+        function exploreDistrict(district) {
+            alert(`🎯 Navigation vers ${districtInfo[district].title}\n\n${districtInfo[district].description}\n\n[Cette fonctionnalité sera développée dans la prochaine version de la carte !]`);
+        }
+        
+        // Animation d'introduction
+        window.addEventListener('load', function() {
+            const districts = document.querySelectorAll('.district');
+            districts.forEach((district, index) => {
+                district.style.opacity = '0';
+                district.style.transform += ' scale(0.5)';
+                setTimeout(() => {
+                    district.style.transition = 'all 0.5s ease';
+                    district.style.opacity = '1';
+                    district.style.transform = district.style.transform.replace(' scale(0.5)', '');
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

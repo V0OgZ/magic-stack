@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 AVALON TCG - Visual Cards System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3), transparent 50%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 48px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        /* Container des cartes */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Style des cartes TCG */
+        .tcg-card {
+            width: 300px;
+            height: 420px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 3px solid #333;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .tcg-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: #ffd700;
+            box-shadow: 0 20px 50px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Rareté de la carte */
+        .card-rarity {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .rarity-legendary {
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .rarity-epic {
+            background: linear-gradient(45deg, #9b59b6, #e74c3c);
+            box-shadow: 0 0 20px rgba(155, 89, 182, 0.8);
+        }
+
+        .rarity-rare {
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+        }
+
+        /* Coût en mana */
+        .card-cost {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #3742fa, #5f27cd);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(55, 66, 250, 0.8);
+        }
+
+        /* Zone d'artwork */
+        .card-artwork {
+            width: 100%;
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-artwork::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+        }
+
+        /* Frame de la carte */
+        .card-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        /* Nom de la carte */
+        .card-name {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(51, 51, 51, 0.9));
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Type de carte */
+        .card-type {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            text-align: center;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #70a1ff;
+        }
+
+        /* Description */
+        .card-description {
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+            flex: 1;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Stats */
+        .card-stats {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-attack {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+
+        .stat-defense {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+        }
+
+        /* Effet hover spécial */
+        .tcg-card.legendary:hover {
+            animation: legendary-glow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes legendary-glow {
+            from {
+                filter: brightness(1) drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+            }
+            to {
+                filter: brightness(1.2) drop-shadow(0 0 40px rgba(255, 215, 0, 1));
+            }
+        }
+
+        /* Card showcase */
+        .showcase {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .showcase.active {
+            display: flex;
+        }
+
+        .showcase-card {
+            transform: scale(1.5);
+            animation: showcase-appear 0.5s ease-out;
+        }
+
+        @keyframes showcase-appear {
+            from {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Types de frame selon le type */
+        .frame-spell {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), transparent);
+        }
+
+        .frame-creature {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.3), transparent);
+        }
+
+        .frame-artifact {
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.3), transparent);
+        }
+
+        .frame-hero {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), transparent);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎴 AVALON TCG - Visual Cards System</h1>
+        <p>Click on any card to showcase it!</p>
+    </div>
+
+    <div class="cards-container">
+        <!-- Frappe Quantique Superposée -->
+        <div class="tcg-card legendary" onclick="showcaseCard(this)">
+            <div class="card-frame frame-spell"></div>
+            <div class="card-rarity rarity-legendary">★</div>
+            <div class="card-cost">5</div>
+            <div class="card-artwork" style="background-image: url('/assets/HD/temporal-sword-strike.png'); background: linear-gradient(45deg, #001f3f, #ff6600);"></div>
+            <div class="card-name">Frappe Quantique</div>
+            <div class="card-type">Sort - Temporal</div>
+            <div class="card-description">
+                Inflige 8 dégâts. Créé un écho qui frappe à nouveau dans 3 tours avec +50% de dégâts.
+            </div>
+        </div>
+
+        <!-- GRUT Panopticon 6D -->
+        <div class="tcg-card legendary" onclick="showcaseCard(this)">
+            <div class="card-frame frame-hero"></div>
+            <div class="card-rarity rarity-legendary">★</div>
+            <div class="card-cost">7</div>
+            <div class="card-artwork" style="background-image: url('/assets/HD/grut-panopticon.png'); background: radial-gradient(circle, #2c3e50, #8e44ad);"></div>
+            <div class="card-name">GRUT - Vision 6D</div>
+            <div class="card-type">Héros Légendaire</div>
+            <div class="card-description">
+                Voit toutes les timelines. Révèle les 3 prochaines cartes de chaque joueur.
+            </div>
+            <div class="card-stats">
+                <span class="stat-attack">6</span>
+                <span class="stat-defense">8</span>
+            </div>
+        </div>
+
+        <!-- URZ-KÔM Ours Chamane -->
+        <div class="tcg-card legendary" onclick="showcaseCard(this)">
+            <div class="card-frame frame-hero"></div>
+            <div class="card-rarity rarity-legendary">★</div>
+            <div class="card-cost">5</div>
+            <div class="card-artwork" style="background-image: url('/assets/HD/urz-kom-shaman.png'); background: linear-gradient(135deg, #0f3460, #16213e);"></div>
+            <div class="card-name">URZ-KÔM</div>
+            <div class="card-type">Héros - Chamane</div>
+            <div class="card-description">
+                Transformation : Devient Ours (8/10) ou reste Humain (4/6) avec sorts bonus.
+            </div>
+            <div class="card-stats">
+                <span class="stat-attack">4</span>
+                <span class="stat-defense">6</span>
+            </div>
+        </div>
+
+        <!-- Tour de l'Ancrage -->
+        <div class="tcg-card epic" onclick="showcaseCard(this)">
+            <div class="card-frame frame-artifact"></div>
+            <div class="card-rarity rarity-epic">◆</div>
+            <div class="card-cost">4</div>
+            <div class="card-artwork" style="background-image: url('/assets/HD/anchor-tower.png'); background: linear-gradient(to bottom, #34495e, #2c3e50);"></div>
+            <div class="card-name">Tour de l'Ancrage</div>
+            <div class="card-type">Artefact - Structure</div>
+            <div class="card-description">
+                Les échos temporels ne peuvent pas être annulés. +1 mana par tour.
+            </div>
+        </div>
+
+        <!-- Warrior of Three Times -->
+        <div class="tcg-card legendary" onclick="showcaseCard(this)">
+            <div class="card-frame frame-creature"></div>
+            <div class="card-rarity rarity-legendary">★</div>
+            <div class="card-cost">8</div>
+            <div class="card-artwork" style="background-image: url('/assets/HD/warrior-three-times.png'); background: linear-gradient(135deg, #f39c12, #e74c3c, #3498db);"></div>
+            <div class="card-name">Guerrier Triforme</div>
+            <div class="card-type">Créature - Guerrier Temporel</div>
+            <div class="card-description">
+                Existe dans 3 timelines. Attaque 3 fois par tour. Immune aux sorts temporels.
+            </div>
+            <div class="card-stats">
+                <span class="stat-attack">7</span>
+                <span class="stat-defense">7</span>
+            </div>
+        </div>
+
+        <!-- Portail Dimensionnel -->
+        <div class="tcg-card rare" onclick="showcaseCard(this)">
+            <div class="card-frame frame-spell"></div>
+            <div class="card-rarity rarity-rare">♦</div>
+            <div class="card-cost">3</div>
+            <div class="card-artwork" style="background: radial-gradient(circle, #9b59b6, #3498db, #2ecc71);"></div>
+            <div class="card-name">Portail Temporel</div>
+            <div class="card-type">Sort - Portal</div>
+            <div class="card-description">
+                Téléporte une créature 2 tours dans le futur. Elle revient avec +2/+2.
+            </div>
+        </div>
+
+        <!-- Écho Quantique -->
+        <div class="tcg-card epic" onclick="showcaseCard(this)">
+            <div class="card-frame frame-spell"></div>
+            <div class="card-rarity rarity-epic">◆</div>
+            <div class="card-cost">2</div>
+            <div class="card-artwork" style="background: repeating-linear-gradient(45deg, #3498db, #3498db 10px, #2980b9 10px, #2980b9 20px);"></div>
+            <div class="card-name">Écho Quantique</div>
+            <div class="card-type">Sort - Écho</div>
+            <div class="card-description">
+                Copie le dernier sort joué. Il se répétera pendant 3 tours.
+            </div>
+        </div>
+
+        <!-- Cristal d'Avalon -->
+        <div class="tcg-card rare" onclick="showcaseCard(this)">
+            <div class="card-frame frame-artifact"></div>
+            <div class="card-rarity rarity-rare">♦</div>
+            <div class="card-cost">1</div>
+            <div class="card-artwork" style="background: radial-gradient(circle, #e74c3c, #3498db, #f39c12);"></div>
+            <div class="card-name">Cristal d'Avalon</div>
+            <div class="card-type">Artefact - Gemme</div>
+            <div class="card-description">
+                +1 mana ce tour. Si tu as 3 cristaux, invoque un Gardien 5/5.
+            </div>
+        </div>
+    </div>
+
+    <!-- Showcase overlay -->
+    <div class="showcase" id="showcase" onclick="hideShowcase()">
+        <div class="showcase-card" id="showcase-card"></div>
+    </div>
+
+    <script>
+        function showcaseCard(card) {
+            const showcase = document.getElementById('showcase');
+            const showcaseCard = document.getElementById('showcase-card');
+            
+            // Clone la carte
+            showcaseCard.innerHTML = card.outerHTML;
+            showcase.classList.add('active');
+            
+            // Animation de particules
+            createParticles();
+        }
+
+        function hideShowcase() {
+            document.getElementById('showcase').classList.remove('active');
+        }
+
+        function createParticles() {
+            const showcase = document.getElementById('showcase');
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                particle.style.borderRadius = '50%';
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                particle.style.transform = 'translate(-50%, -50%)';
+                particle.style.pointerEvents = 'none';
+                
+                showcase.appendChild(particle);
+                
+                // Animation
+                const angle = (i / 20) * Math.PI * 2;
+                const distance = 200 + Math.random() * 100;
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)' },
+                    { 
+                        transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: 1000,
+                    easing: 'ease-out'
+                }).onfinish = () => particle.remove();
+            }
+        }
+
+        // Easter egg : Konami code
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join('') === konamiPattern.join('')) {
+                document.body.style.animation = 'legendary-glow 1s ease-in-out infinite alternate';
+                alert('🎴 MODE LÉGENDAIRE ACTIVÉ !');
+            }
+        });
+    </script>
+</body>
+</html>

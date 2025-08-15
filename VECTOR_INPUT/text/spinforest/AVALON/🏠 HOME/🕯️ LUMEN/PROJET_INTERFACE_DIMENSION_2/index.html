@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 AVALON - Interface Dimension 2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            height: 100vh;
+        }
+        
+        /* Panel Gauche - Heroes */
+        .heroes-panel {
+            background: #111;
+            border-right: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .hero-card {
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hero-card:hover {
+            background: #2a2a2a;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .hero-card.selected {
+            background: #003300;
+            border-color: #00ffff;
+        }
+        
+        /* Map 2D */
+        .map-container {
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #00ff00;
+            cursor: crosshair;
+        }
+        
+        /* Panel Droit - Actions */
+        .actions-panel {
+            background: #111;
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+        }
+        
+        .action-button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #003300;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .action-button:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        /* Console */
+        .console {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #00ff00;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .console-line {
+            margin-bottom: 5px;
+        }
+        
+        .console-line.error { color: #ff0000; }
+        .console-line.success { color: #00ff00; }
+        .console-line.info { color: #00ffff; }
+        
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #00ff00;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        🌀 CHARGEMENT DIMENSION 2...<br>
+        <span id="loadingStatus">Initialisation...</span>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Panel Heroes -->
+        <div class="heroes-panel">
+            <h2>🦸 HÉROS</h2>
+            <button class="action-button" onclick="createNewHero()">➕ CRÉER HÉROS</button>
+            <div id="heroesList"></div>
+        </div>
+        
+        <!-- Map 2D -->
+        <div class="map-container">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div class="hud" id="hud">
+                <span id="hudInfo">🗺️ AVALON MAP | FPS: <span id="fps">0</span></span>
+            </div>
+        </div>
+        
+        <!-- Panel Actions -->
+        <div class="actions-panel">
+            <h2>⚡ ACTIONS</h2>
+            <button class="action-button" onclick="connectBackend()">🔌 CONNECTER BACKEND</button>
+            <button class="action-button" onclick="loadScenario()">📜 CHARGER SCÉNARIO</button>
+            <button class="action-button" onclick="teleportHero()">🌀 TÉLÉPORTER</button>
+            <button class="action-button" onclick="executeFormula()">🔮 FORMULE MAGIQUE</button>
+            <hr style="margin: 20px 0; border-color: #00ff00;">
+            <h3>📊 STATUT</h3>
+            <div id="status">
+                <p>Backend: <span id="backendStatus">❌ Déconnecté</span></p>
+                <p>Héros actif: <span id="activeHero">Aucun</span></p>
+                <p>Position: <span id="position">0, 0</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Console -->
+    <div class="console" id="console"></div>
+
+    <script src="game.js"></script>
+    <script src="auto-play.js"></script>
+    
+    <!-- Panel Auto-Play -->
+    <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 1px solid #00ff00; padding: 10px; border-radius: 5px;">
+        <h3 style="margin: 0 0 10px 0; color: #00ff00;">🎮 AUTO-PLAY</h3>
+        <select id="scenarioSelect" style="width: 200px; margin-bottom: 10px; background: #000; color: #00ff00; border: 1px solid #00ff00;">
+            <option value="">-- Choisir scénario --</option>
+            <option value="DUEL_COLLAPSE">⚔️ Duel Collapse</option>
+            <option value="panopticon_axis_test">👁️ Panopticon Test</option>
+            <option value="ECLAT_MONDES_DISSOLUS">🌍 Éclat Mondes</option>
+        </select>
+        <br>
+        <button onclick="startAutoPlay()" style="background: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; cursor: pointer;">▶️ JOUER AUTO</button>
+        <button onclick="autoPlay.stop()" style="background: #330000; color: #ff0000; border: 1px solid #ff0000; padding: 5px 10px; cursor: pointer;">⏹️ STOP</button>
+    </div>
+    
+    <script>
+        async function startAutoPlay() {
+            const select = document.getElementById('scenarioSelect');
+            const scenario = select.value;
+            if (!scenario) {
+                log('❌ Choisir un scénario !', 'error');
+                return;
+            }
+            
+            if (await autoPlay.loadScenario(scenario)) {
+                await autoPlay.start();
+            }
+        }
+    </script>
+</body>
+</html>
