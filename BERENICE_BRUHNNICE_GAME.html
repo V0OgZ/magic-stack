@@ -84,6 +84,7 @@
             width: 100%;
             height: 100%;
             position: relative;
+            text-align: center;
         }
 
         #gameCanvas {
@@ -317,9 +318,77 @@
         }
 
         /* Avatar styles */
-        .avatar-ber0 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber0.png'); }
-        .avatar-ber1 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber1.png'); }
-        .avatar-ber2 { background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber2.png'); }
+        .avatar-ber0 { 
+            background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber0.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .avatar-ber1 { 
+            background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber1.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .avatar-ber2 { 
+            background-image: url('BALLON_CUBE/PICS_CHARACTERS/ber2.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        /* Grille de jeu style PWA */
+        #gameGrid {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 2px;
+            margin: 20px auto;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+            width: fit-content;
+        }
+        
+        .grid-cell {
+            background: rgba(0,255,255,0.1);
+            border: 1px solid #0ff;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .grid-cell:hover {
+            background: rgba(0,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .grid-cell.wall {
+            background: #333;
+            cursor: not-allowed;
+        }
+        
+        .grid-cell.objective {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -348,7 +417,14 @@
 
     <!-- Game Container (Niveaux 1+) -->
     <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
+        <!-- Container pour la grille et l'avatar -->
+        <div style="position: relative; display: inline-block; margin: 0 auto;">
+            <!-- Grille de jeu style PWA -->
+            <div id="gameGrid"></div>
+            
+            <!-- Avatar du joueur -->
+            <img id="playerAvatar" class="player-avatar avatar-ber0" style="display:none;">
+        </div>
         
         <!-- Stats -->
         <div id="stats">
@@ -631,6 +707,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             // Initialize map
             gameState.world.map = config.map;
             
+            // Set initial position
+            gameState.player.position_6d.x = 1;
+            gameState.player.position_6d.y = 1;
+            
             // Start rendering
             renderGame();
         }
@@ -879,12 +959,27 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         }
 
         function updateAvatar() {
-            const avatars = document.querySelectorAll('.hero-avatar');
-            avatars.forEach(avatar => {
+            // Update combat avatars
+            const combatAvatars = document.querySelectorAll('.hero-avatar');
+            combatAvatars.forEach(avatar => {
                 if (avatar.parentElement.id === 'hero-player') {
                     avatar.className = 'hero-avatar avatar-' + gameState.player.avatar;
                 }
             });
+            
+            // Update main player avatar
+            const playerAvatar = document.getElementById('playerAvatar');
+            if (playerAvatar) {
+                playerAvatar.className = 'player-avatar avatar-' + gameState.player.avatar;
+                // Show the correct image based on level
+                if (gameState.currentLevel === 1) {
+                    showDialogue("Bérénice", "SÉRIEUX?! Cet avatar cartoon?! Je DÉTESTE!");
+                } else if (gameState.currentLevel === 2) {
+                    showDialogue("Bérénice", "Enfin! Ça c'est mieux! Mode hacker activé!");
+                } else if (gameState.currentLevel === 3) {
+                    showDialogue("Bérénice", "Maintenant on parle! Cyberpunk mode ON!");
+                }
+            }
         }
 
         async function gameLoop() {
@@ -927,41 +1022,137 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             }
         }
 
-        function renderGame() {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
+        function createGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
             
-            // Set canvas size
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            // Clear
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Render map
-            if (gameState.world.map) {
-                const tileSize = 20;
-                const map = gameState.world.map;
+            // Créer une grille 10x10
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // Click pour déplacer
+                    cell.onclick = () => movePlayer(x, y);
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+        
+        function renderGame() {
+            if (gameState.currentLevel === 0) return;
+            
+            const grid = document.getElementById('gameGrid');
+            if (!grid.children.length) createGrid();
+            
+            const cells = grid.querySelectorAll('.grid-cell');
+            const avatar = document.getElementById('playerAvatar');
+            
+            // Clear grid
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.className = 'grid-cell';
+            });
+            
+            // Render based on level
+            const levelData = {
+                1: {
+                    objectives: [{x: 2, y: 2, emoji: '💎'}, {x: 7, y: 3, emoji: '💎'}, {x: 5, y: 8, emoji: '💎'}],
+                    exit: {x: 9, y: 9, emoji: '🚪'},
+                    enemy: {x: 6, y: 1, emoji: '🐰'},
+                    walls: '🌳'
+                },
+                2: {
+                    objectives: [{x: 1, y: 1, emoji: '🖥️'}, {x: 8, y: 8, emoji: '🖥️'}, {x: 4, y: 5, emoji: '🖥️'}],
+                    exit: {x: 9, y: 0, emoji: '🌀'},
+                    enemy: {x: 5, y: 5, emoji: '👤'},
+                    walls: '▓'
+                },
+                3: {
+                    enemy: {x: 5, y: 2, emoji: '💀'},
+                    walls: '⚡'
+                }
+            };
+            
+            const data = levelData[gameState.currentLevel];
+            if (data) {
+                // Place walls on edges
+                for (let i = 0; i < 10; i++) {
+                    cells[i].innerHTML = data.walls;
+                    cells[i].classList.add('wall');
+                    cells[90 + i].innerHTML = data.walls;
+                    cells[90 + i].classList.add('wall');
+                    cells[i * 10].innerHTML = data.walls;
+                    cells[i * 10].classList.add('wall');
+                    cells[i * 10 + 9].innerHTML = data.walls;
+                    cells[i * 10 + 9].classList.add('wall');
+                }
                 
-                ctx.font = `${tileSize}px Arial`;
-                for (let y = 0; y < map.length; y++) {
-                    for (let x = 0; x < map[y].length; x++) {
-                        ctx.fillText(map[y][x], x * tileSize, y * tileSize + tileSize);
+                // Place objectives
+                data.objectives?.forEach(obj => {
+                    const cell = cells[obj.y * 10 + obj.x];
+                    if (cell) {
+                        cell.innerHTML = obj.emoji;
+                        cell.classList.add('objective');
+                    }
+                });
+                
+                // Place exit
+                if (data.exit) {
+                    const cell = cells[data.exit.y * 10 + data.exit.x];
+                    if (cell) {
+                        cell.innerHTML = data.exit.emoji;
+                        cell.classList.add('objective');
                     }
                 }
-
-                // Render player
-                ctx.fillStyle = '#0ff';
-                ctx.fillRect(
-                    gameState.player.position_6d.x * tileSize,
-                    gameState.player.position_6d.y * tileSize,
-                    tileSize,
-                    tileSize
-                );
+                
+                // Place enemy
+                if (data.enemy) {
+                    const cell = cells[data.enemy.y * 10 + data.enemy.x];
+                    if (cell) cell.innerHTML = data.enemy.emoji;
+                }
             }
-
-            requestAnimationFrame(renderGame);
+            
+            // Update player avatar
+            avatar.style.display = 'block';
+            avatar.style.position = 'absolute';
+            const cellSize = 52; // 50px + 2px gap
+            const padding = 10;
+            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 2) + 'px';
+            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 2) + 'px';
+            
+            // Change avatar based on level
+            avatar.className = 'player-avatar avatar-ber' + Math.min(gameState.currentLevel - 1, 2);
+        }
+        
+        function movePlayer(x, y) {
+            if (gameState.currentLevel === 0) return;
+            
+            // Check walls
+            const cells = document.querySelectorAll('.grid-cell');
+            const targetCell = cells[y * 10 + x];
+            if (targetCell && !targetCell.classList.contains('wall')) {
+                gameState.player.position_6d.x = x;
+                gameState.player.position_6d.y = y;
+                renderGame();
+                checkObjectives(x, y);
+            }
+        }
+        
+        function checkObjectives(x, y) {
+            // Check level objectives
+            if (gameState.currentLevel === 1) {
+                if ((x === 2 && y === 2) || (x === 7 && y === 3) || (x === 5 && y === 8)) {
+                    showFloatingMessage("💎 Cristal!", x * 52, y * 52, '#0f0');
+                }
+                if (x === 9 && y === 9) {
+                    showFloatingMessage("Niveau 2!", x * 52, y * 52, '#0ff');
+                    setTimeout(() => startLevel(2), 1000);
+                }
+            }
         }
 
         // Helper functions
