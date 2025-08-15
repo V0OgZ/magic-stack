@@ -341,6 +341,34 @@
             transform: translateY(-2px);
             box-shadow: 0 7px 20px rgba(0,0,0,0.4);
         }
+
+        /* Quick links bar (top) */
+        .quick-links {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            margin: -1rem -1rem 1rem -1rem;
+            padding: 0.6rem 1rem;
+            background: linear-gradient(180deg, rgba(26,15,8,0.95) 0%, rgba(26,15,8,0.7) 100%);
+            border-bottom: 1px solid rgba(212,175,55,0.35);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .ql-btn {
+            display: inline-block;
+            padding: 0.45rem 0.8rem;
+            border: 1px solid rgba(212,175,55,0.6);
+            border-radius: 8px;
+            color: var(--parchment);
+            background: rgba(212,175,55,0.15);
+            text-decoration: none;
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .ql-btn:hover { background: rgba(212,175,55,0.3); color: var(--parchment); }
         
         @media (max-width: 900px) {
             .parchment-container {
@@ -397,6 +425,15 @@
             <a href="/FRONTPAGE/index_ru.html" style="padding: 0.5rem 1rem; background: #d4af37; color: #8b7355; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">🇷🇺 RU</a>
         </div>
         <h1>⚔️ Heroes of Time ⚔️</h1>
+        <nav class="quick-links">
+            <a class="ql-btn" href="/FRONTPAGE/berenice.html">🎒 Bérénice (Demo Mobile)</a>
+            <a class="ql-btn" href="/HOT_GAME_UNIFIED.html">🎮 Aventure Solo</a>
+            <a class="ql-btn" href="/IA_VS_IA_AUTOPLAY.html">⚔️ Combat Auto</a>
+            <a class="ql-btn" href="/MULTIPLAYER_DEMO_HOMM3.html">👥 Multijoueur</a>
+            <a class="ql-btn" href="/FRONTPAGE/spells-lab.html?v=2">🧪 Spells Lab</a>
+            <a class="ql-btn" href="/world-editor/?v=2">🏰 World Editor</a>
+            <a class="ql-btn" href="/MEGA_EDITOR.html">🗺️ Mega Editor</a>
+        </nav>
         <!-- Quick launch bar (brought to the top for fast access on mobile) -->
         <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:-6px 0 16px 0;">
             <a class="cta-button" href="/FRONTPAGE/berenice.html" style="background: linear-gradient(135deg,#4ade80,#22c55e); font-weight:bold;">🎮 BruhNice</a>
