@@ -1,4 +1,4 @@
-const STATIC_VERSION = 'hot-static-v3';
+const STATIC_VERSION = 'hot-static-v4';
 const HEAVY_IMAGE_PREFIX = '/FRONTPAGE/assets/assets/'; // leave cache-first for these only
 
 self.addEventListener('install', (event) => {
@@ -57,7 +57,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
-      keys.filter(k => k !== STATIC_VERSION && k !== 'hot-v1').map(k => caches.delete(k))
+      keys.filter(k => k !== STATIC_VERSION).map(k => caches.delete(k))
     )).then(() => self.clients.claim())
   );
 });
