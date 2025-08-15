@@ -184,12 +184,56 @@
             height: 30%;
             background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,20,0.9));
             border-top: 2px solid #0ff;
-            display: flex;
+            display: none; /* hidden during exploration; combat uses compact bar */
             align-items: center;
             justify-content: center;
             padding: 10px;
             gap: 10px;
             overflow-x: auto;
+        }
+
+        /* Compact combat action bar */
+        #combatActions {
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            display: none;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 2px solid #0ff;
+            background: rgba(0, 16, 24, 0.9);
+            box-shadow: 0 0 16px rgba(0,255,255,0.35);
+            z-index: 900;
+        }
+        .combat-btn {
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #0ff;
+            background: #041a22;
+            color: #0ff;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 8px rgba(0,255,255,0.3);
+        }
+        #skillName { color:#9ff; font-size:12px; margin-left:6px; }
+
+        /* Objective chip */
+        #objectiveChip {
+            position: fixed;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 2px solid #0ff;
+            background: rgba(0, 16, 24, 0.85);
+            color: #0ff;
+            font-weight: bold;
+            z-index: 900;
+            box-shadow: 0 0 10px rgba(0,255,255,0.25);
         }
 
         .card {
@@ -674,6 +718,11 @@
         <div id="cards">
             <!-- Les cartes seront générées dynamiquement -->
         </div>
+        <div id="combatActions">
+            <button id="btnAttack" class="combat-btn">Attaquer</button>
+            <button id="btnSkill" class="combat-btn">Compétence <span id="skillName"></span></button>
+        </div>
+        <div id="objectiveChip">Objectif</div>
     </div>
 
     <script>
@@ -1487,6 +1536,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 gameState.player.position_6d.y = y;
                 renderGame();
                 checkObjectives(x, y);
+                updateObjectiveChip();
                 // Entity interactions
                 const ent = (gameState.world.entities||[]).find(e=>e.x===x && e.y===y);
                 if (ent) {
@@ -1495,6 +1545,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                             if (gameState.player.crystals===1) showDialogue('Bérénice','Premier cristal! Plus que 2.');
                             if (gameState.player.crystals===2) showDialogue('Bérénice','Encore un cristal et on file à la porte.');
                             if (gameState.player.crystals>=3) showDialogue('Bérénice','OK go à la porte 🚪 !');
+                            updateObjectiveChip();
                         }
                         else { (gameState.player.inventory||[]).push(ent.emoji); showFloatingMessage('Ramassé '+ent.emoji, x*52, y*52, '#0ff'); }
                         gameState.world.entities = gameState.world.entities.filter(e=>e!==ent);
@@ -1517,6 +1568,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             gameState.combat.enemy = enemy;
             gameState.combat.turn = 'player';
             showDialogue('Bérénice','En garde!');
+            toggleCombatUI(true);
         }
 
         function endCombat(victory) {
@@ -1530,6 +1582,26 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             }
             gameState.combat.enemy = null;
             renderGame();
+            toggleCombatUI(false);
+        }
+
+        function updateObjectiveChip() {
+            const chip = document.getElementById('objectiveChip');
+            if (!chip) return;
+            const need = 3;
+            const have = gameState.player.crystals||0;
+            chip.textContent = `Objectif: ${have}/${need} 💎 → 🚪`;
+        }
+
+        function toggleCombatUI(on) {
+            const bar = document.getElementById('combatActions');
+            if (!bar) return;
+            bar.style.display = on ? 'flex' : 'none';
+            if (on) {
+                const skill = (gameState.currentLevel===1)?'Ping':(gameState.currentLevel===2?'Fork/Ctrl+Z':'Future/Rewind');
+                const sn = document.getElementById('skillName');
+                if (sn) sn.textContent = `(${skill})`;
+            }
         }
 
         // Helper functions
@@ -1602,6 +1674,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 } catch {}
                 document.getElementById('heroOverlay').style.display = 'block';
             };
+            updateObjectiveChip();
         });
 
         // Keyboard controls
