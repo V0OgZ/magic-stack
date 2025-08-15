@@ -657,6 +657,7 @@
                 map: null,
                 fogOfWar: true,
                 visited: [],
+                enemySeenAt: [],
                 losRadius: 2
             },
             combat: {
@@ -1335,6 +1336,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             if (!gameState.world.visited.length) {
                 gameState.world.visited = Array.from({length:10},()=>Array(10).fill(false));
             }
+            if (!gameState.world.enemySeenAt.length) {
+                gameState.world.enemySeenAt = Array.from({length:10},()=>Array(10).fill(0));
+            }
             const px = gameState.player.position_6d.x;
             const py = gameState.player.position_6d.y;
             const r = gameState.world.losRadius || 2;
@@ -1373,7 +1377,6 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
 
             // Causality Fog: mark tiles visible by any creature (their FOV)
             const enemyLOS = new Set();
-            const enemyStale = new Map();
             const now = performance.now();
             const losR = 3;
             (gameState.world.entities||[]).forEach(ent => {
@@ -1382,7 +1385,8 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                         for (let dx=-losR; dx<=losR; dx++) {
                             const ex = ent.x+dx, ey = ent.y+dy; if (ex<0||ex>=10||ey<0||ey>=10) continue;
                             if (Math.abs(dx)+Math.abs(dy) <= losR) {
-                                const key = ey*10+ex; enemyLOS.add(key); enemyStale.set(key, now);
+                                const key = ey*10+ex; enemyLOS.add(key);
+                                gameState.world.enemySeenAt[ey][ex] = now;
                             }
                         }
                     }
@@ -1391,8 +1395,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             // apply styles
             for (let i=0;i<cells.length;i++){
                 const cell = cells[i];
+                const y = Math.floor(i/10), x = i%10;
+                const last = gameState.world.enemySeenAt[y]?.[x] || 0;
                 if (enemyLOS.has(i)) cell.classList.add('enemy-now');
-                else if (enemyStale.has(i)) cell.classList.add('enemy-stale');
+                else if (now - last < 7000) cell.classList.add('enemy-stale');
             }
             
             // Update player avatar
