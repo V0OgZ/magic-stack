@@ -551,6 +551,7 @@
             <button class="top-btn" id="btnTalk">Parler</button>
             <button class="top-btn" id="btnEditor">Mode Éditeur</button>
             <button class="top-btn" id="btnHero">Héroïne</button>
+            <button class="top-btn" id="btnLevels">Niveaux</button>
         </div>
         <div id="helpOverlay" class="overlay">
             <div class="box">
@@ -591,6 +592,17 @@
                         <div style="font-weight:bold; color:#0ff; margin:8px 0 4px;">Capacités</div>
                         <div id="heroAbilities" style="display:flex; flex-direction:column; gap:6px;"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div id="levelsOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('levelsOverlay').style.display='none'">Fermer</button>
+                <h3>Choisir le niveau</h3>
+                <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+                    <button class="top-btn" onclick="startLevel(1)">Niveau 1</button>
+                    <button class="top-btn" onclick="startLevel(2)">Niveau 2</button>
+                    <button class="top-btn" onclick="startLevel(3)">Niveau 3</button>
                 </div>
             </div>
         </div>
@@ -1535,8 +1547,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const btnTalk = document.getElementById('btnTalk');
             const btnEditor = document.getElementById('btnEditor');
             const btnHero = document.getElementById('btnHero');
+            const btnLevels = document.getElementById('btnLevels');
             if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
             if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
+            if (btnLevels) btnLevels.onclick = () => { document.getElementById('levelsOverlay').style.display = 'block'; };
             if (btnHero) btnHero.onclick = async () => {
                 try {
                     const res = await fetch(CONFIG.JAVA_API + '/heroes/berenice_temporalhacker');
