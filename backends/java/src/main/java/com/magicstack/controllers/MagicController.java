@@ -21,6 +21,8 @@ public class MagicController {
     @Autowired
     private MagicEngineService magicEngine;
     @Autowired
+    private UltimateSpecService ultimateSpecService;
+    @Autowired
     private com.magicstack.services.ScenarioTranslationService scenarioTranslator;
     
     @GetMapping("/health")
@@ -38,6 +40,22 @@ public class MagicController {
     public CastResponse castSpell(@RequestBody CastRequest request) {
         // Cast magic formula in 6D space
         return magicEngine.cast(request);
+    }
+
+    @GetMapping("/ultimates")
+    public Map<String, Object> listUltimates() {
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("ultimates", ultimateSpecService.listMeta());
+        return resp;
+    }
+
+    @PostMapping("/cast-ultimate")
+    public CastResponse castUltimate(@RequestBody Map<String, Object> body) {
+        String formulaId = String.valueOf(body.getOrDefault("formulaId", ""));
+        String activeHeroId = String.valueOf(body.getOrDefault("activeHeroId", ""));
+        Map<String, Object> context = (Map<String, Object>) body.getOrDefault("context", new HashMap<>());
+        context.put("activeHeroId", activeHeroId);
+        return magicEngine.castUltimate(formulaId, context);
     }
     
     @PostMapping("/translate")
