@@ -1,0 +1,13 @@
+## Backend (concise)
+- Java Spring (port 8082, proxied as `/api`)
+  - `MagicController` → `/api/magic/*`
+  - `MagicEngineService.cast()` resolves formula via `FormulaRegistryService`, calls Rust execute/apply
+  - FOUB guard for `MILLENNIUM_CONTROLLER`
+  - Interstice: `/api/interstice/upload|download|status|search`
+- Rust Axum (port 3001, proxied as `/engine`)
+  - `/temporal/execute|apply`: returns `trace_hash`, optional `world_diff`
+  - `/api/world-state/changes`: recent changes
+  - `/api/archives/*`: proxy to Vector bridge
+- Vector Bridge (Python)
+  - `vector_bridge.py` status/search/build
+  - Index builder: `tools/vector_build/build_local.py`

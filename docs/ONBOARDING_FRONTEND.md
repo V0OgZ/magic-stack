@@ -1,0 +1,11 @@
+## Frontend (concise)
+- Unified app (Vite): `apps/magic-stack-unified/`
+  - EditorView: import JSON, IconPlacer V2, Interstice load by ID, ArchiveSearch panel
+  - QuickCastPanel: hits `/api/magic/*`
+  - MapFileService: uploads maps to `/api/interstice/upload`
+- World Editor (Vite): `apps/world-editor/`
+  - Exports JSON, can be imported in Unified
+- Spells Lab: `FRONTPAGE/spells-lab.html`
+  - Calls `/api/magic/cast|translate`, shows outputs, traceHash, worldDiff, recent changes
+- Prod vs Dev endpoints
+  - Code switches to `/api`, `/engine`, `/vector` on prod; localhost in dev

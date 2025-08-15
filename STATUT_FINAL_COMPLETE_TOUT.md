@@ -1,5 +1,13 @@
 # 🌐 STATUT FINAL COMPLET - TOUS LES DÉPÔTS 🌐
 
+## 🚀 ONBOARDING RAPIDE
+- Architecture: `docs/ONBOARDING_ARCHITECTURE.md`
+- Gameplay: `docs/ONBOARDING_GAMEPLAY.md`
+- Frontend: `docs/ONBOARDING_FRONTEND.md`
+- Backends: `docs/ONBOARDING_BACKEND.md`
+- DevOps: `docs/ONBOARDING_DEVOPS.md`
+- Ultimates (FOUB + custom): `docs/ONBOARDING_ULTIMATES.md`
+
 ## 📊 VUE D'ENSEMBLE FINALE
 
 ### 🌲 **1. SPINFOREST** (GitHub Public)

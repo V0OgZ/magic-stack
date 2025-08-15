@@ -1,0 +1,12 @@
+## Ultimates (FOUB + custom)
+- Live: `MILLENNIUM_CONTROLLER`
+  - Requires `context.activeHeroId` contains "foub"
+  - Outputs: literary/iconic/runic/quantum with phase sequence; effects/sounds list
+  - Apply annotates `worldDiff` with `{ ultimate, phases }`
+- Proposed Spec (data-driven)
+  - Interstice JSON spec with: id, activation conditions, phases (SEQ/PAR), actions (FX/BUFF/REZ/DEBUFF), outputs templates, tests
+  - Java loader: fetch spec by id → compile to temporal-grammar AST → execute via Rust
+  - Deterministic `traceHash`, golden tests, per-hero validators
+- Next steps
+  - Add `interstice/ultimates/MILLENNIUM_CONTROLLER.json`
+  - Implement loader in `MagicEngineService` (if id in spec, prefer spec over hardcoded guard)

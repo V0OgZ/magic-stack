@@ -1,0 +1,11 @@
+## Gameplay (concise)
+- 6D position: (x,y,z,t,c,psi)
+- Temporal grammar primitives: SHIFT, FORK, MERGE, SEQ, PAR
+- Cast modes:
+  - simulate: compute `trace_hash`, no world mutation
+  - apply: compute and return `world_diff`, update Rust world graph
+- Outputs: literary, iconic, runic, quantum (UI uses all four)
+- FOUB Ultimate (live): `MILLENNIUM_CONTROLLER`
+  - Requires `context.activeHeroId` containing "foub"
+  - Phases: transform → divine bubble → mass rez → exhaustion → recovery
+  - On apply: `worldDiff` annotated with `{ ultimate, phases }`

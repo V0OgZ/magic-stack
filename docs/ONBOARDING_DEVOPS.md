@@ -1,0 +1,12 @@
+## DevOps (concise)
+- Local
+  - Java: `RUST_BASE_URL=http://localhost:3001 mvn -DskipTests spring-boot:run`
+  - Rust: `cargo run` (port 3001)
+  - Unified: `cd apps/magic-stack-unified && npm i && npm run dev`
+  - World Editor: `cd apps/world-editor && npm i && npm run dev`
+- Prod (VPS)
+  - Sync: `ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "cd /opt/hot/app && ./VPS_SAFE_SYNC.sh"`
+  - Restart: `systemctl restart magic-java|magic-rust|caddy`
+  - Health: `curl https://heroesoftime.online/api/magic/health`, `/engine/health`, `/api/interstice/status`
+- CI
+  - Smoke test: `.github/workflows/translate_scenario_smoke.yml`
