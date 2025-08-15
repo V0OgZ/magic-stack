@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Memento (PWA) — VectorDB Assistant</title>
+  <link rel="manifest" href="./memento-manifest.webmanifest">
+  <meta name="theme-color" content="#111831" />
+  <style>
+    html,body{margin:0;background:#0a0a1a;color:#e8d5b7;font-family:Courier,monospace}
+    #top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:2px solid #8A2BE2;background:#111831}
+    .container{max-width:680px;margin:0 auto;padding:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .col{flex:1;min-width:150px}
+    input,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid #2b3350;background:#0a0f1f;color:#e6e6e6}
+    .btn{background:#182034;border:1px solid #4a4f5c}
+    .list{margin-top:12px}
+    .item{padding:10px;border:1px solid #2b3350;border-radius:8px;margin-bottom:8px;background:#121826}
+    .small{font-size:12px;color:#9aa4c4}
+    .pill{display:inline-block;padding:2px 6px;border:1px solid #2b3350;border-radius:10px;margin-right:6px;font-size:11px;color:#cdb48a}
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div>Memento — Assistant VectorDB</div>
+    <div><a style="color:#FFD700;text-decoration:none" href="../adventure/homm3/hub-aventure.html">Hub</a></div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col"><label class="small">Server</label><input id="baseUrl" placeholder="http://localhost:3001"/></div>
+      <div class="col"><label class="small">Mode</label><select id="mode"><option value="story">story</option><option value="dev">dev</option></select></div>
+      <div class="col"><label class="small">Audience</label><select id="audience"><option>player</option><option>mage</option><option>memento</option><option>dev</option><option>vincent</option></select></div>
+      <div class="col"><label class="small">Security</label><select id="security"><option>public</option><option>initie</option><option>adepte</option><option>confidentiel</option><option>ultra-secret</option></select></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="col"><label class="small">Content</label><select id="content"><option>lore</option><option>quest</option><option>artifact</option><option>spell</option><option>hero</option><option>creature</option><option>mechanic</option><option>api</option><option>code</option></select></div>
+      <div class="col"><label class="small">Interactivity</label><select id="inter"><option>readonly</option><option>searchable</option><option>playable</option><option>modifiable</option><option>executable</option></select></div>
+      <div class="col"><label class="small">Usage</label><select id="usage"><option>gaming</option><option>storytelling</option><option>worldbuilding</option><option>debugging</option><option>research</option></select></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="col" style="flex:2"><input id="query" placeholder="Requête (ex: scenario:initiation OR map:forest)"/></div>
+      <div class="col"><button class="btn" id="searchBtn">Rechercher</button></div>
+    </div>
+    <div class="small" id="status">Prêt</div>
+    <div class="list" id="results"></div>
+  </div>
+
+  <script>
+    const baseEl = document.getElementById('baseUrl');
+    const modeEl = document.getElementById('mode');
+    const audienceEl = document.getElementById('audience');
+    const securityEl = document.getElementById('security');
+    const contentEl = document.getElementById('content');
+    const interEl = document.getElementById('inter');
+    const usageEl = document.getElementById('usage');
+    const queryEl = document.getElementById('query');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    baseEl.value = localStorage.getItem('memento.base') || 'http://localhost:3001';
+    modeEl.value = localStorage.getItem('memento.mode') || 'story';
+    audienceEl.value = localStorage.getItem('memento.audience') || 'player';
+    securityEl.value = localStorage.getItem('memento.security') || 'public';
+    contentEl.value = localStorage.getItem('memento.content') || 'lore';
+    interEl.value = localStorage.getItem('memento.inter') || 'readonly';
+    usageEl.value = localStorage.getItem('memento.usage') || 'gaming';
+
+    function savePrefs(){
+      localStorage.setItem('memento.base', baseEl.value);
+      localStorage.setItem('memento.mode', modeEl.value);
+      localStorage.setItem('memento.audience', audienceEl.value);
+      localStorage.setItem('memento.security', securityEl.value);
+      localStorage.setItem('memento.content', contentEl.value);
+      localStorage.setItem('memento.inter', interEl.value);
+      localStorage.setItem('memento.usage', usageEl.value);
+    }
+
+    async function search(){
+      savePrefs();
+      const base = baseEl.value || 'http://localhost:3001';
+      const body = {
+        query: (queryEl.value || '').trim() || 'scenario OR lore',
+        top_k: 25,
+        mode: modeEl.value,
+        filters: {
+          audience: audienceEl.value,
+          security: securityEl.value,
+          content_type: contentEl.value,
+          interactivity: interEl.value,
+          usage: usageEl.value
+        }
+      };
+      statusEl.textContent = 'Recherche...';
+      resultsEl.innerHTML = '';
+      try {
+        const r = await fetch(base + '/api/archives/search', {
+          method: 'POST', headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(r.status);
+        const data = await r.json();
+        statusEl.textContent = 'OK';
+        render(data);
+      } catch(e){ statusEl.textContent = 'Erreur: ' + e.message; }
+    }
+
+    function render(data){
+      const items = Array.isArray(data?.results) ? data.results : [];
+      if (!items.length) { resultsEl.innerHTML = '<div class="small">Aucun résultat</div>'; return; }
+      items.forEach(it => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        const title = it.title || it.path || 'result';
+        const path = it.path ? `<span class="small">${it.path}</span>` : '';
+        const tags = (it.tags||[]).slice(0,5).map(t=>`<span class="pill">${t}</span>`).join(' ');
+        div.innerHTML = `<div>${title}</div>${path}<div style="margin-top:6px">${tags}</div>`;
+        resultsEl.appendChild(div);
+      });
+    }
+
+    document.getElementById('searchBtn').onclick = search;
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  </script>
+</body>
+</html>
+
+

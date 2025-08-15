@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 NON-EUCLIDEAN SPACE DEMO - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #0ff;
+            padding: 20px;
+            box-shadow: 0 0 30px #0ff;
+        }
+        
+        button {
+            display: block;
+            width: 200px;
+            margin: 5px 0;
+            padding: 10px;
+            background: #111;
+            color: #0ff;
+            border: 1px solid #0ff;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 20px #0ff;
+            transform: scale(1.05);
+        }
+        
+        button.active {
+            background: #f0f;
+            border-color: #f0f;
+            box-shadow: 0 0 30px #f0f;
+        }
+        
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #0ff;
+            padding: 15px;
+            font-size: 14px;
+            max-width: 400px;
+        }
+        
+        h1 {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            margin: 0;
+            font-size: 24px;
+            text-shadow: 0 0 20px #0ff;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #0ff; }
+            50% { text-shadow: 0 0 40px #f0f, 0 0 60px #0ff; }
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #0ff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌀 NON-EUCLIDEAN SPACE</h1>
+    
+    <canvas id="canvas"></canvas>
+    
+    <div class="controls">
+        <h3>🎮 SPATIAL DISTORTIONS</h3>
+        <button onclick="setMode('normal')">📐 Normal (Euclidien)</button>
+        <button onclick="setMode('hyperbolic')">🌊 Hyperbolic Warp</button>
+        <button onclick="setMode('klein')">🌀 Klein Bottle</button>
+        <button onclick="setMode('mobius')">♾️ Möbius Strip</button>
+        <button onclick="setMode('tesseract')">🔲 Tesseract View</button>
+        <button onclick="setMode('fractal')">🌌 Fractal Dimension</button>
+        <button onclick="toggleAnimation()">⏸️ Toggle Animation</button>
+    </div>
+    
+    <div class="info" id="info">
+        <strong>Mode: Normal</strong><br>
+        Déplacez la souris pour explorer l'espace.<br>
+        Cliquez pour créer des ondes spatiales.
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const info = document.getElementById('info');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let mode = 'normal';
+        let time = 0;
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let animating = true;
+        let ripples = [];
+        
+        // Grille de points pour visualiser la déformation
+        const gridSize = 30;
+        const points = [];
+        
+        for (let x = 0; x < canvas.width; x += gridSize) {
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                points.push({
+                    originalX: x,
+                    originalY: y,
+                    x: x,
+                    y: y,
+                    z: 0,
+                    w: 1 // 4ème dimension pour tesseract
+                });
+            }
+        }
+        
+        // Modes de déformation
+        const modes = {
+            normal: {
+                name: "Normal (Euclidien)",
+                desc: "Espace plat standard - aucune déformation",
+                transform: (p) => ({ x: p.originalX, y: p.originalY })
+            },
+            
+            hyperbolic: {
+                name: "Hyperbolic Warp",
+                desc: "L'espace se courbe comme une selle de cheval !",
+                transform: (p) => {
+                    const dx = p.originalX - mouseX;
+                    const dy = p.originalY - mouseY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const maxDist = 300;
+                    
+                    if (dist < maxDist) {
+                        const factor = Math.tanh(dist / maxDist * 2);
+                        const scale = 1 + (1 - factor) * 2;
+                        return {
+                            x: mouseX + dx * scale,
+                            y: mouseY + dy * scale
+                        };
+                    }
+                    return { x: p.originalX, y: p.originalY };
+                }
+            },
+            
+            klein: {
+                name: "Klein Bottle Reality",
+                desc: "L'intérieur devient l'extérieur ! Espace 4D projeté en 2D",
+                transform: (p) => {
+                    const t1 = (p.originalX / canvas.width) * Math.PI * 2;
+                    const t2 = (p.originalY / canvas.height) * Math.PI * 2;
+                    
+                    const r = 200 + 50 * Math.cos(t2);
+                    const x = r * Math.cos(t1) * Math.sin(time * 0.01);
+                    const y = r * Math.sin(t1);
+                    const z = 100 * Math.sin(t2) * Math.cos(time * 0.01);
+                    
+                    // Projection 3D -> 2D avec rotation
+                    const rotX = x;
+                    const rotY = y * Math.cos(time * 0.005) - z * Math.sin(time * 0.005);
+                    
+                    return {
+                        x: canvas.width/2 + rotX,
+                        y: canvas.height/2 + rotY
+                    };
+                }
+            },
+            
+            mobius: {
+                name: "Möbius Strip",
+                desc: "Une seule surface ! Le haut devient le bas",
+                transform: (p) => {
+                    const u = (p.originalX / canvas.width - 0.5) * 4;
+                    const v = (p.originalY / canvas.height - 0.5) * 2;
+                    
+                    const twist = u * Math.PI;
+                    const r = 200 + v * 50 * Math.cos(twist / 2);
+                    
+                    const x = r * Math.cos(twist);
+                    const y = r * Math.sin(twist);
+                    const z = v * 50 * Math.sin(twist / 2);
+                    
+                    // Rotation 3D
+                    const angle = time * 0.01;
+                    const rotX = x * Math.cos(angle) - z * Math.sin(angle);
+                    const rotY = y;
+                    
+                    return {
+                        x: canvas.width/2 + rotX,
+                        y: canvas.height/2 + rotY
+                    };
+                }
+            },
+            
+            tesseract: {
+                name: "Tesseract View",
+                desc: "Hypercube 4D ! Projection d'un cube dans la 4ème dimension",
+                transform: (p) => {
+                    // Position normalisée
+                    const nx = (p.originalX / canvas.width - 0.5) * 2;
+                    const ny = (p.originalY / canvas.height - 0.5) * 2;
+                    
+                    // Rotation 4D
+                    const angle4D = time * 0.01;
+                    const w = nx * Math.sin(angle4D) + ny * Math.cos(angle4D);
+                    
+                    // Projection stéréographique 4D -> 3D -> 2D
+                    const scale = 1 / (2 - w);
+                    const x3d = nx * scale;
+                    const y3d = ny * scale;
+                    const z3d = Math.sin(nx * 2 + time * 0.02) * 0.5 * scale;
+                    
+                    // Projection perspective
+                    const perspective = 1 / (3 + z3d);
+                    
+                    return {
+                        x: canvas.width/2 + x3d * 300 * perspective,
+                        y: canvas.height/2 + y3d * 300 * perspective
+                    };
+                }
+            },
+            
+            fractal: {
+                name: "Fractal Dimension",
+                desc: "Dimensions infinies ! Zoom = nouveaux mondes",
+                transform: (p) => {
+                    const cx = (p.originalX / canvas.width - 0.5) * 4;
+                    const cy = (p.originalY / canvas.height - 0.5) * 4;
+                    
+                    let x = cx;
+                    let y = cy;
+                    
+                    // Fractal de Julia animé
+                    const maxIter = 5;
+                    for (let i = 0; i < maxIter; i++) {
+                        const xx = x * x - y * y;
+                        const yy = 2 * x * y;
+                        x = xx + Math.sin(time * 0.01) * 0.5;
+                        y = yy + Math.cos(time * 0.01) * 0.5;
+                        
+                        if (x * x + y * y > 4) break;
+                    }
+                    
+                    // Mapping fractal
+                    const scale = 150 / (1 + x * x + y * y);
+                    
+                    return {
+                        x: canvas.width/2 + x * scale,
+                        y: canvas.height/2 + y * scale
+                    };
+                }
+            }
+        };
+        
+        function setMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const modeInfo = modes[mode];
+            info.innerHTML = `<strong>Mode: ${modeInfo.name}</strong><br>${modeInfo.desc}`;
+        }
+        
+        function toggleAnimation() {
+            animating = !animating;
+            event.target.textContent = animating ? '⏸️ Toggle Animation' : '▶️ Toggle Animation';
+        }
+        
+        // Mouse tracking
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        // Click pour créer des ondes
+        canvas.addEventListener('click', (e) => {
+            ripples.push({
+                x: e.clientX,
+                y: e.clientY,
+                radius: 0,
+                maxRadius: 300,
+                speed: 5
+            });
+            
+            // Limiter le nombre d'ondes
+            if (ripples.length > 5) {
+                ripples.shift();
+            }
+        });
+        
+        function drawGrid() {
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 1;
+            
+            // Connecter les points horizontalement
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    const p = points.find(p => p.originalX === x && p.originalY === y);
+                    if (p) {
+                        const transformed = modes[mode].transform(p);
+                        if (x === 0) {
+                            ctx.moveTo(transformed.x, transformed.y);
+                        } else {
+                            ctx.lineTo(transformed.x, transformed.y);
+                        }
+                    }
+                }
+                ctx.stroke();
+            }
+            
+            // Connecter les points verticalement
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    const p = points.find(p => p.originalX === x && p.originalY === y);
+                    if (p) {
+                        const transformed = modes[mode].transform(p);
+                        if (y === 0) {
+                            ctx.moveTo(transformed.x, transformed.y);
+                        } else {
+                            ctx.lineTo(transformed.x, transformed.y);
+                        }
+                    }
+                }
+                ctx.stroke();
+            }
+            
+            // Dessiner les points
+            ctx.fillStyle = '#0ff';
+            points.forEach(p => {
+                const transformed = modes[mode].transform(p);
+                ctx.beginPath();
+                ctx.arc(transformed.x, transformed.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function drawRipples() {
+            ripples.forEach((ripple, index) => {
+                ripple.radius += ripple.speed;
+                
+                const alpha = 1 - (ripple.radius / ripple.maxRadius);
+                ctx.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Supprimer les ondes terminées
+                if (ripple.radius > ripple.maxRadius) {
+                    ripples.splice(index, 1);
+                }
+            });
+        }
+        
+        function animate() {
+            // Fade effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (animating) {
+                time++;
+            }
+            
+            drawGrid();
+            drawRipples();
+            
+            // Particules d'ambiance
+            if (Math.random() < 0.1) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = Math.random() * window.innerHeight + 'px';
+                particle.style.animation = `float ${3 + Math.random() * 2}s ease-out`;
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 5000);
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // CSS pour les particules flottantes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0) scale(1); opacity: 1; }
+                100% { transform: translateY(-100px) scale(0); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Start
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 AVALON TCG - Temporal Card Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-rows: 80px 1fr 200px;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        /* HEADER - Informations de partie */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 0 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .health-mana {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .health {
+            color: #ff4757;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .mana {
+            color: #3742fa;
+            font-size: 18px;
+        }
+
+        .turn-info {
+            text-align: center;
+        }
+
+        .turn-number {
+            font-size: 28px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .phase-indicator {
+            font-size: 14px;
+            color: #70a1ff;
+        }
+
+        /* BATTLEFIELD - Zone de jeu principale */
+        .battlefield {
+            display: grid;
+            grid-template-rows: 1fr 100px 1fr;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .opponent-board, .player-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            min-height: 120px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .opponent-board {
+            border: 2px solid rgba(255, 69, 87, 0.3);
+        }
+
+        .player-board {
+            border: 2px solid rgba(55, 66, 250, 0.3);
+        }
+
+        .combat-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent);
+            border-radius: 50px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            position: relative;
+        }
+
+        .combat-zone::before {
+            content: "⚔️ ZONE DE COMBAT ⚔️";
+            color: rgba(255, 215, 0, 0.7);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* CARTES */
+        .card {
+            width: 80px;
+            height: 110px;
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+            border-color: #fff;
+        }
+
+        .card.playable {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .card.selected {
+            transform: translateY(-10px) scale(1.1);
+            border-color: #ff6b6b;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .card-cost {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 20px;
+            height: 20px;
+            background: #3742fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .card-name {
+            font-size: 8px;
+            text-align: center;
+            color: #ffd700;
+            font-weight: bold;
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .attack {
+            color: #ff4757;
+        }
+
+        .defense {
+            color: #2ed573;
+        }
+
+        .card-art {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ffd700, #ff6b6b);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* MAIN DU JOUEUR */
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid rgba(55, 66, 250, 0.3);
+            overflow-x: auto;
+        }
+
+        .hand-card {
+            width: 100px;
+            height: 140px;
+            flex-shrink: 0;
+        }
+
+        /* BOUTONS D'ACTION */
+        .action-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-end-turn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .btn-end-turn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* EFFETS TEMPORELS */
+        .temporal-effects {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            min-width: 200px;
+        }
+
+        .timeline-indicator {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .quantum-state {
+            font-size: 12px;
+            color: #70a1ff;
+        }
+
+        /* ANIMATIONS */
+        @keyframes cardPlay {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .card-playing {
+            animation: cardPlay 0.5s ease-in-out;
+        }
+
+        @keyframes damage {
+            0%, 100% { color: inherit; }
+            50% { color: #ff4757; transform: scale(1.1); }
+        }
+
+        .damage-animation {
+            animation: damage 0.3s ease-in-out;
+        }
+
+        /* LOG D'ACTIONS */
+        .game-log {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .card {
+                width: 60px;
+                height: 85px;
+            }
+            
+            .hand-card {
+                width: 80px;
+                height: 110px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- HEADER -->
+        <div class="game-header">
+            <div class="player-info">
+                <div class="health-mana">
+                    <div class="health" id="opponent-health">30 ❤️</div>
+                    <div class="mana" id="opponent-mana">💎 5/5</div>
+                </div>
+                <div>Adversaire</div>
+            </div>
+            
+            <div class="turn-info">
+                <div class="turn-number" id="turn-number">Tour 1</div>
+                <div class="phase-indicator" id="phase-indicator">Phase Principale</div>
+            </div>
+            
+            <div class="player-info">
+                <div>Vous</div>
+                <div class="health-mana">
+                    <div class="health" id="player-health">30 ❤️</div>
+                    <div class="mana" id="player-mana">💎 5/5</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BATTLEFIELD -->
+        <div class="battlefield">
+            <!-- Plateau adversaire -->
+            <div class="opponent-board" id="opponent-board">
+                <!-- Les créatures adverses apparaîtront ici -->
+            </div>
+
+            <!-- Zone de combat -->
+            <div class="combat-zone" id="combat-zone">
+                <!-- Animations de combat -->
+            </div>
+
+            <!-- Plateau joueur -->
+            <div class="player-board" id="player-board">
+                <!-- Vos créatures apparaîtront ici -->
+            </div>
+        </div>
+
+        <!-- MAIN DU JOUEUR -->
+        <div class="player-hand" id="player-hand">
+            <!-- Vos cartes en main -->
+        </div>
+    </div>
+
+    <!-- ÉLÉMENTS UI ADDITIONNELS -->
+    <div class="temporal-effects">
+        <div class="timeline-indicator" id="timeline-indicator">🌀 Timeline: MAIN</div>
+        <div class="quantum-state" id="quantum-state">État Quantique: STABLE</div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-end-turn" id="end-turn-btn">Fin de Tour</button>
+    </div>
+
+    <div class="game-log" id="game-log">
+        <div class="log-entry">🎴 Partie AVALON TCG commencée !</div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="temporal-system.js"></script>
+<script src="card-engine.js"></script>
+<script src="../core/GroekenCardEngine.js"></script>
+    <script>
+        // Interface de jeu AVALON TCG
+        class GameInterface {
+            constructor() {
+                this.engine = new AvalonCardEngine();
+                this.selectedCard = null;
+                this.selectedCreature = null;
+                this.initializeEventListeners();
+            }
+
+            async init() {
+                // Decks de test
+                const player1Deck = this.createTestDeck();
+                const player2Deck = this.createTestDeck();
+                
+                await this.engine.initGame(player1Deck, player2Deck);
+                this.updateDisplay();
+            }
+
+            createTestDeck() {
+                // Deck de test avec cartes basiques
+                return [
+                    { name: "URZ-KÔM", type: "hero", cost: 5, base_stats: {attack: 4, defense: 6}, art: "🐻" },
+                    { name: "Vince Vega", type: "hero", cost: 4, base_stats: {attack: 3, defense: 5}, art: "⚡" },
+                    { name: "Brisure Temporelle", type: "spell", cost: 3, effect_type: "damage", effect_value: 4, art: "🌀" },
+                    { name: "Cristal d'Avalon", type: "artifact", cost: 2, base_stats: {attack: 0, defense: 3}, art: "💎" },
+                    { name: "Dragon Rouge", type: "creature", cost: 6, base_stats: {attack: 6, defense: 6}, art: "🐉" }
+                ];
+            }
+
+            initializeEventListeners() {
+                document.getElementById('end-turn-btn').addEventListener('click', () => {
+                    this.engine.endTurn();
+                    this.updateDisplay();
+                });
+            }
+
+            updateDisplay() {
+                const gameState = this.engine.getGameState();
+                
+                // Mettre à jour les informations des joueurs
+                this.updatePlayerInfo(gameState);
+                
+                // Mettre à jour les plateaux
+                this.updateBoard(gameState);
+                
+                // Mettre à jour la main
+                this.updateHand(gameState);
+                
+                // Mettre à jour les effets temporels
+                this.updateTemporalEffects(gameState);
+            }
+
+            updatePlayerInfo(gameState) {
+                const player = gameState.players[gameState.activePlayer];
+                const opponent = gameState.players[gameState.activePlayer === 1 ? 2 : 1];
+                
+                document.getElementById('player-health').textContent = `${player.health} ❤️`;
+                document.getElementById('player-mana').textContent = `💎 ${player.mana}/${player.maxMana}`;
+                document.getElementById('opponent-health').textContent = `${opponent.health} ❤️`;
+                document.getElementById('opponent-mana').textContent = `💎 ${opponent.mana}/${opponent.maxMana}`;
+                document.getElementById('turn-number').textContent = `Tour ${gameState.turn}`;
+            }
+
+            updateBoard(gameState) {
+                const playerBoard = document.getElementById('player-board');
+                const opponentBoard = document.getElementById('opponent-board');
+                
+                // Vider les plateaux
+                playerBoard.innerHTML = '';
+                opponentBoard.innerHTML = '';
+                
+                // Créatures du joueur
+                gameState.players[gameState.activePlayer].board.forEach((creature, index) => {
+                    const cardElement = this.createCardElement(creature, index, 'board');
+                    playerBoard.appendChild(cardElement);
+                });
+                
+                // Créatures de l'adversaire
+                const opponentId = gameState.activePlayer === 1 ? 2 : 1;
+                gameState.players[opponentId].board.forEach((creature, index) => {
+                    const cardElement = this.createCardElement(creature, index, 'opponent-board');
+                    opponentBoard.appendChild(cardElement);
+                });
+            }
+
+            updateHand(gameState) {
+                const hand = document.getElementById('player-hand');
+                hand.innerHTML = '';
+                
+                gameState.players[gameState.activePlayer].hand.forEach((card, index) => {
+                    const cardElement = this.createCardElement(card, index, 'hand');
+                    
+                    // Vérifier si la carte est jouable
+                    if (this.engine.canPlayCard(gameState.activePlayer, card)) {
+                        cardElement.classList.add('playable');
+                    }
+                    
+                    hand.appendChild(cardElement);
+                });
+            }
+
+            createCardElement(card, index, zone) {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `card ${zone === 'hand' ? 'hand-card' : ''}`;
+                cardDiv.dataset.index = index;
+                cardDiv.dataset.zone = zone;
+                
+                cardDiv.innerHTML = `
+                    <div class="card-cost">${card.cost || 0}</div>
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-art">${card.art || '🎴'}</div>
+                    ${card.base_stats ? `
+                        <div class="card-stats">
+                            <span class="attack">${card.base_stats.attack}</span>
+                            <span class="defense">${card.base_stats.defense}</span>
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Événements de clic selon la zone
+                if (zone === 'hand') {
+                    cardDiv.addEventListener('click', () => this.selectHandCard(index));
+                } else if (zone === 'board') {
+                    cardDiv.addEventListener('click', () => this.selectBoardCreature(index));
+                }
+                
+                return cardDiv;
+            }
+
+            selectHandCard(index) {
+                // Désélectionner la carte précédente
+                document.querySelectorAll('.card.selected').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Sélectionner la nouvelle carte
+                const cardElement = document.querySelector(`[data-zone="hand"][data-index="${index}"]`);
+                cardElement.classList.add('selected');
+                this.selectedCard = index;
+                
+                // Jouer la carte si elle est jouable
+                const gameState = this.engine.getGameState();
+                const card = gameState.players[gameState.activePlayer].hand[index];
+                
+                if (this.engine.canPlayCard(gameState.activePlayer, card)) {
+                    setTimeout(() => {
+                        this.playSelectedCard();
+                    }, 500);
+                }
+            }
+
+            playSelectedCard() {
+                if (this.selectedCard !== null) {
+                    const result = this.engine.playCard(gameState.activePlayer, this.selectedCard);
+                    
+                    if (result.success) {
+                        this.addLogEntry(`Carte jouée avec succès !`);
+                        this.selectedCard = null;
+                        this.updateDisplay();
+                    } else {
+                        this.addLogEntry(`Erreur: ${result.reason}`);
+                    }
+                }
+            }
+
+            updateTemporalEffects(gameState) {
+                document.getElementById('timeline-indicator').textContent = `🌀 Timeline: ${gameState.timeline}`;
+                document.getElementById('quantum-state').textContent = `État Quantique: ${gameState.quantumEffects.length > 0 ? 'INSTABLE' : 'STABLE'}`;
+            }
+
+            addLogEntry(message) {
+                const log = document.getElementById('game-log');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = `🎴 ${message}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        // Initialiser le jeu
+        const gameInterface = new GameInterface();
+        gameInterface.init();
+    </script>
+</body>
+</html>

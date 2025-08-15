@@ -1,0 +1,288 @@
+{
+  "power_cards_j27_2": {
+    "STASE_TEMPORELLE": {
+      "id": "STASE_TEMPORELLE",
+      "name": "Stase Temporelle",
+      "class": "Maître du Temps",
+      "type": "SPELL",
+      "rarity": "mythic",
+      "image": "assets/CARTE_J27/2/Frozen Beyond Time.png",
+      "description": "Fige le temps pour tout le monde sauf le lanceur. Le monde devient monochrome tandis que le héros garde ses couleurs.",
+      "real_power": {
+        "effect": "TIME_FREEZE",
+        "duration": 30,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "STASIS_TEMPORAL",
+          "targetType": "global",
+          "power": 150
+        }
+      },
+      "stats": {
+        "power": 30,
+        "magic": 25,
+        "time": 35,
+        "spatial": 5
+      },
+      "abilities": [
+        "Global Time Lock",
+        "Personal Immunity",
+        "Strategic Pause"
+      ],
+      "flavor_text": "Dans le silence absolu du temps figé, seule la volonté du mage résonne encore."
+    },
+
+    "OEIL_DE_GRUT": {
+      "id": "OEIL_DE_GRUT",
+      "name": "Œil de GRUT",
+      "class": "Observateur 6D",
+      "type": "ARTIFACT",
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/2/Orc Eye with Timeless Landscape.png",
+      "description": "L'œil mystique qui voit à travers toutes les dimensions. Révèle instantanément tout le brouillard causal de la carte.",
+      "real_power": {
+        "effect": "REVEAL_ALL_FOG",
+        "instant": true,
+        "backend_call": "/api/world-state/collapse",
+        "parameters": {
+          "node_ids": "ALL",
+          "description": "grut_omnivision",
+          "playerId": "current_hero"
+        }
+      },
+      "stats": {
+        "power": 10,
+        "magic": 30,
+        "time": 20,
+        "spatial": 25
+      },
+      "abilities": [
+        "Omnivision 6D",
+        "Causality Sight",
+        "Reality Scan"
+      ],
+      "flavor_text": "L'œil qui a vu naître les dimensions voit aussi leur fin."
+    },
+
+    "BOUCLIER_CAUSAL": {
+      "id": "BOUCLIER_CAUSAL",
+      "name": "Bouclier Causal",
+      "class": "Protection Temporelle",
+      "type": "ARTIFACT",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/2/Warrior in Radiant Shield Barrier.png",
+      "description": "Barrière causale scintillante qui dévie automatiquement la prochaine résolution de causalité.",
+      "real_power": {
+        "effect": "CAUSAL_IMMUNITY",
+        "charges": 1,
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "causal_immunity",
+          "duration": 300
+        }
+      },
+      "stats": {
+        "power": 5,
+        "magic": 20,
+        "time": 15,
+        "spatial": 25
+      },
+      "abilities": [
+        "Resolve Immunity",
+        "Causal Deflection", 
+        "Temporal Shield"
+      ],
+      "flavor_text": "Quand la causalité elle-même se brise sur votre défense."
+    },
+
+    "PORTAIL_DE_FEU": {
+      "id": "PORTAIL_DE_FEU",
+      "name": "Portail de Feu",
+      "class": "Maître des Passages",
+      "type": "SPELL",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/2/Fiery Portal in Stormy Landscape.png",
+      "description": "Ouvre un portail enflammé permettant la téléportation instantanée vers n'importe quel point de la carte.",
+      "real_power": {
+        "effect": "TELEPORTATION_6D",
+        "range": "unlimited",
+        "backend_call": "/agents/control", 
+        "parameters": {
+          "action": "teleport",
+          "coordinates": "user_selected"
+        }
+      },
+      "stats": {
+        "power": 15,
+        "magic": 25,
+        "time": 10,
+        "spatial": 30
+      },
+      "abilities": [
+        "Dimensional Gateway",
+        "Instant Travel",
+        "Fire Portal"
+      ],
+      "flavor_text": "Le feu ouvre des chemins là où l'espace refuse de se plier."
+    },
+
+    "SORCIER_DU_SEUIL": {
+      "id": "SORCIER_DU_SEUIL", 
+      "name": "Sorcier du Seuil",
+      "class": "Gardien des Portails",
+      "type": "HERO",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/2/Sorcerer at the Portal's Edge.png",
+      "description": "Maître des passages interdimensionnels. Change la topologie de la carte vers le mode Torus.",
+      "real_power": {
+        "effect": "TOPOLOGY_CHANGE",
+        "new_topology": "torus",
+        "backend_call": "/api/map/set-topology",
+        "parameters": {
+          "topology": "torus",
+          "duration": 180
+        }
+      },
+      "stats": {
+        "power": 12,
+        "magic": 22,
+        "time": 8,
+        "spatial": 28
+      },
+      "abilities": [
+        "Topology Master",
+        "Portal Creation",
+        "Space Bending"
+      ],
+      "flavor_text": "Aux confins de la réalité, il tisse de nouveaux chemins."
+    },
+
+    "GARDIEN_FIGE": {
+      "id": "GARDIEN_FIGE",
+      "name": "Gardien Figé",
+      "class": "Sentinelle Temporelle",
+      "type": "HERO",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/2/Frozen in Time Amidst Ruins.png",
+      "description": "Guerrier préservé dans le temps. Ralentit drastiquement la vélocité temporelle globale.",
+      "real_power": {
+        "effect": "GLOBAL_SLOW",
+        "time_velocity": -0.7,
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "temporal_field",
+          "velocity_modifier": -0.7,
+          "duration": 45
+        }
+      },
+      "stats": {
+        "power": 18,
+        "magic": 12,
+        "time": 30,
+        "spatial": 10
+      },
+      "abilities": [
+        "Temporal Field",
+        "Stasis Aura",
+        "Time Anchor"
+      ],
+      "flavor_text": "Son existence même ralentit le cours du temps autour de lui."
+    },
+
+    "STANCE_ETERNELLE": {
+      "id": "STANCE_ETERNELLE",
+      "name": "Stance Éternelle",
+      "class": "Posture Temporelle",
+      "type": "SPELL",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/2/Warrior's Stand in Frozen Time.png",
+      "description": "Position de combat qui confère l'immunité au Temporal Drift pendant 2 minutes.",
+      "real_power": {
+        "effect": "DRIFT_IMMUNITY",
+        "duration": 120,
+        "backend_call": "/api/regulation/drift/immunity",
+        "parameters": {
+          "heroId": "current_hero",
+          "immunity_duration": 120
+        }
+      },
+      "stats": {
+        "power": 20,
+        "magic": 8,
+        "time": 25,
+        "spatial": 12
+      },
+      "abilities": [
+        "Drift Immunity",
+        "Temporal Stability",
+        "RPM Control"
+      ],
+      "flavor_text": "Dans cette stance, le temps n'ose plus vous bousculer."
+    },
+
+    "GARDIEN_INTEMPOREL": {
+      "id": "GARDIEN_INTEMPOREL",
+      "name": "Gardien Intemporel",
+      "class": "Protecteur Éternel",
+      "type": "HERO", 
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/2/Warrior's Stand in Frozen Time (1).png",
+      "description": "Variation du gardien figé. Force une résolution de causalité même sans collision détectée.",
+      "real_power": {
+        "effect": "FORCE_RESOLVE",
+        "instant": true,
+        "backend_call": "/api/causality/resolve",
+        "parameters": {
+          "center": "current_position",
+          "radius": 3.0,
+          "mode": "QUANTUM",
+          "force": true
+        }
+      },
+      "stats": {
+        "power": 22,
+        "magic": 15,
+        "time": 18,
+        "spatial": 15
+      },
+      "abilities": [
+        "Force Resolution",
+        "Combat Trigger",
+        "Causal Catalyst"
+      ],
+      "flavor_text": "Il force la réalité à trancher, même dans le doute."
+    }
+  },
+
+  "metadata": {
+    "collection": "POWER_CARDS_J27_2", 
+    "theme": "Real Gameplay Powers",
+    "total_cards": 8,
+    "release_date": "2024-12-28",
+    "power_level": "Functional",
+    "backend_integration": true,
+    "artist_notes": "Cartes avec vrais pouvoirs utilisables dans Heroes of Time 6D"
+  },
+
+  "power_integration": {
+    "activation_method": "click_to_use",
+    "cooldown_system": true,
+    "resource_cost": "mana_based",
+    "visual_feedback": "particle_effects",
+    "sound_effects": true,
+    "backend_validation": true
+  },
+
+  "usage_examples": {
+    "STASE_TEMPORELLE": "Click pour figer le temps 30s, explore/positionne sans danger",
+    "OEIL_DE_GRUT": "Click pour révéler toute la carte instantanément",
+    "BOUCLIER_CAUSAL": "Click pour immunité 1 combat, évite embuscade",
+    "PORTAIL_DE_FEU": "Click puis click destination pour téléportation",
+    "SORCIER_DU_SEUIL": "Click pour topology torus 3min, raccourcis géographiques",
+    "GARDIEN_FIGE": "Click pour ralenti global 45s, avantage tactique",
+    "STANCE_ETERNELLE": "Click pour immunité drift 2min, actions rapides",
+    "GARDIEN_INTEMPOREL": "Click pour forcer combat avec entité proche"
+  }
+}

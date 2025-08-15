@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ HEROES OF TIME - Complete Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Container principal */
+        .game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        /* Panneau gauche - Hero & Stats */
+        .left-panel {
+            width: 300px;
+            background: rgba(10, 10, 20, 0.9);
+            border-right: 2px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero-portrait {
+            width: 150px;
+            height: 150px;
+            background: #333;
+            border: 3px solid #666;
+            border-radius: 10px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .hero-name {
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .hero-level {
+            font-size: 18px;
+            color: #70a1ff;
+        }
+
+        .stats-section {
+            margin-bottom: 30px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .stat-bar {
+            width: 150px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .hp-fill { background: #ff4757; }
+        .mana-fill { background: #3742fa; }
+        .xp-fill { background: #ffd700; }
+
+        /* Zone centrale - Jeu principal */
+        .main-area {
+            flex: 1;
+            position: relative;
+            background: #0a0a0a;
+        }
+
+        /* Mode Exploration */
+        .exploration-mode {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        }
+
+        .map-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .hex {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: absolute;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 30px;
+        }
+
+        .hex:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .hex.player {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        /* Mode Combat */
+        .combat-mode {
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 20px;
+        }
+
+        .battlefield {
+            height: 60%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .combat-entity {
+            width: 200px;
+            height: 250px;
+            background: #222;
+            border: 3px solid #444;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .entity-sprite {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .entity-hp {
+            position: absolute;
+            bottom: 10px;
+            background: #ff4757;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Zone des cartes */
+        .card-area {
+            height: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: 3px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-20px) scale(1.1);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .card-cost {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 35px;
+            height: 35px;
+            background: #3742fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        .card-image {
+            flex: 1;
+            background: #444;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .card-stats {
+            font-size: 10px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        /* Panneau droit - Inventaire */
+        .right-panel {
+            width: 250px;
+            background: rgba(10, 10, 20, 0.9);
+            border-left: 2px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .inv-slot {
+            aspect-ratio: 1;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .inv-slot:hover {
+            background: #333;
+            border-color: #666;
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #444;
+            border-color: #ffd700;
+        }
+
+        /* Messages */
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: message-appear 2s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes message-appear {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Info panel */
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Left Panel - Hero Stats -->
+        <div class="left-panel">
+            <div class="hero-section">
+                <div class="hero-portrait" id="hero-portrait">⚔️</div>
+                <div class="hero-name" id="hero-name">HERO NAME</div>
+                <div class="hero-level">Level <span id="level">1</span></div>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stat-row">
+                    <span>HP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill hp-fill" id="hp-bar" style="width: 100%"></div>
+                    </div>
+                    <span id="hp-text">100/100</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span>MP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill mana-fill" id="mana-bar" style="width: 100%"></div>
+                    </div>
+                    <span id="mana-text">50/50</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span>XP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill xp-fill" id="xp-bar" style="width: 0%"></div>
+                    </div>
+                    <span id="xp-text">0/100</span>
+                </div>
+            </div>
+            
+            <div class="attributes">
+                <h3>Attributes</h3>
+                <div class="stat-row">
+                    <span>STR</span>
+                    <span id="str">10</span>
+                </div>
+                <div class="stat-row">
+                    <span>INT</span>
+                    <span id="int">10</span>
+                </div>
+                <div class="stat-row">
+                    <span>AGI</span>
+                    <span id="agi">10</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Area -->
+        <div class="main-area">
+            <!-- Exploration Mode -->
+            <div class="exploration-mode" id="exploration" style="display: block;">
+                <div class="map-container" id="map"></div>
+                <div class="info-panel">
+                    <div>Position: <span id="pos">0,0</span></div>
+                    <div>Turn: <span id="turn">1</span></div>
+                </div>
+            </div>
+            
+            <!-- Combat Mode -->
+            <div class="combat-mode" id="combat">
+                <div class="battlefield">
+                    <div class="combat-entity player">
+                        <div class="entity-sprite">⚔️</div>
+                        <div class="entity-hp" id="player-combat-hp">100</div>
+                    </div>
+                    <div class="combat-entity enemy">
+                        <div class="entity-sprite" id="enemy-sprite">👹</div>
+                        <div class="entity-hp" id="enemy-hp">50</div>
+                    </div>
+                </div>
+                
+                <div class="card-area" id="hand">
+                    <!-- Cards will be generated here -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" onclick="endTurn()">End Turn</button>
+                <button class="btn" onclick="saveGame()">Save</button>
+                <button class="btn" onclick="toggleMode()">Switch Mode</button>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Inventory -->
+        <div class="right-panel">
+            <h3>Inventory</h3>
+            <div class="inventory-grid" id="inventory">
+                <div class="inv-slot">⚔️</div>
+                <div class="inv-slot">🛡️</div>
+                <div class="inv-slot">🍖</div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+            </div>
+            
+            <h3 style="margin-top: 30px;">Resources</h3>
+            <div class="stat-row">
+                <span>Gold</span>
+                <span id="gold">100</span>
+            </div>
+            <div class="stat-row">
+                <span>Crystals</span>
+                <span id="crystals">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            mode: 'exploration',
+            hero: {
+                name: 'HERO NAME',
+                level: 1,
+                xp: 0,
+                xpToNext: 100,
+                hp: 100,
+                maxHp: 100,
+                mana: 50,
+                maxMana: 50,
+                str: 10,
+                int: 10,
+                agi: 10,
+                position: { x: 0, y: 0 }
+            },
+            world: {
+                turn: 1,
+                gold: 100,
+                crystals: 0
+            },
+            combat: {
+                enemyHp: 50,
+                enemyMaxHp: 50
+            },
+            cards: [
+                { name: 'ATTACK', cost: 1, damage: 10, icon: '⚔️' },
+                { name: 'SPELL', cost: 3, damage: 20, icon: '🔥' },
+                { name: 'HEAL', cost: 2, heal: 15, icon: '💚' },
+                { name: 'SHIELD', cost: 1, defense: 5, icon: '🛡️' }
+            ]
+        };
+
+        // Generate hex map
+        function generateMap() {
+            const map = document.getElementById('map');
+            map.innerHTML = '';
+            
+            for (let q = -3; q <= 3; q++) {
+                for (let r = -3; r <= 3; r++) {
+                    if (Math.abs(q + r) <= 3) {
+                        const hex = document.createElement('div');
+                        hex.className = 'hex';
+                        hex.style.left = (q * 70 + r * 35) + 'px';
+                        hex.style.top = (r * 60) + 'px';
+                        
+                        if (q === 0 && r === 0) {
+                            hex.classList.add('player');
+                            hex.textContent = '⚔️';
+                        } else if (Math.random() < 0.1) {
+                            hex.textContent = '👹';
+                            hex.dataset.type = 'enemy';
+                        } else if (Math.random() < 0.05) {
+                            hex.textContent = '💰';
+                            hex.dataset.type = 'treasure';
+                        }
+                        
+                        hex.onclick = () => moveToHex(q, r, hex);
+                        map.appendChild(hex);
+                    }
+                }
+            }
+        }
+
+        // Move hero
+        function moveToHex(q, r, hex) {
+            const dx = Math.abs(q - gameState.hero.position.x);
+            const dy = Math.abs(r - gameState.hero.position.y);
+            
+            if (dx + dy <= 1) {
+                gameState.hero.position = { x: q, y: r };
+                updatePosition();
+                
+                if (hex.dataset.type === 'enemy') {
+                    startCombat();
+                } else if (hex.dataset.type === 'treasure') {
+                    collectTreasure();
+                    hex.textContent = '';
+                    hex.dataset.type = '';
+                }
+                
+                generateMap();
+            }
+        }
+
+        // Start combat
+        function startCombat() {
+            gameState.mode = 'combat';
+            gameState.combat.enemyHp = 50;
+            
+            document.getElementById('exploration').style.display = 'none';
+            document.getElementById('combat').style.display = 'block';
+            
+            generateHand();
+            showMessage('COMBAT!');
+        }
+
+        // Generate cards in hand
+        function generateHand() {
+            const hand = document.getElementById('hand');
+            hand.innerHTML = '';
+            
+            gameState.cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-image">${card.icon}</div>
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-stats">${card.damage ? 'DMG: ' + card.damage : card.heal ? 'HEAL: ' + card.heal : 'DEF: ' + card.defense}</div>
+                `;
+                cardEl.onclick = () => playCard(card, index);
+                hand.appendChild(cardEl);
+            });
+        }
+
+        // Play card
+        function playCard(card, index) {
+            if (gameState.hero.mana >= card.cost) {
+                gameState.hero.mana -= card.cost;
+                
+                if (card.damage) {
+                    gameState.combat.enemyHp -= card.damage;
+                    showMessage(`-${card.damage}`);
+                } else if (card.heal) {
+                    gameState.hero.hp = Math.min(gameState.hero.maxHp, gameState.hero.hp + card.heal);
+                    showMessage(`+${card.heal}`);
+                }
+                
+                updateUI();
+                
+                if (gameState.combat.enemyHp <= 0) {
+                    endCombat(true);
+                } else {
+                    enemyTurn();
+                }
+            }
+        }
+
+        // Enemy turn
+        function enemyTurn() {
+            setTimeout(() => {
+                const damage = Math.floor(Math.random() * 10) + 5;
+                gameState.hero.hp -= damage;
+                showMessage(`-${damage}`);
+                updateUI();
+                
+                if (gameState.hero.hp <= 0) {
+                    showMessage('GAME OVER');
+                }
+            }, 1000);
+        }
+
+        // End combat
+        function endCombat(victory) {
+            if (victory) {
+                const xp = 25;
+                gameState.hero.xp += xp;
+                gameState.world.gold += Math.floor(Math.random() * 50) + 25;
+                showMessage('VICTORY!');
+                
+                if (gameState.hero.xp >= gameState.hero.xpToNext) {
+                    levelUp();
+                }
+            }
+            
+            setTimeout(() => {
+                gameState.mode = 'exploration';
+                document.getElementById('exploration').style.display = 'block';
+                document.getElementById('combat').style.display = 'none';
+                updateUI();
+            }, 2000);
+        }
+
+        // Level up
+        function levelUp() {
+            gameState.hero.level++;
+            gameState.hero.xp -= gameState.hero.xpToNext;
+            gameState.hero.xpToNext = gameState.hero.level * 100;
+            gameState.hero.maxHp += 20;
+            gameState.hero.hp = gameState.hero.maxHp;
+            gameState.hero.maxMana += 10;
+            gameState.hero.mana = gameState.hero.maxMana;
+            gameState.hero.str += 2;
+            gameState.hero.int += 2;
+            gameState.hero.agi += 2;
+            
+            showMessage('LEVEL UP!');
+        }
+
+        // Collect treasure
+        function collectTreasure() {
+            const gold = Math.floor(Math.random() * 50) + 25;
+            gameState.world.gold += gold;
+            showMessage(`+${gold} GOLD`);
+            updateUI();
+        }
+
+        // End turn
+        function endTurn() {
+            gameState.world.turn++;
+            gameState.hero.mana = gameState.hero.maxMana;
+            updateUI();
+        }
+
+        // Toggle mode (debug)
+        function toggleMode() {
+            if (gameState.mode === 'exploration') {
+                startCombat();
+            } else {
+                endCombat(false);
+            }
+        }
+
+        // Show message
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            msg.textContent = text;
+            msg.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            document.querySelector('.main-area').appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        // Update UI
+        function updateUI() {
+            // Hero stats
+            document.getElementById('level').textContent = gameState.hero.level;
+            document.getElementById('hp-text').textContent = `${gameState.hero.hp}/${gameState.hero.maxHp}`;
+            document.getElementById('hp-bar').style.width = (gameState.hero.hp / gameState.hero.maxHp * 100) + '%';
+            document.getElementById('mana-text').textContent = `${gameState.hero.mana}/${gameState.hero.maxMana}`;
+            document.getElementById('mana-bar').style.width = (gameState.hero.mana / gameState.hero.maxMana * 100) + '%';
+            document.getElementById('xp-text').textContent = `${gameState.hero.xp}/${gameState.hero.xpToNext}`;
+            document.getElementById('xp-bar').style.width = (gameState.hero.xp / gameState.hero.xpToNext * 100) + '%';
+            
+            // Attributes
+            document.getElementById('str').textContent = gameState.hero.str;
+            document.getElementById('int').textContent = gameState.hero.int;
+            document.getElementById('agi').textContent = gameState.hero.agi;
+            
+            // Resources
+            document.getElementById('gold').textContent = gameState.world.gold;
+            document.getElementById('crystals').textContent = gameState.world.crystals;
+            
+            // Combat
+            document.getElementById('player-combat-hp').textContent = gameState.hero.hp;
+            document.getElementById('enemy-hp').textContent = gameState.combat.enemyHp;
+            
+            // Info
+            document.getElementById('turn').textContent = gameState.world.turn;
+        }
+
+        function updatePosition() {
+            document.getElementById('pos').textContent = `${gameState.hero.position.x},${gameState.hero.position.y}`;
+        }
+
+        // Save game (placeholder)
+        function saveGame() {
+            localStorage.setItem('heroesOfTime', JSON.stringify(gameState));
+            showMessage('SAVED!');
+        }
+
+        // Load game
+        function loadGame() {
+            const saved = localStorage.getItem('heroesOfTime');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                updateUI();
+            }
+        }
+
+        // Initialize
+        generateMap();
+        updateUI();
+        loadGame();
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (gameState.mode === 'exploration') {
+                let dx = 0, dy = 0;
+                switch(e.key) {
+                    case 'ArrowUp': dy = -1; break;
+                    case 'ArrowDown': dy = 1; break;
+                    case 'ArrowLeft': dx = -1; break;
+                    case 'ArrowRight': dx = 1; break;
+                }
+                if (dx || dy) {
+                    const newX = gameState.hero.position.x + dx;
+                    const newY = gameState.hero.position.y + dy;
+                    const hex = document.querySelector(`.hex:nth-child(${newY * 7 + newX + 13})`);
+                    if (hex) moveToHex(newX, newY, hex);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

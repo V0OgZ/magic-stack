@@ -1,0 +1,45 @@
+{
+  "meta": { "title": "Évadé de la Cave - Prologue jouable" },
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "title": "L'ombre et la lueur",
+      "text": "Les murs parlent en ombres. Une lueur, là-bas. Tu t'éveilles. Que fais-tu ?",
+      "options": [
+        { "label": "Observer la lueur", "actions": [ {"type":"OBSERVE", "radius": 2} ], "goto": "couloir" },
+        { "label": "Tâter le mur", "actions": [ {"type":"COLLECT", "spotId":"spot_10_20"} ], "goto": "revelation" }
+      ]
+    },
+    "couloir": {
+      "title": "Le couloir des ombres",
+      "text": "Le couloir se déplie en strates. Une silhouette hostile se fige, ailleurs et ici.",
+      "options": [
+        { "label": "Affronter l'ombre (résoudre)", "actions": [ {"type":"REQUEST_RESOLVE", "mode":"QUANTUM", "node_ids":["player_hero","npc_guardian"]} ], "goto": "issue" },
+        { "label": "Reculer", "actions": [], "goto": "intro" }
+      ]
+    },
+    "revelation": {
+      "title": "Les chaînes et l'idée",
+      "text": "Tu sens une chaîne vibrer. Elle cède. Une idée ancienne traverse ta mémoire.",
+      "options": [
+        { "label": "Suivre l'idée", "actions": [ {"type":"OBSERVE", "radius": 3} ], "goto": "issue" }
+      ]
+    },
+    "issue": {
+      "title": "Première sortie",
+      "text": "L'air change. Tu n'es plus tout à fait dans la cave. Devant toi, un tracé mouvant – le Dédale commence.",
+      "options": [
+        { "label": "Continuer vers le Labo Schrödinger", "actions": [{"type":"NAVIGATE","url":"../../ARCADE/experimental-lab.html"}], "goto": "_end" },
+        { "label": "Explorer le Labyrinthe Non-Euclidien", "actions": [{"type":"NAVIGATE","url":"../../non-euclidean-demo.html"}], "goto": "_end" },
+        { "label": "Entrer dans le Dédale (DEDA)", "actions": [{"type":"NAVIGATE","url":"./narrative-deda.html"}], "goto": "_end" }
+      ]
+    },
+    "_end": {
+      "title": "Transition",
+      "text": "Fin du prologue EVA v0. Dédale (DEDA) à suivre.",
+      "options": []
+    }
+  }
+}
+
+

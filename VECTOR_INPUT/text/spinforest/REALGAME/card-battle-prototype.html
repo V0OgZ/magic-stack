@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AVALON Card Battle System</title>
+    <style>
+        .game-board {
+            background: url('assets/FIGHT/Epic Battle of Arcane Heroes.png');
+            background-size: cover;
+            height: 100vh;
+        }
+        
+        .card {
+            width: 200px;
+            height: 300px;
+            perspective: 1000px;
+            position: relative;
+            transition: transform 0.6s;
+        }
+        
+        .card:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+        
+        .hand-zone {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .board-zone {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            padding: 20px;
+        }
+        
+        .effect-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        /* Special Effects */
+        .temporal-effect {
+            background: url('assets/FIGHT/Excalibur Through Time at Twilight.png');
+            background-size: cover;
+        }
+        
+        .combat-effect {
+            background: url('assets/FIGHT/Warrior and Phantom Battle at Dusk.png');
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-board">
+        <div class="board-zone" id="opponent-board"></div>
+        <div class="board-zone" id="player-board"></div>
+        <div class="hand-zone" id="player-hand"></div>
+        <div class="effect-overlay"></div>
+    </div>
+
+    <script>
+        // Card Data Structure Example
+        const cards = {
+            heroes: [
+                { name: "Time Warrior", image: "assets/FIGHT/Warrior Through Time and Light.png", power: 7 },
+                { name: "Twilight Sorcerer", image: "assets/FIGHT/Sorcerer of Time at Twilight.png", power: 6 }
+            ],
+            spells: [
+                { name: "Temporal Strike", image: "assets/FIGHT/Excalibur's Temporal Strike.png", effect: "temporal" },
+                { name: "Cosmic Convergence", image: "assets/FIGHT/Convergence of Cosmic Forces.png", effect: "cosmic" }
+            ]
+        };
+
+        // Basic Game Logic
+        function playCard(card) {
+            showEffect(card.effect);
+            // Add card to board
+            document.getElementById('player-board').appendChild(createCardElement(card));
+        }
+
+        function showEffect(effectType) {
+            const overlay = document.querySelector('.effect-overlay');
+            overlay.className = `effect-overlay ${effectType}-effect`;
+            overlay.style.opacity = '1';
+            setTimeout(() => overlay.style.opacity = '0', 1000);
+        }
+
+        function createCardElement(card) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.style.backgroundImage = `url(${card.image})`;
+            return div;
+        }
+
+        // Initialize game
+        function initGame() {
+            // Add some cards to player's hand
+            const hand = document.getElementById('player-hand');
+            cards.heroes.forEach(card => {
+                const cardEl = createCardElement(card);
+                cardEl.onclick = () => playCard(card);
+                hand.appendChild(cardEl);
+            });
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

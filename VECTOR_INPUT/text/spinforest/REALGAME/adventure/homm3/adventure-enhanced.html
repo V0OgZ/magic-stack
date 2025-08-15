@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Aventure HOMM3 6D - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: 'Garamond', 'Georgia', serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* HEADER */
+        .adventure-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #8A2BE2;
+        }
+        
+        .adventure-title {
+            font-size: 24px;
+            color: #FFD700;
+            text-shadow: 0 0 15px #FFD700;
+        }
+        
+        .backend-status {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid;
+        }
+        
+        .status-badge.online {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+        
+        .status-badge.offline {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #FF0000;
+            color: #FF0000;
+        }
+        
+        /* LAYOUT PRINCIPAL */
+        .adventure-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            height: calc(100vh - 80px);
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        /* PANELS LATÉRAUX */
+        .side-panel {
+            background: rgba(20, 20, 40, 0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 8px;
+            border: 1px solid #8A2BE2;
+        }
+        
+        .panel-title {
+            color: #FFD700;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #FFD700;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #8A2BE2, #9370DB);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 5px 5px 5px 0;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+        }
+        
+        .btn:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+        }
+        
+        /* CANVAS MAP */
+        .map-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #mapCanvas {
+            display: block;
+            cursor: crosshair;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* PLAN OVERLAY */
+        .plan-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 250px;
+            display: none;
+        }
+        
+        .plan-overlay.active {
+            display: block;
+        }
+        
+        .overlay-title {
+            color: #FFD700;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .topology-selector {
+            margin-bottom: 10px;
+        }
+        
+        .topology-selector select {
+            width: 100%;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #8A2BE2;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 11px;
+        }
+        
+        .time-velocity-control {
+            margin-bottom: 10px;
+        }
+        
+        .time-velocity-control input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .plan-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .plan-controls .btn {
+            flex: 1;
+            font-size: 10px;
+            padding: 8px;
+        }
+        
+        /* COLLECTE OVERLAY */
+        .collect-overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FF00;
+            border-radius: 10px;
+            padding: 15px;
+            display: none;
+        }
+        
+        .collect-overlay.active {
+            display: block;
+        }
+        
+        .collect-btn {
+            background: linear-gradient(45deg, #00FF00, #32CD32);
+            color: black;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .collect-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .collect-btn:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        /* MODAL TCG */
+        .tcg-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .tcg-modal.active {
+            display: flex;
+        }
+        
+        .tcg-content {
+            width: 90%;
+            height: 90%;
+            background: linear-gradient(135deg, #2c1810, #4a2c2a);
+            border: 3px solid #8A2BE2;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tcg-header {
+            background: rgba(138, 43, 226, 0.3);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #8A2BE2;
+        }
+        
+        .tcg-title {
+            color: #FFD700;
+            font-size: 20px;
+        }
+        
+        .tcg-close {
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tcg-close:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.1);
+        }
+        
+        .tcg-iframe {
+            width: 100%;
+            height: calc(100% - 70px);
+            border: none;
+            background: #000;
+        }
+        
+        /* SLIDERS CUSTOM */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: linear-gradient(to right, #FF0000, #FFFF00, #00FF00);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #8A2BE2;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #FFD700;
+        }
+        
+        /* ANIMATIONS */
+        @keyframes pathTrace {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+        
+        .path-trace {
+            stroke: #FFD700;
+            stroke-width: 3;
+            stroke-dasharray: 10, 5;
+            fill: none;
+            animation: pathTrace 2s ease-in-out;
+        }
+        
+        /* LOG SYSTÈME */
+        .log-area {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #8A2BE2;
+            border-radius: 5px;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+            color: #ccc;
+        }
+        
+        .log-entry.success { color: #00FF00; }
+        .log-entry.error { color: #FF0000; }
+        .log-entry.warning { color: #FFFF00; }
+        .log-entry.info { color: #00FFFF; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="adventure-header">
+        <div class="adventure-title">🗺️ Aventure HOMM3 6D</div>
+        <div class="backend-status">
+            <div class="status-badge offline" id="rustStatus">Rust</div>
+            <div class="status-badge offline" id="javaStatus">Java</div>
+            <button class="btn" onclick="returnToHub()">🏰 Retour Hub</button>
+        </div>
+    </div>
+
+    <!-- Layout Principal -->
+    <div class="adventure-layout">
+        <!-- Panel Gauche - Contrôles -->
+        <div class="side-panel">
+            <div class="panel-section">
+                <div class="panel-title">🎮 Actions Principales</div>
+                <button class="btn" onclick="generateMap()">🗺️ Générer Carte 6D</button>
+                <button class="btn" onclick="spawnHero()">👤 Spawn Héros</button>
+                <button class="btn" onclick="togglePlanOverlay()">📍 Planifier Route</button>
+                <button class="btn" onclick="testCast()">⚡ Test Sort</button>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">⚔️ Combat & Rencontres</div>
+                <button class="btn" onclick="openTCGArena()">🎴 Arène TCG</button>
+                <button class="btn" onclick="checkCollisions()">💥 Check Collisions</button>
+                <button class="btn" onclick="forceEncounter()">👹 Force Rencontre</button>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">🌐 World State Graph</div>
+                <button class="btn" onclick="refreshWSG()">🔄 Rafraîchir WSG</button>
+                <button class="btn" onclick="toggleWSGNearby()">📡 Nearby Mode</button>
+                <div style="font-size: 12px; color: #ccc; margin-top: 8px;">
+                    <div>Entités: <span id="wsgCount">0</span></div>
+                    <div>Nearby: <span id="nearbyCount">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone Centrale - Carte -->
+        <div class="map-container">
+            <canvas id="mapCanvas" width="800" height="600"></canvas>
+            
+            <!-- Plan Overlay -->
+            <div class="plan-overlay" id="planOverlay">
+                <div class="overlay-title">📍 Planification Route</div>
+                
+                <div class="topology-selector">
+                    <label style="color: #ccc; font-size: 12px;">Topologie:</label>
+                    <select id="topologySelect" onchange="updateTopology(this.value)">
+                        <option value="plane">📐 Plan Euclidien</option>
+                        <option value="torus">🍩 Torus (Wrap X/Y)</option>
+                        <option value="mobius">♾️ Möbius (Inversion)</option>
+                        <option value="klein">🌀 Klein (Double Wrap)</option>
+                    </select>
+                </div>
+                
+                <div class="time-velocity-control">
+                    <label style="color: #ccc; font-size: 12px;">
+                        Time Velocity: <span id="timeVelocityValue">1.0</span>
+                    </label>
+                    <input type="range" id="timeVelocitySlider" 
+                           min="-1" max="1" step="0.1" value="1"
+                           onchange="updateTimeVelocity(this.value)">
+                    <div style="font-size: 10px; color: #999;">
+                        -1 = Voyage temporel | 0 = Stase | +1 = Temps normal
+                    </div>
+                </div>
+                
+                <div class="plan-controls">
+                    <button class="btn" onclick="planPath()">🚀 Calculer</button>
+                    <button class="btn" onclick="clearPath()">🗑️ Effacer</button>
+                </div>
+            </div>
+            
+            <!-- Collecte Overlay -->
+            <div class="collect-overlay" id="collectOverlay">
+                <div style="color: #00FF00; font-size: 14px; margin-bottom: 10px;">
+                    🌿 Récolte Disponible
+                </div>
+                <div style="font-size: 12px; color: #ccc; margin-bottom: 10px;">
+                    Biome: <span id="currentBiome">Plains</span><br>
+                    Position: <span id="currentPosition">(0, 0)</span>
+                </div>
+                <button class="collect-btn" id="collectBtn" onclick="performCollect()">
+                    🌿 Récolter
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel Droite - Status & Inventaire -->
+        <div class="side-panel">
+            <div class="panel-section">
+                <div class="panel-title">👤 Héros</div>
+                <div id="heroInfo" style="font-size: 12px; color: #ccc;">
+                    Aucun héros spawné
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📦 Inventaire Rapide</div>
+                <div id="quickInventory" style="font-size: 12px; color: #ccc;">
+                    Chargement...
+                </div>
+                <button class="btn" onclick="openFullInventory()">📋 Inventaire Complet</button>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📍 Position & Navigation</div>
+                <div style="font-size: 12px; color: #ccc;">
+                    Curseur: <span id="cursorPos">(0, 0)</span><br>
+                    Sélection: <span id="selectedPos">Aucune</span><br>
+                    Causalité: <span id="causalityLevel">0.500</span>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">📝 Journal d'Activité</div>
+                <div class="log-area" id="logArea">
+                    <!-- Entrées de log générées dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal TCG -->
+    <div class="tcg-modal" id="tcgModal">
+        <div class="tcg-content">
+            <div class="tcg-header">
+                <div class="tcg-title">🎴 Combat TCG - Résolution Temporelle</div>
+                <button class="tcg-close" onclick="closeTCG()">×</button>
+            </div>
+            <iframe class="tcg-iframe" id="tcgIframe" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script>
+        // 🗺️ SYSTÈME AVENTURE HOMM3 6D ENHANCED
+        
+        // État global
+        let gameState = {
+            map: null,
+            hero: null,
+            selectedPos: null,
+            currentTopology: 'plane',
+            timeVelocity: 1.0,
+            plannedPath: null,
+            wsgNearbyMode: false,
+            collectMode: false
+        };
+        
+        let backends = {};
+        let canvas, ctx;
+        
+        // 🚀 INITIALISATION
+        document.addEventListener('DOMContentLoaded', async () => {
+            canvas = document.getElementById('mapCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Configuration backends
+            backends = window.ConfigUtils ? ConfigUtils.getBackends() : {
+                javaBackend: 'http://localhost:8082',
+                rustBackend: 'http://localhost:3001'
+            };
+            
+            // Vérifier backends
+            await checkBackends();
+            
+            // Démarrer monitoring
+            setInterval(checkBackends, 30000);
+            
+            // Setup canvas events
+            setupCanvasEvents();
+            
+            // Charger inventaire initial
+            await updateQuickInventory();
+            
+            log('✅ Aventure HOMM3 6D initialisée', 'success');
+        });
+        
+        // 🔍 VÉRIFICATION BACKENDS
+        async function checkBackends() {
+            await Promise.all([checkRust(), checkJava()]);
+        }
+        
+        async function checkRust() {
+            const badge = document.getElementById('rustStatus');
+            try {
+                const response = await fetch(backends.rustBackend + '/openapi');
+                if (response.ok) {
+                    badge.className = 'status-badge online';
+                    badge.textContent = 'Rust ✅';
+                } else {
+                    throw new Error('Rust offline');
+                }
+            } catch (error) {
+                badge.className = 'status-badge offline';
+                badge.textContent = 'Rust ❌';
+            }
+        }
+        
+        async function checkJava() {
+            const badge = document.getElementById('javaStatus');
+            try {
+                const response = await fetch(backends.javaBackend + '/api/magic/health');
+                if (response.ok) {
+                    badge.className = 'status-badge online';
+                    badge.textContent = 'Java ✅';
+                } else {
+                    throw new Error('Java offline');
+                }
+            } catch (error) {
+                badge.className = 'status-badge offline';
+                badge.textContent = 'Java ❌';
+            }
+        }
+        
+        // 🗺️ GÉNÉRATION CARTE
+        async function generateMap() {
+            try {
+                log('🗺️ Génération carte 6D...', 'info');
+                
+                const response = await fetch(backends.rustBackend + '/api/map/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        width: 48,
+                        height: 36,
+                        seed: Date.now() % 100000,
+                        sea_ratio: 0.1,
+                        mountain_ratio: 0.2,
+                        forest_ratio: 0.3
+                    })
+                });
+                
+                if (response.ok) {
+                    gameState.map = await response.json();
+                    drawMap();
+                    log('✅ Carte 6D générée avec succès', 'success');
+                    
+                    // Initialiser entités
+                    await initMapEntities();
+                } else {
+                    throw new Error('Map generation failed');
+                }
+                
+            } catch (error) {
+                log('❌ Erreur génération carte: ' + error.message, 'error');
+            }
+        }
+        
+        async function initMapEntities() {
+            if (!gameState.map) return;
+            
+            try {
+                const response = await fetch(backends.rustBackend + '/api/map/init', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        map: gameState.map,
+                        time_windows: [
+                            { start: 6, end: 18, period: 24 }, // Jour
+                            { start: 18, end: 6, period: 24 }  // Nuit
+                        ]
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`🌍 Entités initialisées: ${result.created_now} nouvelles, ${result.created_total} total`, 'success');
+                } else {
+                    throw new Error('Map init failed');
+                }
+            } catch (error) {
+                log('❌ Erreur init entités: ' + error.message, 'error');
+            }
+        }
+        
+        // 🎨 RENDU CARTE
+        function drawMap() {
+            if (!gameState.map || !ctx) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const cellWidth = canvas.width / gameState.map.width;
+            const cellHeight = canvas.height / gameState.map.height;
+            
+            // Dessiner biomes
+            for (let y = 0; y < gameState.map.height; y++) {
+                for (let x = 0; x < gameState.map.width; x++) {
+                    const biome = gameState.map.biomes[y][x];
+                    const obstacle = gameState.map.obstacles[y][x];
+                    
+                    ctx.fillStyle = getBiomeColor(biome, obstacle);
+                    ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                }
+            }
+            
+            // Dessiner héros si présent
+            if (gameState.hero) {
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(gameState.hero.x * cellWidth, gameState.hero.y * cellHeight, cellWidth, cellHeight);
+            }
+            
+            // Dessiner chemin planifié
+            if (gameState.plannedPath) {
+                drawPlannedPath();
+            }
+        }
+        
+        function getBiomeColor(biome, obstacle) {
+            if (obstacle === 1) return '#8B4513'; // Brown pour obstacles
+            
+            const colors = {
+                'sea': '#4682B4',
+                'mountain': '#696969',
+                'forest': '#228B22',
+                'plain': '#9ACD32'
+            };
+            
+            return colors[biome] || '#654321';
+        }
+        
+        function drawPlannedPath() {
+            if (!gameState.plannedPath || !gameState.plannedPath.path) return;
+            
+            const cellWidth = canvas.width / gameState.map.width;
+            const cellHeight = canvas.height / gameState.map.height;
+            
+            ctx.strokeStyle = gameState.timeVelocity < 0 ? '#FF00FF' : '#FFD700'; // Magenta pour voyage temporel
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 5]);
+            
+            ctx.beginPath();
+            gameState.plannedPath.path.forEach((point, index) => {
+                const x = (point.x + 0.5) * cellWidth;
+                const y = (point.y + 0.5) * cellHeight;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // 🖱️ ÉVÉNEMENTS CANVAS
+        function setupCanvasEvents() {
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / (canvas.width / (gameState.map?.width || 48)));
+                const y = Math.floor((e.clientY - rect.top) / (canvas.height / (gameState.map?.height || 36)));
+                
+                document.getElementById('cursorPos').textContent = `(${x},${y})`;
+                
+                // Afficher overlay collecte si en mode collecte
+                updateCollectOverlay(x, y);
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / (canvas.width / (gameState.map?.width || 48)));
+                const y = Math.floor((e.clientY - rect.top) / (canvas.height / (gameState.map?.height || 36)));
+                
+                gameState.selectedPos = { x, y };
+                document.getElementById('selectedPos').textContent = `(${x},${y})`;
+                
+                // Mode collecte
+                if (gameState.collectMode) {
+                    showCollectOverlay(x, y);
+                }
+                
+                log(`📍 Position sélectionnée: (${x}, ${y})`, 'info');
+            });
+        }
+        
+        // 📍 SYSTÈME PLANIFICATION
+        function togglePlanOverlay() {
+            const overlay = document.getElementById('planOverlay');
+            overlay.classList.toggle('active');
+            
+            if (overlay.classList.contains('active')) {
+                log('📍 Mode planification activé', 'info');
+            } else {
+                log('📍 Mode planification désactivé', 'info');
+            }
+        }
+        
+        function updateTopology(topology) {
+            gameState.currentTopology = topology;
+            log(`🌀 Topologie changée: ${topology}`, 'info');
+        }
+        
+        function updateTimeVelocity(velocity) {
+            gameState.timeVelocity = parseFloat(velocity);
+            document.getElementById('timeVelocityValue').textContent = velocity;
+            
+            if (velocity < 0) {
+                log(`⏰ Mode voyage temporel: ${velocity}`, 'warning');
+            } else if (velocity == 0) {
+                log(`⏸️ Mode stase temporelle`, 'warning');
+            } else {
+                log(`⏰ Time velocity: ${velocity}`, 'info');
+            }
+        }
+        
+        async function planPath() {
+            if (!gameState.hero || !gameState.selectedPos || !gameState.map) {
+                log('❌ Héros ou destination manquant', 'error');
+                return;
+            }
+            
+            try {
+                log('🚀 Calcul de route...', 'info');
+                
+                const response = await fetch(backends.rustBackend + '/agents/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start: { 
+                            x: gameState.hero.x, 
+                            y: gameState.hero.y, 
+                            tl: 'principale' 
+                        },
+                        goal: { 
+                            x: gameState.selectedPos.x, 
+                            y: gameState.selectedPos.y, 
+                            tl: 'principale' 
+                        },
+                        map: {
+                            obstacles: gameState.map.obstacles,
+                            terrain: gameState.map.terrain,
+                            causal_c: gameState.map.causal_c
+                        },
+                        agent: {
+                            speed_multiplier: 1.0,
+                            alpha_causal: 0.5,
+                            time_velocity: gameState.timeVelocity
+                        },
+                        opts: {
+                            topology: gameState.currentTopology
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    gameState.plannedPath = await response.json();
+                    drawMap(); // Redessiner avec le chemin
+                    
+                    if (gameState.timeVelocity < 0) {
+                        log(`🔮 Route temporelle calculée (${gameState.plannedPath.path.length} étapes)`, 'success');
+                    } else {
+                        log(`✅ Route calculée (${gameState.plannedPath.path.length} étapes)`, 'success');
+                    }
+                } else {
+                    throw new Error('Path planning failed');
+                }
+                
+            } catch (error) {
+                log('❌ Erreur planification: ' + error.message, 'error');
+            }
+        }
+        
+        function clearPath() {
+            gameState.plannedPath = null;
+            drawMap();
+            log('🗑️ Route effacée', 'info');
+        }
+        
+        // 🌿 SYSTÈME COLLECTE
+        function updateCollectOverlay(x, y) {
+            if (!gameState.collectMode) return;
+            
+            document.getElementById('currentPosition').textContent = `(${x}, ${y})`;
+            document.getElementById('currentBiome').textContent = getBiomeName(x, y);
+        }
+        
+        function showCollectOverlay(x, y) {
+            const overlay = document.getElementById('collectOverlay');
+            overlay.classList.add('active');
+            gameState.collectMode = true;
+            
+            updateCollectOverlay(x, y);
+            log('🌿 Mode collecte activé', 'info');
+        }
+        
+        async function performCollect() {
+            if (!gameState.selectedPos) {
+                log('❌ Aucune position sélectionnée', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('collectBtn');
+            btn.disabled = true;
+            btn.textContent = 'Collecte...';
+            
+            try {
+                const response = await fetch(backends.javaBackend + '/api/economy/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        position: {
+                            x: gameState.selectedPos.x,
+                            y: gameState.selectedPos.y,
+                            z: 0,
+                            timeline: 'principale'
+                        },
+                        biome: getBiomeName(gameState.selectedPos.x, gameState.selectedPos.y),
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`🌿 Collecté: ${result.quantity}x ${result.resource} (${result.rarity})`, 'success');
+                    
+                    // Mettre à jour inventaire
+                    await updateQuickInventory();
+                    
+                    // Masquer overlay après délai
+                    setTimeout(() => {
+                        document.getElementById('collectOverlay').classList.remove('active');
+                        gameState.collectMode = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Collection failed');
+                }
+                
+            } catch (error) {
+                log('❌ Erreur collecte: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🌿 Récolter';
+            }
+        }
+        
+        function getBiomeName(x, y) {
+            if (!gameState.map || !gameState.map.biomes) return 'plains';
+            
+            if (y >= 0 && y < gameState.map.biomes.length && 
+                x >= 0 && x < gameState.map.biomes[y].length) {
+                return gameState.map.biomes[y][x];
+            }
+            
+            return 'plains';
+        }
+        
+        // 🎴 SYSTÈME TCG
+        function openTCGArena() {
+            const modal = document.getElementById('tcgModal');
+            const iframe = document.getElementById('tcgIframe');
+            
+            // Charger interface TCG
+            iframe.src = '../../DARK_HOLOGRAPHIC_CARDS.html?embedded=true';
+            modal.classList.add('active');
+            
+            log('🎴 Ouverture arène TCG', 'info');
+        }
+        
+        function closeTCG() {
+            const modal = document.getElementById('tcgModal');
+            const iframe = document.getElementById('tcgIframe');
+            
+            modal.classList.remove('active');
+            iframe.src = 'about:blank';
+            
+            log('🎴 Fermeture arène TCG', 'info');
+        }
+        
+        // 👤 SYSTÈME HÉROS
+        function spawnHero() {
+            if (!gameState.map) {
+                log('❌ Générez d\'abord une carte', 'error');
+                return;
+            }
+            
+            gameState.hero = {
+                x: Math.floor(gameState.map.width / 2),
+                y: Math.floor(gameState.map.height / 2),
+                hp: 100,
+                mana: 50,
+                level: 1
+            };
+            
+            document.getElementById('heroInfo').innerHTML = `
+                <div>Niveau: ${gameState.hero.level}</div>
+                <div>HP: ${gameState.hero.hp}/100</div>
+                <div>Mana: ${gameState.hero.mana}/50</div>
+                <div>Position: (${gameState.hero.x}, ${gameState.hero.y})</div>
+            `;
+            
+            drawMap();
+            log('👤 Héros spawné au centre de la carte', 'success');
+        }
+        
+        // ⚡ SYSTÈME MAGIE
+        async function testCast() {
+            try {
+                log('⚡ Test cast magic...', 'info');
+                
+                // Essayer payload primary d'abord
+                let response = await fetch(backends.javaBackend + '/api/magic/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: 'ECHO_TEMPOREL',
+                        target: 'self',
+                        power: 10
+                    })
+                });
+                
+                // Fallback sur ancien format si nécessaire
+                if (!response.ok) {
+                    response = await fetch(backends.javaBackend + '/api/magic/cast', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            formula: 'ECHO_TEMPOREL',
+                            parameters: {
+                                target: 'self',
+                                power: 10
+                            }
+                        })
+                    });
+                }
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log('✅ Sort exécuté avec succès', 'success');
+                } else {
+                    throw new Error('Cast failed');
+                }
+                
+            } catch (error) {
+                log('❌ Erreur cast: ' + error.message, 'error');
+            }
+        }
+        
+        // 🌐 SYSTÈME WSG
+        async function refreshWSG() {
+            try {
+                const response = await fetch(backends.javaBackend + '/api/panopticon/world-state-graph');
+                
+                if (response.ok) {
+                    const wsg = await response.json();
+                    document.getElementById('wsgCount').textContent = wsg.nodes?.length || 0;
+                    log(`🌐 WSG actualisé: ${wsg.nodes?.length || 0} entités`, 'info');
+                } else {
+                    throw new Error('WSG refresh failed');
+                }
+            } catch (error) {
+                log('❌ Erreur WSG: ' + error.message, 'error');
+            }
+        }
+        
+        async function toggleWSGNearby() {
+            gameState.wsgNearbyMode = !gameState.wsgNearbyMode;
+            
+            if (gameState.wsgNearbyMode && gameState.hero) {
+                try {
+                    const response = await fetch(
+                        `${backends.rustBackend}/api/panopticon/world-state-graph/nearby?x=${gameState.hero.x}&y=${gameState.hero.y}&radius=5`
+                    );
+                    
+                    if (response.ok) {
+                        const nearby = await response.json();
+                        document.getElementById('nearbyCount').textContent = nearby.entities?.length || 0;
+                        log(`📡 Nearby mode: ${nearby.entities?.length || 0} entités proches`, 'info');
+                    }
+                } catch (error) {
+                    log('❌ Erreur nearby: ' + error.message, 'error');
+                }
+            } else {
+                document.getElementById('nearbyCount').textContent = '0';
+                log('📡 Nearby mode désactivé', 'info');
+            }
+        }
+        
+        // 📦 INVENTAIRE RAPIDE
+        async function updateQuickInventory() {
+            try {
+                const response = await fetch(backends.javaBackend + '/api/economy/inventory');
+                
+                if (response.ok) {
+                    const inventory = await response.json();
+                    
+                    const quickDisplay = Object.entries(inventory.resources || {})
+                        .slice(0, 5)
+                        .map(([resource, amount]) => `${resource}: ${amount}`)
+                        .join('<br>');
+                    
+                    document.getElementById('quickInventory').innerHTML = quickDisplay || 'Inventaire vide';
+                } else {
+                    document.getElementById('quickInventory').innerHTML = 'Inventaire indisponible';
+                }
+            } catch (error) {
+                document.getElementById('quickInventory').innerHTML = 'Erreur inventaire';
+            }
+        }
+        
+        function openFullInventory() {
+            // TODO: Ouvrir panel inventaire complet
+            log('📦 Ouverture inventaire complet (en développement)', 'info');
+        }
+        
+        // 🔧 FONCTIONS UTILITAIRES
+        function checkCollisions() {
+            log('💥 Vérification collisions...', 'info');
+            // TODO: Implémenter vérification collisions
+        }
+        
+        function forceEncounter() {
+            log('👹 Forçage rencontre...', 'info');
+            // Simuler ouverture TCG
+            openTCGArena();
+        }
+        
+        function returnToHub() {
+            window.location.href = 'hub-avalon.html';
+        }
+        
+        // 📝 SYSTÈME LOG
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            logArea.insertBefore(entry, logArea.firstChild);
+            
+            // Limiter à 50 entrées
+            while (logArea.children.length > 50) {
+                logArea.removeChild(logArea.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>

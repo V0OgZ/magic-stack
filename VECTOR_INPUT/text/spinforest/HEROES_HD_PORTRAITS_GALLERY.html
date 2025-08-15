@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎨 HEROES OF TIME - PORTRAITS HD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* HEADER ÉPIQUE */
+        .header {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before, .header::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .header::before {
+            top: -150px;
+            left: -150px;
+        }
+        
+        .header::after {
+            bottom: -150px;
+            right: -150px;
+            animation-delay: 3s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            z-index: 1;
+            position: relative;
+            animation: glow-text 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow-text {
+            from { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.5); }
+            to { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 30px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.6); }
+        }
+        
+        /* SÉLECTEUR DE HÉROS */
+        .hero-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .hero-badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #4ecdc4;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hero-badge:hover {
+            transform: scale(1.2) rotate(5deg);
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+        
+        .hero-badge.selected {
+            border-color: #ff6b6b;
+            transform: scale(1.3);
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.8);
+        }
+        
+        .hero-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* GALERIE PRINCIPALE */
+        .portrait-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            padding: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .portrait-card {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            border: 3px solid #4ecdc4;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+        }
+        
+        .portrait-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .portrait-card:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .portrait-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.4);
+            border-color: #ffd700;
+        }
+        
+        .portrait-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .portrait-info {
+            padding: 25px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .hero-name {
+            font-size: 1.8em;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .hero-title {
+            font-size: 1.1em;
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 10px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 10px;
+            border: 1px solid #4ecdc4;
+        }
+        
+        .stat-icon {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        /* VIEWER MODAL */
+        .portrait-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .portrait-viewer.active {
+            display: flex;
+        }
+        
+        .viewer-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            animation: zoom-in 0.3s ease-out;
+        }
+        
+        @keyframes zoom-in {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .viewer-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 15px;
+            box-shadow: 0 0 60px rgba(78, 205, 196, 0.6);
+        }
+        
+        .viewer-controls {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        .viewer-btn {
+            padding: 10px 20px;
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .viewer-btn:hover {
+            background: #4ecdc4;
+            transform: scale(1.1);
+        }
+        
+        .close-viewer {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            font-size: 2.5em;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .close-viewer:hover {
+            color: #ff6b6b;
+            transform: rotate(90deg);
+        }
+        
+        /* ANIMATIONS SPÉCIALES */
+        .hero-power-animation {
+            position: fixed;
+            pointer-events: none;
+            z-index: 3000;
+        }
+        
+        .power-burst {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffd700, transparent);
+            animation: burst 0.5s ease-out forwards;
+        }
+        
+        @keyframes burst {
+            from { transform: scale(0); opacity: 1; }
+            to { transform: scale(10); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ PORTRAITS HD - HEROES OF TIME ⚔️</h1>
+        <p style="margin-top: 15px; font-size: 1.3em; position: relative; z-index: 1;">
+            Galerie des Héros Légendaires en Haute Définition
+        </p>
+    </div>
+    
+    <!-- SÉLECTEUR RAPIDE -->
+    <div class="hero-selector" id="heroSelector">
+        <!-- Les badges seront générés ici -->
+    </div>
+    
+    <!-- GALERIE -->
+    <div class="portrait-gallery" id="gallery">
+        <!-- Les cartes seront générées ici -->
+    </div>
+    
+    <!-- VIEWER MODAL -->
+    <div class="portrait-viewer" id="viewer">
+        <div class="viewer-content">
+            <span class="close-viewer" onclick="closeViewer()">&times;</span>
+            <img class="viewer-image" id="viewerImage" src="" alt="">
+            <div class="viewer-controls">
+                <button class="viewer-btn" onclick="previousHero()">⬅️ Précédent</button>
+                <button class="viewer-btn" onclick="selectAsAvatar()">⚔️ Sélectionner</button>
+                <button class="viewer-btn" onclick="nextHero()">➡️ Suivant</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // BASE DE DONNÉES DES HÉROS HD
+        const heroesHD = [
+            {
+                image: 'assets/HEROHDPORTAIT/Ancient Warrior of Fiery Runes.png',
+                name: 'Guerrier Antique',
+                title: 'Maître des Runes de Feu',
+                description: 'Un guerrier légendaire maîtrisant les runes anciennes de feu et de destruction.',
+                power: 9500,
+                defense: 8000,
+                magic: 7500,
+                element: '🔥',
+                rarity: 'Légendaire'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1nz64z6fdc9zfbqj414ng4w-1754157826_img_0.webp',
+                name: 'Vince Vega',
+                title: 'L\'Exécuteur Temporel',
+                description: 'Précis comme une horloge suisse, mortel comme un paradoxe temporel.',
+                power: 8500,
+                defense: 7000,
+                magic: 9000,
+                element: '🔫',
+                rarity: 'Épique'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1nz64z6fdc9zfbqj414ng4w-1754157826_img_1.webp',
+                name: 'URZ-KÔM',
+                title: 'Chaman Ours Cosmique',
+                description: 'Gardien de la Magic Stack et maître des 6 dimensions.',
+                power: 10000,
+                defense: 9500,
+                magic: 10000,
+                element: '🐻',
+                rarity: 'Mythique'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1p61r4ae3nv0x5zv98f9783-1754165021_img_0.webp',
+                name: 'Merlin',
+                title: 'Archimage Quantique',
+                description: 'Voit toutes les timelines simultanément.',
+                power: 7000,
+                defense: 6000,
+                magic: 10000,
+                element: '🔮',
+                rarity: 'Légendaire'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1p61r4ae3nv0x5zv98f9783-1754165021_img_1.webp',
+                name: 'Arthur Pendragon',
+                title: 'Chevalier Chronomancien',
+                description: 'Excalibur tranche les timelines avec précision divine.',
+                power: 9000,
+                defense: 8500,
+                magic: 7000,
+                element: '⚔️',
+                rarity: 'Légendaire'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_0.webp',
+                name: 'GRUT',
+                title: 'Visionnaire Panoptique',
+                description: 'Voit en 6 dimensions, architecte du multivers.',
+                power: 8000,
+                defense: 7500,
+                magic: 9500,
+                element: '👁️',
+                rarity: 'Mythique'
+            },
+            {
+                image: 'assets/HEROHDPORTAIT/assets-task_01k1p62tjke86bykszdms6xq6k-1754165078_img_1.webp',
+                name: 'BASILIK',
+                title: 'Boss du Futur (2080)',
+                description: 'Venu de 2080 pour détruire les timelines corrompues.',
+                power: 12000,
+                defense: 10000,
+                magic: 8000,
+                element: '👾',
+                rarity: 'Boss Final'
+            }
+        ];
+        
+        let currentHeroIndex = 0;
+        
+        // GÉNÉRER LA GALERIE
+        function generateGallery() {
+            const gallery = document.getElementById('gallery');
+            const selector = document.getElementById('heroSelector');
+            
+            heroesHD.forEach((hero, index) => {
+                // Carte principale
+                const card = document.createElement('div');
+                card.className = 'portrait-card';
+                card.onclick = () => openViewer(index);
+                
+                const rarityColor = {
+                    'Commun': '#888',
+                    'Rare': '#4ecdc4',
+                    'Épique': '#9c27b0',
+                    'Légendaire': '#ffd700',
+                    'Mythique': '#ff6b6b',
+                    'Boss Final': '#ff0000'
+                }[hero.rarity] || '#fff';
+                
+                card.innerHTML = `
+                    <img class="portrait-image" src="${hero.image}" alt="${hero.name}"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 400\"><rect fill=\"%23333\" width=\"400\" height=\"400\"/><text x=\"50%\" y=\"50%\" fill=\"%23fff\" text-anchor=\"middle\" font-size=\"30\">${hero.element}</text></svg>'">
+                    <div class="portrait-info">
+                        <div class="hero-name">${hero.element} ${hero.name}</div>
+                        <div class="hero-title">${hero.title}</div>
+                        <div style="color: ${rarityColor}; margin: 10px 0;">★ ${hero.rarity}</div>
+                        <p style="color: #b8b8b8; line-height: 1.5;">${hero.description}</p>
+                        <div class="hero-stats">
+                            <div class="stat-box">
+                                <div class="stat-icon">⚔️</div>
+                                <div class="stat-value">${hero.power.toLocaleString()}</div>
+                                <div class="stat-label">Puissance</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-icon">🛡️</div>
+                                <div class="stat-value">${hero.defense.toLocaleString()}</div>
+                                <div class="stat-label">Défense</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-icon">✨</div>
+                                <div class="stat-value">${hero.magic.toLocaleString()}</div>
+                                <div class="stat-label">Magie</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                gallery.appendChild(card);
+                
+                // Badge sélecteur
+                const badge = document.createElement('div');
+                badge.className = 'hero-badge';
+                badge.onclick = () => {
+                    openViewer(index);
+                    document.querySelectorAll('.hero-badge').forEach(b => b.classList.remove('selected'));
+                    badge.classList.add('selected');
+                };
+                badge.innerHTML = `<img src="${hero.image}" alt="${hero.name}" 
+                    onerror="this.parentElement.innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;\">${hero.element}</div>'">`;
+                selector.appendChild(badge);
+            });
+        }
+        
+        // VIEWER FUNCTIONS
+        function openViewer(index) {
+            currentHeroIndex = index;
+            const hero = heroesHD[index];
+            document.getElementById('viewerImage').src = hero.image;
+            document.getElementById('viewer').classList.add('active');
+            
+            // Effet spécial
+            createPowerBurst(window.innerWidth / 2, window.innerHeight / 2);
+        }
+        
+        function closeViewer() {
+            document.getElementById('viewer').classList.remove('active');
+        }
+        
+        function previousHero() {
+            currentHeroIndex = (currentHeroIndex - 1 + heroesHD.length) % heroesHD.length;
+            openViewer(currentHeroIndex);
+        }
+        
+        function nextHero() {
+            currentHeroIndex = (currentHeroIndex + 1) % heroesHD.length;
+            openViewer(currentHeroIndex);
+        }
+        
+        function selectAsAvatar() {
+            const hero = heroesHD[currentHeroIndex];
+            alert(`🎯 ${hero.name} SÉLECTIONNÉ !\n\n"${hero.title}"\n\nPuissance: ${hero.power}\nDéfense: ${hero.defense}\nMagie: ${hero.magic}\n\nPrêt pour le combat !`);
+            closeViewer();
+            
+            // Animation de sélection
+            createPowerBurst(window.innerWidth / 2, window.innerHeight / 2);
+        }
+        
+        // EFFET SPÉCIAL
+        function createPowerBurst(x, y) {
+            const burst = document.createElement('div');
+            burst.className = 'hero-power-animation';
+            burst.innerHTML = '<div class="power-burst"></div>';
+            burst.style.left = x + 'px';
+            burst.style.top = y + 'px';
+            document.body.appendChild(burst);
+            
+            setTimeout(() => burst.remove(), 500);
+        }
+        
+        // RACCOURCIS CLAVIER
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('viewer').classList.contains('active')) {
+                switch(e.key) {
+                    case 'Escape':
+                        closeViewer();
+                        break;
+                    case 'ArrowLeft':
+                        previousHero();
+                        break;
+                    case 'ArrowRight':
+                        nextHero();
+                        break;
+                    case 'Enter':
+                        selectAsAvatar();
+                        break;
+                }
+            }
+        });
+        
+        // CLIC EN DEHORS
+        document.getElementById('viewer').addEventListener('click', (e) => {
+            if (e.target.id === 'viewer') {
+                closeViewer();
+            }
+        });
+        
+        // INITIALISATION
+        generateGallery();
+        
+        // Message de bienvenue
+        console.log(`
+╔═══════════════════════════════════════════════╗
+║       🎨  GALERIE HD CHARGÉE  🎨             ║
+║                                               ║
+║  ${heroesHD.length} portraits HD disponibles !              ║
+║                                               ║
+║  Raccourcis (dans le viewer):                ║
+║  ← → : Naviguer                              ║
+║  Enter : Sélectionner                        ║
+║  Escape : Fermer                             ║
+╚═══════════════════════════════════════════════╝
+        `);
+    </script>
+</body>
+</html>

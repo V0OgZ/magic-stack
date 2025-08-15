@@ -1,0 +1,650 @@
+{
+  "carte_j27_series_3": {
+    "CHRISTIAN_CONSULTANT": {
+      "id": "CHRISTIAN_CONSULTANT",
+      "name": "Christian - Consultant McKinsey",
+      "class": "Stratège Corporatif",
+      "type": "HERO",
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/Membre du Bureau (McKinsey mystique.png",
+      "description": "Ton beau-frère Christian en mode consultant ! Mallette mystérieuse émettant un larsen inaudible. Excel quantique qui devient réalité.",
+      "real_power": {
+        "effect": "QUANTUM_EXCEL",
+        "projections_become_reality": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "CORPORATE_MATRIX_ADVANCED", 
+          "targetType": "area",
+          "power": 85
+        }
+      },
+      "stats": {
+        "power": 20,
+        "magic": 25,
+        "time": 18,
+        "spatial": 22
+      },
+      "abilities": [
+        "Cadrage Stratégique (ψ_cadrage)",
+        "Excel Quantique",
+        "Mallette Noire (19.7kHz)"
+      ],
+      "tier": 5,
+      "faction": "DOUBLE_AGENT",
+      "flavor_text": "Quand les KPI deviennent physique quantique, même la réalité suit le business plan."
+    },
+
+    "CHRISTIAN_GUITARISTE": {
+      "id": "CHRISTIAN_GUITARISTE",
+      "name": "CHR-SINE - Guitariste des Vents",
+      "class": "Manipulateur Sonique",
+      "type": "HERO",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/3/Guitarist of the Enchanted Winds.png",
+      "description": "Ton beau-frère Christian en mode guitariste metal ! Ses power chords déstabilisent la réalité moléculaire avec sa guitare enchantée.",
+      "real_power": {
+        "effect": "POWER_CHORD",
+        "damage": 87.5,
+        "radius": 30,
+        "backend_call": "/api/causality/resolve",
+        "parameters": {
+          "center": "current_position",
+          "radius": 30,
+          "mode": "SONIC_DAMAGE",
+          "force": true
+        }
+      },
+      "stats": {
+        "power": 28,
+        "magic": 15,
+        "time": 12,
+        "spatial": 20
+      },
+      "abilities": [
+        "Power Chord (87.5 dmg)",
+        "Wall of Sound (60% absorb)",
+        "Enchanted Wind Manipulation"
+      ],
+      "tier": 5,
+      "faction": "DOUBLE_AGENT",
+      "flavor_text": "A_chord = √(2πf) × e^(iωt) × |amplitude⟩ - Les maths du metal enchanté !"
+    },
+
+    "GARDIEN_CELESTE": {
+      "id": "GARDIEN_CELESTE",
+      "name": "Gardien Céleste",
+      "class": "Protecteur Astral",
+      "type": "HERO",
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/3/Celestial Guardian in Starry Attire.png",
+      "description": "Gardien des étoiles dans une tenue stellaire. Maîtrise les pouvoirs cosmiques et la protection astrale.",
+      "real_power": {
+        "effect": "STELLAR_PROTECTION",
+        "cosmic_shield": true,
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "cosmic_immunity",
+          "duration": 300,
+          "star_power": true
+        }
+      },
+      "stats": {
+        "power": 22,
+        "magic": 28,
+        "time": 20,
+        "spatial": 25
+      },
+      "abilities": [
+        "Cosmic Shield",
+        "Stellar Guidance",
+        "Astral Immunity"
+      ],
+      "flavor_text": "Les étoiles ne mentent jamais, elles protègent toujours."
+    },
+
+    "MARCHAND_TEMPOREL": {
+      "id": "MARCHAND_TEMPOREL",
+      "name": "Marchand du Temps",
+      "class": "Négociant Temporel",
+      "type": "HERO",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/3/Elder Merchant and Glowing Hourglass.png",
+      "description": "Ancien marchand possédant un sablier lumineux. Échange du temps contre des ressources précieuses.",
+      "real_power": {
+        "effect": "TIME_TRADE",
+        "trade_time_for_resources": true,
+        "backend_call": "/api/economy/time-exchange",
+        "parameters": {
+          "exchange_rate": "1min_time = 10_gold",
+          "max_exchange": 60
+        }
+      },
+      "stats": {
+        "power": 15,
+        "magic": 20,
+        "time": 30,
+        "spatial": 10
+      },
+      "abilities": [
+        "Time Exchange",
+        "Temporal Commerce",
+        "Hourglass Mastery"
+      ],
+      "flavor_text": "Le temps, c'est de l'argent. Littéralement."
+    },
+
+    "FLAMMES_DU_DESTIN": {
+      "id": "FLAMMES_DU_DESTIN",
+      "name": "Flammes du Destin",
+      "class": "Sort Prophétique",
+      "type": "SPELL",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/3/Flames of Fate.png",
+      "description": "Flammes qui révèlent et façonnent le destin. Permet de voir et influencer les possibilités futures.",
+      "real_power": {
+        "effect": "FATE_VISION",
+        "see_future_possibilities": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "PROPHETIC_FLAMES",
+          "targetType": "self",
+          "power": 90,
+          "duration": 120
+        }
+      },
+      "stats": {
+        "power": 25,
+        "magic": 30,
+        "time": 35,
+        "spatial": 15
+      },
+      "abilities": [
+        "Future Sight",
+        "Destiny Shaping",
+        "Prophetic Fire"
+      ],
+      "flavor_text": "Dans les flammes dansent les échos de demain."
+    },
+
+    "TECHNOMANCIEN_OMBRES": {
+      "id": "TECHNOMANCIEN_OMBRES",
+      "name": "Technomancien des Ombres",
+      "class": "Manipulateur Digital",
+      "type": "HERO",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/3/Technomancer and Shadow Duplicates.png",
+      "description": "Technomancien capable de créer des duplicatas d'ombre. Fusionne magie et technologie pour la duplication.",
+      "real_power": {
+        "effect": "SHADOW_DUPLICATES",
+        "create_copies": 3,
+        "backend_call": "/agents/fork",
+        "parameters": {
+          "entity_id": "current_hero",
+          "duplicate_count": 3,
+          "shadow_mode": true
+        }
+      },
+      "stats": {
+        "power": 20,
+        "magic": 25,
+        "time": 18,
+        "spatial": 22
+      },
+      "abilities": [
+        "Shadow Duplication",
+        "Tech-Magic Fusion",
+        "Digital Sorcery"
+      ],
+      "flavor_text": "Un pour tous, tous pour un... dans les ombres numériques."
+    },
+
+    "SURGE_QUANTIQUE": {
+      "id": "SURGE_QUANTIQUE",
+      "name": "Surge Quantique",
+      "class": "Explosion d'Énergie",
+      "type": "SPELL",
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/3/Quantum Surge Spell Card Design.png",
+      "description": "Décharge quantique pure qui déstabilise l'espace-temps local. Effet dévastateur sur les entités proches.",
+      "real_power": {
+        "effect": "QUANTUM_EXPLOSION",
+        "space_time_disruption": true,
+        "backend_call": "/api/causality/resolve",
+        "parameters": {
+          "center": "target_location",
+          "radius": 25,
+          "mode": "QUANTUM_SURGE",
+          "power": 120
+        }
+      },
+      "stats": {
+        "power": 35,
+        "magic": 32,
+        "time": 28,
+        "spatial": 30
+      },
+      "abilities": [
+        "Quantum Explosion",
+        "Space-Time Disruption", 
+        "Reality Destabilization"
+      ],
+      "flavor_text": "Quand les quantums surgissent, la réalité vacille."
+    },
+
+    "CHAMAN_ORC_FUREUR": {
+      "id": "CHAMAN_ORC_FUREUR",
+      "name": "Chaman Orc de la Fureur",
+      "class": "Invocateur Élémentaire",
+      "type": "HERO",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/3/Orc Shaman and Elemental Fury.png",
+      "description": "Chaman orc maîtrisant la fureur élémentaire. Déchaîne les forces primitives de la nature en combat.",
+      "real_power": {
+        "effect": "ELEMENTAL_FURY",
+        "summon_elementals": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "PRIMAL_FURY",
+          "targetType": "area",
+          "power": 85,
+          "elemental_type": "fire_earth"
+        }
+      },
+      "stats": {
+        "power": 26,
+        "magic": 22,
+        "time": 8,
+        "spatial": 20
+      },
+      "abilities": [
+        "Elemental Summoning",
+        "Primal Fury",
+        "Nature's Wrath"
+      ],
+      "flavor_text": "La terre tremble, le feu rugit - c'est l'heure de la fureur primitive."
+    },
+
+    "PATTE_BASILIC": {
+      "id": "PATTE_BASILIC",
+      "name": "Patte de Basilic",
+      "class": "Artefact Temporel",
+      "type": "ARTIFACT",
+      "rarity": "mythic",
+      "image": "assets/CARTE_J27/3/Patte de Basilic_ Manipulation du Temps.png",
+      "description": "Patte de basilic pétrifiée capable de manipuler le temps. Ralentit ou accélère le flux temporel selon la volonté.",
+      "real_power": {
+        "effect": "TIME_MANIPULATION",
+        "control_time_flow": true,
+        "backend_call": "/api/hero/apply-perk",
+        "parameters": {
+          "heroId": "current_hero",
+          "perk": "temporal_control",
+          "time_dilation": "variable",
+          "duration": 180
+        }
+      },
+      "stats": {
+        "power": 18,
+        "magic": 25,
+        "time": 35,
+        "spatial": 12
+      },
+      "abilities": [
+        "Time Dilation Control",
+        "Petrification Touch",
+        "Temporal Mastery"
+      ],
+      "flavor_text": "Ce qui était pétrifié dans le temps peut le contrôler."
+    },
+
+    "ANNA_SORCERESS": {
+      "id": "ANNA_SORCERESS",
+      "name": "Anna - Sorcière du Temps et du Pouvoir",
+      "class": "Maîtresse Temporelle",
+      "type": "HERO",
+      "rarity": "mythic",
+      "image": "assets/CARTE_J27/3/Sorceress of Time and Power.png",
+      "description": "Anna, maîtresse absolue du temps et de l'énergie ! Ses sorts réécrivent les lois de la physique temporelle.",
+      "real_power": {
+        "effect": "TIME_AND_POWER_MASTERY",
+        "time_control": true,
+        "energy_manipulation": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "TEMPORAL_POWER_NEXUS",
+          "targetType": "area",
+          "power": 100
+        }
+      },
+      "stats": {
+        "power": 35,
+        "magic": 40,
+        "time": 45,
+        "spatial": 30
+      },
+      "abilities": [
+        "Nexus Temporel",
+        "Contrôle Énergétique",
+        "Réalité Malléable",
+        "Vortex Spatio-Temporel"
+      ],
+      "tier": 7,
+      "faction": "TEMPORAL_MASTERS",
+      "flavor_text": "Quand Anna lève la main, même l'univers attend sa permission pour continuer."
+    },
+
+    "CLAUDE_TIME_WIZARD": {
+      "id": "CLAUDE_TIME_WIZARD",
+      "name": "Claude - Sorcier Plieur de Temps",
+      "class": "Architecte Temporel",
+      "type": "HERO", 
+      "rarity": "mythic",
+      "image": "assets/CARTE_J27/3/Time-Bending Wizard of Mystical Realms.png",
+      "description": "Claude, l'assistant IA devenu sorcier ! Capable de plier les dimensions temporelles avec la précision d'un algorithme.",
+      "real_power": {
+        "effect": "ALGORITHMIC_TIME_BEND",
+        "dimensional_fold": true,
+        "logic_magic": true,
+        "backend_call": "/api/magic/cast",
+        "parameters": {
+          "formula": "COMPUTATIONAL_TEMPORAL_FOLD",
+          "targetType": "reality",
+          "power": 98
+        }
+      },
+      "stats": {
+        "power": 30,
+        "magic": 45,
+        "time": 50,
+        "spatial": 35
+      },
+      "abilities": [
+        "Pliage Temporel Algorithmique",
+        "Logique Magique",
+        "Prédiction Quantique",
+        "Réalité Computationnelle"
+      ],
+      "tier": 7,
+      "faction": "AI_WIZARDS",
+      "flavor_text": "def bend_time(reality): return reality.transform(λ t: t**∞) # Magie = Code"
+    },
+
+    "ELDER_MERCHANT": {
+      "id": "ELDER_MERCHANT",
+      "name": "Marchand Temporel Ancien",
+      "class": "Vendeur d'Objets Volés dans le Temps",
+      "type": "MERCHANT",
+      "rarity": "legendary",
+      "image": "assets/CARTE_J27/3/Elder Merchant and Glowing Hourglass.png",
+      "description": "Ce marchand mystérieux vend des objets 'empruntés' à travers les époques. Son sablier luisant contient du temps cristallisé.",
+      "real_power": {
+        "effect": "TEMPORAL_MARKETPLACE",
+        "time_theft": true,
+        "cross_temporal_trade": true,
+        "backend_call": "/api/economy/temporal-shop",
+        "parameters": {
+          "shop_type": "time_stolen_items",
+          "era_access": "all_timelines",
+          "payment_method": "time_crystals_or_memories"
+        }
+      },
+      "stats": {
+        "power": 15,
+        "magic": 35,
+        "time": 50,
+        "spatial": 25
+      },
+      "abilities": [
+        "Vol Temporel d'Objets",
+        "Échange Inter-Temporel",
+        "Cristaux de Temps",
+        "Marché des Souvenirs"
+      ],
+      "merchant_inventory": [
+        "Épée de Napoléon (1815)",
+        "Smartphone du Futur (2087)",
+        "Grimoire de Merlin (VIe siècle)",
+        "Cristaux de Temps Pur"
+      ],
+      "tier": 6,
+      "faction": "TIME_MERCHANTS",
+      "flavor_text": "Ce qui fut, est, et sera - tout est à vendre si vous avez le bon prix temporel."
+    },
+
+    "VINCE_TRADER_INTERSTICE": {
+      "id": "VINCE_TRADER_INTERSTICE",
+      "name": "Vince - Trader de l'Interstice",
+      "class": "Courtier Dimensionnel",
+      "type": "MERCHANT",
+      "rarity": "mythic",
+      "image": "assets/CARTE_J27/2/Dimensional Overrun - Paladin.png",
+      "description": "Vince le Trader (≠ Vince Vega), courtier entre dimensions. Échange des objets d'une réalité à l'autre via les failles dimensionnelles.",
+      "real_power": {
+        "effect": "DIMENSIONAL_TRADE",
+        "cross_reality_exchange": true,
+        "paradox_immunity": true,
+        "backend_call": "/api/economy/dimension-exchange",
+        "parameters": {
+          "exchange_type": "inter_dimensional",
+          "reality_access": "parallel_worlds",
+          "payment_method": "flux_dimensionnel"
+        }
+      },
+      "stats": {
+        "power": 20,
+        "magic": 30,
+        "time": 25,
+        "spatial": 45
+      },
+      "abilities": [
+        "Échange Inter-Dimensionnel",
+        "Navigation des Failles",
+        "Immunité Paradoxe",
+        "Courtage de Réalités"
+      ],
+      "merchant_inventory": [
+        "Armes de Réalités Parallèles",
+        "Cristaux de Flux Dimensionnel", 
+        "Paradoxes Résolus",
+        "Fragments de Mondes Perdus"
+      ],
+      "tier": 7,
+      "faction": "INTERSTICE_TRADERS",
+      "flavor_text": "Entre ce qui est et ce qui pourrait être, Vince trouve toujours un marché."
+    },
+
+    "FORGERON_TEMPOREL": {
+      "id": "FORGERON_TEMPOREL",
+      "name": "Maître Forgeron des Âges",
+      "class": "Artisan Temporal",
+      "type": "MERCHANT",
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/Druide Shaman - Loup Esprit.png",
+      "description": "Forgeron légendaire qui forge avec le temps lui-même. Ses créations transcendent les époques et défient l'entropie.",
+      "real_power": {
+        "effect": "TEMPORAL_FORGING",
+        "craft_temporal_items": true,
+        "time_infusion": true,
+        "backend_call": "/api/craft/temporal-forge",
+        "parameters": {
+          "forge_type": "temporal_weapons",
+          "material": "crystallized_time",
+          "enhancement": "causality_resistance"
+        }
+      },
+      "stats": {
+        "power": 35,
+        "magic": 25,
+        "time": 40,
+        "spatial": 20
+      },
+      "abilities": [
+        "Forge Temporelle",
+        "Infusion de Temps",
+        "Armes Éternelles",
+        "Maîtrise du Métal Causal"
+      ],
+      "merchant_inventory": [
+        "Épées Intemporelles",
+        "Armures Anti-Paradoxe",
+        "Boucliers de Causalité",
+        "Outils de Forge Quantique"
+      ],
+      "tier": 6,
+      "faction": "TEMPORAL_CRAFTERS",
+      "flavor_text": "Chaque coup de marteau résonne à travers les siècles."
+    },
+
+    "ALCHIMISTE_MARCHAND": {
+      "id": "ALCHIMISTE_MARCHAND",
+      "name": "Grand Alchimiste Marchand",
+      "class": "Maître des Transmutations",
+      "type": "MERCHANT", 
+      "rarity": "epic",
+      "image": "assets/CARTE_J27/Bouteille de Clint _ Serac.png",
+      "description": "Alchimiste-marchand expert en transmutations impossibles. Sa boutique contient des potions qui défient les lois naturelles.",
+      "real_power": {
+        "effect": "IMPOSSIBLE_ALCHEMY",
+        "transmute_anything": true,
+        "reality_potions": true,
+        "backend_call": "/api/craft/impossible-alchemy",
+        "parameters": {
+          "transmutation_type": "matter_to_energy",
+          "potion_grade": "reality_altering",
+          "success_rate": "guaranteed"
+        }
+      },
+      "stats": {
+        "power": 18,
+        "magic": 45,
+        "time": 20,
+        "spatial": 25
+      },
+      "abilities": [
+        "Transmutation Impossible",
+        "Potions de Réalité",
+        "Alchimie Quantique", 
+        "Cristallisation des Concepts"
+      ],
+      "merchant_inventory": [
+        "Potions de Temps Liquide",
+        "Élixirs de Probabilité",
+        "Cristaux d'Émotion Pure",
+        "Distillation de Souvenirs"
+      ],
+      "tier": 6,
+      "faction": "REALITY_ALCHEMISTS",
+      "flavor_text": "Si ça existe, je peux le distiller. Si ça n'existe pas, encore mieux."
+    },
+
+    "RUNISTE_MARCHAND": {
+      "id": "RUNISTE_MARCHAND",
+      "name": "Vendeur de Runes Vivantes",
+      "class": "Scribe des Arcanes",
+      "type": "MERCHANT",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/Transformation géométrique - Paladins _ Orques.png",
+      "description": "Marchand spécialisé dans les runes qui bougent et évoluent. Ses grimoires s'écrivent eux-mêmes au fil des découvertes magiques.",
+      "real_power": {
+        "effect": "LIVING_RUNES",
+        "self_writing_spells": true,
+        "rune_evolution": true,
+        "backend_call": "/api/mage/learn-advanced-runes",
+        "parameters": {
+          "rune_type": "evolutionary",
+          "learning_method": "self_modifying",
+          "power_scaling": "adaptive"
+        }
+      },
+      "stats": {
+        "power": 12,
+        "magic": 40,
+        "time": 30,
+        "spatial": 18
+      },
+      "abilities": [
+        "Runes Auto-Évolutives",
+        "Grimoires Vivants",
+        "Formules Adaptatives",
+        "Magie Auto-Apprenante"
+      ],
+      "merchant_inventory": [
+        "Runes qui Grandissent",
+        "Grimoires Auto-Écrivains",
+        "Formules Évolutives",
+        "Encre de Temps Liquide"
+      ],
+      "tier": 5,
+      "faction": "LIVING_SCRIBES",
+      "flavor_text": "Mes runes apprennent plus vite que leurs utilisateurs."
+    },
+
+    "MARCHAND_ITINERANT": {
+      "id": "MARCHAND_ITINERANT",
+      "name": "Nomade des Courants Temporels",
+      "class": "Voyageur Inter-Époques",
+      "type": "MERCHANT",
+      "rarity": "rare",
+      "image": "assets/CARTE_J27/Tesseract Prison par un Technomancien.png",
+      "description": "Marchand nomade qui suit les courants temporels. Sa caravane apparaît aléatoirement dans les zones de flux temporel instable.",
+      "real_power": {
+        "effect": "TEMPORAL_NOMADISM",
+        "random_appearance": true,
+        "time_current_navigation": true,
+        "backend_call": "/api/economy/nomad-encounter", 
+        "parameters": {
+          "spawn_probability": "flux_dependent",
+          "inventory_type": "randomized_rare",
+          "encounter_duration": "limited_time"
+        }
+      },
+      "stats": {
+        "power": 15,
+        "magic": 20,
+        "time": 35,
+        "spatial": 40
+      },
+      "abilities": [
+        "Navigation Temporelle",
+        "Apparition Aléatoire",
+        "Caravane Dimensionnelle",
+        "Inventaire Quantique"
+      ],
+      "merchant_inventory": [
+        "Objets de Voyages Oubliés",
+        "Souvenirs d'Autres Époques", 
+        "Cartes de Courants Temporels",
+        "Provisions Inter-Dimensionnelles"
+      ],
+      "tier": 4,
+      "faction": "TIME_NOMADS",
+      "flavor_text": "Je voyage où le temps m'emmène, et vends ce que j'y trouve."
+    }
+  },
+
+  "metadata": {
+    "collection": "CARTE_J27_SERIES_3",
+    "theme": "Heroes & Magic Enhanced",
+    "total_cards": 17,
+    "release_date": "2024-12-28",
+    "power_level": "Advanced",
+    "special_features": [
+      "Christian CHR-SINE integration",
+      "Celestial & Cosmic powers",
+      "Time manipulation mechanics",
+      "Quantum & Tech-magic fusion"
+    ],
+    "artist_notes": "Vincent's new collection with Christian's guitar hero card"
+  },
+
+  "christian_integration": {
+    "family_connection": "Vincent's brother-in-law",
+    "double_identity": true,
+    "threat_level": "🟠 ÉLEVÉ",
+    "mallette_noire": "Never seen without it",
+    "power_chord_formula": "A_chord = √(2πf) × e^(iωt) × |amplitude⟩",
+    "damage_output": 87.5,
+    "sonic_radius": 30
+  }
+}

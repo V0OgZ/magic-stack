@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOLDORAK 3D - Demo Interactive</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Orbitron', monospace;
+            background: #000;
+            color: #0ff;
+        }
+        
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            text-shadow: 0 0 10px #0ff;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #f0f;
+            border-radius: 10px;
+        }
+        
+        .energy-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #0ff;
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #f0f);
+            width: 100%;
+            transition: width 0.3s;
+        }
+        
+        button {
+            background: #f00;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #ff0;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #ff0;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .retro-scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 255, 0.03),
+                rgba(0, 255, 255, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            animation: scanlines 8s linear infinite;
+        }
+        
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">CHARGEMENT GOLDORAK 3D...</div>
+    <canvas id="canvas"></canvas>
+    <div class="retro-scanlines"></div>
+    
+    <div id="hud" style="display: none;">
+        <h2>🤖 GOLDORAK SYSTÈME</h2>
+        <div>
+            <strong>ÉNERGIE:</strong>
+            <div class="energy-bar">
+                <div class="energy-fill" id="energy"></div>
+            </div>
+        </div>
+        <div>
+            <strong>BOUCLIER:</strong>
+            <div class="energy-bar">
+                <div class="energy-fill" id="shield" style="background: linear-gradient(90deg, #00f, #0ff);"></div>
+            </div>
+        </div>
+        <div id="status">MODE: PATROUILLE</div>
+        <div id="enemies">ENNEMIS: 0</div>
+    </div>
+    
+    <div id="controls" style="display: none;">
+        <h3>CONTRÔLES</h3>
+        <button onclick="activateFulgorocursor()">FULGOROCURSOR</button>
+        <button onclick="activateAsteroHache()">ASTERO-HACHE</button>
+        <button onclick="transformGoldorak()">TRANSFORMATION</button>
+        <div style="margin-top: 10px; font-size: 12px;">
+            WASD: Déplacer | Mouse: Regarder | ESPACE: Voler
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 🐻 URZ-KÔM PRÉSENTE : GOLDORAK 3D DEMO !
+        
+        let scene, camera, renderer;
+        let goldorak, spaceStation;
+        let enemies = [];
+        let particles = [];
+        let energy = 100;
+        let shield = 100;
+        let isTransformed = false;
+        
+        // Initialisation Three.js
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000011, 100, 1000);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                2000
+            );
+            camera.position.set(0, 10, 30);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('canvas'),
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            
+            // Lumières
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(50, 50, 50);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Créer l'univers
+            createSpace();
+            createSpaceStation();
+            createGoldorak();
+            
+            // Cacher loading, montrer HUD
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('controls').style.display = 'block';
+            
+            // Lancer l'animation
+            animate();
+            
+            // Spawner des ennemis
+            setInterval(spawnEnemy, 3000);
+        }
+        
+        // Créer l'espace
+        function createSpace() {
+            // Skybox étoilé
+            const starGeometry = new THREE.BufferGeometry();
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.7,
+                transparent: true
+            });
+            
+            const starVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                starVertices.push(x, y, z);
+            }
+            
+            starGeometry.setAttribute('position', 
+                new THREE.Float32BufferAttribute(starVertices, 3)
+            );
+            
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+            
+            // Planète Terre au loin
+            const earthGeometry = new THREE.SphereGeometry(50, 32, 32);
+            const earthMaterial = new THREE.MeshPhongMaterial({
+                color: 0x2233ff,
+                emissive: 0x112244,
+                shininess: 10
+            });
+            const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            earth.position.set(-200, -100, -500);
+            scene.add(earth);
+        }
+        
+        // Créer la station spatiale
+        function createSpaceStation() {
+            const stationGroup = new THREE.Group();
+            
+            // Corps central
+            const coreGeometry = new THREE.OctahedronGeometry(20, 2);
+            const coreMaterial = new THREE.MeshPhongMaterial({
+                color: 0x666666,
+                emissive: 0x111111,
+                shininess: 100
+            });
+            const core = new THREE.Mesh(coreGeometry, coreMaterial);
+            stationGroup.add(core);
+            
+            // Bras de la station (forme étoile)
+            for (let i = 0; i < 6; i++) {
+                const armGeometry = new THREE.CylinderGeometry(3, 3, 40);
+                const armMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x888888,
+                    emissive: 0x0066ff,
+                    emissiveIntensity: 0.2
+                });
+                const arm = new THREE.Mesh(armGeometry, armMaterial);
+                
+                const angle = (i / 6) * Math.PI * 2;
+                arm.position.x = Math.cos(angle) * 25;
+                arm.position.z = Math.sin(angle) * 25;
+                arm.rotation.z = Math.PI / 2;
+                arm.rotation.y = angle;
+                
+                stationGroup.add(arm);
+                
+                // Lumières au bout des bras
+                const light = new THREE.PointLight(0x00ffff, 1, 50);
+                light.position.x = Math.cos(angle) * 40;
+                light.position.z = Math.sin(angle) * 40;
+                stationGroup.add(light);
+            }
+            
+            stationGroup.position.y = -50;
+            scene.add(stationGroup);
+            spaceStation = stationGroup;
+        }
+        
+        // Créer Goldorak
+        function createGoldorak() {
+            const goldorakGroup = new THREE.Group();
+            
+            // Corps (simplifié)
+            const bodyGeometry = new THREE.BoxGeometry(8, 12, 6);
+            const bodyMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff0000,
+                emissive: 0x440000,
+                shininess: 200
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            goldorakGroup.add(body);
+            
+            // Tête
+            const headGeometry = new THREE.SphereGeometry(3, 8, 8);
+            const headMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffff00,
+                emissive: 0x444400,
+                shininess: 200
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 8;
+            goldorakGroup.add(head);
+            
+            // Bras
+            for (let side of [-1, 1]) {
+                const armGeometry = new THREE.CylinderGeometry(1.5, 1.5, 8);
+                const armMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x0000ff,
+                    emissive: 0x000044
+                });
+                const arm = new THREE.Mesh(armGeometry, armMaterial);
+                arm.position.x = side * 6;
+                arm.position.y = 2;
+                goldorakGroup.add(arm);
+            }
+            
+            // Ailes (mode vol)
+            const wingGeometry = new THREE.PlaneGeometry(20, 5);
+            const wingMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00ffff,
+                emissive: 0x004444,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.x = -10;
+            leftWing.position.y = 5;
+            leftWing.rotation.y = -0.3;
+            goldorakGroup.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.x = 10;
+            rightWing.position.y = 5;
+            rightWing.rotation.y = 0.3;
+            goldorakGroup.add(rightWing);
+            
+            scene.add(goldorakGroup);
+            goldorak = goldorakGroup;
+        }
+        
+        // Spawner des ennemis
+        function spawnEnemy() {
+            const enemyGeometry = new THREE.TetrahedronGeometry(3, 0);
+            const enemyMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff00ff,
+                emissive: 0x440044
+            });
+            const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
+            
+            // Position aléatoire
+            enemy.position.x = (Math.random() - 0.5) * 200;
+            enemy.position.y = (Math.random() - 0.5) * 100;
+            enemy.position.z = -100 - Math.random() * 100;
+            
+            // Vitesse
+            enemy.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.5,
+                (Math.random() - 0.5) * 0.5,
+                1 + Math.random()
+            );
+            
+            scene.add(enemy);
+            enemies.push(enemy);
+            
+            updateEnemyCount();
+        }
+        
+        // Attaques
+        function activateFulgorocursor() {
+            if (energy < 20) return;
+            
+            energy -= 20;
+            updateEnergy();
+            
+            // Effet visuel
+            const laserGeometry = new THREE.CylinderGeometry(0.5, 0.5, 100);
+            const laserMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.8
+            });
+            const laser = new THREE.Mesh(laserGeometry, laserMaterial);
+            laser.position.copy(goldorak.position);
+            laser.rotation.x = Math.PI / 2;
+            scene.add(laser);
+            
+            // Détruire ennemis proches
+            enemies = enemies.filter(enemy => {
+                const distance = enemy.position.distanceTo(goldorak.position);
+                if (distance < 50) {
+                    createExplosion(enemy.position);
+                    scene.remove(enemy);
+                    return false;
+                }
+                return true;
+            });
+            
+            updateEnemyCount();
+            
+            // Retirer laser après 500ms
+            setTimeout(() => scene.remove(laser), 500);
+        }
+        
+        function activateAsteroHache() {
+            if (energy < 30) return;
+            
+            energy -= 30;
+            updateEnergy();
+            
+            // Animation rotation
+            const originalRotation = goldorak.rotation.y;
+            const rotationSpeed = 0.3;
+            let rotationTime = 0;
+            
+            const spinInterval = setInterval(() => {
+                goldorak.rotation.y += rotationSpeed;
+                rotationTime += 16;
+                
+                if (rotationTime > 1000) {
+                    clearInterval(spinInterval);
+                    goldorak.rotation.y = originalRotation;
+                }
+            }, 16);
+            
+            // Dégâts zone
+            enemies = enemies.filter(enemy => {
+                const distance = enemy.position.distanceTo(goldorak.position);
+                if (distance < 30) {
+                    createExplosion(enemy.position);
+                    scene.remove(enemy);
+                    return false;
+                }
+                return true;
+            });
+            
+            updateEnemyCount();
+        }
+        
+        function transformGoldorak() {
+            isTransformed = !isTransformed;
+            
+            if (isTransformed) {
+                goldorak.scale.set(1.5, 1.5, 1.5);
+                document.getElementById('status').textContent = 'MODE: COMBAT ULTIME';
+                
+                // Aura de puissance
+                const auraGeometry = new THREE.SphereGeometry(20, 16, 16);
+                const auraMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x00ffff,
+                    transparent: true,
+                    opacity: 0.2,
+                    side: THREE.BackSide
+                });
+                const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+                goldorak.add(aura);
+            } else {
+                goldorak.scale.set(1, 1, 1);
+                document.getElementById('status').textContent = 'MODE: PATROUILLE';
+                
+                // Retirer aura
+                goldorak.children = goldorak.children.filter(
+                    child => child.geometry?.type !== 'SphereGeometry'
+                );
+            }
+        }
+        
+        // Explosion
+        function createExplosion(position) {
+            for (let i = 0; i < 20; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.5, 4, 4);
+                const particleMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(1, Math.random(), 0)
+                });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                
+                particle.position.copy(position);
+                particle.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                );
+                particle.lifetime = 100;
+                
+                scene.add(particle);
+                particles.push(particle);
+            }
+        }
+        
+        // Updates UI
+        function updateEnergy() {
+            document.getElementById('energy').style.width = energy + '%';
+        }
+        
+        function updateShield() {
+            document.getElementById('shield').style.width = shield + '%';
+        }
+        
+        function updateEnemyCount() {
+            document.getElementById('enemies').textContent = 'ENNEMIS: ' + enemies.length;
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotation station
+            if (spaceStation) {
+                spaceStation.rotation.y += 0.001;
+            }
+            
+            // Mouvement Goldorak
+            if (goldorak) {
+                goldorak.position.y = Math.sin(Date.now() * 0.001) * 2;
+                
+                // Suivre la souris
+                goldorak.rotation.y = (mouseX - 0.5) * Math.PI;
+            }
+            
+            // Update ennemis
+            enemies.forEach(enemy => {
+                enemy.position.add(enemy.velocity);
+                enemy.rotation.x += 0.02;
+                enemy.rotation.y += 0.03;
+                
+                // Collision avec Goldorak
+                if (enemy.position.distanceTo(goldorak.position) < 10) {
+                    shield -= 5;
+                    updateShield();
+                    createExplosion(enemy.position);
+                    scene.remove(enemy);
+                    enemies = enemies.filter(e => e !== enemy);
+                    updateEnemyCount();
+                }
+            });
+            
+            // Update particules
+            particles = particles.filter(particle => {
+                particle.position.add(particle.velocity);
+                particle.lifetime--;
+                particle.scale.multiplyScalar(0.95);
+                
+                if (particle.lifetime <= 0) {
+                    scene.remove(particle);
+                    return false;
+                }
+                return true;
+            });
+            
+            // Régénération énergie
+            if (energy < 100) {
+                energy += 0.1;
+                updateEnergy();
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Gestion souris
+        let mouseX = 0.5;
+        let mouseY = 0.5;
+        
+        document.addEventListener('mousemove', (event) => {
+            mouseX = event.clientX / window.innerWidth;
+            mouseY = event.clientY / window.innerHeight;
+        });
+        
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Démarrer !
+        window.addEventListener('load', init);
+        
+        // 🐻 GROGNEMENT : "GOLDOFLASH ! Le futur est en 3D !"
+    </script>
+</body>
+</html>

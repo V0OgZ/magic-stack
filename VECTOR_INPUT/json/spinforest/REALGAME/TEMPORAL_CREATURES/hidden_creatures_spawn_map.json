@@ -1,0 +1,158 @@
+{
+  "spawn_map": {
+    "map_size": {
+      "width": 50,
+      "height": 50
+    },
+    "spawn_points": [
+      {
+        "creature": "luciole_quantique",
+        "coordinates": {"x": 15, "y": 23},
+        "zone": "Jardins Anciens",
+        "layer": "past",
+        "spawn_chance": 0.8,
+        "required_revealer": "memoire_memento",
+        "respawn_time": "24_hours"
+      },
+      {
+        "creature": "chat_schrodinger",
+        "coordinates": {"x": 25, "y": 25},
+        "zone": "Nexus Central",
+        "layer": "superposition",
+        "spawn_chance": 0.5,
+        "required_revealer": "oeil_wigner",
+        "special": "50% chance d'être présent à chaque observation"
+      },
+      {
+        "creature": "phenix_quantique",
+        "coordinates": {"x": 35, "y": 15},
+        "zone": "Pic Volcanique",
+        "layer": "cycle",
+        "spawn_chance": 1.0,
+        "required_revealer": "larme_phenix",
+        "respawn_time": "7_days",
+        "special": "Cendres toujours présentes, forme vivante cyclique"
+      },
+      {
+        "creature": "leviathan_temporel",
+        "coordinates": {"x": 25, "y": 40},
+        "zone": "Océan Infini",
+        "layer": "deep_time",
+        "spawn_chance": 0.3,
+        "required_revealer": "conque_ages",
+        "special": "Crée des remous temporels même invisible"
+      },
+      {
+        "creature": "araignee_destin",
+        "coordinates": {"x": 10, "y": 20},
+        "zone": "Forêt Ancienne",
+        "layer": "causal_web",
+        "spawn_chance": 0.7,
+        "required_revealer": "lunettes_verite",
+        "special": "Toiles piègent même sans voir l'araignée"
+      },
+      {
+        "creature": "cerf_spectral",
+        "coordinates": {"x": 30, "y": 10},
+        "zone": "Forêt Mystique",
+        "layer": "memory",
+        "spawn_chance": 0.6,
+        "required_revealer": "cor_argent_ancien",
+        "special": "Laisse des empreintes temporaires"
+      },
+      {
+        "creature": "elementaire_echo",
+        "coordinates": {"x": 20, "y": 30},
+        "zone": "Nexus Magique",
+        "layer": "resonance",
+        "spawn_chance": 0.9,
+        "required_revealer": "diapason_dimensionnel",
+        "special": "Toujours audible, même invisible"
+      },
+      {
+        "creature": "mime_temporel",
+        "coordinates": {"x": 35, "y": 35},
+        "zone": "Hall des Miroirs",
+        "layer": "reflection",
+        "spawn_chance": 0.4,
+        "required_revealer": "miroir_paradoxe",
+        "special": "Visible uniquement dans les reflets"
+      }
+    ],
+    
+    "random_spawns": [
+      {
+        "creature": "quantum_wisp",
+        "zones": ["any_forest", "ancient_ruins"],
+        "layer": "ethereal",
+        "spawn_chance": 0.1,
+        "max_per_zone": 3
+      },
+      {
+        "creature": "probability_spider",
+        "zones": ["crossroads", "nexus_points"],
+        "layer": "causal",
+        "spawn_chance": 0.15,
+        "max_per_zone": 1
+      }
+    ],
+    
+    "special_events": {
+      "eclipse_temporelle": {
+        "frequency": "every_30_days",
+        "duration": "3_turns",
+        "effect": "all_hidden_creatures_become_visible",
+        "bonus_spawns": 5
+      },
+      "convergence_des_lignes": {
+        "trigger": "3_heroes_at_nexus",
+        "effect": "superposition_creatures_guaranteed_spawn",
+        "duration": "until_heroes_leave"
+      },
+      "nuit_des_spectres": {
+        "date": "every_full_moon",
+        "effect": "spectral_creatures_spawn_rate_x3",
+        "special": "cerf_spectral becomes aggressive"
+      }
+    },
+    
+    "revealer_locations": {
+      "memoire_memento": {
+        "location": "Crypte de Memento",
+        "guarded_by": "guardian_of_memories",
+        "quest_required": true
+      },
+      "oeil_wigner": {
+        "location": "Tour de l'Observateur",
+        "cost": "5000_gold",
+        "merchant": "quantum_merchant"
+      },
+      "lunettes_verite": {
+        "location": "Random treasure",
+        "drop_chance": 0.05,
+        "min_level": 10
+      },
+      "conque_ages": {
+        "location": "Fond de l'Océan Infini",
+        "requires": "diving_bell",
+        "guarded_by": "kraken"
+      }
+    },
+    
+    "interaction_rewards": {
+      "first_encounter": {
+        "experience": 500,
+        "gold": 100,
+        "item_chance": 0.3
+      },
+      "befriend_creature": {
+        "permanent_bonus": "+1 temporal_sight",
+        "unlock": "creature_summon_spell"
+      },
+      "complete_creature_quest": {
+        "artifact": "creature_specific",
+        "title": "Friend of the Hidden"
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+GUIDE GIT SAFE - PAR MEMENTO
+============================
+
+COMMANDES GIT SANS RISQUE:
+
+1. TOUJOURS VERIFIER AVANT:
+   git status
+   git diff
+
+2. COMMIT INTELLIGENT:
+   git add -p                # Verif chaque bout
+   git commit -m "Message"   # Message clair
+   
+3. PUSH PRUDENT:
+   git pull --rebase         # Recup avant push
+   git push --dry-run        # Test
+   git push                  # Si OK
+
+4. SI PROBLEME:
+   git stash                 # Sauve temporaire
+   git reset HEAD~1          # Annule commit
+   git checkout -- fichier   # Annule modif
+
+5. BRANCHES SAFE:
+   git checkout -b test      # Nouvelle branche
+   git merge --no-ff main    # Merge propre
+
+ANTI-PROBLEMES:
+
+- Pas de caracteres speciaux dans messages
+- Pas de quotes imbriquees  
+- git status apres chaque action
+- Commits petits et frequents
+- Messages clairs
+
+WORKFLOW MEMENTO:
+
+1. git status
+2. git add fichiers_specifiques  
+3. git commit -m "MEMENTO: action claire"
+4. git push
+
+SIMPLE ET EFFICACE !
+
+MEMENTO - Guide Git Safe

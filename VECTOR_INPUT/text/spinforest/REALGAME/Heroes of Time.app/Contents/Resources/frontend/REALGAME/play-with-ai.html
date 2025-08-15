@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 REALGAME - AVEC IA !</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a1a url('FromVINCE/MAP ISO.png') center/cover no-repeat;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border: 3px solid #ffdd00;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        .ai-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="hud">
+        <h3 style="color: #ffdd00;">🎯 Sid Meier</h3>
+        <div>❤️ Santé: <span id="health">100</span>/100</div>
+        <div>💎 Mana: <span id="mana">100</span>/100</div>
+        <div>⚡ BRISURE: <span id="energy">100</span>/100</div>
+        <hr style="margin: 10px 0;">
+        <div>Position: <span id="pos">50, 40</span></div>
+        <div>Ennemis: <span id="enemyCount">0</span></div>
+    </div>
+    
+    <div class="ai-status">
+        <h4>🤖 IA STATUS</h4>
+        <div>Mode: <span id="aiMode">ACTIF</span></div>
+        <div>Décisions/s: <span id="aiDecisions">0</span></div>
+    </div>
+    
+    <div class="controls">
+        <strong>Contrôles:</strong> WASD ou Flèches = Déplacer | Click = Attaquer | 1-5 = Items | E = Interagir
+    </div>
+    
+    <div class="message" id="message"></div>
+
+    <script>
+        // Configuration
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // État du jeu avec IA
+        const game = {
+            player: {
+                x: 50,
+                y: 40,
+                health: 100,
+                mana: 100,
+                energy: 100,
+                speed: 0.5,
+                sprite: '🎯',
+                invulnerable: false
+            },
+            camera: { x: 0, y: 0 },
+            tileSize: 40,
+            mapSize: { width: 100, height: 80 },
+            objects: [],
+            enemies: [],
+            portals: [],
+            keys: {},
+            aiDecisionsPerSecond: 0,
+            lastAIUpdate: 0
+        };
+        
+        // Configuration IA
+        const AI_CONFIG = {
+            updateInterval: 200,  // Ms entre décisions
+            aggroRange: 15,       // Distance d'aggro
+            attackRange: 2,       // Distance d'attaque
+            patrolSpeed: 0.15,    // Vitesse patrouille
+            chaseSpeed: 0.25,     // Vitesse poursuite
+            fleeSpeed: 0.3,       // Vitesse fuite
+            fleeThreshold: 20     // HP pour fuir
+        };
+        
+        // États IA
+        const AI_STATES = {
+            IDLE: 'idle',
+            PATROL: 'patrol',
+            CHASE: 'chase',
+            ATTACK: 'attack',
+            FLEE: 'flee'
+        };
+        
+        // Initialisation
+        function init() {
+            // Taille canvas
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Créer monde avec IA
+            createWorldWithAI();
+            
+            // Contrôles
+            setupControls();
+            
+            // Message de bienvenue
+            showMessage("ATTENTION : Les ennemis ont une IA ! Ils vont vous chasser !");
+            
+            // Boucle de jeu
+            gameLoop();
+            
+            // IA Update
+            setInterval(updateAI, AI_CONFIG.updateInterval);
+        }
+        
+        // Créer le monde avec ennemis IA
+        function createWorldWithAI() {
+            // Objets importants
+            game.objects = [
+                { x: 30, y: 30, icon: '🏰', name: 'Château d\'Avalon', type: 'landmark' },
+                { x: 70, y: 20, icon: '⛪', name: 'Église Mystique', type: 'landmark' },
+                { x: 20, y: 60, icon: '⚔️', name: 'Épée Légendaire', type: 'item' },
+                { x: 80, y: 50, icon: '💎', name: 'Coffre au Trésor', type: 'chest' },
+                { x: 40, y: 45, icon: '🧙', name: 'Merlin', type: 'npc' },
+                { x: 60, y: 35, icon: '🐻', name: 'URZ-KÔM', type: 'npc' }
+            ];
+            
+            // Portails BRISURE
+            game.portals = [
+                { x: 50, y: 30, icon: '🌀', color: '#8a2be2', name: 'Portail Standard' },
+                { x: 75, y: 65, icon: '🌀', color: '#ff69b4', name: 'Vortex Temporel' }
+            ];
+            
+            // Ennemis avec IA
+            game.enemies = [
+                { 
+                    id: 1,
+                    x: 60, 
+                    y: 40, 
+                    icon: '👺', 
+                    name: 'Gobelin', 
+                    health: 30,
+                    maxHealth: 30,
+                    state: AI_STATES.PATROL,
+                    target: null,
+                    patrolOrigin: { x: 60, y: 40 },
+                    patrolRadius: 10,
+                    damage: 5
+                },
+                { 
+                    id: 2,
+                    x: 40, 
+                    y: 55, 
+                    icon: '🐉', 
+                    name: 'Dragon', 
+                    health: 100,
+                    maxHealth: 100,
+                    state: AI_STATES.IDLE,
+                    target: null,
+                    patrolOrigin: { x: 40, y: 55 },
+                    patrolRadius: 15,
+                    damage: 15
+                },
+                { 
+                    id: 3,
+                    x: 25, 
+                    y: 25, 
+                    icon: '👻', 
+                    name: 'Fantôme', 
+                    health: 50,
+                    maxHealth: 50,
+                    state: AI_STATES.PATROL,
+                    target: null,
+                    patrolOrigin: { x: 25, y: 25 },
+                    patrolRadius: 20,
+                    damage: 8
+                }
+            ];
+            
+            document.getElementById('enemyCount').textContent = game.enemies.length;
+        }
+        
+        // UPDATE IA
+        function updateAI() {
+            let decisionsCount = 0;
+            
+            game.enemies.forEach(enemy => {
+                // Calculer distance au joueur
+                const dx = game.player.x - enemy.x;
+                const dy = game.player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Machine à états IA
+                switch(enemy.state) {
+                    case AI_STATES.IDLE:
+                        // Décision : commencer à patrouiller
+                        enemy.state = AI_STATES.PATROL;
+                        decisionsCount++;
+                        break;
+                        
+                    case AI_STATES.PATROL:
+                        // Patrouiller autour du point d'origine
+                        const patrolAngle = Date.now() * 0.001 + enemy.id;
+                        enemy.x = enemy.patrolOrigin.x + Math.cos(patrolAngle) * enemy.patrolRadius;
+                        enemy.y = enemy.patrolOrigin.y + Math.sin(patrolAngle) * enemy.patrolRadius;
+                        
+                        // Vérifier aggro
+                        if (distance < AI_CONFIG.aggroRange) {
+                            enemy.state = AI_STATES.CHASE;
+                            enemy.target = game.player;
+                            showMessage(`${enemy.name} vous a repéré !`);
+                            decisionsCount++;
+                        }
+                        break;
+                        
+                    case AI_STATES.CHASE:
+                        // Poursuivre le joueur
+                        const chaseX = dx / distance * AI_CONFIG.chaseSpeed;
+                        const chaseY = dy / distance * AI_CONFIG.chaseSpeed;
+                        
+                        enemy.x += chaseX;
+                        enemy.y += chaseY;
+                        
+                        // Vérifier portée d'attaque
+                        if (distance < AI_CONFIG.attackRange) {
+                            enemy.state = AI_STATES.ATTACK;
+                            decisionsCount++;
+                        }
+                        
+                        // Perdre aggro si trop loin
+                        if (distance > AI_CONFIG.aggroRange * 2) {
+                            enemy.state = AI_STATES.PATROL;
+                            enemy.target = null;
+                            decisionsCount++;
+                        }
+                        
+                        // Fuir si peu de vie
+                        if (enemy.health < AI_CONFIG.fleeThreshold) {
+                            enemy.state = AI_STATES.FLEE;
+                            decisionsCount++;
+                        }
+                        break;
+                        
+                    case AI_STATES.ATTACK:
+                        // Attaquer le joueur
+                        if (distance < AI_CONFIG.attackRange) {
+                            if (!game.player.invulnerable) {
+                                game.player.health -= enemy.damage;
+                                game.player.invulnerable = true;
+                                
+                                showMessage(`${enemy.name} vous attaque ! -${enemy.damage} HP`);
+                                updateHUD();
+                                
+                                // Invulnérabilité temporaire
+                                setTimeout(() => {
+                                    game.player.invulnerable = false;
+                                }, 1000);
+                            }
+                        } else {
+                            // Retourner en poursuite
+                            enemy.state = AI_STATES.CHASE;
+                            decisionsCount++;
+                        }
+                        break;
+                        
+                    case AI_STATES.FLEE:
+                        // Fuir le joueur
+                        const fleeX = -dx / distance * AI_CONFIG.fleeSpeed;
+                        const fleeY = -dy / distance * AI_CONFIG.fleeSpeed;
+                        
+                        enemy.x += fleeX;
+                        enemy.y += fleeY;
+                        
+                        // Retourner en patrouille si assez loin
+                        if (distance > AI_CONFIG.aggroRange * 3) {
+                            enemy.state = AI_STATES.PATROL;
+                            decisionsCount++;
+                        }
+                        break;
+                }
+                
+                // Limites de la carte
+                enemy.x = Math.max(2, Math.min(game.mapSize.width - 2, enemy.x));
+                enemy.y = Math.max(2, Math.min(game.mapSize.height - 2, enemy.y));
+            });
+            
+            // Mettre à jour stats IA
+            game.aiDecisionsPerSecond = decisionsCount * (1000 / AI_CONFIG.updateInterval);
+            document.getElementById('aiDecisions').textContent = game.aiDecisionsPerSecond.toFixed(1);
+        }
+        
+        // Contrôles
+        function setupControls() {
+            // Clavier
+            window.addEventListener('keydown', e => {
+                game.keys[e.key.toLowerCase()] = true;
+                
+                // Actions spéciales
+                if (e.key === 'e') interact();
+                if (e.key >= '1' && e.key <= '5') useItem(parseInt(e.key));
+            });
+            
+            window.addEventListener('keyup', e => {
+                game.keys[e.key.toLowerCase()] = false;
+            });
+            
+            // Souris
+            canvas.addEventListener('click', e => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left + game.camera.x;
+                const y = e.clientY - rect.top + game.camera.y;
+                handleClick(x, y);
+            });
+        }
+        
+        // Déplacer joueur
+        function movePlayer() {
+            let dx = 0, dy = 0;
+            
+            if (game.keys['w'] || game.keys['arrowup']) dy = -1;
+            if (game.keys['s'] || game.keys['arrowdown']) dy = 1;
+            if (game.keys['a'] || game.keys['arrowleft']) dx = -1;
+            if (game.keys['d'] || game.keys['arrowright']) dx = 1;
+            
+            if (dx || dy) {
+                game.player.x += dx * game.player.speed;
+                game.player.y += dy * game.player.speed;
+                
+                // Limites
+                game.player.x = Math.max(0, Math.min(game.mapSize.width - 1, game.player.x));
+                game.player.y = Math.max(0, Math.min(game.mapSize.height - 1, game.player.y));
+                
+                // Mettre à jour caméra
+                updateCamera();
+                
+                // Mettre à jour HUD
+                document.getElementById('pos').textContent = 
+                    `${Math.floor(game.player.x)}, ${Math.floor(game.player.y)}`;
+            }
+        }
+        
+        // Mettre à jour caméra
+        function updateCamera() {
+            game.camera.x = game.player.x * game.tileSize - canvas.width / 2;
+            game.camera.y = game.player.y * game.tileSize - canvas.height / 2;
+        }
+        
+        // Interagir
+        function interact() {
+            // Vérifier proximité objets
+            game.objects.forEach(obj => {
+                const dist = Math.sqrt(
+                    Math.pow(game.player.x - obj.x, 2) + 
+                    Math.pow(game.player.y - obj.y, 2)
+                );
+                
+                if (dist < 3) {
+                    if (obj.type === 'npc') {
+                        showMessage(`${obj.name}: "Les ennemis sont plus intelligents maintenant !"`);
+                    } else if (obj.type === 'item') {
+                        showMessage(`Vous avez trouvé : ${obj.name} !`);
+                        game.player.mana = Math.min(100, game.player.mana + 20);
+                        updateHUD();
+                    } else if (obj.type === 'chest') {
+                        showMessage(`Coffre ouvert ! +50 Mana !`);
+                        game.player.mana = 100;
+                        updateHUD();
+                    }
+                }
+            });
+            
+            // Vérifier portails
+            game.portals.forEach(portal => {
+                const dist = Math.sqrt(
+                    Math.pow(game.player.x - portal.x, 2) + 
+                    Math.pow(game.player.y - portal.y, 2)
+                );
+                
+                if (dist < 3) {
+                    if (game.player.energy >= 25) {
+                        game.player.energy -= 25;
+                        game.player.x = Math.random() * 80 + 10;
+                        game.player.y = Math.random() * 60 + 10;
+                        showMessage(`Téléportation via ${portal.name} !`);
+                        updateHUD();
+                    } else {
+                        showMessage("Pas assez d'énergie BRISURE !");
+                    }
+                }
+            });
+        }
+        
+        // Gérer clic
+        function handleClick(x, y) {
+            const tileX = Math.floor(x / game.tileSize);
+            const tileY = Math.floor(y / game.tileSize);
+            
+            // Attaquer ennemis
+            game.enemies.forEach((enemy, index) => {
+                if (Math.abs(enemy.x - tileX) < 2 && Math.abs(enemy.y - tileY) < 2) {
+                    const damage = 10 + Math.floor(Math.random() * 20);
+                    enemy.health -= damage;
+                    
+                    showMessage(`Attaque ! ${damage} dégâts au ${enemy.name}`);
+                    
+                    // Aggro immédiat
+                    enemy.state = AI_STATES.CHASE;
+                    enemy.target = game.player;
+                    
+                    if (enemy.health <= 0) {
+                        game.enemies.splice(index, 1);
+                        showMessage(`${enemy.name} vaincu ! +20 XP`);
+                        game.player.mana = Math.min(100, game.player.mana + 20);
+                        updateHUD();
+                        document.getElementById('enemyCount').textContent = game.enemies.length;
+                    }
+                }
+            });
+        }
+        
+        // Utiliser item
+        function useItem(slot) {
+            const items = ['🗡️ Épée', '🛡️ Bouclier', '🔮 Sort', '🍃 Potion', '🔫 Gun de Vince'];
+            showMessage(`Utilisé : ${items[slot - 1]}`);
+            
+            if (slot === 4) {
+                // Potion de soin
+                game.player.health = Math.min(100, game.player.health + 30);
+                updateHUD();
+            }
+            
+            if (slot === 5) {
+                // Gun de Vince Vega spécial
+                game.portals.push({
+                    x: game.player.x + 5,
+                    y: game.player.y,
+                    icon: '🌀',
+                    color: '#ff00ff',
+                    name: 'Portail de Vince'
+                });
+                showMessage("Nouveau portail créé avec le Gun de Vince Vega !");
+            }
+        }
+        
+        // Afficher message
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Mettre à jour HUD
+        function updateHUD() {
+            document.getElementById('health').textContent = game.player.health;
+            document.getElementById('mana').textContent = game.player.mana;
+            document.getElementById('energy').textContent = Math.floor(game.player.energy);
+            
+            // Game Over
+            if (game.player.health <= 0) {
+                showMessage("GAME OVER ! Les ennemis IA ont gagné...");
+                setTimeout(() => location.reload(), 3000);
+            }
+        }
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Update
+            movePlayer();
+            
+            // Régénération énergie
+            if (game.player.energy < 100) {
+                game.player.energy = Math.min(100, game.player.energy + 0.1);
+                updateHUD();
+            }
+            
+            // Clear
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Render
+            ctx.save();
+            ctx.translate(-game.camera.x, -game.camera.y);
+            
+            // Grille
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.1)';
+            for (let x = 0; x < game.mapSize.width; x++) {
+                for (let y = 0; y < game.mapSize.height; y++) {
+                    ctx.strokeRect(
+                        x * game.tileSize, 
+                        y * game.tileSize, 
+                        game.tileSize, 
+                        game.tileSize
+                    );
+                }
+            }
+            
+            // Objets
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            game.objects.forEach(obj => {
+                ctx.fillText(
+                    obj.icon, 
+                    obj.x * game.tileSize + game.tileSize / 2,
+                    obj.y * game.tileSize + game.tileSize / 2
+                );
+            });
+            
+            // Portails avec animation
+            game.portals.forEach(portal => {
+                const x = portal.x * game.tileSize + game.tileSize / 2;
+                const y = portal.y * game.tileSize + game.tileSize / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.003) * 0.3;
+                ctx.fillStyle = portal.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                
+                ctx.fillText(portal.icon, x, y);
+            });
+            
+            // Ennemis avec état IA
+            game.enemies.forEach(enemy => {
+                const x = enemy.x * game.tileSize + game.tileSize / 2;
+                const y = enemy.y * game.tileSize + game.tileSize / 2;
+                
+                // Icône ennemi
+                ctx.fillText(enemy.icon, x, y);
+                
+                // Barre de vie
+                ctx.fillStyle = 'red';
+                ctx.fillRect(x - 20, y - 30, (enemy.health / enemy.maxHealth) * 40, 4);
+                
+                // État IA
+                ctx.font = '12px Arial';
+                ctx.fillStyle = enemy.state === AI_STATES.CHASE ? '#ff6b6b' : '#4ecdc4';
+                ctx.fillText(enemy.state.toUpperCase(), x, y + 25);
+                ctx.font = '30px Arial';
+            });
+            
+            // Joueur
+            ctx.font = '35px Arial';
+            ctx.fillStyle = game.player.invulnerable ? 'rgba(255,255,255,0.5)' : 'white';
+            ctx.fillText(
+                game.player.sprite,
+                game.player.x * game.tileSize + game.tileSize / 2,
+                game.player.y * game.tileSize + game.tileSize / 2
+            );
+            
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Lancer le jeu
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senku Chemistry Demo - Dr. Stone x Avalon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #0f4;
+        }
+        
+        .hero-portrait {
+            width: 200px;
+            height: 250px;
+            background: linear-gradient(135deg, #fff, #0f4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-portrait::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to top, rgba(0,255,0,0.3), transparent);
+        }
+        
+        .hero-info {
+            flex: 1;
+        }
+        
+        .hero-name {
+            font-size: 32px;
+            color: #0f4;
+            margin-bottom: 10px;
+        }
+        
+        .hero-title {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .stat {
+            background: rgba(0,255,0,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #0f4;
+        }
+        
+        .chemistry-lab {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #ff0;
+        }
+        
+        .lab-title {
+            font-size: 24px;
+            color: #ff0;
+            margin-bottom: 20px;
+        }
+        
+        .inventory {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .item {
+            background: rgba(255,255,0,0.1);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #ff0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            background: rgba(255,255,0,0.3);
+            transform: scale(1.05);
+        }
+        
+        .item.selected {
+            background: rgba(255,255,0,0.4);
+            box-shadow: 0 0 20px #ff0;
+        }
+        
+        .reactions {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .reaction-btn {
+            background: linear-gradient(135deg, #f00, #ff0);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .reaction-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #ff0;
+        }
+        
+        .reaction-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .console {
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid #0f4;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        
+        .log-senku {
+            color: #0f4;
+        }
+        
+        .log-system {
+            color: #ff0;
+        }
+        
+        .log-reaction {
+            color: #f0f;
+        }
+        
+        .goap-status {
+            background: rgba(0,0,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid #00f;
+        }
+        
+        .goal {
+            color: #0ff;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .actions-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-tag {
+            background: rgba(0,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .formula-display {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 18px;
+            color: #0ff;
+        }
+        
+        @keyframes reaction-flash {
+            0% { background: rgba(255,0,0,0.8); }
+            50% { background: rgba(255,255,0,0.8); }
+            100% { background: rgba(255,0,0,0.8); }
+        }
+        
+        .reaction-effect {
+            animation: reaction-flash 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-section">
+            <div class="hero-portrait">🧪</div>
+            <div class="hero-info">
+                <div class="hero-name">Senku Ishigami</div>
+                <div class="hero-title">Le Scientifique de Pierre</div>
+                <div class="stats">
+                    <div class="stat">
+                        <div>HP</div>
+                        <div id="hp">100/100</div>
+                    </div>
+                    <div class="stat">
+                        <div>Mana</div>
+                        <div id="mana">150/150</div>
+                    </div>
+                    <div class="stat">
+                        <div>Intelligence</div>
+                        <div id="int">50</div>
+                    </div>
+                    <div class="stat">
+                        <div>Science Pts</div>
+                        <div id="science">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chemistry-lab">
+            <div class="lab-title">Laboratoire de Chimie</div>
+            <div class="inventory" id="inventory">
+                <div class="item" data-element="H">Hydrogene (5)</div>
+                <div class="item" data-element="O">Oxygene (8)</div>
+                <div class="item" data-element="N">Azote (4)</div>
+                <div class="item" data-element="Cl">Chlore (3)</div>
+                <div class="item" data-element="S">Soufre (5)</div>
+                <div class="item" data-element="C">Carbone (10)</div>
+            </div>
+            
+            <div class="reactions">
+                <button class="reaction-btn" onclick="createAquaRegia()">
+                    Creer Eau Regale (HCl + HNO3)
+                </button>
+                <button class="reaction-btn" onclick="createGunpowder()">
+                    Creer Poudre a Canon (KNO3 + C + S)
+                </button>
+                <button class="reaction-btn" onclick="analyzeEnemy()">
+                    Analyser l'Ennemi
+                </button>
+                <button class="reaction-btn" onclick="experiment()">
+                    Experimenter !
+                </button>
+            </div>
+            
+            <div class="formula-display" id="formula"></div>
+        </div>
+        
+        <div class="goap-status">
+            <div class="goal" id="current-goal">Objectif: En attente...</div>
+            <div class="actions-list" id="actions"></div>
+        </div>
+        
+        <div class="console" id="console">
+            <div class="log-entry log-system">== Systeme Dr. Stone Chemistry GOAP ==</div>
+            <div class="log-entry log-senku">Senku: "C'est excitant ! Commencons les experiences !"</div>
+        </div>
+    </div>
+    
+    <script src="../ai/goap-system.js"></script>
+    <script src="./ai-chemistry-goap.js"></script>
+    <script>
+        // Instance de Senku
+        const senku = new ChemistryGOAPAgent("Senku");
+        
+        // Inventaire
+        const inventory = {
+            H: 5, O: 8, N: 4, Cl: 3, S: 5, C: 10,
+            HCl: 0, HNO3: 0, KNO3: 2
+        };
+        
+        let sciencePoints = 0;
+        let currentMana = 150;
+        
+        function log(message, type = 'system') {
+            const console = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function updateStats() {
+            document.getElementById('mana').textContent = `${currentMana}/150`;
+            document.getElementById('science').textContent = sciencePoints;
+        }
+        
+        function showFormula(formula) {
+            const display = document.getElementById('formula');
+            display.textContent = formula;
+            display.classList.add('reaction-effect');
+            setTimeout(() => display.classList.remove('reaction-effect'), 500);
+        }
+        
+        function updateInventory() {
+            const inv = document.getElementById('inventory');
+            inv.innerHTML = '';
+            for (const [element, count] of Object.entries(inventory)) {
+                if (count > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    item.dataset.element = element;
+                    item.textContent = `${element} (${count})`;
+                    inv.appendChild(item);
+                }
+            }
+        }
+        
+        async function createAquaRegia() {
+            if (currentMana < 40) {
+                log("Pas assez de mana !", 'system');
+                return;
+            }
+            
+            // Verifie les ingredients
+            const needHCl = !inventory.HCl || inventory.HCl < 3;
+            const needHNO3 = !inventory.HNO3 || inventory.HNO3 < 1;
+            
+            if (needHCl && (inventory.H < 1 || inventory.Cl < 1)) {
+                log("Senku: \"Il me faut de l'hydrogene et du chlore pour faire HCl !\"", 'senku');
+                return;
+            }
+            
+            if (needHNO3 && (inventory.H < 1 || inventory.N < 1 || inventory.O < 3)) {
+                log("Senku: \"Il me faut H, N et O pour faire HNO3 !\"", 'senku');
+                return;
+            }
+            
+            // Cree les acides si necessaire
+            if (needHCl) {
+                inventory.H -= 1;
+                inventory.Cl -= 1;
+                inventory.HCl = (inventory.HCl || 0) + 1;
+                log("Reaction: H + Cl -> HCl", 'reaction');
+            }
+            
+            if (needHNO3) {
+                inventory.H -= 1;
+                inventory.N -= 1;
+                inventory.O -= 3;
+                inventory.HNO3 = (inventory.HNO3 || 0) + 1;
+                log("Reaction: H + N + O3 -> HNO3", 'reaction');
+            }
+            
+            // Cree l'eau regale
+            showFormula("3HCl + HNO3 -> NOCl + 2H2O + Cl2");
+            
+            log("Senku: \"Eau regale ! Le seul acide capable de dissoudre l'or !\"", 'senku');
+            log("DANGER: Vapeurs de chlore detectees !", 'system');
+            
+            currentMana -= 40;
+            sciencePoints += 10;
+            
+            // Effet GOAP
+            senku.state.has_aqua_regia = true;
+            updateGoalDisplay();
+            
+            updateStats();
+            updateInventory();
+        }
+        
+        async function createGunpowder() {
+            if (currentMana < 50) {
+                log("Pas assez de mana !", 'system');
+                return;
+            }
+            
+            if (!inventory.KNO3 || inventory.KNO3 < 1 || inventory.C < 3 || inventory.S < 1) {
+                log("Senku: \"Il me faut du nitrate de potassium, du carbone et du soufre !\"", 'senku');
+                return;
+            }
+            
+            inventory.KNO3 -= 1;
+            inventory.C -= 3;
+            inventory.S -= 1;
+            
+            showFormula("2KNO3 + S + 3C -> K2S + N2 + 3CO2");
+            
+            log("Senku: \"Poudre a canon ! Reculez !\"", 'senku');
+            setTimeout(() => {
+                log("BOOM ! Explosion controlee !", 'reaction');
+                document.body.classList.add('reaction-effect');
+                setTimeout(() => document.body.classList.remove('reaction-effect'), 500);
+            }, 1000);
+            
+            currentMana -= 50;
+            sciencePoints += 15;
+            
+            updateStats();
+            updateInventory();
+        }
+        
+        async function analyzeEnemy() {
+            if (currentMana < 20) {
+                log("Pas assez de mana !", 'system');
+                return;
+            }
+            
+            log("Senku: \"Voyons voir de quoi tu es fait...\"", 'senku');
+            
+            setTimeout(() => {
+                const materials = ["metal", "pierre", "organique", "magique"];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                
+                log(`Analyse complete: Ennemi compose de ${material}`, 'system');
+                
+                if (material === "metal") {
+                    log("Senku: \"Du metal ? L'eau regale sera parfaite !\"", 'senku');
+                } else if (material === "pierre") {
+                    log("Senku: \"De la pierre... Il nous faut des explosifs !\"", 'senku');
+                } else if (material === "organique") {
+                    log("Senku: \"Organique... Un bon savon suffira ! Kukuku...\"", 'senku');
+                } else {
+                    log("Senku: \"Magique ? Interessant... La science vaincra quand meme !\"", 'senku');
+                }
+                
+                sciencePoints += 5;
+                currentMana -= 20;
+                updateStats();
+            }, 1500);
+        }
+        
+        async function experiment() {
+            if (currentMana < 30) {
+                log("Pas assez de mana !", 'system');
+                return;
+            }
+            
+            log("Senku: \"Essayons quelque chose de nouveau...\"", 'senku');
+            
+            const discoveries = [
+                { name: "Catalyseur ameliore", effect: "+20% vitesse de reaction" },
+                { name: "Nouvel alliage", effect: "Defense +10" },
+                { name: "Reaction exothermique", effect: "Degats de feu bonus" },
+                { name: "Propriete magnetique", effect: "Attire les objets metalliques" }
+            ];
+            
+            setTimeout(() => {
+                if (Math.random() > 0.6) {
+                    const discovery = discoveries[Math.floor(Math.random() * discoveries.length)];
+                    log(`Decouverte: ${discovery.name} !`, 'reaction');
+                    log(`Senku: \"${senku.getRandomCatchphrase()}\"`, 'senku');
+                    log(`Effet: ${discovery.effect}`, 'system');
+                    sciencePoints += 20;
+                } else {
+                    log("L'experience a echoue... mais on apprend de nos erreurs !", 'system');
+                    log("Senku: \"Hmm, pas cette fois. Mais chaque echec est une lecon !\"", 'senku');
+                    sciencePoints += 5;
+                }
+                
+                currentMana -= 30;
+                updateStats();
+            }, 2000);
+        }
+        
+        function updateGoalDisplay() {
+            const goalDiv = document.getElementById('current-goal');
+            const actionsDiv = document.getElementById('actions');
+            
+            // Simule un objectif GOAP
+            const goals = [
+                "Dissoudre l'armure ennemie",
+                "Creer une explosion pour degager le chemin",
+                "Analyser et exploiter les faiblesses",
+                "Decouvrir de nouvelles reactions"
+            ];
+            
+            const currentGoal = goals[Math.floor(Math.random() * goals.length)];
+            goalDiv.textContent = `Objectif: ${currentGoal}`;
+            
+            // Affiche les actions possibles
+            const availableActions = senku.actions.filter(action => {
+                // Verifie si les preconditions sont remplies
+                return Math.random() > 0.3; // Simulation
+            });
+            
+            actionsDiv.innerHTML = '';
+            availableActions.forEach(action => {
+                const tag = document.createElement('div');
+                tag.className = 'action-tag';
+                tag.textContent = action.name;
+                actionsDiv.appendChild(tag);
+            });
+        }
+        
+        // Initialisation
+        updateInventory();
+        updateStats();
+        updateGoalDisplay();
+        
+        // Messages aleatoires de Senku
+        setInterval(() => {
+            if (Math.random() > 0.8) {
+                log(`Senku: "${senku.getRandomCatchphrase()}"`, 'senku');
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

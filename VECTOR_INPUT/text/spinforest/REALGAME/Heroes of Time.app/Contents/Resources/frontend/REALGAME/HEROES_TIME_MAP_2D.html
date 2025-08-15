@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - MAP 2D Isométrique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0a1a, #2a1a2a);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* MAP ISOMETRIQUE */
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255, 0, 255, 0.3);
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.2);
+        }
+
+        /* BROUILLARD DE CAUSALITE */
+        .causality-fog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 30%, rgba(255, 0, 255, 0.1) 70%);
+            animation: fogPulse 5s ease-in-out infinite;
+        }
+
+        @keyframes fogPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* TIMELINE UI */
+        .timeline-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 0, 255, 0.5);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .timeline-track {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .timeline-cursor {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ff00ff, #ff00aa);
+            border-radius: 50%;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+            cursor: grab;
+        }
+
+        .timeline-markers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .timeline-marker {
+            width: 2px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* HERO INFO */
+        .hero-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .hero-name {
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .hero-stats {
+            display: grid;
+            gap: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .stat-bar {
+            width: 150px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .hp-fill { background: linear-gradient(90deg, #ff6b6b, #ff4444); }
+        .mana-fill { background: linear-gradient(90deg, #4169e1, #00bfff); }
+        .temporal-fill { background: linear-gradient(90deg, #ff00ff, #ff00aa); }
+
+        /* INVENTAIRE */
+        .inventory-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(76, 237, 196, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+        }
+
+        .inv-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inv-slot:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* COMBAT OVERLAY */
+        .combat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            z-index: 1000;
+        }
+
+        .combat-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .combat-arena {
+            width: 90%;
+            max-width: 1200px;
+            height: 80vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid rgba(255, 215, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .combat-title {
+            text-align: center;
+            font-size: 32px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .combat-field {
+            flex: 1;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            gap: 20px;
+        }
+
+        .card-zone {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        .tcg-card {
+            width: 100px;
+            height: 140px;
+            background: linear-gradient(135deg, #2a2a4a, #3a3a5a);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tcg-card:hover {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-name {
+            font-size: 10px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .card-attack { color: #ff6b6b; }
+        .card-defense { color: #4ecdc4; }
+
+        /* SORTS DE ZONE */
+        .zone-spell-indicator {
+            position: absolute;
+            pointer-events: none;
+            animation: spellPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes spellPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% { 
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        /* EFFETS TEMPORELS */
+        .temporal-effect {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: temporalRipple 3s linear infinite;
+        }
+
+        @keyframes temporalRipple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        /* INFO PANEL */
+        .info-panel {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(147, 112, 219, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .causal-status {
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .causal-level {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(147, 112, 219, 0.3);
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas principal pour la map isométrique -->
+    <canvas id="gameCanvas" width="1200" height="800"></canvas>
+    
+    <!-- Brouillard de causalité -->
+    <div class="causality-fog"></div>
+
+    <!-- Timeline UI -->
+    <div class="timeline-bar">
+        <span style="color: #ff00ff;">PAST</span>
+        <div class="timeline-track">
+            <div class="timeline-markers">
+                <div class="timeline-marker"></div>
+                <div class="timeline-marker"></div>
+                <div class="timeline-marker"></div>
+                <div class="timeline-marker"></div>
+                <div class="timeline-marker"></div>
+            </div>
+            <div class="timeline-cursor" id="timelineCursor"></div>
+        </div>
+        <span style="color: #00ffff;">FUTURE</span>
+    </div>
+
+    <!-- Hero Panel -->
+    <div class="hero-panel">
+        <div class="hero-name">VINCE VEGA</div>
+        <div class="hero-stats">
+            <div class="stat-row">
+                <span>HP</span>
+                <div class="stat-bar">
+                    <div class="stat-fill hp-fill" style="width: 75%;"></div>
+                </div>
+            </div>
+            <div class="stat-row">
+                <span>MANA</span>
+                <div class="stat-bar">
+                    <div class="stat-fill mana-fill" style="width: 60%;"></div>
+                </div>
+            </div>
+            <div class="stat-row">
+                <span>TEMPORAL</span>
+                <div class="stat-bar">
+                    <div class="stat-fill temporal-fill" style="width: 40%;"></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: #888;">
+            Position: X:25 Y:30 T:NOW
+        </div>
+    </div>
+
+    <!-- Inventory -->
+    <div class="inventory-panel">
+        <h3 style="color: #4ecdc4; margin-bottom: 10px;">INVENTAIRE</h3>
+        <div class="inventory-grid">
+            <div class="inv-slot">⚔️</div>
+            <div class="inv-slot">🛡️</div>
+            <div class="inv-slot">📜</div>
+            <div class="inv-slot">💎</div>
+            <div class="inv-slot">🧪</div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+            <div class="inv-slot"></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px;">
+            Creatures: 3 | Artifacts: 2 | Spells: 5
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <h3 style="color: #9370db; margin-bottom: 10px;">CAUSALITE</h3>
+        <div class="causal-status">
+            Stabilité: <span class="causal-level">87%</span>
+        </div>
+        <div class="causal-status">
+            Paradoxes: <span class="causal-level">2</span>
+        </div>
+        <div class="causal-status">
+            Superpositions: <span class="causal-level">1</span>
+        </div>
+        <hr style="margin: 10px 0; border-color: rgba(147, 112, 219, 0.3);">
+        <div style="font-size: 12px; color: #888;">
+            Agents Temporels: ACTIFS<br>
+            Q-Star Queries: 142/s<br>
+            GraphCD Status: SYNC
+        </div>
+    </div>
+
+    <!-- Combat Overlay (TCG Mode) -->
+    <div class="combat-overlay" id="combatOverlay">
+        <div class="combat-arena">
+            <div class="combat-title">⚔️ COMBAT SPATIO-TEMPOREL ⚔️</div>
+            <div class="combat-field">
+                <!-- Enemy Cards -->
+                <div class="card-zone">
+                    <div class="tcg-card">
+                        <div class="card-img">🐻</div>
+                        <div class="card-name">URZ-KOM</div>
+                        <div class="card-stats">
+                            <span class="card-attack">8</span>
+                            <span class="card-defense">10</span>
+                        </div>
+                    </div>
+                    <div class="tcg-card">
+                        <div class="card-img">🔮</div>
+                        <div class="card-name">Merlin</div>
+                        <div class="card-stats">
+                            <span class="card-attack">9</span>
+                            <span class="card-defense">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Zone -->
+                <div style="text-align: center; padding: 20px;">
+                    <button onclick="resolveCombat()" style="padding: 10px 30px; background: linear-gradient(135deg, #ffd700, #ff6b6b); border: none; border-radius: 10px; color: #000; font-weight: bold; cursor: pointer;">
+                        RESOUDRE COMBAT
+                    </button>
+                </div>
+
+                <!-- Player Cards -->
+                <div class="card-zone">
+                    <div class="tcg-card">
+                        <div class="card-img">⚡</div>
+                        <div class="card-name">Vince Vega</div>
+                        <div class="card-stats">
+                            <span class="card-attack">7</span>
+                            <span class="card-defense">8</span>
+                        </div>
+                    </div>
+                    <div class="tcg-card">
+                        <div class="card-img">🦅</div>
+                        <div class="card-name">Aigle Temporel</div>
+                        <div class="card-stats">
+                            <span class="card-attack">5</span>
+                            <span class="card-defense">3</span>
+                        </div>
+                    </div>
+                    <div class="tcg-card">
+                        <div class="card-img">🐺</div>
+                        <div class="card-name">Loup Spectral</div>
+                        <div class="card-stats">
+                            <span class="card-attack">6</span>
+                            <span class="card-defense">4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Config -->
+    <script src="api-config.js"></script>
+
+    <script>
+        // Game State
+        const gameState = {
+            hero: {
+                x: 25,
+                y: 30,
+                t: 0, // position temporelle
+                hp: 75,
+                mana: 60,
+                temporal: 40
+            },
+            map: {
+                width: 50,
+                height: 50,
+                tiles: []
+            },
+            entities: [],
+            timelinePosition: 0,
+            causalityLevel: 87,
+            paradoxes: 2,
+            superpositions: 1,
+            inCombat: false
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Tile dimensions for isometric view
+        const TILE_WIDTH = 64;
+        const TILE_HEIGHT = 32;
+
+        // Convert grid to isometric coordinates
+        function gridToIso(x, y) {
+            const isoX = (x - y) * (TILE_WIDTH / 2) + canvas.width / 2;
+            const isoY = (x + y) * (TILE_HEIGHT / 2) + 100;
+            return { x: isoX, y: isoY };
+        }
+
+        // Draw isometric tile
+        function drawTile(gridX, gridY, color = '#ff00ff20') {
+            const pos = gridToIso(gridX, gridY);
+            
+            ctx.fillStyle = color;
+            ctx.strokeStyle = '#ff00ff40';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(pos.x + TILE_WIDTH / 2, pos.y + TILE_HEIGHT / 2);
+            ctx.lineTo(pos.x, pos.y + TILE_HEIGHT);
+            ctx.lineTo(pos.x - TILE_WIDTH / 2, pos.y + TILE_HEIGHT / 2);
+            ctx.closePath();
+            
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Draw entity on map
+        function drawEntity(x, y, symbol, color = '#fff') {
+            const pos = gridToIso(x, y);
+            ctx.fillStyle = color;
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(symbol, pos.x, pos.y + TILE_HEIGHT / 2);
+        }
+
+        // Render the map
+        function renderMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            for (let y = 0; y < 20; y++) {
+                for (let x = 0; x < 20; x++) {
+                    // Color based on temporal state
+                    const timeOffset = Math.abs(x + y - gameState.timelinePosition);
+                    const alpha = Math.max(0.1, 1 - timeOffset * 0.05);
+                    const color = `rgba(255, 0, 255, ${alpha * 0.2})`;
+                    drawTile(x, y, color);
+                }
+            }
+            
+            // Draw entities
+            drawEntity(10, 10, '🏰', '#ffd700'); // Castle
+            drawEntity(5, 8, '💎', '#00ffff'); // Treasure
+            drawEntity(15, 12, '🐉', '#ff6b6b'); // Dragon
+            drawEntity(8, 15, '🌀', '#9370db'); // Portal
+            
+            // Draw hero
+            drawEntity(gameState.hero.x - 15, gameState.hero.y - 20, '⚡', '#ffff00');
+            
+            // Draw other players (ghosts from other timelines)
+            if (Math.random() > 0.95) {
+                const ghostX = Math.floor(Math.random() * 20);
+                const ghostY = Math.floor(Math.random() * 20);
+                drawEntity(ghostX, ghostY, '👻', 'rgba(255, 255, 255, 0.3)');
+            }
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (gameState.inCombat) return;
+            
+            let moved = false;
+            switch(e.key) {
+                case 'ArrowUp':
+                    gameState.hero.y--;
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                    gameState.hero.y++;
+                    moved = true;
+                    break;
+                case 'ArrowLeft':
+                    gameState.hero.x--;
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                    gameState.hero.x++;
+                    moved = true;
+                    break;
+            }
+            
+            if (moved) {
+                // Check for encounters
+                checkSpatioTemporalEncounter();
+                
+                // Update position display
+                document.querySelector('.hero-panel div:last-child').textContent = 
+                    `Position: X:${gameState.hero.x} Y:${gameState.hero.y} T:NOW`;
+                
+                renderMap();
+            }
+        });
+
+        // Check for spatio-temporal encounters
+        function checkSpatioTemporalEncounter() {
+            // Simulate encounter chance
+            if (Math.random() > 0.9) {
+                triggerCombat();
+            }
+        }
+
+        // Trigger TCG combat
+        function triggerCombat() {
+            gameState.inCombat = true;
+            document.getElementById('combatOverlay').classList.add('active');
+            console.log('Combat triggered at spatio-temporal coordinates!');
+        }
+
+        // Resolve combat
+        function resolveCombat() {
+            gameState.inCombat = false;
+            document.getElementById('combatOverlay').classList.remove('active');
+            
+            // Add XP and update stats
+            gameState.hero.hp = Math.max(0, gameState.hero.hp - 10);
+            updateStats();
+            
+            console.log('Combat resolved!');
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.querySelector('.hp-fill').style.width = `${gameState.hero.hp}%`;
+            document.querySelector('.mana-fill').style.width = `${gameState.hero.mana}%`;
+            document.querySelector('.temporal-fill').style.width = `${gameState.hero.temporal}%`;
+        }
+
+        // Timeline manipulation
+        const timelineCursor = document.getElementById('timelineCursor');
+        let dragging = false;
+
+        timelineCursor.addEventListener('mousedown', () => dragging = true);
+        document.addEventListener('mouseup', () => dragging = false);
+        document.addEventListener('mousemove', (e) => {
+            if (dragging) {
+                const track = document.querySelector('.timeline-track');
+                const rect = track.getBoundingClientRect();
+                const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+                const percent = x / rect.width;
+                
+                timelineCursor.style.left = `${percent * 100}%`;
+                gameState.timelinePosition = Math.floor(percent * 40 - 20);
+                
+                renderMap();
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            // Temporal effects
+            if (Math.random() > 0.98) {
+                const effect = document.createElement('div');
+                effect.className = 'temporal-effect';
+                effect.style.left = Math.random() * window.innerWidth + 'px';
+                effect.style.top = Math.random() * window.innerHeight + 'px';
+                effect.style.border = '2px solid rgba(255, 0, 255, 0.5)';
+                document.body.appendChild(effect);
+                
+                setTimeout(() => effect.remove(), 3000);
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        async function init() {
+            console.log('Heroes of Time - MAP 2D Isometrique');
+            console.log('Mode: Exploration + TCG Combat');
+            console.log('Brouillard de causalite: ACTIF');
+            
+            renderMap();
+            animate();
+            
+            // Try to connect to backend
+            try {
+                const response = await fetch(getApiUrl('HEALTH'));
+                const status = await response.json();
+                console.log('Backend Magic Stack:', status);
+            } catch (error) {
+                console.log('Mode local - Backend offline');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

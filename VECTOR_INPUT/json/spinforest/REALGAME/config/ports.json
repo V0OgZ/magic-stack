@@ -1,0 +1,93 @@
+{
+  "teams": {
+    "profondeur": {
+      "description": "🔮 ÉQUIPE PROFONDEUR - Backend APIs/Magic Stack",
+      "lead": "Backend Team",
+      "ports": {
+        "backend_rust": 3001,
+        "vector_db": 5001,
+        "websocket": 8001
+      }
+    },
+    "surface": {
+      "description": "🌊 ÉQUIPE SURFACE - Frontend/Game (Vincent + Claude)",
+      "lead": "Vincent + GROKÆN",
+      "ports": {
+        "game_server": 3002,
+        "frontend": 5002,
+        "websocket": 8002
+      }
+    },
+    "backend": {
+      "description": "☕ ÉQUIPE BACKEND - Spring Boot (Java)",
+      "lead": "Backend Team",
+      "ports": {
+        "spring_boot": 8082,
+        "admin_panel": 8081,
+        "metrics": 8083
+      }
+    },
+    "vincent": {
+      "description": "🎮 VINCENT - Dev Local (tests complets)",
+      "lead": "Vincent",
+      "ports": {
+        "backend_rust": 3003,
+        "game_server": 3004,
+        "spring_boot": 8083,
+        "vector_db": 5003,
+        "api_gateway": 5004,
+        "websocket": 8003,
+        "admin_panel": 8084
+      }
+    }
+  },
+      "shared_services": {
+        "description": "🌐 SERVICES COMMUNS - Toujours actifs (Vector DB + LLM)",
+        "lead": "Services indépendants 24/7",
+        "ports": {
+            "vector_db": 7500,
+            "llm_clippy": 7501,
+      "postgresql": 5432,
+      "redis": 6379,
+      "ollama": 11434
+    },
+    "notes": "Ces services tournent indépendamment, appelés par tous"
+  },
+  "services": {
+    "frontend": {
+      "name": "Heroes of Time Frontend",
+      "command": "python3 -m http.server {port}",
+      "health_check": "http://localhost:{port}/",
+      "startup_delay": 2
+    },
+    "backend_java_magic": {
+      "name": "Magic Stack Java Backend",
+      "command": "java -jar binaries/magic-stack-backend.jar --server.port={port}",
+      "health_check": "http://localhost:{port}/actuator/health",
+      "startup_delay": 10
+    },
+    "backend_rust_agents": {
+      "name": "Agents System Rust Backend", 
+      "command": "./binaries/magic-stack-server --port {port}",
+      "health_check": "http://localhost:{port}/health",
+      "startup_delay": 5
+    },
+    "backend_vector_db": {
+      "name": "Vector DB Search Engine",
+      "command": "python3 scripts/vector_db_server.py --port {port}",
+      "health_check": "http://localhost:{port}/api/search",
+      "startup_delay": 8
+    }
+  },
+  "paths": {
+    "logs": "../logs/{instance}",
+    "pids": "../.pids/{instance}",
+    "binaries": "binaries/",
+    "docs_shared": "doc_shared/"
+  },
+  "meta": {
+    "version": "1.0.0",
+    "created": "2025-08-09",
+    "description": "Configuration centralisée des ports Heroes of Time - Évite tous les conflits entre développeurs"
+  }
+}

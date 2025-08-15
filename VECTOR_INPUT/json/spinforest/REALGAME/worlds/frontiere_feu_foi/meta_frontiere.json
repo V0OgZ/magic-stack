@@ -1,0 +1,179 @@
+{
+  "id": "world_church_sword_vortex_01",
+  "name": "Frontière de Feu et Foi",
+  "type": "Plaine plate semi-élevée",
+  "abstraction": "1.5D",
+  "temporal_class": "monde figé avec ancrage causal",
+  
+  "visual_structure": {
+    "grid": {
+      "type": "hexagonal_isometric",
+      "width": 20,
+      "height": 15
+    },
+    
+    "fixed_elements": [
+      {
+        "id": "church",
+        "type": "building",
+        "name": "Église en pierre",
+        "description": "Bâtiment romanique, 1 étage + clocher conique",
+        "position": { "x": 3, "y": 2 },
+        "size": { "width": 3, "height": 3 },
+        "interactive": true,
+        "sprite": "assets/buildings/church_stone.png"
+      },
+      {
+        "id": "ancient_tree",
+        "type": "nature",
+        "name": "Arbre feuillu",
+        "description": "Arbre massif proche de l'église",
+        "position": { "x": 6, "y": 3 },
+        "size": { "width": 2, "height": 2 },
+        "reactive": true
+      },
+      {
+        "id": "stone_path",
+        "type": "terrain",
+        "name": "Chemin en pierre",
+        "description": "Courbe depuis l'église vers le centre",
+        "path": [
+          { "x": 6, "y": 5 },
+          { "x": 8, "y": 7 },
+          { "x": 10, "y": 9 },
+          { "x": 12, "y": 10 }
+        ]
+      }
+    ],
+    
+    "dynamic_elements": [
+      {
+        "id": "fire_sword",
+        "type": "artifact",
+        "name": "Épée orange lumineuse",
+        "description": "Enfoncée dans une faille, émet un halo",
+        "position": { "x": 12, "y": 10 },
+        "size": { "width": 1, "height": 1 },
+        "effect_zone": "cross",
+        "state": "locked",
+        "glow": {
+          "color": "#FF6600",
+          "intensity": 0.8,
+          "radius": 30
+        }
+      },
+      {
+        "id": "lava_rift",
+        "type": "hazard",
+        "name": "Faille de lave",
+        "description": "Craquelures dans le sol, lignes rouges incandescentes",
+        "positions": [
+          { "x": 11, "y": 9 },
+          { "x": 12, "y": 10 },
+          { "x": 13, "y": 11 }
+        ],
+        "expandable": true,
+        "damage": 10
+      },
+      {
+        "id": "orange_vortex",
+        "type": "portal",
+        "name": "Vortex orange",
+        "description": "Spirale ardente, point d'entrée intermonde",
+        "position": { "x": 16, "y": 4 },
+        "size": { "width": 2, "height": 2 },
+        "state": "locked",
+        "activation_condition": "fire_sword_taken",
+        "destination": "world_burned_timeline"
+      }
+    ]
+  },
+  
+  "triggers": [
+    {
+      "id": "take_sword",
+      "name": "Prendre l'épée",
+      "conditions": [
+        { "type": "adjacent_to", "target": "fire_sword" },
+        { "type": "action", "value": "confirm" }
+      ],
+      "effects": [
+        { "type": "activate", "target": "orange_vortex" },
+        { "type": "screen_shake", "duration": 2000 },
+        { "type": "choice", "options": ["combat", "flee"] }
+      ]
+    },
+    {
+      "id": "enter_church",
+      "name": "Entrer dans l'église",
+      "conditions": [
+        { "type": "adjacent_to", "target": "church" },
+        { "type": "state_not", "target": "fire_sword", "value": "taken" }
+      ],
+      "effects": [
+        { "type": "dialogue", "script": "church_entry" },
+        { "type": "sub_scenario", "id": "forbidden_grimoire" }
+      ]
+    },
+    {
+      "id": "approach_vortex",
+      "name": "Se rapprocher du vortex",
+      "conditions": [
+        { "type": "distance", "target": "orange_vortex", "max": 3 },
+        { "type": "state", "target": "orange_vortex", "value": "active" }
+      ],
+      "effects": [
+        { "type": "choice", "options": [
+          { "id": "face_flame", "text": "Affronter la flamme" },
+          { "id": "flee", "text": "Fuir" }
+        ]},
+        { "type": "transition", "to": "world_fractured" }
+      ]
+    }
+  ],
+  
+  "layers": {
+    "0_static_decor": {
+      "visible": true,
+      "description": "Fond de scène principal"
+    },
+    "1_interactive": {
+      "visible": true,
+      "elements": ["fire_sword", "orange_vortex", "player"],
+      "description": "Éléments interactifs pour navigation"
+    },
+    "2_temporal_transparency": {
+      "visible": true,
+      "elements": ["vortex_future", "rift_expansion"],
+      "description": "États latents du monde (futur brûlé)"
+    },
+    "3_floating_narrative": {
+      "visible": false,
+      "description": "Dialogues et monologues contextuels"
+    },
+    "4_ai_backlog": {
+      "visible": false,
+      "description": "Suivi des décisions pour causalité globale"
+    }
+  },
+  
+  "player_spawn": {
+    "position": { "x": 10, "y": 14 },
+    "facing": "north",
+    "equipment": {
+      "weapon": "short_sword",
+      "armor": "cape",
+      "special": null
+    }
+  },
+  
+  "storage": {
+    "folder": "/REALGAME/worlds/frontiere_feu_foi/",
+    "files": [
+      "map_frontiere_v1.png",
+      "meta_frontiere.json",
+      "script_intro_fr.yaml",
+      "fogmap_vortex.overlay"
+    ]
+  }
+}

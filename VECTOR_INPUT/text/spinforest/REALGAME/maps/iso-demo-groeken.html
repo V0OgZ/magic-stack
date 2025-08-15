@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REALGAME - Carte ISO Demo (GROEKEN)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        #timeline-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        
+        .timeline-btn {
+            display: block;
+            margin: 5px 0;
+            padding: 8px 15px;
+            background: #333;
+            border: 2px solid #666;
+            color: white;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .timeline-btn:hover {
+            background: #555;
+            border-color: #888;
+        }
+        
+        .timeline-btn.active {
+            background: #00ff00;
+            color: black;
+            border-color: #00ff00;
+        }
+        
+        .timeline-btn.dead {
+            background: #ff0000;
+            opacity: 0.5;
+        }
+        
+        #fog-info {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .fog-level {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <h3>🗺️ REALGAME - Mode Carte ISO</h3>
+        <div>Position: <span id="position">0, 0</span></div>
+        <div>Timeline: <span id="current-timeline">Principale</span></div>
+        <div>Phase: <span id="phase-level">3</span></div>
+        <div>Causalité résolue: <span id="causality">0</span> zones</div>
+    </div>
+    
+    <div id="controls">
+        <strong>Contrôles:</strong><br>
+        WASD/Flèches: Déplacer la caméra<br>
+        Clic: Interagir avec objet/portail<br>
+        E: Activer portail proche<br>
+        ESPACE: Résoudre causalité<br>
+        1-3: Changer timeline
+    </div>
+    
+    <div id="timeline-selector">
+        <h4>Timelines</h4>
+        <button class="timeline-btn active" data-timeline="principale">
+            🌟 Principale
+        </button>
+        <button class="timeline-btn" data-timeline="alternative_1">
+            🔮 Alternative 1
+        </button>
+        <button class="timeline-btn dead" data-timeline="morte_1">
+            💀 Morte 1
+        </button>
+    </div>
+    
+    <div id="fog-info">
+        <strong>Brouillard de Causalité:</strong>
+        <span class="fog-level" style="background: #333">0: Inexploré</span>
+        <span class="fog-level" style="background: #666">1: Passé</span>
+        <span class="fog-level" style="background: #ff0">2: Accessible</span>
+        <span class="fog-level" style="background: #0f0">3: Vision</span>
+        <span class="fog-level" style="background: #fff; color: #000">4: Fantôme</span>
+        <span class="fog-level" style="background: #f0f">5: Superposé</span>
+        <span class="fog-level" style="background: #00f">6: Ancré</span>
+    </div>
+
+    <script type="module">
+        // Import depuis la Magic Stack (simulé pour la démo)
+        class MagicStackInterface {
+            async cast(spell, target) {
+                console.log('🔮 Lancement du sort:', spell.nom);
+                return { success: true, effect: 'Portal activé!' };
+            }
+        }
+        
+        // Import du MapLayerController
+        const script = document.createElement('script');
+        script.textContent = `
+            ${await fetch('../MapLayerController.js').then(r => r.text()).catch(() => '')}
+        `;
+        document.head.appendChild(script);
+        
+        // Initialisation
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Adapter la taille du canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Créer le contrôleur de carte
+        const magicStack = new MagicStackInterface();
+        const mapController = new MapLayerController(canvas, magicStack);
+        
+        // Ajouter un héros
+        mapController.layers.entities.push({
+            id: 'hero',
+            x: 25,
+            y: 25,
+            sprite: '🧙',
+            hp: 100,
+            maxHp: 100,
+            team: 'hero'
+        });
+        
+        // Variables de contrôle
+        const keys = {};
+        let mouseX = 0, mouseY = 0;
+        
+        // Gestion des inputs
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            // Changement de timeline
+            if (e.key >= '1' && e.key <= '3') {
+                const timelines = ['principale', 'alternative_1', 'morte_1'];
+                const index = parseInt(e.key) - 1;
+                if (timelines[index]) {
+                    mapController.currentTimeline = timelines[index];
+                    document.getElementById('current-timeline').textContent = 
+                        timelines[index].charAt(0).toUpperCase() + timelines[index].slice(1);
+                    
+                    // Mettre à jour les boutons
+                    document.querySelectorAll('.timeline-btn').forEach(btn => {
+                        btn.classList.toggle('active', 
+                            btn.dataset.timeline === timelines[index]);
+                    });
+                }
+            }
+            
+            // Résoudre causalité
+            if (e.key === ' ') {
+                const hero = mapController.layers.entities[0];
+                if (hero) {
+                    mapController.resolveCausality(
+                        Math.floor(hero.x), 
+                        Math.floor(hero.y)
+                    );
+                    updateUI();
+                }
+            }
+            
+            // Activer portail
+            if (e.key === 'e' || e.key === 'E') {
+                const hero = mapController.layers.entities[0];
+                if (hero) {
+                    const nearPortal = mapController.layers.portals.find(p => {
+                        const dist = Math.sqrt(
+                            (p.x - hero.x) ** 2 + 
+                            (p.y - hero.y) ** 2
+                        );
+                        return dist < 3 && !p.active;
+                    });
+                    
+                    if (nearPortal) {
+                        mapController.activatePortal(nearPortal.id);
+                    }
+                }
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Mettre à jour la position affichée
+            const cart = mapController.isoToCart(
+                mouseX - canvas.width / 2 + mapController.camera.x,
+                mouseY - canvas.height / 2 + mapController.camera.y
+            );
+            
+            if (cart.x >= 0 && cart.x < mapController.mapWidth && 
+                cart.y >= 0 && cart.y < mapController.mapHeight) {
+                document.getElementById('position').textContent = 
+                    `${Math.floor(cart.x)}, ${Math.floor(cart.y)}`;
+                
+                const phase = mapController.layers.phasage[cart.y]?.[cart.x] || 0;
+                document.getElementById('phase-level').textContent = phase;
+            }
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            mapController.handleClick(e.clientX, e.clientY);
+        });
+        
+        // Gestion des boutons timeline
+        document.querySelectorAll('.timeline-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const timeline = btn.dataset.timeline;
+                if (timeline === 'morte_1') {
+                    alert('Cette timeline est morte et inaccessible!');
+                    return;
+                }
+                
+                mapController.currentTimeline = timeline;
+                document.getElementById('current-timeline').textContent = 
+                    timeline.charAt(0).toUpperCase() + timeline.slice(1);
+                
+                document.querySelectorAll('.timeline-btn').forEach(b => {
+                    b.classList.toggle('active', b === btn);
+                });
+            });
+        });
+        
+        // Mettre à jour l'UI
+        function updateUI() {
+            const causalityCount = mapController.causalityResolved.size;
+            document.getElementById('causality').textContent = causalityCount;
+        }
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Déplacer la caméra
+            const cameraSpeed = 10;
+            if (keys['w'] || keys['W'] || keys['ArrowUp']) {
+                mapController.moveCamera(0, -cameraSpeed);
+            }
+            if (keys['s'] || keys['S'] || keys['ArrowDown']) {
+                mapController.moveCamera(0, cameraSpeed);
+            }
+            if (keys['a'] || keys['A'] || keys['ArrowLeft']) {
+                mapController.moveCamera(-cameraSpeed, 0);
+            }
+            if (keys['d'] || keys['D'] || keys['ArrowRight']) {
+                mapController.moveCamera(cameraSpeed, 0);
+            }
+            
+            // Déplacer le héros (pour la démo)
+            const hero = mapController.layers.entities[0];
+            if (hero) {
+                const heroSpeed = 0.2;
+                if (keys['i'] || keys['I']) hero.y -= heroSpeed;
+                if (keys['k'] || keys['K']) hero.y += heroSpeed;
+                if (keys['j'] || keys['J']) hero.x -= heroSpeed;
+                if (keys['l'] || keys['L']) hero.x += heroSpeed;
+                
+                // Révéler la carte autour du héros
+                mapController.phaseShift(
+                    Math.floor(hero.x), 
+                    Math.floor(hero.y), 
+                    5, 3
+                );
+            }
+            
+            // Rendu
+            mapController.render();
+            
+            // Afficher des infos supplémentaires
+            ctx.save();
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.fillText('🧠 GROEKEN - Carte ISO avec Brouillard de Causalité', 
+                canvas.width / 2 - 150, canvas.height - 20);
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer
+        console.log('🎮 REALGAME - Carte ISO démarrée!');
+        console.log('📋 Instructions de Vincent respectées:');
+        console.log('- Mode Méta/Surcarte ✓');
+        console.log('- Carte ISO 2D ✓');
+        console.log('- Brouillard de causalité 7 niveaux ✓');
+        console.log('- Portails activables via Magic Stack ✓');
+        
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ HEROES OF TIME - GALERIE DE COMBAT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* GALERIE */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .combat-card {
+            background: #1a1a2e;
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .combat-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.4);
+            border-color: #ffd700;
+        }
+        
+        .combat-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .combat-info {
+            padding: 20px;
+            background: linear-gradient(135deg, #16213e, #0f3460);
+        }
+        
+        .combat-title {
+            font-size: 1.3em;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .combat-description {
+            color: #b8b8b8;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .combat-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        /* MODAL PREVIEW */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(78, 205, 196, 0.5);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            font-size: 2em;
+            color: white;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #ff6b6b;
+        }
+        
+        /* SYSTÈME DE COMBAT */
+        .combat-system {
+            background: #16213e;
+            padding: 30px;
+            margin: 30px;
+            border-radius: 15px;
+            border: 2px solid #533483;
+        }
+        
+        .combat-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .combat-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .combat-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* ANIMATIONS */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #4ecdc4; }
+            to { box-shadow: 0 0 30px #4ecdc4, 0 0 40px #4ecdc4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ GALERIE DE COMBAT ÉPIQUE ⚔️</h1>
+        <p style="margin-top: 10px; font-size: 1.2em;">Heroes of Time - Visuels de Combat</p>
+    </div>
+    
+    <div class="combat-system">
+        <h2 style="color: #ffd700; text-align: center; margin-bottom: 20px;">🎮 SYSTÈME DE COMBAT VISUEL</h2>
+        <p style="text-align: center; color: #b8b8b8; margin-bottom: 20px;">
+            Cliquez sur une image pour l'utiliser dans le combat !
+        </p>
+        <div class="combat-controls">
+            <button class="combat-btn" onclick="startCombat()">⚔️ DÉMARRER COMBAT</button>
+            <button class="combat-btn" onclick="loadRandomFight()">🎲 COMBAT ALÉATOIRE</button>
+            <button class="combat-btn" onclick="activateVinceMode()">🔫 MODE VINCE VEGA</button>
+        </div>
+    </div>
+    
+    <div class="gallery" id="gallery">
+        <!-- Les cartes seront générées ici -->
+    </div>
+    
+    <!-- MODAL -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <img class="modal-image" id="modalImage" src="" alt="">
+        </div>
+    </div>
+    
+    <script>
+        // BASE DE DONNÉES DES COMBATS
+        const combatScenes = [
+            {
+                image: 'assets/FIGHT/Convergence of Cosmic Forces.png',
+                title: 'Convergence des Forces Cosmiques',
+                description: 'Les énergies temporelles se rencontrent dans une explosion de pouvoir !',
+                heroes: ['URZ-KÔM', 'GRUT'],
+                power: 9500,
+                temporalLevel: 95,
+                epicness: 100
+            },
+            {
+                image: 'assets/FIGHT/Cosmic Shaman and Temporal Reflection.png',
+                title: 'Chaman Cosmique et Reflet Temporel',
+                description: 'URZ-KÔM manipule les échos du temps pour créer des doubles parfaits.',
+                heroes: ['URZ-KÔM'],
+                power: 8500,
+                temporalLevel: 90,
+                epicness: 95
+            },
+            {
+                image: 'assets/FIGHT/Shamanic Bear and the Gunman Emergence.png',
+                title: 'Ours Chaman et Émergence du Gunman',
+                description: 'La rencontre épique entre URZ-KÔM et Vince Vega !',
+                heroes: ['URZ-KÔM', 'Vince Vega'],
+                power: 8000,
+                temporalLevel: 85,
+                epicness: 92
+            },
+            {
+                image: 'assets/FIGHT/Excalibur\'s Temporal Strike.png',
+                title: 'Frappe Temporelle d\'Excalibur',
+                description: 'Arthur Pendragon tranche les timelines avec son épée légendaire !',
+                heroes: ['Arthur Pendragon'],
+                power: 7500,
+                temporalLevel: 80,
+                epicness: 88
+            },
+            {
+                image: 'assets/FIGHT/Excalibur Through Time at Twilight.png',
+                title: 'Excalibur à Travers le Temps',
+                description: 'L\'épée mythique traverse les âges au crépuscule des mondes.',
+                heroes: ['Arthur Pendragon', 'Merlin'],
+                power: 7800,
+                temporalLevel: 88,
+                epicness: 90
+            },
+            {
+                image: 'assets/FIGHT/Warrior of the Three Times.png',
+                title: 'Guerrier des Trois Temps',
+                description: 'Un héros qui existe simultanément dans le passé, présent et futur !',
+                heroes: ['Guerrier Temporel'],
+                power: 9000,
+                temporalLevel: 100,
+                epicness: 98
+            },
+            {
+                image: 'assets/FIGHT/Warrior Through Time and Light.png',
+                title: 'Guerrier à Travers Temps et Lumière',
+                description: 'Voyage épique à travers les dimensions lumineuses.',
+                heroes: ['Guerrier de Lumière'],
+                power: 7200,
+                temporalLevel: 75,
+                epicness: 85
+            },
+            {
+                image: 'assets/FIGHT/Warrior and Phantom Battle at Dusk.png',
+                title: 'Bataille du Guerrier et du Fantôme',
+                description: 'Combat spectral au crépuscule entre deux âmes liées.',
+                heroes: ['Guerrier', 'Fantôme'],
+                power: 6800,
+                temporalLevel: 70,
+                epicness: 82
+            },
+            {
+                image: 'assets/FIGHT/Sorcerer of Time at Twilight.png',
+                title: 'Sorcier du Temps au Crépuscule',
+                description: 'Merlin manipule les fils du destin dans la lumière mourante.',
+                heroes: ['Merlin'],
+                power: 8200,
+                temporalLevel: 92,
+                epicness: 94
+            }
+        ];
+        
+        // GÉNÉRER LA GALERIE
+        function generateGallery() {
+            const gallery = document.getElementById('gallery');
+            
+            combatScenes.forEach((scene, index) => {
+                const card = document.createElement('div');
+                card.className = 'combat-card';
+                card.onclick = () => openModal(scene.image);
+                
+                card.innerHTML = `
+                    <img class="combat-image" src="${scene.image}" alt="${scene.title}" 
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 300\"><rect fill=\"%23333\" width=\"400\" height=\"300\"/><text x=\"50%\" y=\"50%\" fill=\"%23fff\" text-anchor=\"middle\" font-size=\"20\">${scene.title}</text></svg>'">
+                    <div class="combat-info">
+                        <h3 class="combat-title">${scene.title}</h3>
+                        <p class="combat-description">${scene.description}</p>
+                        <div style="margin: 10px 0;">
+                            <strong>Héros:</strong> ${scene.heroes.join(', ')}
+                        </div>
+                        <div class="combat-stats">
+                            <div class="stat">
+                                <div class="stat-value">⚡ ${scene.power}</div>
+                                <div class="stat-label">Puissance</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">⏰ ${scene.temporalLevel}%</div>
+                                <div class="stat-label">Temporel</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">🔥 ${scene.epicness}%</div>
+                                <div class="stat-label">Épique</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                gallery.appendChild(card);
+            });
+        }
+        
+        // MODAL
+        function openModal(imageSrc) {
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageSrc;
+            modal.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        // FONCTIONS DE COMBAT
+        function startCombat() {
+            alert('⚔️ COMBAT LANCÉ !\n\nChoisissez une image pour définir l\'arène de combat !');
+            document.querySelectorAll('.combat-card').forEach(card => {
+                card.classList.add('glow');
+            });
+        }
+        
+        function loadRandomFight() {
+            const randomScene = combatScenes[Math.floor(Math.random() * combatScenes.length)];
+            openModal(randomScene.image);
+            setTimeout(() => {
+                alert(`🎲 COMBAT ALÉATOIRE !\n\n${randomScene.title}\n\nHéros: ${randomScene.heroes.join(' VS ')}\nPuissance: ${randomScene.power}`);
+            }, 500);
+        }
+        
+        function activateVinceMode() {
+            // Trouver les scènes avec Vince Vega
+            const vinceScenes = combatScenes.filter(s => s.heroes.includes('Vince Vega'));
+            if (vinceScenes.length > 0) {
+                const scene = vinceScenes[0];
+                openModal(scene.image);
+                alert('🔫 MODE VINCE VEGA ACTIVÉ !\n\n"Check out the big temporal paradox on Brad!"\n\nWormhole Gun prêt à tirer !');
+            } else {
+                alert('🔫 VINCE VEGA ENTRE EN SCÈNE !\n\nIl traverse un wormhole pour rejoindre le combat !');
+            }
+            
+            // Effet visuel
+            document.body.style.filter = 'hue-rotate(30deg)';
+            setTimeout(() => {
+                document.body.style.filter = 'none';
+            }, 2000);
+        }
+        
+        // Fermer modal avec Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Clic en dehors de l'image ferme le modal
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+        
+        // INITIALISATION
+        generateGallery();
+        
+        // Message de bienvenue
+        console.log(`
+╔════════════════════════════════════════╗
+║     ⚔️  GALERIE DE COMBAT CHARGÉE     ║
+║                                        ║
+║  ${combatScenes.length} scènes de combat épiques !    ║
+║                                        ║
+║  Cliquez sur une image pour zoomer    ║
+║  Utilisez les boutons pour interagir  ║
+╚════════════════════════════════════════╝
+        `);
+    </script>
+</body>
+</html>

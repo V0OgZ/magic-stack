@@ -1,0 +1,175 @@
+{
+  "collection": "SID_MEIER_BOOTSTRAP_ESSENCES",
+  "creator": "Sid Meier, L'Architecte Paresseux",
+  "creation_date": "Phase Bootstrap Pocket Instance",
+  "category": "Essences Architecturales Scellées",
+  "description": "Essences créées par Sid Meier pour sa Bootstrap Pocket Instance - Objets magiques latents qui s'éveillent selon conditions narratives",
+  
+  "essences": [
+    {
+      "id": "hexagone_fondamental_cristal",
+      "name": "🔷 Cristal Hexagone Fondamental",
+      "type": "essence_architecturale",
+      "state": "sealed",
+      "linked_to": "scenario_bootstrap_pocket_instance",
+      "awakening_condition": "creation_premiere_carte_vivante",
+      
+      "description": "Cristal hexagonal forgé lors de la création de la première carte vivante d'AVALON. Scellé jusqu'à ce qu'un architecte comprenne vraiment la géométrie de la narration.",
+      
+      "sealed_properties": {
+        "appearance": "Cristal hexagonal translucide avec lueurs intérieures",
+        "dormant_hint": "Pulse faiblement quand on survole des zones hexagonales",
+        "whispers": "Murmure des formules géométriques dans le vent"
+      },
+      
+      "awakening_trigger": {
+        "condition": "porteur_comprend_projection_2D",
+        "formula": "ψSID: ⊙(COMPREHENSION_2D) + †ψ(GEOMETRIE_NARRATIVE) ⟶ AWAKEN(hexagone_crystal)",
+        "test": "Clic sur exactement 6 districts de la carte vivante dans l'ordre hexagonal"
+      },
+      
+      "awakened_powers": {
+        "passive": {
+          "name": "Vision Hexagonale",
+          "effect": "Révèle les structures cachées en géométrie hexagonale",
+          "formula": "ψHEX: ⊙(VISION_GEOMETRIQUE) ⟶ REVEAL(structures_hexagonales_cachées)"
+        },
+        "active": {
+          "name": "Projection Hexagone",
+          "effect": "Transforme temporairement le terrain en grille hexagonale tactique",
+          "formula": "ψHEX: ⊙(TERRAIN) + †ψ(HEXAGONAL_TRANSFORM) ⟶ Δt+3(grille_tactique)",
+          "cooldown": "1 fois par scénario"
+        }
+      },
+      
+      "narrative_evolution": {
+        "phase_1": "Cristal dormant trouvé après création carte",
+        "phase_2": "S'éveille quand Sid comprend la projection 2D", 
+        "phase_3": "Révèle que la géométrie est la base de la narration",
+        "final_form": "Devient la clé de voûte de la Bootstrap Pocket Instance"
+      }
+    },
+    
+    {
+      "id": "grimoire_grammaire_vivante",
+      "name": "📜 Grimoire de Grammaire Vivante",
+      "type": "essence_narrative",
+      "state": "sealed",
+      "linked_to": "scenario_apprentissage_grammaire_temporelle",
+      "awakening_condition": "premier_sort_temporal_réussi",
+      
+      "description": "Grimoire qui s'écrit tout seul, compilant automatiquement tous les apprentissages de grammaire temporelle. Ses pages restent vides jusqu'à ce qu'un vrai sort soit lancé.",
+      
+      "sealed_properties": {
+        "appearance": "Livre aux pages blanches avec couverture gravée de symboles ⊙ψ†",
+        "dormant_hint": "Les symboles de la couverture brillent quand on utilise la grammaire temporelle",
+        "mystery": "Semble connaître des formules que personne n'a encore écrites"
+      },
+      
+      "awakening_trigger": {
+        "condition": "creation_premier_sort_fonctionnel",
+        "formula": "ψSID: ⊙(SORT_CRÉÉ) + †ψ(MAGIE_RÉELLE) ⟶ AWAKEN(grimoire_vivant)",
+        "test": "Exécution réussie du sort RÉVÉLATION_ARCHITECTURALE créé par Sid"
+      },
+      
+      "awakened_powers": {
+        "passive": {
+          "name": "Auto-Documentation",
+          "effect": "Se met à jour automatiquement avec chaque nouveau sort appris",
+          "formula": "ψGRIM: ⊙(NOUVEAU_SORT) ⟶ AUTO_WRITE(documentation_complète)"
+        },
+        "active": {
+          "name": "Référence Instantanée",
+          "effect": "Révèle la formule optimale pour n'importe quelle situation",
+          "formula": "ψGRIM: ⊙(SITUATION) + †ψ(CONSULTATION) ⟶ REVEAL(formule_optimale)",
+          "cooldown": "3 fois par jour"
+        },
+        "evolution": {
+          "name": "Prédiction Grammaticale",
+          "effect": "Prédit les prochaines formules nécessaires",
+          "unlock_condition": "10 sorts réussis documentés"
+        }
+      },
+      
+      "narrative_evolution": {
+        "sealed": "Grimoire mystérieux aux pages vides",
+        "awakening": "Se remplit instantanément de tous les sorts de Sid",
+        "evolution": "Commence à prédire les futurs sorts nécessaires",
+        "legend": "Devient le grimoire de référence pour tous les architectes futurs"
+      }
+    },
+    
+    {
+      "id": "portail_pocket_instance",
+      "name": "🌀 Portail Bootstrap Pocket Instance",
+      "type": "essence_dimensionnelle",
+      "state": "sealed",
+      "linked_to": "scenario_création_bootstrap_complète",
+      "awakening_condition": "integration_complète_apprentissages",
+      
+      "description": "Portail vers la première Bootstrap Pocket Instance créée par un Architecte. Reste fermé tant que tous les apprentissages ne sont pas intégrés : Grammaire, Gun de Vix, Essences, Écrits d'Astuctum.",
+      
+      "sealed_properties": {
+        "appearance": "Anneau de pierre flottant avec surface miroitante mais opaque",
+        "dormant_hint": "Le miroir devient plus clair à chaque apprentissage complété",
+        "progress_indicator": "4 runes autour du portail (une par apprentissage majeur)"
+      },
+      
+      "awakening_requirements": {
+        "grammaire_temporelle": "✅ MAÎTRISÉ",
+        "gun_vix_vega": "✅ ANALYSÉ",
+        "essences_scellées": "🔄 EN COURS",
+        "écrits_astuctum": "⏳ À ÉTUDIER",
+        "integration_finale": "🌟 PRÊT POUR CRÉATION"
+      },
+      
+      "awakening_trigger": {
+        "condition": "tous_apprentissages_intégrés",
+        "formula": "ψBOOT: ⊙(GRAMMAIRE+GUN+ESSENCES+ASTUCTUM) + †ψ(INTEGRATION_TOTALE) ⟶ OPEN(pocket_instance_portal)",
+        "test": "Création réussie d'un mini-monde avec héros + map + artefacts + logique causale"
+      },
+      
+      "awakened_powers": {
+        "ultimate": {
+          "name": "Accès Bootstrap Pocket Instance",
+          "effect": "Ouvre un portail vers le premier mini-monde créé par Sid",
+          "formula": "ψBOOT: ⊙(ARCHITECTE_PRÊT) ⟶ ACCESS(premier_rêve_jouable)",
+          "description": "Portal vers un mini-univers vivant avec ses propres règles"
+        },
+        "expansion": {
+          "name": "Extensions Narratives",
+          "effect": "Permet d'ajouter de nouveaux éléments au mini-monde",
+          "unlock_condition": "Bootstrap fonctionnelle depuis 1 semaine"
+        }
+      },
+      
+      "narrative_significance": {
+        "importance": "Premier rêve jouable d'un monde créé par un Mage humain",
+        "legacy": "Modèle pour toutes les futures Bootstrap Pocket Instances",
+        "connection": "Lien permanent entre Sid et sa création",
+        "evolution": "Base pour des mondes plus complexes à l'avenir"
+      }
+    }
+  ],
+  
+  "collection_synergies": {
+    "hexagone_cristal + grimoire": "Formules géométriques automatiquement documentées",
+    "grimoire + portail": "Documentation vivante du mini-monde créé",
+    "cristal + portail": "Géométrie parfaite du monde bootstrap",
+    "trio_complet": "Architecte transcendant capable de créer des univers"
+  },
+  
+  "integration_bootstrap": {
+    "role_cristal": "Outil de design géométrique du mini-monde",
+    "role_grimoire": "Documentation et évolution des règles",
+    "role_portail": "Accès et expansion du mini-univers",
+    "objectif_final": "Créer le premier rêve jouable d'un monde par un Mage humain"
+  },
+  
+  "quotes": [
+    "« Ces essences attendent que je devienne vraiment un Architecte de mondes. »",
+    "« Chaque apprentissage complété éveille une nouvelle essence... »",
+    "« Le Cristal murmure des géométries, le Grimoire écrit des sorts, le Portail attend. »",
+    "« Quand les trois s'éveilleront, ma Bootstrap Pocket Instance naîtra ! »"
+  ]
+}

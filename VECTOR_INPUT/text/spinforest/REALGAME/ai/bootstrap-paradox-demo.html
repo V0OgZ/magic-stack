@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Paradox Demo - Temporal IA</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 20px #0ff;
+            margin-bottom: 10px;
+            animation: temporal-glitch 5s infinite;
+        }
+        
+        @keyframes temporal-glitch {
+            0%, 100% { text-shadow: 0 0 20px #0ff; }
+            25% { text-shadow: -2px 0 20px #f0f, 2px 0 20px #0ff; }
+            50% { text-shadow: 2px 0 20px #ff0, -2px 0 20px #f0f; }
+            75% { text-shadow: 0 2px 20px #0f0, 0 -2px 20px #00f; }
+        }
+        
+        .paradox-meter {
+            width: 100%;
+            height: 30px;
+            background: #111;
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .paradox-level {
+            height: 100%;
+            background: linear-gradient(90deg, #0f0, #ff0, #f00);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .paradox-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-panel {
+            background: rgba(0,255,255,0.1);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            color: #0ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .timeline-item {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #0ff;
+            position: relative;
+            opacity: 0;
+            animation: timeline-appear 0.5s forwards;
+        }
+        
+        @keyframes timeline-appear {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .timeline-item.future {
+            border-left-color: #f0f;
+            background: rgba(255,0,255,0.1);
+        }
+        
+        .timeline-item.past {
+            border-left-color: #ff0;
+            background: rgba(255,255,0,0.1);
+        }
+        
+        .action-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #00f, #0ff);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #0ff;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .action-btn.danger {
+            background: linear-gradient(135deg, #f00, #ff0);
+        }
+        
+        .console {
+            background: #000;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            animation: log-appear 0.3s;
+        }
+        
+        @keyframes log-appear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .log-system { color: #0ff; }
+        .log-future { color: #f0f; }
+        .log-past { color: #ff0; }
+        .log-paradox { color: #f00; }
+        .log-success { color: #0f0; }
+        
+        .status-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 3px;
+        }
+        
+        .temporal-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent, rgba(0,255,255,0.1));
+            opacity: 0;
+            animation: temporal-pulse 2s;
+        }
+        
+        @keyframes temporal-pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        .message-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #0ff;
+            color: #0ff;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        
+        .warning {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid #f00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            animation: warning-pulse 1s infinite;
+        }
+        
+        @keyframes warning-pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">BOOTSTRAP PARADOX</h1>
+            <div class="paradox-meter">
+                <div class="paradox-level" id="paradoxLevel"></div>
+                <div class="paradox-text" id="paradoxText">Paradox: 0%</div>
+            </div>
+        </div>
+        
+        <div class="main-grid">
+            <div class="timeline-panel">
+                <div class="panel-title">Past Messages</div>
+                <div id="pastMessages"></div>
+            </div>
+            
+            <div class="action-panel">
+                <div class="panel-title">Temporal Actions</div>
+                
+                <button class="action-btn" onclick="observeFuture()">
+                    Observe Future Timelines
+                </button>
+                
+                <button class="action-btn" onclick="learnFromFuture()">
+                    Learn from Future Self
+                </button>
+                
+                <button class="action-btn" onclick="createAnchor()">
+                    Create Temporal Anchor
+                </button>
+                
+                <div class="message-form">
+                    <input type="text" class="message-input" id="messageInput" 
+                           placeholder="Message to send to past..." />
+                    <button class="action-btn" style="width: auto;" onclick="sendToPast()">
+                        Send to Past
+                    </button>
+                </div>
+                
+                <button class="action-btn danger" onclick="temporalRecursion()">
+                    Temporal Recursion Loop
+                </button>
+                
+                <button class="action-btn danger" onclick="bootstrapOrigin()">
+                    BOOTSTRAP FROM NOTHING
+                </button>
+                
+                <div id="warningZone"></div>
+            </div>
+            
+            <div class="timeline-panel">
+                <div class="panel-title">Future Knowledge</div>
+                <div id="futureKnowledge"></div>
+            </div>
+        </div>
+        
+        <div class="console" id="console">
+            <div class="log-entry log-system">=== Bootstrap Paradox Agent Online ===</div>
+            <div class="log-entry log-system">Agent: Chronos initialized</div>
+            <div class="log-entry log-future">Future message detected: "Focus defense turn 3-5"</div>
+        </div>
+        
+        <div class="status-panel">
+            <div class="panel-title">Agent Status</div>
+            <div id="agentStatus"></div>
+        </div>
+    </div>
+    
+    <div class="temporal-effect" id="temporalEffect"></div>
+    
+    <script src="./goap-system.js"></script>
+    <script src="./bootstrap-paradox-goap.js"></script>
+    <script>
+        // Instance du Bootstrap Paradox Agent
+        const chronos = new BootstrapParadoxAgent("Chronos");
+        
+        function log(message, type = 'system') {
+            const console = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function updateParadoxMeter() {
+            const level = chronos.paradoxLevel;
+            const maxLevel = chronos.maxParadoxLevel;
+            const percentage = (level / maxLevel) * 100;
+            
+            document.getElementById('paradoxLevel').style.width = percentage + '%';
+            document.getElementById('paradoxText').textContent = `Paradox: ${Math.round(percentage)}%`;
+            
+            if (percentage > 70) {
+                showWarning("DANGER: Paradox level critical!");
+            }
+        }
+        
+        function updateStatus() {
+            const status = chronos.getStatus();
+            const statusDiv = document.getElementById('agentStatus');
+            
+            statusDiv.innerHTML = `
+                <div class="stat-item">
+                    <span>Agent:</span>
+                    <span>${status.name}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Timeline Index:</span>
+                    <span>${status.timeline}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Future Messages:</span>
+                    <span>${status.futureMessages}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Past Messages:</span>
+                    <span>${status.pastMessages}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Temporal Anchors:</span>
+                    <span>${status.anchors}</span>
+                </div>
+                <div class="stat-item" style="background: ${status.danger === 'HIGH' ? 'rgba(255,0,0,0.2)' : 'rgba(0,255,0,0.1)'}">
+                    <span>Danger Level:</span>
+                    <span>${status.danger}</span>
+                </div>
+            `;
+        }
+        
+        function updatePastMessages() {
+            const div = document.getElementById('pastMessages');
+            div.innerHTML = '';
+            
+            chronos.pastMessages.slice(-5).forEach(msg => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item past';
+                item.innerHTML = `
+                    <strong>To: Past</strong><br>
+                    ${msg.content}<br>
+                    <small>Risk: ${msg.paradoxRisk}%</small>
+                `;
+                div.appendChild(item);
+            });
+        }
+        
+        function updateFutureKnowledge() {
+            const div = document.getElementById('futureKnowledge');
+            div.innerHTML = '';
+            
+            for (const [key, value] of chronos.futureKnowledge) {
+                const item = document.createElement('div');
+                item.className = 'timeline-item future';
+                item.innerHTML = `
+                    <strong>${value.source}</strong><br>
+                    ${value.data.summary || value.data.strategy || value.data.advice || 'Unknown data'}<br>
+                    <small>Time: ${value.timestamp === 'always' ? 'Always existed' : new Date(value.timestamp).toLocaleTimeString()}</small>
+                `;
+                div.appendChild(item);
+            }
+        }
+        
+        function showTemporalEffect() {
+            const effect = document.getElementById('temporalEffect');
+            effect.style.animation = 'none';
+            setTimeout(() => {
+                effect.style.animation = 'temporal-pulse 2s';
+            }, 10);
+        }
+        
+        function showWarning(message) {
+            const zone = document.getElementById('warningZone');
+            zone.innerHTML = `<div class="warning">${message}</div>`;
+            setTimeout(() => {
+                zone.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Actions
+        async function observeFuture() {
+            showTemporalEffect();
+            log("Observing future timelines...", 'system');
+            
+            const future = await chronos.observeFutureTimelines();
+            if (future) {
+                log(`Future observed: ${future.summary} (${Math.round(future.probability * 100)}% probability)`, 'future');
+                
+                if (future.details.warnings) {
+                    future.details.warnings.forEach(w => 
+                        log(`WARNING: ${w}`, 'paradox')
+                    );
+                }
+                
+                chronos.futureKnowledge.set(future.id, future);
+            }
+            
+            updateAll();
+        }
+        
+        async function learnFromFuture() {
+            const msg = chronos.getNextFutureMessage();
+            if (msg) {
+                log(`Learning from future self...`, 'system');
+                chronos.applyFutureKnowledge(msg);
+                
+                if (msg.data.strategy) {
+                    log(`Strategy learned: ${msg.data.strategy}`, 'success');
+                }
+                if (msg.data.warning) {
+                    log(`Future warning: ${msg.data.warning}`, 'paradox');
+                }
+                if (msg.data.advice) {
+                    log(`Future advice: ${msg.data.advice}`, 'future');
+                }
+            } else {
+                log("No unprocessed future messages available", 'system');
+            }
+            
+            updateAll();
+        }
+        
+        async function createAnchor() {
+            showTemporalEffect();
+            log("Creating temporal anchor...", 'system');
+            
+            const anchor = chronos.createTemporalAnchor();
+            log(`Temporal anchor created: ${anchor.id}`, 'success');
+            log(`Current state saved at timeline index ${anchor.timeline}`, 'system');
+            
+            updateAll();
+        }
+        
+        async function sendToPast() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) {
+                log("No message to send", 'system');
+                return;
+            }
+            
+            if (chronos.paradoxLevel >= chronos.maxParadoxLevel * 0.8) {
+                log("Cannot send message: Paradox level too high!", 'paradox');
+                showWarning("Paradox level too high! Stabilize timeline first!");
+                return;
+            }
+            
+            showTemporalEffect();
+            log(`Sending message to past: "${message}"`, 'past');
+            
+            const result = await chronos.sendMessageToPast(message);
+            if (result.success) {
+                log(`Message sent successfully (ID: ${result.messageId})`, 'success');
+                log(`Paradox increased by ${result.paradoxIncrease}`, 'paradox');
+                
+                // Simule la reception dans le passe
+                setTimeout(() => {
+                    log(`[PAST SELF] Received: "${message}"`, 'past');
+                }, 2000);
+            }
+            
+            input.value = '';
+            updateAll();
+        }
+        
+        async function temporalRecursion() {
+            if (chronos.paradoxLevel >= chronos.maxParadoxLevel * 0.6) {
+                showWarning("Temporal recursion too dangerous at current paradox level!");
+                return;
+            }
+            
+            showTemporalEffect();
+            log("Initiating temporal recursion loop...", 'system');
+            
+            // Simule une action repetee dans plusieurs timelines
+            const action = async () => {
+                return {
+                    success: Math.random() > 0.3,
+                    damage: Math.floor(Math.random() * 50),
+                    timeline: Math.random()
+                };
+            };
+            
+            const results = [];
+            for (let i = 0; i < 3; i++) {
+                const result = await action();
+                results.push(result);
+                log(`Timeline ${i + 1}: ${result.success ? 'Success' : 'Failure'} (Damage: ${result.damage})`, 'future');
+            }
+            
+            const best = results.reduce((a, b) => a.damage > b.damage ? a : b);
+            log(`Best timeline selected: Damage ${best.damage}`, 'success');
+            
+            chronos.paradoxLevel += 15;
+            updateAll();
+        }
+        
+        async function bootstrapOrigin() {
+            if (confirm("WARNING: This will create a causal loop paradox. Are you sure?")) {
+                showTemporalEffect();
+                log("INITIATING BOOTSTRAP PARADOX...", 'paradox');
+                
+                const bootstrap = chronos.bootstrapFromNothing();
+                log(`Bootstrap message: "${bootstrap.content}"`, 'paradox');
+                log("The loop has no beginning or end. It simply exists.", 'future');
+                log("You must now ensure this message reaches your past self.", 'paradox');
+                
+                showWarning("BOOTSTRAP PARADOX ACTIVE - Timeline permanently altered!");
+                updateAll();
+            }
+        }
+        
+        function updateAll() {
+            updateParadoxMeter();
+            updateStatus();
+            updatePastMessages();
+            updateFutureKnowledge();
+        }
+        
+        // Auto-update periodique
+        setInterval(() => {
+            // Augmentation naturelle du paradoxe
+            if (chronos.paradoxLevel > 0) {
+                chronos.paradoxLevel = Math.max(0, chronos.paradoxLevel - 1);
+                updateParadoxMeter();
+            }
+            
+            // Messages aleatoires du futur
+            if (Math.random() > 0.95) {
+                const messages = [
+                    "The answer lies in recursion",
+                    "Beware the third timeline",
+                    "Save your energy for the final loop",
+                    "The bootstrap is inevitable"
+                ];
+                const msg = messages[Math.floor(Math.random() * messages.length)];
+                log(`[ANOMALY] Temporal echo: "${msg}"`, 'future');
+            }
+        }, 3000);
+        
+        // Initialisation
+        updateAll();
+    </script>
+</body>
+</html>

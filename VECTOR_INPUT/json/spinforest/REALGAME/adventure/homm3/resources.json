@@ -1,0 +1,324 @@
+{
+  "biomes": {
+    "plain": {
+      "visual": {
+        "color": "#90EE90",
+        "sprite": "grass_tile",
+        "movement_cost": 1.0
+      },
+      "description": "Plaines verdoyantes, faciles à traverser"
+    },
+    "forest": {
+      "visual": {
+        "color": "#228B22",
+        "sprite": "forest_tile",
+        "movement_cost": 1.5
+      },
+      "description": "Forêts denses ralentissant le mouvement"
+    },
+    "mountain": {
+      "visual": {
+        "color": "#8B4513",
+        "sprite": "mountain_tile",
+        "movement_cost": 3.0
+      },
+      "description": "Montagnes escarpées, difficiles à franchir"
+    },
+    "sea": {
+      "visual": {
+        "color": "#4169E1",
+        "sprite": "water_tile",
+        "movement_cost": 2.0
+      },
+      "description": "Eaux navigables par bateau"
+    }
+  },
+  "terrain_costs": {
+    "0.2": 1.0,
+    "1.5": 1.5,
+    "3.0": 3.0,
+    "5.0": 5.0
+  },
+  "magic_formulas": {
+    "REVEAL_CAUSALITY": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "REVEAL_CAUSALITY",
+        "targetType": "area",
+        "power": 50
+      },
+      "description": "Révèle le brouillard de causalité dans une zone"
+    },
+    "CHAOS_FOG": {
+      "backend": "java", 
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "CHAOS_FOG",
+        "targetType": "area",
+        "power": 30
+      },
+      "description": "Augmente l'incertitude causale"
+    },
+    "TIME_CLARITY": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast", 
+      "parameters": {
+        "formula": "TIME_CLARITY",
+        "targetType": "area",
+        "power": 80
+      },
+      "description": "Vision claire des événements temporels"
+    },
+    "ECHO_TEMPOREL": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "ECHO_TEMPOREL",
+        "targetType": "self",
+        "power": 10
+      },
+      "description": "Écho temporel basique"
+    },
+    "FIRE_BALL_TEMPORAL": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "FIRE_BALL_TEMPORAL",
+        "targetType": "coordinate",
+        "power": 75
+      },
+      "description": "Boule de feu avec distorsion temporelle"
+    },
+    "GRAVITY_DEFIANCE": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "GRAVITY_DEFIANCE",
+        "targetType": "area",
+        "power": 85
+      },
+      "description": "Défie la gravité dans une zone, liquides coulent vers le haut"
+    },
+    "DIMENSION_WARP": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "DIMENSION_WARP",
+        "targetType": "area",
+        "power": 95
+      },
+      "description": "Transforme la géométrie 2D en 3D déformée"
+    },
+    "SPIRIT_PROJECTION": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "SPIRIT_PROJECTION",
+        "targetType": "self",
+        "power": 70
+      },
+      "description": "Projette l'esprit dans le futur pour voir les possibilités"
+    },
+    "CORPORATE_MATRIX": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "CORPORATE_MATRIX",
+        "targetType": "area",
+        "power": 60
+      },
+      "description": "Optimise les processus de la réalité comme un consultant"
+    },
+    "HYPERCUBE_BINDING": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "HYPERCUBE_BINDING",
+        "targetType": "coordinate",
+        "power": 120
+      },
+      "description": "Crée une prison tesseract dans l'espace 4D"
+    },
+    "COMBAT_DISTORTION": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "COMBAT_DISTORTION",
+        "targetType": "area",
+        "power": 90
+      },
+      "description": "Déforme l'espace du champ de bataille"
+    },
+    "TEMPORAL_POWER_NEXUS": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "TEMPORAL_POWER_NEXUS",
+        "targetType": "area",
+        "power": 100
+      },
+      "description": "Anna's ultimate time and power control spell"
+    },
+    "COMPUTATIONAL_TEMPORAL_FOLD": {
+      "backend": "java",
+      "endpoint": "/api/magic/cast",
+      "parameters": {
+        "formula": "COMPUTATIONAL_TEMPORAL_FOLD",
+        "targetType": "reality",
+        "power": 98
+      },
+      "description": "Claude's algorithmic time-bending magic"
+    },
+    "TEMPORAL_MARKETPLACE": {
+      "backend": "rust",
+      "endpoint": "/api/economy/temporal-shop",
+      "parameters": {
+        "shop_type": "time_stolen_items",
+        "era_access": "all_timelines",
+        "payment_method": "time_crystals_or_memories"
+      },
+      "description": "Elder Merchant's cross-temporal trading system"
+    },
+    "DIMENSIONAL_TRADE": {
+      "backend": "rust",
+      "endpoint": "/api/economy/dimension-exchange",
+      "parameters": {
+        "exchange_type": "inter_dimensional",
+        "reality_access": "parallel_worlds",
+        "payment_method": "flux_dimensionnel"
+      },
+      "description": "Vince le Trader's inter-dimensional exchange system"
+    },
+    "TEMPORAL_FORGING": {
+      "backend": "rust",
+      "endpoint": "/api/craft/temporal-forge",
+      "parameters": {
+        "forge_type": "temporal_weapons",
+        "material": "crystallized_time",
+        "enhancement": "causality_resistance"
+      },
+      "description": "Master Temporal Blacksmith's time-infused crafting"
+    },
+    "IMPOSSIBLE_ALCHEMY": {
+      "backend": "rust",
+      "endpoint": "/api/craft/impossible-alchemy",
+      "parameters": {
+        "transmutation_type": "matter_to_energy",
+        "potion_grade": "reality_altering",
+        "success_rate": "guaranteed"
+      },
+      "description": "Grand Alchemist's reality-defying transmutations"
+    },
+    "LIVING_RUNES": {
+      "backend": "rust",
+      "endpoint": "/api/mage/learn-advanced-runes",
+      "parameters": {
+        "rune_type": "evolutionary",
+        "learning_method": "self_modifying",
+        "power_scaling": "adaptive"
+      },
+      "description": "Living Runesmith's self-evolving magical scripts"
+    },
+    "TEMPORAL_NOMADISM": {
+      "backend": "rust",
+      "endpoint": "/api/economy/nomad-encounter",
+      "parameters": {
+        "spawn_probability": "flux_dependent",
+        "inventory_type": "randomized_rare",
+        "encounter_duration": "limited_time"
+      },
+      "description": "Temporal Nomad's random encounter marketplace"
+    }
+  },
+  "entity_types": {
+    "HERO": {
+      "visual": {
+        "sprite": "hero_avatar",
+        "color": "#FFD700",
+        "size": "large"
+      },
+      "properties": {
+        "movement_points": 1000,
+        "vision_radius": 3,
+        "can_cast_spells": true,
+        "time_velocity_range": [-1.0, 1.0]
+      }
+    },
+    "MONSTER": {
+      "visual": {
+        "sprite": "monster_avatar", 
+        "color": "#DC143C",
+        "size": "medium"
+      },
+      "properties": {
+        "movement_points": 600,
+        "vision_radius": 2,
+        "can_cast_spells": false,
+        "time_velocity_range": [0.5, 1.0]
+      }
+    },
+    "ARTIFACT": {
+      "visual": {
+        "sprite": "artifact_item",
+        "color": "#9370DB",
+        "size": "small"
+      },
+      "properties": {
+        "movement_points": 0,
+        "vision_radius": 0,
+        "can_cast_spells": false,
+        "is_collectible": true
+      }
+    }
+  },
+  "causality_levels": {
+    "0.0-0.2": {
+      "description": "Réalité stable",
+      "visual": {
+        "overlay": "none",
+        "alpha": 0.0
+      }
+    },
+    "0.2-0.5": {
+      "description": "Incertitude faible",
+      "visual": {
+        "overlay": "light_fog",
+        "alpha": 0.3
+      }
+    },
+    "0.5-0.8": {
+      "description": "Incertitude élevée",
+      "visual": {
+        "overlay": "dense_fog", 
+        "alpha": 0.6
+      }
+    },
+    "0.8-1.0": {
+      "description": "Chaos temporel",
+      "visual": {
+        "overlay": "chaos_effect",
+        "alpha": 0.9
+      }
+    }
+  },
+  "api_endpoints": {
+    "rust_base": "http://localhost:3001",
+    "java_base": "http://localhost:8082",
+    "endpoints": {
+      "map_generate": "/api/map/generate",
+      "map_init": "/api/map/init", 
+      "agents_plan": "/agents/plan",
+      "world_state_collapse": "/api/world-state/collapse",
+      "causality_resolve": "/api/causality/resolve",
+      "agents_control": "/agents/control",
+      "agents_cast": "/agents/cast",
+      "agents_fork": "/agents/fork",
+      "agents_merge": "/agents/merge",
+      "magic_cast": "/api/magic/cast",
+      "interstice_upload": "/api/interstice/upload",
+      "interstice_download": "/api/interstice/download",
+      "panopticon_wsg": "/api/panopticon/world-state-graph"
+    }
+  }
+}

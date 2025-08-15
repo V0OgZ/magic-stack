@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archives Vivantes - Demo Bibliotheque Mystique</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        #library-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            perspective: 1000px;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+        }
+        
+        /* Bibliotheque 3D */
+        .library-room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            animation: roomFloat 20s ease-in-out infinite;
+        }
+        
+        @keyframes roomFloat {
+            0%, 100% { transform: rotateY(0deg) translateZ(-50px); }
+            50% { transform: rotateY(5deg) translateZ(-30px); }
+        }
+        
+        /* Etageres */
+        .bookshelf {
+            position: absolute;
+            width: 200px;
+            height: 300px;
+            background: linear-gradient(180deg, #2a1810 0%, #1a0f08 100%);
+            border: 2px solid #3a2820;
+            border-radius: 5px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .bookshelf:hover {
+            transform: translateZ(20px);
+            box-shadow: 0 0 30px rgba(255, 200, 100, 0.5);
+        }
+        
+        .bookshelf.heroes { top: 20%; left: 10%; }
+        .bookshelf.artifacts { top: 20%; right: 10%; }
+        .bookshelf.creatures { bottom: 20%; left: 10%; }
+        .bookshelf.stories { bottom: 20%; right: 10%; }
+        .bookshelf.spells { top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); }
+        
+        .shelf-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        .bookshelf.heroes .shelf-label { color: #ffd700; }
+        .bookshelf.artifacts .shelf-label { color: #9400d3; }
+        .bookshelf.creatures .shelf-label { color: #ff6347; }
+        .bookshelf.stories .shelf-label { color: #4169e1; }
+        .bookshelf.spells .shelf-label { color: #00ff00; }
+        
+        /* Livres */
+        .book {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: linear-gradient(90deg, #8b4513 0%, #654321 50%, #8b4513 100%);
+            border: 1px solid #a0522d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: bookGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes bookGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+        }
+        
+        .book:hover {
+            transform: translateY(-10px) scale(1.2);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.8);
+        }
+        
+        .book.rare { background: linear-gradient(90deg, #4169e1 0%, #1e90ff 50%, #4169e1 100%); }
+        .book.epic { background: linear-gradient(90deg, #9400d3 0%, #8a2be2 50%, #9400d3 100%); }
+        .book.legendary { background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%); }
+        
+        /* Entite materialisee */
+        .materialized-entity {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            animation: materialize 0.5s ease-out;
+        }
+        
+        @keyframes materialize {
+            0% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(180deg);
+            }
+            100% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+        }
+        
+        .entity-avatar {
+            font-size: 100px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px currentColor);
+            animation: entityFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes entityFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .entity-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px currentColor;
+        }
+        
+        .entity-description {
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            opacity: 0.9;
+        }
+        
+        /* Dialogue */
+        .dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #4a4a4a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+        
+        .dialogue-text {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .dialogue-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .dialogue-option {
+            padding: 10px 20px;
+            background: #2a2a2a;
+            border: 1px solid #4a4a4a;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .dialogue-option:hover {
+            background: #3a3a3a;
+            border-color: #6a6a6a;
+            transform: translateY(-2px);
+        }
+        
+        /* Mini-jeu */
+        .minigame-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #4a4a4a;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+        }
+        
+        /* Particules magiques */
+        .magic-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 3s ease-out forwards;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+        
+        /* Stats */
+        .stats-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #4a4a4a;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+        }
+        
+        .stat-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Portail central */
+        .central-portal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #4169e1 0%, transparent 70%);
+            animation: portalPulse 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+        
+        @keyframes portalPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .portal-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 20px currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div id="library-container">
+        <div class="library-room">
+            <!-- Etageres -->
+            <div class="bookshelf heroes" data-type="heroes">
+                <div class="shelf-label">HEROS</div>
+            </div>
+            
+            <div class="bookshelf artifacts" data-type="artifacts">
+                <div class="shelf-label">ARTEFACTS</div>
+            </div>
+            
+            <div class="bookshelf creatures" data-type="creatures">
+                <div class="shelf-label">CREATURES</div>
+            </div>
+            
+            <div class="bookshelf stories" data-type="stories">
+                <div class="shelf-label">HISTOIRES</div>
+            </div>
+            
+            <div class="bookshelf spells" data-type="spells">
+                <div class="shelf-label">SORTS</div>
+            </div>
+            
+            <!-- Portail central -->
+            <div class="central-portal" id="central-portal">
+                <div class="portal-label">PORTAIL</div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-panel">
+            <h3>Archives Vivantes</h3>
+            <div class="stat-item">
+                <span>Decouvertes:</span>
+                <span id="discoveries">0</span>
+            </div>
+            <div class="stat-item">
+                <span>Niveau:</span>
+                <span id="player-level">1</span>
+            </div>
+            <div class="stat-item">
+                <span>Connexion Vector DB:</span>
+                <span id="vector-status">OFF</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Systeme Archives Vivantes - Demo
+        class ArchivesVivantesDemo {
+            constructor() {
+                this.discoveries = 0;
+                this.playerLevel = 1;
+                this.currentEntity = null;
+                this.vectorDBConnected = false;
+                
+                // Donnees de demo (normalement depuis Vector DB)
+                this.demoEntities = {
+                    heroes: [
+                        {
+                            id: 'donna_paulsen',
+                            name: 'Donna Paulsen',
+                            avatar: '💼',
+                            description: 'Secretaire supreme, organisatrice du chaos',
+                            dialogue: "Salut ! Tu as l'air stresse, veux-tu une pause cigarette magique ?",
+                            minigame: 'organization',
+                            rarity: 'epic'
+                        },
+                        {
+                            id: 'panoramix',
+                            name: 'Panoramix',
+                            avatar: '🧙‍♂️',
+                            description: 'Druide alchimiste aux potions quantiques',
+                            dialogue: "Ah ! Un visiteur ! Veux-tu gouter ma potion quantique ?",
+                            minigame: 'alchemy',
+                            rarity: 'legendary'
+                        },
+                        {
+                            id: 'vince_vega',
+                            name: 'Vince Vega',
+                            avatar: '🔫',
+                            description: 'Tireur d\'elite qui ne regarde jamais',
+                            dialogue: "Yo ! Tu veux voir comment je tire sans regarder ?",
+                            minigame: 'precision',
+                            rarity: 'rare'
+                        }
+                    ],
+                    artifacts: [
+                        {
+                            id: 'chaudron_quantique',
+                            name: 'Chaudron Quantique',
+                            avatar: '🍯',
+                            description: 'Contient toutes les potions possibles simultanement',
+                            dialogue: "*Le chaudron bouillonne d'energie quantique*",
+                            minigame: 'alchemy',
+                            rarity: 'legendary'
+                        },
+                        {
+                            id: 'oeil_grut',
+                            name: 'Oeil de GRUT',
+                            avatar: '👁️',
+                            description: 'Voit a travers les 6 dimensions',
+                            dialogue: "Tu veux voir les autres instances de Heroes of Time ?",
+                            minigame: 'memory',
+                            rarity: 'legendary'
+                        }
+                    ],
+                    creatures: [
+                        {
+                            id: 'chat_schrodinger',
+                            name: 'Chat de Schrodinger',
+                            avatar: '🐱',
+                            description: 'Vivant ET mort jusqu\'a observation',
+                            dialogue: "Miaou... ou pas miaou ? Telle est la question !",
+                            minigame: 'puzzle',
+                            rarity: 'epic'
+                        }
+                    ]
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Generer des livres sur les etageres
+                document.querySelectorAll('.bookshelf').forEach(shelf => {
+                    this.populateShelf(shelf);
+                });
+                
+                // Event listeners
+                document.querySelectorAll('.bookshelf').forEach(shelf => {
+                    shelf.addEventListener('click', (e) => this.onShelfClick(e));
+                });
+                
+                document.getElementById('central-portal').addEventListener('click', () => {
+                    this.connectToVectorDB();
+                });
+                
+                // Particules ambiantes
+                setInterval(() => this.createAmbientParticle(), 500);
+            }
+            
+            populateShelf(shelf) {
+                const bookCount = 5 + Math.floor(Math.random() * 10);
+                
+                for (let i = 0; i < bookCount; i++) {
+                    const book = document.createElement('div');
+                    book.className = 'book';
+                    
+                    // Rarete aleatoire
+                    const rarityRoll = Math.random();
+                    if (rarityRoll > 0.95) book.classList.add('legendary');
+                    else if (rarityRoll > 0.85) book.classList.add('epic');
+                    else if (rarityRoll > 0.7) book.classList.add('rare');
+                    
+                    // Position aleatoire sur l'etagere
+                    book.style.left = `${10 + (i % 5) * 35}px`;
+                    book.style.top = `${20 + Math.floor(i / 5) * 50}px`;
+                    
+                    shelf.appendChild(book);
+                }
+            }
+            
+            onShelfClick(event) {
+                const shelf = event.currentTarget;
+                const shelfType = shelf.dataset.type;
+                
+                // Selectionner une entite aleatoire de ce type
+                const entities = this.demoEntities[shelfType];
+                if (!entities || entities.length === 0) return;
+                
+                const entity = entities[Math.floor(Math.random() * entities.length)];
+                this.materializeEntity(entity);
+                
+                // Creer des particules
+                this.createMagicBurst(event.clientX, event.clientY);
+            }
+            
+            materializeEntity(entity) {
+                // Supprimer l'entite precedente
+                const existing = document.querySelector('.materialized-entity');
+                if (existing) existing.remove();
+                
+                const existingDialogue = document.querySelector('.dialogue-box');
+                if (existingDialogue) existingDialogue.remove();
+                
+                // Creer la nouvelle entite
+                const entityDiv = document.createElement('div');
+                entityDiv.className = 'materialized-entity';
+                entityDiv.innerHTML = `
+                    <div class="entity-avatar" style="color: ${this.getRarityColor(entity.rarity)}">
+                        ${entity.avatar}
+                    </div>
+                    <div class="entity-name" style="color: ${this.getRarityColor(entity.rarity)}">
+                        ${entity.name}
+                    </div>
+                    <div class="entity-description">${entity.description}</div>
+                `;
+                
+                document.getElementById('library-container').appendChild(entityDiv);
+                
+                // Afficher le dialogue
+                setTimeout(() => this.showDialogue(entity), 500);
+                
+                // Mettre a jour les stats
+                this.discoveries++;
+                document.getElementById('discoveries').textContent = this.discoveries;
+                
+                if (this.discoveries % 5 === 0) {
+                    this.playerLevel++;
+                    document.getElementById('player-level').textContent = this.playerLevel;
+                }
+                
+                this.currentEntity = entity;
+            }
+            
+            showDialogue(entity) {
+                const dialogueBox = document.createElement('div');
+                dialogueBox.className = 'dialogue-box';
+                dialogueBox.innerHTML = `
+                    <div class="dialogue-text">${entity.dialogue}</div>
+                    <div class="dialogue-options">
+                        <div class="dialogue-option" onclick="archivesDemo.startMiniGame('${entity.minigame}')">
+                            Relever le defi !
+                        </div>
+                        <div class="dialogue-option" onclick="archivesDemo.askAboutOthers()">
+                            Parle-moi des autres
+                        </div>
+                        <div class="dialogue-option" onclick="archivesDemo.closeDialogue()">
+                            Au revoir
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('library-container').appendChild(dialogueBox);
+            }
+            
+            startMiniGame(type) {
+                console.log(`Lancement du mini-jeu: ${type}`);
+                
+                // Fermer le dialogue
+                this.closeDialogue();
+                
+                // Creer le conteneur de mini-jeu
+                const minigameDiv = document.createElement('div');
+                minigameDiv.className = 'minigame-container';
+                
+                switch(type) {
+                    case 'alchemy':
+                        minigameDiv.innerHTML = this.createAlchemyMiniGame();
+                        break;
+                    case 'organization':
+                        minigameDiv.innerHTML = this.createOrganizationMiniGame();
+                        break;
+                    case 'precision':
+                        minigameDiv.innerHTML = this.createPrecisionMiniGame();
+                        break;
+                    default:
+                        minigameDiv.innerHTML = `<h2>Mini-jeu: ${type}</h2><p>En construction...</p>`;
+                }
+                
+                document.getElementById('library-container').appendChild(minigameDiv);
+            }
+            
+            createAlchemyMiniGame() {
+                return `
+                    <h2>Laboratoire d'Alchimie</h2>
+                    <p>Melange les ingredients pour creer la potion parfaite !</p>
+                    <div style="display: flex; gap: 20px; margin: 20px 0;">
+                        <div style="font-size: 40px; cursor: pointer;" onclick="archivesDemo.addIngredient('💧')">💧</div>
+                        <div style="font-size: 40px; cursor: pointer;" onclick="archivesDemo.addIngredient('🌿')">🌿</div>
+                        <div style="font-size: 40px; cursor: pointer;" onclick="archivesDemo.addIngredient('⚡')">⚡</div>
+                        <div style="font-size: 40px; cursor: pointer;" onclick="archivesDemo.addIngredient('💎')">💎</div>
+                    </div>
+                    <div id="potion-result" style="font-size: 60px; margin: 20px;">🧪</div>
+                    <button onclick="archivesDemo.closeMiniGame()" style="padding: 10px 20px;">Terminer</button>
+                `;
+            }
+            
+            createOrganizationMiniGame() {
+                return `
+                    <h2>Bureau de Donna</h2>
+                    <p>Organise les documents par priorite !</p>
+                    <div style="margin: 20px 0;">
+                        <div>📄 Rapport urgent</div>
+                        <div>📸 Photo de vacances</div>
+                        <div>📜 Formule magique</div>
+                        <div>☕ Tasse de cafe</div>
+                    </div>
+                    <button onclick="archivesDemo.closeMiniGame()" style="padding: 10px 20px;">Terminer</button>
+                `;
+            }
+            
+            createPrecisionMiniGame() {
+                return `
+                    <h2>Entrainement au Tir</h2>
+                    <p>Vise sans regarder !</p>
+                    <div style="font-size: 80px; margin: 20px;">🎯</div>
+                    <p>Ferme les yeux et clique !</p>
+                    <button onclick="archivesDemo.closeMiniGame()" style="padding: 10px 20px;">Terminer</button>
+                `;
+            }
+            
+            addIngredient(ingredient) {
+                const result = document.getElementById('potion-result');
+                result.textContent += ingredient;
+                
+                // Animation
+                result.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    result.style.transform = 'scale(1)';
+                }, 200);
+            }
+            
+            closeMiniGame() {
+                const minigame = document.querySelector('.minigame-container');
+                if (minigame) minigame.remove();
+                
+                // Recompense
+                alert('Bravo ! Tu as gagne une nouvelle capacite !');
+            }
+            
+            askAboutOthers() {
+                const dialogue = document.querySelector('.dialogue-text');
+                if (dialogue && this.currentEntity) {
+                    dialogue.textContent = `${this.currentEntity.name} te parle des autres habitants des archives...`;
+                }
+            }
+            
+            closeDialogue() {
+                const dialogueBox = document.querySelector('.dialogue-box');
+                if (dialogueBox) dialogueBox.remove();
+                
+                const entity = document.querySelector('.materialized-entity');
+                if (entity) {
+                    entity.style.animation = 'materialize 0.5s ease-out reverse';
+                    setTimeout(() => entity.remove(), 500);
+                }
+            }
+            
+            connectToVectorDB() {
+                // Simulation de connexion a la Vector DB
+                this.vectorDBConnected = !this.vectorDBConnected;
+                document.getElementById('vector-status').textContent = 
+                    this.vectorDBConnected ? 'ONLINE' : 'OFF';
+                document.getElementById('vector-status').style.color = 
+                    this.vectorDBConnected ? '#00ff00' : '#ff0000';
+                
+                if (this.vectorDBConnected) {
+                    alert('Connexion a la base vectorielle etablie ! Les archives s\'enrichissent...');
+                }
+            }
+            
+            createMagicBurst(x, y) {
+                for (let i = 0; i < 20; i++) {
+                    this.createParticle(x, y);
+                }
+            }
+            
+            createParticle(x, y) {
+                const particle = document.createElement('div');
+                particle.className = 'magic-particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                // Direction aleatoire
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 50 + Math.random() * 100;
+                particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+                particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+                
+                // Couleur aleatoire
+                const colors = ['#ffd700', '#9400d3', '#00ff00', '#ff6347', '#4169e1'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                document.getElementById('library-container').appendChild(particle);
+                
+                // Supprimer apres l'animation
+                setTimeout(() => particle.remove(), 3000);
+            }
+            
+            createAmbientParticle() {
+                if (Math.random() > 0.7) {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    this.createParticle(x, y);
+                }
+            }
+            
+            getRarityColor(rarity) {
+                const colors = {
+                    common: '#ffffff',
+                    rare: '#4169e1',
+                    epic: '#9400d3',
+                    legendary: '#ffd700'
+                };
+                return colors[rarity] || colors.common;
+            }
+        }
+        
+        // Initialiser la demo
+        const archivesDemo = new ArchivesVivantesDemo();
+    </script>
+</body>
+</html>

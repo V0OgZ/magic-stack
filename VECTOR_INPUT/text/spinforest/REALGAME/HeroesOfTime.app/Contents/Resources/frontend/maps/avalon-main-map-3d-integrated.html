@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🗺️ AVALON - Map Principale avec Zones 3D</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #mapContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #map2D {
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            position: relative;
+        }
+        
+        .map-zone {
+            position: absolute;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .map-zone:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
+        
+        .zone-3d {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.1);
+        }
+        
+        .zone-combat {
+            border-color: #ff0000;
+            background: rgba(255,0,0,0.1);
+        }
+        
+        .zone-portal {
+            border-color: #ff00ff;
+            background: rgba(255,0,255,0.1);
+        }
+        
+        .zone-exploration {
+            border-color: #00ffff;
+            background: rgba(0,255,255,0.1);
+        }
+        
+        #experience3D {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: #000;
+            z-index: 100;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        
+        #exitButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            z-index: 101;
+            display: none;
+        }
+        
+        #zoneInfo {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer">
+        <!-- Map 2D principale -->
+        <div id="map2D">
+            <!-- HUD -->
+            <div id="hud">
+                <h3>🗺️ AVALON WORLD MAP</h3>
+                <div>Position: <span id="playerPos">50, 50</span></div>
+                <div>Zone: <span id="currentZone">Centre d'Avalon</span></div>
+                <div>Mode: <span id="currentMode">2D Map</span></div>
+            </div>
+            
+            <!-- Zones cliquables -->
+            <div class="map-zone zone-3d zone-exploration" 
+                 style="left: 20%; top: 30%; width: 150px; height: 100px;"
+                 data-zone="goldorak_hangar">
+                🤖 Hangar Goldorak<br>
+                <small>[Clic pour 3D]</small>
+            </div>
+            
+            <div class="map-zone zone-3d zone-combat" 
+                 style="left: 60%; top: 20%; width: 120px; height: 120px;"
+                 data-zone="combat_arena_01">
+                ⚔️ Arène GROFI<br>
+                <small>[Q3 Arena]</small>
+            </div>
+            
+            <div class="map-zone zone-3d zone-portal" 
+                 style="left: 40%; top: 50%; width: 140px; height: 140px;"
+                 data-zone="morgana_chamber">
+                🌀 Portail Morgana<br>
+                <small>[Voyages]</small>
+            </div>
+            
+            <div class="map-zone zone-3d zone-exploration" 
+                 style="left: 70%; top: 60%; width: 130px; height: 100px;"
+                 data-zone="temporal_nexus">
+                ⏰ Nexus Temporel<br>
+                <small>[Hybride]</small>
+            </div>
+            
+            <!-- Zones 2D normales -->
+            <div class="map-zone" 
+                 style="left: 10%; top: 10%; width: 100px; height: 80px;">
+                🏰 Château
+            </div>
+            
+            <div class="map-zone" 
+                 style="left: 80%; top: 40%; width: 90px; height: 90px;">
+                🌲 Forêt
+            </div>
+        </div>
+        
+        <!-- Container pour expériences 3D -->
+        <div id="experience3D">
+            <div class="loading">⏳ Chargement...</div>
+        </div>
+        
+        <!-- Bouton de sortie 3D -->
+        <button id="exitButton" onclick="exitCurrent3D()">
+            ❌ Retour à la Map
+        </button>
+        
+        <!-- Info zone -->
+        <div id="zoneInfo">
+            <h3 id="zoneName"></h3>
+            <p id="zoneDesc"></p>
+            <button onclick="enterZone3D()">🚀 Entrer en 3D</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { Map3DConfigSystem } from '../CORE/map-3d-config-system.js';
+        
+        // Initialiser le système
+        const map3DConfig = new Map3DConfigSystem();
+        map3DConfig.setupDefaultConfigurations();
+        
+        // État du joueur (simulé)
+        const playerState = {
+            position: { x: 50, y: 50 },
+            inventory: ['key_hangar', 'spell_fireball'],
+            stats: { health: 100, mana: 50 },
+            reputation: 5,
+            completedQuests: ['quest_intro'],
+            quests: ['quest_find_goldorak']
+        };
+        
+        // Zone actuellement sélectionnée
+        let selectedZone = null;
+        let activeExperience = null;
+        
+        // Descriptions des zones
+        const zoneDescriptions = {
+            goldorak_hangar: {
+                name: "Hangar Spatial de Goldorak",
+                desc: "Explorez le hangar en 3D, interagissez avec Goldorak et lancez-vous dans l'espace !"
+            },
+            combat_arena_01: {
+                name: "Arène Quantique GROFI",
+                desc: "Combat style Quake 3 Arena avec magie ! Affrontez des bots ou d'autres joueurs."
+            },
+            morgana_chamber: {
+                name: "Chambre des Portails",
+                desc: "Voyagez entre les dimensions via les portails de Morgana. Attention aux paradoxes !"
+            },
+            temporal_nexus: {
+                name: "Nexus Temporel",
+                desc: "Zone hybride qui s'adapte : puzzles 3D, combat ou exploration selon vos actions."
+            }
+        };
+        
+        // Gestion des clics sur les zones
+        document.querySelectorAll('.map-zone[data-zone]').forEach(zone => {
+            zone.addEventListener('click', (e) => {
+                const zoneId = zone.dataset.zone;
+                selectedZone = zoneId;
+                
+                // Vérifier si on peut accéder
+                const canAccess = map3DConfig.canAccessExperience(zoneId, playerState);
+                
+                if (canAccess) {
+                    showZoneInfo(zoneId);
+                } else {
+                    alert("Vous ne pouvez pas encore accéder à cette zone !");
+                }
+            });
+        });
+        
+        // Afficher les infos de zone
+        function showZoneInfo(zoneId) {
+            const info = zoneDescriptions[zoneId];
+            document.getElementById('zoneName').textContent = info.name;
+            document.getElementById('zoneDesc').textContent = info.desc;
+            document.getElementById('zoneInfo').style.display = 'block';
+        }
+        
+        // Entrer dans une zone 3D
+        window.enterZone3D = async function() {
+            if (!selectedZone) return;
+            
+            document.getElementById('zoneInfo').style.display = 'none';
+            document.getElementById('experience3D').style.display = 'block';
+            document.querySelector('.loading').style.display = 'block';
+            
+            try {
+                // Simuler le chargement du moteur 3D approprié
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Pour la démo, on charge l'expérience appropriée
+                let experienceUrl;
+                switch(selectedZone) {
+                    case 'goldorak_hangar':
+                        experienceUrl = '../goldorak_3d_demo.html';
+                        break;
+                    case 'combat_arena_01':
+                        experienceUrl = '../q3_arena_grofi_enterprise_3d.html';
+                        break;
+                    case 'morgana_chamber':
+                        experienceUrl = '../MORGANA-PORTAL/sid-return-portal-3d.html';
+                        break;
+                    case 'temporal_nexus':
+                        experienceUrl = '../3D-FUSION/goldorak_portal_solo.html';
+                        break;
+                }
+                
+                // Créer iframe pour l'expérience
+                const iframe = document.createElement('iframe');
+                iframe.src = experienceUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                document.getElementById('experience3D').innerHTML = '';
+                document.getElementById('experience3D').appendChild(iframe);
+                
+                // Afficher bouton de sortie
+                document.getElementById('exitButton').style.display = 'block';
+                
+                // Mettre à jour HUD
+                document.getElementById('currentMode').textContent = '3D Experience';
+                document.getElementById('currentZone').textContent = zoneDescriptions[selectedZone].name;
+                
+                activeExperience = selectedZone;
+                
+            } catch (error) {
+                console.error('Erreur chargement 3D:', error);
+                alert('Erreur lors du chargement de l\'expérience 3D');
+                exitCurrent3D();
+            }
+        };
+        
+        // Sortir de l'expérience 3D
+        window.exitCurrent3D = function() {
+            document.getElementById('experience3D').style.display = 'none';
+            document.getElementById('experience3D').innerHTML = '<div class="loading">⏳ Chargement...</div>';
+            document.getElementById('exitButton').style.display = 'none';
+            
+            // Restaurer HUD
+            document.getElementById('currentMode').textContent = '2D Map';
+            document.getElementById('currentZone').textContent = 'Centre d\'Avalon';
+            
+            activeExperience = null;
+        };
+        
+        // Simuler mouvement du joueur
+        let playerX = 50, playerY = 50;
+        document.addEventListener('keydown', (e) => {
+            if (activeExperience) return; // Pas de mouvement en 3D
+            
+            switch(e.key) {
+                case 'ArrowUp': playerY = Math.max(0, playerY - 5); break;
+                case 'ArrowDown': playerY = Math.min(100, playerY + 5); break;
+                case 'ArrowLeft': playerX = Math.max(0, playerX - 5); break;
+                case 'ArrowRight': playerX = Math.min(100, playerX + 5); break;
+            }
+            
+            document.getElementById('playerPos').textContent = `${playerX}, ${playerY}`;
+            playerState.position = { x: playerX, y: playerY };
+        });
+        
+        // Message d'accueil
+        console.log(`
+🗺️ AVALON MAP 3D INTÉGRÉE
+========================
+Cliquez sur les zones colorées pour accéder aux expériences 3D !
+- 🤖 Hangar Goldorak : Exploration 3D
+- ⚔️ Arène GROFI : Combat Q3 Arena  
+- 🌀 Portail Morgana : Voyages dimensionnels
+- ⏰ Nexus Temporel : Expérience hybride
+
+Utilisez les flèches pour vous déplacer sur la map 2D.
+        `);
+    </script>
+</body>
+</html>

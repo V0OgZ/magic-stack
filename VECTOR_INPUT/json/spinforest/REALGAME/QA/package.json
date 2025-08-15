@@ -1,0 +1,34 @@
+{
+  "name": "realgame-qa-stealth",
+  "version": "1.0.0",
+  "description": "QA Testing Suite for REALGAME - Definitely Not Tucker",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:quick": "./run-stealth-tests.sh quick",
+    "test:full": "./run-stealth-tests.sh full",
+    "test:debug": "./run-stealth-tests.sh debug",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report reports/html",
+    "codegen": "playwright codegen",
+    "install:browsers": "playwright install",
+    "clean": "rm -rf reports/* test-results/*"
+  },
+  "keywords": [
+    "qa",
+    "testing",
+    "playwright",
+    "not-tucker",
+    "stealth"
+  ],
+  "author": "QA-Ghost-01",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

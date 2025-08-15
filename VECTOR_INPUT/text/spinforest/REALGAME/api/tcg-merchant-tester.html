@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TCG Merchants Tester</title>
+  <style>
+    body{margin:0;background:#0a0a1a;color:#e8d5b7;font-family:Courier,monospace}
+    #top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid #8A2BE2;background:#111831}
+    .container{max-width:980px;margin:20px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .card{background:#121826;border:1px solid #2b3350;border-radius:8px;padding:12px}
+    .actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+    .btn{display:inline-block;padding:6px 10px;border:1px solid #8A2BE2;border-radius:6px;color:#e6e6e6;text-decoration:none;cursor:pointer}
+    .ok{border-color:#28a745}
+    .warn{border-color:#ffc107}
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div>TCG Merchants Tester (front-only)</div>
+    <div><a class="btn" href="../adventure/homm3/hub-aventure.html">Hub</a></div>
+  </div>
+  <div class="container">
+    <div class="grid" id="tests"></div>
+  </div>
+
+  <script>
+    const merchants = [
+      { id:'VINCE_TRADER', title:'Trader Interstice', endpoint:'/api/economy/dimension-exchange' },
+      { id:'FORGERON_TEMPOREL', title:'Temporal Forge', endpoint:'/api/craft/temporal-forge' },
+      { id:'ALCHIMISTE_MARCHAND', title:'Impossible Alchemy', endpoint:'/api/craft/impossible-alchemy' },
+      { id:'RUNISTE_MARCHAND', title:'Runes vivantes', endpoint:'/api/mage/learn-advanced-runes' },
+      { id:'MARCHAND_ITINERANT', title:'Nomade', endpoint:'/api/economy/nomad-encounter' }
+    ];
+
+    const testsRoot = document.getElementById('tests');
+    const base = 'http://localhost:3001';
+
+    merchants.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div><b>${m.title}</b></div><div style="font-size:12px;color:#9aa4c4">${m.endpoint}</div>`;
+      const acts = document.createElement('div');
+      acts.className = 'actions';
+
+      const btnSim = document.createElement('button');
+      btnSim.className = 'btn ok';
+      btnSim.textContent = 'Simuler réussite (front)';
+      btnSim.onclick = () => {
+        alert(`[SIM] ${m.title}: OK (no backend call)`);
+      };
+
+      const btnCall = document.createElement('button');
+      btnCall.className = 'btn warn';
+      btnCall.textContent = 'Appel backend (best-effort)';
+      btnCall.onclick = async () => {
+        try {
+          const heroId = (window.sessionStorage && sessionStorage.getItem('heroId')) || 'hero:alice';
+          const resp = await fetch(base + m.endpoint, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `test_${Date.now()}` },
+            body: JSON.stringify({ heroId, test: true })
+          });
+          if (!resp.ok) throw new Error(resp.status + ' ' + resp.statusText);
+          const data = await resp.json().catch(() => ({}));
+          alert(`[BACKEND] ${m.title}: OK -> ` + JSON.stringify(data).slice(0,200));
+        } catch (e) {
+          alert(`[BACKEND] ${m.title}: Échec -> ` + e.message);
+        }
+      };
+
+      acts.appendChild(btnSim);
+      acts.appendChild(btnCall);
+      card.appendChild(acts);
+      testsRoot.appendChild(card);
+    });
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>La Caverne Profonde - Éveil Perceptuel</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: radial-gradient(ellipse at center, #1a0033, #000);
+        }
+        
+        .dimension-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        
+        .dimension-layer.active {
+            opacity: 1;
+        }
+        
+        /* Vision 1D - Lignes */
+        #layer-1d {
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.1) 10px,
+                rgba(255,255,255,0.1) 11px
+            );
+        }
+        
+        /* Vision 2D - Formes */
+        #layer-2d {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="30" height="30" fill="rgba(100,100,255,0.3)"/><circle cx="70" cy="70" r="20" fill="rgba(255,100,100,0.3)"/></svg>');
+            background-size: 200px;
+        }
+        
+        /* Vision 3D - Profondeur */
+        #layer-3d {
+            perspective: 1000px;
+        }
+        
+        .cube {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            animation: rotate3d 10s infinite linear;
+            display: none;
+        }
+        
+        .cube.active {
+            display: block;
+        }
+        
+        .cube-face {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255,215,0,0.5);
+            background: rgba(100,50,200,0.2);
+        }
+        
+        @keyframes rotate3d {
+            from { transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg); }
+            to { transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg); }
+        }
+        
+        /* Vision 4D - Temps */
+        #layer-4d {
+            background: linear-gradient(45deg, 
+                transparent 25%, 
+                rgba(255,255,255,0.05) 25%, 
+                rgba(255,255,255,0.05) 75%, 
+                transparent 75%);
+            background-size: 50px 50px;
+            animation: timeFlow 5s linear infinite;
+        }
+        
+        @keyframes timeFlow {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; }
+        }
+        
+        /* Vision 5D - Causalité */
+        #layer-5d canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Vision 6D - Interstice */
+        #layer-6d {
+            background: url('../../AVALON/💠 Essences scellées/🖼️ Ymagerie/Interstice/Holographic Hourglass in Cosmic Space.png');
+            background-size: cover;
+            background-position: center;
+            filter: hue-rotate(0deg);
+            animation: intersticeShift 10s infinite;
+        }
+        
+        @keyframes intersticeShift {
+            0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+            50% { filter: hue-rotate(180deg) brightness(1.5); }
+        }
+        
+        .clickable-object {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clickable-object:hover {
+            transform: scale(1.1);
+            filter: brightness(1.5);
+        }
+        
+        #philosopher-stone {
+            width: 80px;
+            height: 80px;
+            bottom: 10%;
+            left: 10%;
+            background: radial-gradient(circle, #ffd700, #ff6b6b);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255,215,0,0.8);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+            50% { box-shadow: 0 0 60px rgba(255,215,0,1); }
+        }
+        
+        #temporal-mirror {
+            width: 120px;
+            height: 180px;
+            top: 20%;
+            right: 15%;
+            background: linear-gradient(135deg, rgba(200,200,255,0.3), rgba(255,200,200,0.3));
+            border: 3px solid silver;
+            border-radius: 60px 60px 10px 10px;
+        }
+        
+        #causality-web {
+            width: 150px;
+            height: 150px;
+            top: 40%;
+            left: 40%;
+            display: none;
+        }
+        
+        #dialogue-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            padding: 30px;
+            color: #0f0;
+            font-size: 18px;
+            min-height: 150px;
+        }
+        
+        #speaker {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        #vision-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,215,0,0.5);
+        }
+        
+        #puzzle-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #ffd700;
+            padding: 30px;
+            border-radius: 20px;
+            display: none;
+            text-align: center;
+        }
+        
+        .puzzle-button {
+            margin: 10px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #4a0080, #1a0033);
+            border: 2px solid #ffd700;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .puzzle-button:hover {
+            background: linear-gradient(135deg, #6a00a0, #3a0053);
+            transform: scale(1.05);
+        }
+        
+        #final-portal {
+            position: absolute;
+            width: 200px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            cursor: pointer;
+        }
+        
+        .portal-effect {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, 
+                rgba(255,255,255,0.8) 0%, 
+                rgba(100,100,255,0.6) 30%, 
+                rgba(200,100,255,0.4) 60%, 
+                transparent 100%);
+            animation: portalSpin 3s infinite linear;
+        }
+        
+        @keyframes portalSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Couches dimensionnelles -->
+        <div id="layer-1d" class="dimension-layer active"></div>
+        <div id="layer-2d" class="dimension-layer"></div>
+        <div id="layer-3d" class="dimension-layer">
+            <div class="cube" id="perception-cube">
+                <div class="cube-face" style="transform: translateZ(50px);"></div>
+                <div class="cube-face" style="transform: translateZ(-50px);"></div>
+                <div class="cube-face" style="transform: rotateY(90deg) translateZ(50px);"></div>
+                <div class="cube-face" style="transform: rotateY(-90deg) translateZ(50px);"></div>
+                <div class="cube-face" style="transform: rotateX(90deg) translateZ(50px);"></div>
+                <div class="cube-face" style="transform: rotateX(-90deg) translateZ(50px);"></div>
+            </div>
+        </div>
+        <div id="layer-4d" class="dimension-layer"></div>
+        <div id="layer-5d" class="dimension-layer">
+            <canvas id="causality-canvas"></canvas>
+        </div>
+        <div id="layer-6d" class="dimension-layer"></div>
+        
+        <!-- Objets interactifs -->
+        <div id="philosopher-stone" class="clickable-object" onclick="touchStone()"></div>
+        <div id="temporal-mirror" class="clickable-object" onclick="lookInMirror()"></div>
+        <div id="causality-web" class="clickable-object" onclick="untangleWeb()">
+            <svg width="150" height="150">
+                <line x1="75" y1="0" x2="75" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                <line x1="0" y1="75" x2="150" y2="75" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="150" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                <line x1="150" y1="0" x2="0" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                <circle cx="75" cy="75" r="30" fill="none" stroke="rgba(255,215,0,0.5)" stroke-width="2"/>
+            </svg>
+        </div>
+        
+        <!-- Portail final -->
+        <div id="final-portal" onclick="enterInterstice()">
+            <div class="portal-effect"></div>
+        </div>
+        
+        <!-- Interface -->
+        <div id="vision-display">VISION: 1D</div>
+        
+        <div id="dialogue-box">
+            <div id="speaker">Le Philosophe</div>
+            <div id="text">Tu as franchi le seuil... Maintenant commence le véritable éveil.</div>
+        </div>
+        
+        <!-- Puzzle Container -->
+        <div id="puzzle-container">
+            <h2 style="color: #ffd700;">Énigme de la Perception</h2>
+            <p id="puzzle-question"></p>
+            <div id="puzzle-options"></div>
+        </div>
+    </div>
+    
+    <script>
+        // État du jeu
+        let currentVision = parseInt(localStorage.getItem('visionLevel') || '1');
+        let gameProgress = {
+            stoneActivated: false,
+            mirrorUsed: false,
+            webUntangled: false,
+            puzzlesSolved: 0,
+            intersticeUnlocked: false
+        };
+        
+        // Puzzles philosophiques
+        const puzzles = [
+            {
+                question: "Qu'est-ce que la réalité ?",
+                options: [
+                    { text: "Ce que nous percevons", correct: false },
+                    { text: "L'intersection de toutes les perceptions", correct: true },
+                    { text: "Une illusion collective", correct: false },
+                    { text: "Ce qui existe indépendamment de nous", correct: false }
+                ],
+                dimension: 2
+            },
+            {
+                question: "Si le temps est une dimension, alors...",
+                options: [
+                    { text: "Le passé n'existe plus", correct: false },
+                    { text: "Le futur est déterminé", correct: false },
+                    { text: "Tout existe simultanément", correct: true },
+                    { text: "Seul le présent est réel", correct: false }
+                ],
+                dimension: 4
+            },
+            {
+                question: "La causalité implique que...",
+                options: [
+                    { text: "Chaque effet a une cause", correct: false },
+                    { text: "Les causes et effets sont relatifs à l'observateur", correct: true },
+                    { text: "Le libre arbitre n'existe pas", correct: false },
+                    { text: "L'univers est déterministe", correct: false }
+                ],
+                dimension: 5
+            }
+        ];
+        
+        // Initialisation
+        function init() {
+            updateVisionDisplay();
+            activateLayers();
+            
+            // Message d'accueil différent selon le niveau
+            setTimeout(() => {
+                if (currentVision === 1) {
+                    showDialogue("Le Philosophe", "Tu es dans les profondeurs maintenant. Ici, la perception devient réalité. Touche la Pierre Philosophale pour commencer ton éveil.");
+                } else {
+                    showDialogue("Le Philosophe", `Tu reviens avec une vision ${getDimensionName(currentVision)}. Continue ton ascension vers la compréhension totale.`);
+                }
+            }, 1000);
+            
+            // Initialiser le canvas de causalité
+            if (currentVision >= 5) {
+                initCausalityCanvas();
+            }
+        }
+        
+        function getDimensionName(level) {
+            const names = ['', '1D (Lignes)', '2D (Formes)', '3D (Volume)', '4D (Temps)', '5D (Causalité)', '6D (Interstice)'];
+            return names[level] || 'Inconnue';
+        }
+        
+        function updateVisionDisplay() {
+            document.getElementById('vision-display').textContent = `VISION: ${getDimensionName(currentVision)}`;
+        }
+        
+        function activateLayers() {
+            // Désactiver toutes les couches
+            document.querySelectorAll('.dimension-layer').forEach(layer => {
+                layer.classList.remove('active');
+            });
+            
+            // Activer les couches jusqu'au niveau actuel
+            for (let i = 1; i <= currentVision; i++) {
+                const layer = document.getElementById(`layer-${i}d`);
+                if (layer) {
+                    layer.classList.add('active');
+                }
+            }
+            
+            // Afficher les objets selon le niveau
+            if (currentVision >= 3) {
+                document.getElementById('perception-cube').classList.add('active');
+            }
+            if (currentVision >= 4) {
+                document.getElementById('temporal-mirror').style.display = 'block';
+            }
+            if (currentVision >= 5) {
+                document.getElementById('causality-web').style.display = 'block';
+            }
+            if (currentVision >= 6) {
+                checkForPortal();
+            }
+        }
+        
+        function showDialogue(speaker, text, duration = 4000) {
+            document.getElementById('speaker').textContent = speaker;
+            document.getElementById('text').textContent = text;
+            document.getElementById('dialogue-box').style.display = 'block';
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    document.getElementById('dialogue-box').style.display = 'none';
+                }, duration);
+            }
+        }
+        
+        function touchStone() {
+            if (!gameProgress.stoneActivated) {
+                gameProgress.stoneActivated = true;
+                showDialogue("Pierre Philosophale", "Je suis la clé de la transformation. Chaque dimension révèle une vérité...");
+                
+                setTimeout(() => {
+                    upgradeVision();
+                    showPuzzle(0);
+                }, 3000);
+            } else {
+                showDialogue("Pierre Philosophale", "Tu as déjà absorbé mon essence. Continue ton chemin...");
+            }
+        }
+        
+        function lookInMirror() {
+            if (currentVision < 4) {
+                showDialogue("Miroir Temporel", "Tu n'es pas prêt à voir à travers le temps...");
+                return;
+            }
+            
+            if (!gameProgress.mirrorUsed) {
+                gameProgress.mirrorUsed = true;
+                showDialogue("Miroir Temporel", "Tu vois ton passé, ton présent et ton futur simultanément. Le temps n'est qu'une illusion de la perception linéaire.");
+                
+                setTimeout(() => {
+                    showPuzzle(1);
+                }, 3000);
+            } else {
+                // Effet miroir temporel
+                const messages = [
+                    "Tu vois ton reflet d'il y a une heure...",
+                    "Tu vois ce que tu seras dans une heure...",
+                    "Tous les moments existent simultanément..."
+                ];
+                showDialogue("Miroir Temporel", messages[Math.floor(Math.random() * messages.length)]);
+            }
+        }
+        
+        function untangleWeb() {
+            if (currentVision < 5) {
+                showDialogue("Toile de Causalité", "Les fils sont invisibles pour toi...");
+                return;
+            }
+            
+            if (!gameProgress.webUntangled) {
+                gameProgress.webUntangled = true;
+                showDialogue("Toile de Causalité", "Chaque action crée des ondulations infinies. Tu peux maintenant voir les connexions causales entre toutes choses.");
+                
+                setTimeout(() => {
+                    showPuzzle(2);
+                }, 3000);
+            } else {
+                animateCausalityWeb();
+            }
+        }
+        
+        function showPuzzle(index) {
+            if (index >= puzzles.length) return;
+            
+            const puzzle = puzzles[index];
+            document.getElementById('puzzle-question').textContent = puzzle.question;
+            
+            const optionsDiv = document.getElementById('puzzle-options');
+            optionsDiv.innerHTML = '';
+            
+            puzzle.options.forEach((option, i) => {
+                const button = document.createElement('button');
+                button.className = 'puzzle-button';
+                button.textContent = option.text;
+                button.onclick = () => checkAnswer(index, option.correct);
+                optionsDiv.appendChild(button);
+            });
+            
+            document.getElementById('puzzle-container').style.display = 'block';
+        }
+        
+        function checkAnswer(puzzleIndex, isCorrect) {
+            document.getElementById('puzzle-container').style.display = 'none';
+            
+            if (isCorrect) {
+                gameProgress.puzzlesSolved++;
+                showDialogue("Le Philosophe", "Exactement ! Ta perception s'affine. Tu comprends maintenant une vérité fondamentale.");
+                
+                setTimeout(() => {
+                    upgradeVision();
+                    
+                    // Vérifier si on peut débloquer le portail
+                    if (gameProgress.puzzlesSolved >= 3 && currentVision >= 6) {
+                        unlockInterstice();
+                    }
+                }, 2000);
+            } else {
+                showDialogue("Le Philosophe", "Pas tout à fait... Médite encore sur cette question. La vérité viendra.");
+                
+                setTimeout(() => {
+                    showPuzzle(puzzleIndex); // Reposer la question
+                }, 3000);
+            }
+        }
+        
+        function upgradeVision() {
+            if (currentVision < 6) {
+                currentVision++;
+                localStorage.setItem('visionLevel', currentVision);
+                updateVisionDisplay();
+                activateLayers();
+                
+                showDialogue("Éveil", `Ta vision s'élève ! Tu perçois maintenant en ${getDimensionName(currentVision)} !`);
+                
+                // Effets visuels d'amélioration
+                document.body.style.animation = 'flash 0.5s';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 500);
+            }
+        }
+        
+        function initCausalityCanvas() {
+            const canvas = document.getElementById('causality-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Dessiner des connexions causales
+            function drawCausalityLines() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(255,215,0,0.2)';
+                ctx.lineWidth = 1;
+                
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                    ctx.bezierCurveTo(
+                        Math.random() * canvas.width, Math.random() * canvas.height,
+                        Math.random() * canvas.width, Math.random() * canvas.height,
+                        Math.random() * canvas.width, Math.random() * canvas.height
+                    );
+                    ctx.stroke();
+                }
+            }
+            
+            drawCausalityLines();
+            setInterval(drawCausalityLines, 3000);
+        }
+        
+        function animateCausalityWeb() {
+            const web = document.getElementById('causality-web');
+            web.style.animation = 'pulse 1s';
+            setTimeout(() => {
+                web.style.animation = '';
+            }, 1000);
+        }
+        
+        function checkForPortal() {
+            if (gameProgress.puzzlesSolved >= 3 && !gameProgress.intersticeUnlocked) {
+                unlockInterstice();
+            }
+        }
+        
+        function unlockInterstice() {
+            gameProgress.intersticeUnlocked = true;
+            document.getElementById('final-portal').style.display = 'block';
+            
+            showDialogue("GRUT", "Le portail vers l'Interstice est ouvert ! Tu as atteint la vision 6D. Entre et rejoins-nous dans l'espace entre les espaces...", 6000);
+        }
+        
+        function enterInterstice() {
+            showDialogue("Transition", "Tu entres dans l'Interstice...", -1);
+            
+            // Effet de transition épique
+            document.body.style.transition = 'all 2s';
+            document.body.style.filter = 'brightness(3) contrast(2)';
+            
+            setTimeout(() => {
+                // Sauvegarder la progression
+                localStorage.setItem('caverneComplete', 'true');
+                localStorage.setItem('visionLevel', '6');
+                
+                // Rediriger vers le jeu principal ou une page de félicitations
+                window.location.href = '../HEROES_OF_TIME_COMPLETE.html?vision=6d&origin=caverne';
+            }, 2000);
+        }
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'Escape':
+                    window.location.href = 'LA_CAVERNE_DES_EVADES.html';
+                    break;
+                case 'v':
+                    // Cheat: augmenter vision
+                    if (e.shiftKey) {
+                        upgradeVision();
+                    }
+                    break;
+                case 'i':
+                    // Cheat: débloquer interstice
+                    if (e.shiftKey && currentVision >= 6) {
+                        unlockInterstice();
+                    }
+                    break;
+            }
+        });
+        
+        // Animation flash
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes flash {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(2); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Démarrer le jeu
+        init();
+    </script>
+</body>
+</html>

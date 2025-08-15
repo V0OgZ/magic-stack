@@ -37,6 +37,7 @@ use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
 use rand::SeedableRng;
 use rand::distributions::Distribution;
+use serde_json::json;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -151,6 +152,18 @@ struct MapDto {
     // optional per-cell causal stability C in [0,1]
     causal_c: Option<Vec<Vec<f64>>>,
 }
+
+#[derive(Deserialize, Serialize, Clone)]
+struct LOSRequest {
+    width: u32,
+    height: u32,
+    obstacles: Option<Vec<Vec<u8>>>,
+    agents: Vec<AgentPos>,
+    radius: Option<u32>,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct AgentPos { x: i32, y: i32, kind: Option<String> }
 
 #[derive(Deserialize, Serialize, Clone)]
 struct AgentDto {
@@ -301,6 +314,8 @@ async fn main() {
         .route("/api/archives/status", get(archives_status))
         .route("/api/archives/search", post(archives_search))
         .route("/api/archives/build", post(archives_build))
+        // Visibility / LOS utilities
+        .route("/api/visibility/los", post(visibility_los))
         // Economy / Craft / Runes
         .route("/api/economy/inventory", get(get_inventory))
         .route("/api/economy/collect", post(economy_collect))
@@ -381,6 +396,33 @@ async fn v2_tick_handler(
             "error": "V2 controller not enabled"
         }))
     }
+}
+
+// ===== Visibility / LOS =====
+
+#[derive(Serialize)]
+struct LOSResponse { visible: Vec<bool>, width: u32, height: u32 }
+
+async fn visibility_los(Json(req): Json<LOSRequest>) -> Result<Json<LOSResponse>, StatusCode> {
+    let w = req.width as i32;
+    let h = req.height as i32;
+    if w <= 0 || h <= 0 { return Err(StatusCode::BAD_REQUEST); }
+    let radius = req.radius.unwrap_or(3) as i32;
+    let mut vis = vec![false; (w*h) as usize];
+    let obstacles = req.obstacles.unwrap_or_else(|| vec![vec![0u8; req.width as usize]; req.height as usize]);
+    for a in req.agents {
+        for dy in -radius..=radius {
+            for dx in -radius..=radius {
+                let x = a.x + dx; let y = a.y + dy;
+                if x>=0 && x<w && y>=0 && y<h && (dx.abs()+dy.abs()) <= radius {
+                    // simple obstacle check: if target is obstacle, skip marking
+                    if obstacles.get(y as usize).and_then(|r| r.get(x as usize)).copied().unwrap_or(0) == 1 { continue; }
+                    vis[(y*w + x) as usize] = true;
+                }
+            }
+        }
+    }
+    Ok(Json(LOSResponse { visible: vis, width: req.width, height: req.height }))
 }
 
 async fn v2_get_entity_handler(

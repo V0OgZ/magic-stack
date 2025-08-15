@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Story Mode - Evadé de la Cave</title>
+  <style>
+    body { margin:0; background:#0a0a1a; }
+    #topbar { background:#111831; color:#e8d5b7; padding:10px 14px; border-bottom:2px solid #8A2BE2; font-family:Courier, monospace; display:flex; justify-content:space-between; align-items:center; }
+    .links a { color:#FFD700; text-decoration:none; margin-left:12px; }
+  </style>
+  <script src="./orchestrator-client.js"></script>
+  <script src="./narrative-engine.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const top = document.createElement('div');
+      top.id = 'topbar';
+      top.innerHTML = '<div>Story Mode: Evadé de la Cave</div><div class="links"><a href="../index.html">Admin Demo (Map)</a></div>';
+      document.body.appendChild(top);
+
+      const engine = new NarrativeEngine({
+        container: document.body,
+        storyUrl: './stories/eva.json',
+        orchestratorBase: 'http://localhost:3001',
+        featureFlags: { useOrchestrator: true }
+      });
+      try { await engine.init(); } catch (e) { console.log('Init story failed', e); }
+    });
+  </script>
+  </head>
+<body></body>
+</html>
+
+

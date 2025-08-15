@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Goldorak Portal System - Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background: #000;
+        }
+        
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0ff;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border: 1px solid #0ff;
+            font-size: 14px;
+        }
+        
+        #portal-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #f0f;
+            padding: 15px;
+            color: #fff;
+        }
+        
+        .portal-btn {
+            display: block;
+            margin: 5px 0;
+            padding: 10px;
+            background: #303;
+            border: 1px solid #f0f;
+            color: #f0f;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .portal-btn:hover {
+            background: #505;
+            box-shadow: 0 0 10px #f0f;
+        }
+        
+        #magic-status {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h3>🤖 GOLDORAK PORTAL SYSTEM 🌀</h3>
+        <p>Monde actuel: <span id="current-world">Station Spatiale</span></p>
+        <p>Contrôles: WASD/Flèches = Déplacer | Espace = Sauter | Click = Attaquer</p>
+    </div>
+    
+    <div id="portal-menu">
+        <h3>🌌 PORTAILS DISPONIBLES</h3>
+        <button class="portal-btn" onclick="travelTo('crystal')">💎 Monde Cristallin</button>
+        <button class="portal-btn" onclick="travelTo('quantum')">🌊 Archipel Quantique</button>
+        <button class="portal-btn" onclick="travelTo('arena')">⚔️ Arène Supersayan</button>
+        <button class="portal-btn" onclick="travelTo('echo')">🌀 Dimension Écho</button>
+    </div>
+    
+    <div id="magic-status">
+        <p>🔮 Magic Stack: <span id="magic-connection">Connexion...</span></p>
+        <p>⚡ Énergie: <span id="energy">100%</span></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration Three.js
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Éclairage
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        // Goldorak simplifié
+        const goldorakGroup = new THREE.Group();
+        
+        // Corps
+        const bodyGeometry = new THREE.BoxGeometry(2, 3, 1);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xff0000,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        goldorakGroup.add(body);
+        
+        // Tête
+        const headGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+        const headMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xffff00,
+            metalness: 0.9
+        });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.y = 2.3;
+        goldorakGroup.add(head);
+        
+        // Cornes
+        const hornGeometry = new THREE.ConeGeometry(0.2, 0.8, 4);
+        const hornMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
+        const horn1 = new THREE.Mesh(hornGeometry, hornMaterial);
+        horn1.position.set(-0.4, 2.8, 0);
+        horn1.rotation.z = -0.3;
+        goldorakGroup.add(horn1);
+        
+        const horn2 = new THREE.Mesh(hornGeometry, hornMaterial);
+        horn2.position.set(0.4, 2.8, 0);
+        horn2.rotation.z = 0.3;
+        goldorakGroup.add(horn2);
+        
+        scene.add(goldorakGroup);
+        goldorakGroup.position.y = 2;
+
+        // Mondes
+        const worlds = {
+            station: {
+                name: "Station Spatiale",
+                build: () => {
+                    // Sol métallique
+                    const floorGeometry = new THREE.PlaneGeometry(50, 50);
+                    const floorMaterial = new THREE.MeshPhongMaterial({ 
+                        color: 0x333333,
+                        metalness: 0.9
+                    });
+                    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                    floor.rotation.x = -Math.PI / 2;
+                    floor.receiveShadow = true;
+                    scene.add(floor);
+                    
+                    // Structures
+                    for(let i = 0; i < 5; i++) {
+                        const tower = new THREE.Mesh(
+                            new THREE.CylinderGeometry(2, 2, 10),
+                            new THREE.MeshPhongMaterial({ color: 0x0066cc })
+                        );
+                        tower.position.set(
+                            Math.cos(i * Math.PI * 2 / 5) * 15,
+                            5,
+                            Math.sin(i * Math.PI * 2 / 5) * 15
+                        );
+                        scene.add(tower);
+                    }
+                }
+            },
+            crystal: {
+                name: "Monde Cristallin",
+                build: () => {
+                    // Îles flottantes cristallines
+                    for(let i = 0; i < 8; i++) {
+                        const island = new THREE.Group();
+                        
+                        // Base
+                        const base = new THREE.Mesh(
+                            new THREE.ConeGeometry(5, 3, 6),
+                            new THREE.MeshPhongMaterial({ 
+                                color: 0x00ffff,
+                                transparent: true,
+                                opacity: 0.8
+                            })
+                        );
+                        base.position.y = -1.5;
+                        island.add(base);
+                        
+                        // Cristaux
+                        for(let j = 0; j < 3; j++) {
+                            const crystal = new THREE.Mesh(
+                                new THREE.OctahedronGeometry(1),
+                                new THREE.MeshPhongMaterial({ 
+                                    color: new THREE.Color().setHSL(Math.random(), 1, 0.5),
+                                    emissive: 0x222222
+                                })
+                            );
+                            crystal.position.set(
+                                (Math.random() - 0.5) * 4,
+                                Math.random() * 2,
+                                (Math.random() - 0.5) * 4
+                            );
+                            island.add(crystal);
+                        }
+                        
+                        island.position.set(
+                            (Math.random() - 0.5) * 40,
+                            Math.random() * 10,
+                            (Math.random() - 0.5) * 40
+                        );
+                        
+                        scene.add(island);
+                    }
+                }
+            },
+            quantum: {
+                name: "Archipel Quantique",
+                build: () => {
+                    // Plateformes quantiques
+                    const platforms = [];
+                    for(let i = 0; i < 12; i++) {
+                        const platform = new THREE.Mesh(
+                            new THREE.BoxGeometry(8, 0.5, 8),
+                            new THREE.MeshPhongMaterial({ 
+                                color: 0x9900ff,
+                                transparent: true,
+                                opacity: 0.7
+                            })
+                        );
+                        platform.position.set(
+                            (Math.random() - 0.5) * 50,
+                            Math.random() * 20 - 5,
+                            (Math.random() - 0.5) * 50
+                        );
+                        platform.userData = { 
+                            phase: Math.random() * Math.PI * 2,
+                            speed: 0.5 + Math.random() * 1.5
+                        };
+                        platforms.push(platform);
+                        scene.add(platform);
+                    }
+                    
+                    // Animation quantique
+                    worlds.quantum.animate = () => {
+                        platforms.forEach(p => {
+                            p.userData.phase += 0.01 * p.userData.speed;
+                            p.material.opacity = 0.3 + Math.sin(p.userData.phase) * 0.4;
+                            p.visible = p.material.opacity > 0.4;
+                        });
+                    };
+                }
+            },
+            arena: {
+                name: "Arène Supersayan",
+                build: () => {
+                    // Arène de combat
+                    const arena = new THREE.Mesh(
+                        new THREE.RingGeometry(5, 25, 8),
+                        new THREE.MeshPhongMaterial({ color: 0xff6600 })
+                    );
+                    arena.rotation.x = -Math.PI / 2;
+                    scene.add(arena);
+                    
+                    // Colonnes
+                    for(let i = 0; i < 8; i++) {
+                        const column = new THREE.Mesh(
+                            new THREE.CylinderGeometry(1, 1, 15),
+                            new THREE.MeshPhongMaterial({ color: 0xffaa00 })
+                        );
+                        column.position.set(
+                            Math.cos(i * Math.PI / 4) * 20,
+                            7.5,
+                            Math.sin(i * Math.PI / 4) * 20
+                        );
+                        scene.add(column);
+                    }
+                    
+                    // Aura Supersayan
+                    const aura = new THREE.Mesh(
+                        new THREE.SphereGeometry(30, 16, 16),
+                        new THREE.MeshBasicMaterial({ 
+                            color: 0xffff00,
+                            transparent: true,
+                            opacity: 0.1,
+                            side: THREE.BackSide
+                        })
+                    );
+                    scene.add(aura);
+                    
+                    worlds.arena.animate = () => {
+                        aura.material.opacity = 0.05 + Math.sin(Date.now() * 0.003) * 0.05;
+                        aura.scale.setScalar(1 + Math.sin(Date.now() * 0.002) * 0.1);
+                    };
+                }
+            },
+            echo: {
+                name: "Dimension Écho",
+                build: () => {
+                    // Monde d'échos temporels
+                    const echoMaterial = new THREE.MeshPhongMaterial({ 
+                        color: 0x00ff00,
+                        transparent: true,
+                        opacity: 0.3
+                    });
+                    
+                    // Copies fantômes de Goldorak
+                    for(let i = 1; i <= 5; i++) {
+                        const echo = goldorakGroup.clone();
+                        echo.traverse(child => {
+                            if(child.isMesh) {
+                                child.material = echoMaterial.clone();
+                                child.material.opacity = 0.3 / i;
+                            }
+                        });
+                        echo.position.z = -i * 5;
+                        echo.scale.setScalar(1 - i * 0.1);
+                        scene.add(echo);
+                    }
+                    
+                    // Particules temporelles
+                    const particleCount = 1000;
+                    const particles = new THREE.BufferGeometry();
+                    const positions = new Float32Array(particleCount * 3);
+                    
+                    for(let i = 0; i < particleCount * 3; i += 3) {
+                        positions[i] = (Math.random() - 0.5) * 100;
+                        positions[i + 1] = Math.random() * 50;
+                        positions[i + 2] = (Math.random() - 0.5) * 100;
+                    }
+                    
+                    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    
+                    const particleMaterial = new THREE.PointsMaterial({
+                        color: 0x00ff00,
+                        size: 0.5,
+                        transparent: true,
+                        opacity: 0.6
+                    });
+                    
+                    const particleSystem = new THREE.Points(particles, particleMaterial);
+                    scene.add(particleSystem);
+                    
+                    worlds.echo.animate = () => {
+                        particleSystem.rotation.y += 0.001;
+                    };
+                }
+            }
+        };
+
+        // Système de portails
+        let currentWorld = 'station';
+        let portalEffect = null;
+        
+        function createPortalEffect(callback) {
+            const portalGeometry = new THREE.TorusGeometry(5, 0.5, 16, 100);
+            const portalMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xff00ff,
+                transparent: true,
+                opacity: 0
+            });
+            portalEffect = new THREE.Mesh(portalGeometry, portalMaterial);
+            portalEffect.position.copy(goldorakGroup.position);
+            scene.add(portalEffect);
+            
+            // Animation du portail
+            let scale = 1;
+            let opacity = 0;
+            const animatePortal = () => {
+                if(opacity < 1) {
+                    opacity += 0.05;
+                    portalMaterial.opacity = opacity;
+                    portalEffect.rotation.z += 0.1;
+                    requestAnimationFrame(animatePortal);
+                } else {
+                    callback();
+                    // Fermeture du portail
+                    const closePortal = () => {
+                        if(opacity > 0) {
+                            opacity -= 0.05;
+                            portalMaterial.opacity = opacity;
+                            scale += 0.1;
+                            portalEffect.scale.setScalar(scale);
+                            requestAnimationFrame(closePortal);
+                        } else {
+                            scene.remove(portalEffect);
+                            portalEffect = null;
+                        }
+                    };
+                    closePortal();
+                }
+            };
+            animatePortal();
+        }
+        
+        function clearWorld() {
+            // Supprime tout sauf Goldorak et les lumières
+            const toRemove = [];
+            scene.traverse(child => {
+                if(child !== goldorakGroup && 
+                   child !== ambientLight && 
+                   child !== directionalLight &&
+                   child.parent === scene) {
+                    toRemove.push(child);
+                }
+            });
+            toRemove.forEach(child => scene.remove(child));
+        }
+        
+        function travelTo(worldKey) {
+            if(currentWorld === worldKey) return;
+            
+            document.getElementById('magic-connection').textContent = 'Ouverture portail...';
+            
+            createPortalEffect(() => {
+                clearWorld();
+                worlds[worldKey].build();
+                currentWorld = worldKey;
+                document.getElementById('current-world').textContent = worlds[worldKey].name;
+                document.getElementById('magic-connection').textContent = 'Connecté ✓';
+                
+                // Reset position
+                goldorakGroup.position.set(0, 2, 0);
+                camera.position.set(0, 5, 10);
+                camera.lookAt(0, 2, 0);
+            });
+        }
+
+        // Contrôles
+        const keys = {};
+        document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Mouvements Goldorak
+            if(keys['w'] || keys['arrowup']) goldorakGroup.position.z -= 0.2;
+            if(keys['s'] || keys['arrowdown']) goldorakGroup.position.z += 0.2;
+            if(keys['a'] || keys['arrowleft']) goldorakGroup.position.x -= 0.2;
+            if(keys['d'] || keys['arrowright']) goldorakGroup.position.x += 0.2;
+            if(keys[' ']) {
+                goldorakGroup.position.y = Math.max(2, goldorakGroup.position.y + 0.3);
+            } else {
+                goldorakGroup.position.y = Math.max(2, goldorakGroup.position.y - 0.1);
+            }
+            
+            // Rotation Goldorak
+            goldorakGroup.rotation.y += 0.005;
+            
+            // Animations spécifiques aux mondes
+            if(worlds[currentWorld].animate) {
+                worlds[currentWorld].animate();
+            }
+            
+            // Caméra suit Goldorak
+            camera.position.x = goldorakGroup.position.x;
+            camera.position.z = goldorakGroup.position.z + 10;
+            camera.lookAt(goldorakGroup.position);
+            
+            renderer.render(scene, camera);
+        }
+
+        // Connexion Magic Stack (simulée)
+        setTimeout(() => {
+            document.getElementById('magic-connection').textContent = 'Connecté ✓';
+        }, 2000);
+
+        // Initialisation
+        worlds.station.build();
+        camera.position.set(0, 5, 10);
+        animate();
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍯 Chaudron Quantique de Panoramix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(circle at center, #1a0033, #000);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+        
+        /* Particules magiques */
+        .magic-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #9370DB;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float-up 3s infinite;
+        }
+        
+        @keyframes float-up {
+            from {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100px) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Container principal */
+        .cauldron-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Panel gauche - Ingrédients */
+        .ingredients-panel {
+            width: 25%;
+            background: rgba(75, 0, 130, 0.1);
+            border-right: 2px solid #9370DB;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .ingredients-panel h2 {
+            color: #9370DB;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #9370DB;
+        }
+        
+        .ingredient {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #9370DB;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        
+        .ingredient:hover {
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+        }
+        
+        .ingredient.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        /* Zone centrale - Chaudron */
+        .cauldron-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .cauldron {
+            width: 400px;
+            height: 300px;
+            background: radial-gradient(ellipse at center, #4B0082, #1a0033);
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            box-shadow: 
+                0 20px 40px rgba(75, 0, 130, 0.8),
+                inset 0 -20px 40px rgba(138, 43, 226, 0.6);
+            animation: bubble 4s infinite ease-in-out;
+        }
+        
+        @keyframes bubble {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .cauldron-liquid {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            height: 200px;
+            background: radial-gradient(ellipse at center, #9370DB, #4B0082);
+            border-radius: 50%;
+            overflow: hidden;
+            animation: swirl 8s infinite linear;
+        }
+        
+        @keyframes swirl {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+        
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: rise 2s infinite;
+        }
+        
+        @keyframes rise {
+            from {
+                bottom: 0;
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+            }
+            to {
+                bottom: 100%;
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+        
+        /* Panel droit - Potions */
+        .potions-panel {
+            width: 25%;
+            background: rgba(75, 0, 130, 0.1);
+            border-left: 2px solid #9370DB;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .potions-panel h2 {
+            color: #9370DB;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #9370DB;
+        }
+        
+        .potion {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #9370DB;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .potion:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(147, 112, 219, 0.8);
+        }
+        
+        .potion h3 {
+            color: #DDA0DD;
+            margin-bottom: 5px;
+        }
+        
+        .potion p {
+            font-size: 0.9em;
+            color: #E6E6FA;
+        }
+        
+        /* Contrôles */
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        .control-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border: none;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.6);
+        }
+        
+        /* Messages */
+        .message {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border: 2px solid #9370DB;
+            border-radius: 10px;
+            font-size: 1.2em;
+            display: none;
+            animation: message-appear 0.5s ease-out;
+        }
+        
+        @keyframes message-appear {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        /* Effet temporel */
+        .temporal-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent, rgba(147, 112, 219, 0.3));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        
+        .temporal-effect.active {
+            opacity: 1;
+            animation: temporal-pulse 2s infinite;
+        }
+        
+        @keyframes temporal-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Effet temporel -->
+    <div class="temporal-effect" id="temporalEffect"></div>
+    
+    <!-- Container principal -->
+    <div class="cauldron-container">
+        <!-- Panel Ingrédients -->
+        <div class="ingredients-panel">
+            <h2>🌿 Ingrédients Magiques</h2>
+            
+            <div class="ingredient" draggable="true" data-type="temporal">
+                <h3>⏰ Essence Temporelle</h3>
+                <p>Permet les flashbacks de 10 sec</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="quantum">
+                <h3>⚛️ Poudre Quantique</h3>
+                <p>Superposition d'états</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="causal">
+                <h3>🔗 Racine Causale</h3>
+                <p>Modifie les liens de causalité</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="dimensional">
+                <h3>🌀 Cristal 6D</h3>
+                <p>Navigation dimensionnelle</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="heroic">
+                <h3>⚔️ Essence Héroïque</h3>
+                <p>Force des héros d'Avalon</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="grut">
+                <h3>👁️ Larme de GRUT</h3>
+                <p>Vision ontologique</p>
+            </div>
+            
+            <div class="ingredient" draggable="true" data-type="magic">
+                <h3>✨ Poussière d'Étoile</h3>
+                <p>Magie pure d'Avalon</p>
+            </div>
+        </div>
+        
+        <!-- Zone Chaudron -->
+        <div class="cauldron-area">
+            <div class="message" id="message"></div>
+            
+            <div class="cauldron" id="cauldron">
+                <div class="cauldron-liquid" id="cauldronLiquid">
+                    <!-- Bulles générées dynamiquement -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" onclick="brewPotion()">🧪 Brasser</button>
+                <button class="control-btn" onclick="clearCauldron()">🔄 Vider</button>
+                <button class="control-btn" onclick="activateTemporal()">⏰ Mode Temporel</button>
+            </div>
+        </div>
+        
+        <!-- Panel Potions -->
+        <div class="potions-panel">
+            <h2>🧪 Potions Créées</h2>
+            
+            <div class="potion" onclick="usePotion('temporal')">
+                <h3>⏰ Potion du Temps</h3>
+                <p>Flashback de 10 secondes</p>
+                <small>Effet: Retour temporel</small>
+            </div>
+            
+            <div class="potion" onclick="usePotion('strength')">
+                <h3>💪 Potion de Force</h3>
+                <p>+100% dégâts pendant 30s</p>
+                <small>Effet: Buff d'équipe</small>
+            </div>
+            
+            <div class="potion" onclick="usePotion('quantum')">
+                <h3>⚛️ Potion Quantique</h3>
+                <p>Existe dans 2 états</p>
+                <small>Effet: Superposition</small>
+            </div>
+            
+            <div class="potion" onclick="usePotion('vision')">
+                <h3>👁️ Potion de Vision</h3>
+                <p>Voit en 6 dimensions</p>
+                <small>Effet: Vision GRUT</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Particules magiques -->
+    <script>
+        // Générer des particules magiques
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'magic-particle';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.animationDuration = (3 + Math.random() * 2) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 5000);
+        }
+        
+        // Créer des particules régulièrement
+        setInterval(createParticle, 200);
+        
+        // Générer des bulles dans le chaudron
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            const size = 5 + Math.random() * 15;
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = 20 + Math.random() * 60 + '%';
+            bubble.style.animationDuration = (1 + Math.random() * 2) + 's';
+            
+            const liquid = document.getElementById('cauldronLiquid');
+            liquid.appendChild(bubble);
+            
+            setTimeout(() => bubble.remove(), 3000);
+        }
+        
+        setInterval(createBubble, 300);
+        
+        // Drag and Drop
+        let draggedElement = null;
+        let currentIngredients = [];
+        
+        document.querySelectorAll('.ingredient').forEach(ingredient => {
+            ingredient.addEventListener('dragstart', (e) => {
+                draggedElement = e.target;
+                e.target.classList.add('dragging');
+            });
+            
+            ingredient.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+        });
+        
+        const cauldron = document.getElementById('cauldron');
+        
+        cauldron.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            cauldron.style.transform = 'scale(1.1)';
+            cauldron.style.boxShadow = '0 30px 60px rgba(147, 112, 219, 1)';
+        });
+        
+        cauldron.addEventListener('dragleave', () => {
+            cauldron.style.transform = '';
+            cauldron.style.boxShadow = '';
+        });
+        
+        cauldron.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedElement) {
+                const type = draggedElement.dataset.type;
+                currentIngredients.push(type);
+                showMessage(`Ajouté: ${draggedElement.querySelector('h3').textContent}`);
+                
+                // Effet visuel
+                const liquid = document.getElementById('cauldronLiquid');
+                liquid.style.background = `radial-gradient(ellipse at center, 
+                    hsl(${Math.random() * 360}, 70%, 50%), 
+                    hsl(${Math.random() * 360}, 50%, 30%))`;
+                
+                // Plus de bulles
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(createBubble, i * 100);
+                }
+            }
+            cauldron.style.transform = '';
+            cauldron.style.boxShadow = '';
+        });
+        
+        // Fonctions
+        function showMessage(text) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+        
+        function brewPotion() {
+            if (currentIngredients.length === 0) {
+                showMessage("Le chaudron est vide !");
+                return;
+            }
+            
+            showMessage("🧪 Brassage en cours...");
+            
+            // Animation de brassage
+            const liquid = document.getElementById('cauldronLiquid');
+            liquid.style.animation = 'swirl 1s infinite linear';
+            
+            // Explosion de bulles
+            for (let i = 0; i < 30; i++) {
+                setTimeout(createBubble, i * 50);
+            }
+            
+            setTimeout(() => {
+                liquid.style.animation = 'swirl 8s infinite linear';
+                
+                // Déterminer la potion créée
+                if (currentIngredients.includes('temporal')) {
+                    showMessage("⏰ Potion Temporelle créée !");
+                } else if (currentIngredients.includes('quantum')) {
+                    showMessage("⚛️ Potion Quantique créée !");
+                } else if (currentIngredients.includes('heroic')) {
+                    showMessage("⚔️ Potion Héroïque créée !");
+                } else {
+                    showMessage("✨ Potion Mystérieuse créée !");
+                }
+                
+                currentIngredients = [];
+            }, 3000);
+        }
+        
+        function clearCauldron() {
+            currentIngredients = [];
+            const liquid = document.getElementById('cauldronLiquid');
+            liquid.style.background = 'radial-gradient(ellipse at center, #9370DB, #4B0082)';
+            showMessage("Chaudron vidé");
+        }
+        
+        function activateTemporal() {
+            const effect = document.getElementById('temporalEffect');
+            effect.classList.add('active');
+            showMessage("⏰ Mode Temporel Activé - 10 secondes");
+            
+            // Effet de distorsion temporelle
+            document.body.style.filter = 'hue-rotate(180deg)';
+            
+            setTimeout(() => {
+                effect.classList.remove('active');
+                document.body.style.filter = '';
+                showMessage("Retour au présent");
+            }, 10000);
+        }
+        
+        function usePotion(type) {
+            switch(type) {
+                case 'temporal':
+                    activateTemporal();
+                    break;
+                case 'strength':
+                    showMessage("💪 Force x2 activée !");
+                    document.body.style.filter = 'contrast(1.5) saturate(1.5)';
+                    setTimeout(() => {
+                        document.body.style.filter = '';
+                    }, 30000);
+                    break;
+                case 'quantum':
+                    showMessage("⚛️ État quantique activé !");
+                    document.body.style.animation = 'quantum-shift 2s infinite';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 10000);
+                    break;
+                case 'vision':
+                    showMessage("👁️ Vision 6D de GRUT activée !");
+                    document.body.style.transform = 'perspective(1000px) rotateY(5deg)';
+                    setTimeout(() => {
+                        document.body.style.transform = '';
+                    }, 15000);
+                    break;
+            }
+        }
+        
+        // Animation quantum
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes quantum-shift {
+                0%, 100% { opacity: 1; filter: blur(0); }
+                50% { opacity: 0.7; filter: blur(2px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Message de bienvenue
+        setTimeout(() => {
+            showMessage("🍯 Bienvenue dans le Chaudron de Panoramix !");
+        }, 1000);
+    </script>
+</body>
+</html>

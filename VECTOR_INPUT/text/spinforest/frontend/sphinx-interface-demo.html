@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🦁 Sphinx Quantique - Interface Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #8B4513, #D2691E, #FFD700);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .sand-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            animation: float-sand 8s infinite linear;
+        }
+        
+        @keyframes float-sand {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(45deg, rgba(139, 69, 19, 0.8), rgba(210, 105, 30, 0.8));
+            border-bottom: 4px solid #FFD700;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            text-shadow: 0 0 20px #FFD700;
+            animation: sphinx-glow 3s infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes sphinx-glow {
+            0%, 100% { 
+                text-shadow: 0 0 20px #FFD700, 0 0 40px #FF8C00;
+            }
+            50% { 
+                text-shadow: 0 0 40px #FFD700, 0 0 60px #FF8C00, 0 0 80px #FF4500;
+            }
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #8B4513, #D2691E);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .sphinx-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .question-area {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(139, 69, 19, 0.3));
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .sphinx-face {
+            text-align: center;
+            font-size: 8rem;
+            margin-bottom: 20px;
+            animation: sphinx-eyes 4s infinite;
+        }
+        
+        @keyframes sphinx-eyes {
+            0%, 90%, 100% { transform: scale(1); }
+            95% { transform: scale(1.1); }
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #FFD700;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .answer-btn {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 20px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .answer-btn:hover {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.4), rgba(255, 140, 0, 0.4));
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        }
+        
+        .answer-btn.correct {
+            background: linear-gradient(45deg, #32CD32, #228B22);
+            border-color: #32CD32;
+            animation: correct-pulse 1s ease-out;
+        }
+        
+        .answer-btn.wrong {
+            background: linear-gradient(45deg, #FF4444, #CC0000);
+            border-color: #FF4444;
+            animation: wrong-shake 0.5s ease-out;
+        }
+        
+        @keyframes correct-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes wrong-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .controls {
+            text-align: center;
+        }
+        
+        .new-question-btn {
+            background: linear-gradient(45deg, #FF6B6B, #8A2BE2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .new-question-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .stats-panel {
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(139, 69, 19, 0.4));
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .stats-panel h3 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #FFD700;
+        }
+        
+        .achievements {
+            margin-top: 30px;
+        }
+        
+        .achievement {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+        
+        .achievement.unlocked {
+            opacity: 1;
+            background: linear-gradient(45deg, rgba(50, 205, 50, 0.2), rgba(34, 139, 34, 0.2));
+            border-color: #32CD32;
+            animation: achievement-unlock 1s ease-out;
+        }
+        
+        @keyframes achievement-unlock {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .wisdom-quote {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            border-left: 4px solid #8A2BE2;
+            font-style: italic;
+            text-align: center;
+            color: #DDA0DD;
+        }
+        
+        .question-category {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #8A2BE2, #4B0082);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="sand-particles" id="sand-particles"></div>
+    
+    <button class="back-btn" onclick="window.close()">← Retour</button>
+    
+    <div class="header">
+        <h1>🦁 Le Sphinx Quantique</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Générateur Infini de Questions Cosmiques</p>
+    </div>
+    
+    <div class="sphinx-container">
+        <div class="question-area">
+            <div class="sphinx-face">🦁</div>
+            <div class="question-category" id="question-category">⚡ Physique Quantique</div>
+            <div class="question-text" id="question-text">
+                Chargement d'une nouvelle énigme du cosmos...
+            </div>
+            <div class="answers-grid" id="answers-grid">
+                <!-- Réponses générées dynamiquement -->
+            </div>
+            <div class="controls">
+                <button class="new-question-btn" onclick="generateNewQuestion()">
+                    🎲 Nouvelle Énigme
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-panel">
+            <h3>📊 Statistiques</h3>
+            
+            <div class="stat-item">
+                <span>🎯 Questions Répondues</span>
+                <span class="stat-value" id="total-questions">0</span>
+            </div>
+            
+            <div class="stat-item">
+                <span>✅ Bonnes Réponses</span>
+                <span class="stat-value" id="correct-answers">0</span>
+            </div>
+            
+            <div class="stat-item">
+                <span>🎖️ Précision</span>
+                <span class="stat-value" id="accuracy">0%</span>
+            </div>
+            
+            <div class="stat-item">
+                <span>🔥 Série Actuelle</span>
+                <span class="stat-value" id="current-streak">0</span>
+            </div>
+            
+            <div class="stat-item">
+                <span>⭐ Meilleure Série</span>
+                <span class="stat-value" id="best-streak">0</span>
+            </div>
+            
+            <div class="achievements">
+                <h4 style="color: #FFD700; margin-bottom: 15px;">🏆 Accomplissements</h4>
+                
+                <div class="achievement" id="first-question">
+                    🌟 Première Question - Répondre à une question
+                </div>
+                
+                <div class="achievement" id="correct-streak-5">
+                    🔥 Série de 5 - 5 bonnes réponses consécutives
+                </div>
+                
+                <div class="achievement" id="quantum-master">
+                    ⚛️ Maître Quantique - 10 questions de physique quantique
+                </div>
+                
+                <div class="achievement" id="cosmic-scholar">
+                    🌌 Érudit Cosmique - 25 questions répondues
+                </div>
+                
+                <div class="achievement" id="sphinx-challenger">
+                    🦁 Défi du Sphinx - 50 questions répondues
+                </div>
+            </div>
+            
+            <div class="wisdom-quote">
+                <p id="wisdom-text">
+                    "La sagesse commence par l'émerveillement devant l'inconnu."
+                </p>
+                <small>- Le Sphinx Quantique</small>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Base de données de questions procédurales
+        const questionTemplates = {
+            quantum: [
+                "Selon le principe d'incertitude d'Heisenberg, il est impossible de mesurer simultanément avec précision la {prop1} et la {prop2} d'une particule.",
+                "L'effet tunnel quantique permet à une particule de {action} une barrière d'énergie même si son énergie est {condition}.",
+                "Dans l'expérience des fentes de Young, une particule unique peut {behavior} avec elle-même, créant des {pattern}.",
+                "Le chat de Schrödinger illustre le concept de {state} quantique où le chat est à la fois {state1} et {state2}."
+            ],
+            cosmos: [
+                "Un trou noir possède une {property} si intense que même la {element} ne peut s'en échapper.",
+                "L'univers s'étend à une vitesse {speed}, et cette expansion {behavior} avec le temps.",
+                "Les étoiles à neutrons sont si denses qu'une cuillère à café de leur matière pèserait environ {weight}.",
+                "La matière noire constitue environ {percentage} de toute la matière dans l'univers."
+            ],
+            philosophy: [
+                "Si un arbre tombe dans une forêt et que personne ne l'entend, {question}?",
+                "Le paradoxe du navire de Thésée questionne si un objet reste {property} quand toutes ses parties sont {action}.",
+                "L'allégorie de la caverne de Platon suggère que la réalité pourrait être {nature} que ce que nous {action}.",
+                "Le démon de Laplace illustre le concept de {concept} dans un univers {type}."
+            ]
+        };
+
+        const questionData = {
+            quantum: {
+                prop1: ["position", "impulsion", "énergie", "spin"],
+                prop2: ["vitesse", "moment", "temps", "direction"],
+                action: ["traverser", "contourner", "pénétrer", "franchir"],
+                condition: ["insuffisante", "trop faible", "limitée", "négligeable"],
+                behavior: ["interférer", "interagir", "se superposer", "se corréler"],
+                pattern: ["interférences", "ondulations", "franges", "motifs"],
+                state: ["superposition", "intrication", "cohérence", "décohérence"],
+                state1: ["vivant", "actif", "présent", "réel"],
+                state2: ["mort", "inactif", "absent", "virtuel"]
+            },
+            cosmos: {
+                property: ["gravité", "densité", "masse", "courbure"],
+                element: ["lumière", "matière", "énergie", "information"],
+                speed: ["accélérée", "constante", "variable", "exponentielle"],
+                behavior: ["s'accélère", "décélère", "fluctue", "varie"],
+                weight: ["1 milliard de tonnes", "millions de tonnes", "10^15 kg", "l'équivalent d'une montagne"],
+                percentage: ["27%", "85%", "23%", "30%"]
+            },
+            philosophy: {
+                question: ["fait-il du bruit", "existe-t-il vraiment", "a-t-il un impact", "change-t-il quelque chose"],
+                property: ["identique", "le même", "authentique", "original"],
+                action: ["remplacées", "modifiées", "échangées", "transformées"],
+                nature: ["plus complexe", "différente", "plus simple", "illusoire"],
+                concept: ["déterminisme", "causalité", "prédictibilité", "nécessité"],
+                type: ["déterministe", "mécaniste", "prévisible", "ordonné"]
+            }
+        };
+
+        let stats = {
+            totalQuestions: 0,
+            correctAnswers: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            categoryStats: {}
+        };
+
+        let currentQuestion = null;
+        let achievements = new Set();
+
+        const wisdomQuotes = [
+            "La sagesse commence par l'émerveillement devant l'inconnu.",
+            "Chaque question révèle l'infinité de notre ignorance.",
+            "Dans le doute naît la vraie connaissance.",
+            "L'univers est plus étrange que nous ne pouvons l'imaginer.",
+            "La réponse change celui qui pose la question.",
+            "Seul celui qui questionne peut transcender ses limites.",
+            "Dans le chaos quantique se cache l'ordre cosmique."
+        ];
+
+        function generateQuestion() {
+            const categories = Object.keys(questionTemplates);
+            const category = categories[Math.floor(Math.random() * categories.length)];
+            const templates = questionTemplates[category];
+            const template = templates[Math.floor(Math.random() * templates.length)];
+            
+            let question = template;
+            const data = questionData[category];
+            
+            // Remplacer les placeholders
+            Object.keys(data).forEach(key => {
+                const values = data[key];
+                const value = values[Math.floor(Math.random() * values.length)];
+                question = question.replace(`{${key}}`, value);
+            });
+            
+            // Générer les réponses
+            const correctAnswer = generateCorrectAnswer(category, template);
+            const wrongAnswers = generateWrongAnswers(category, 3);
+            
+            const answers = [correctAnswer, ...wrongAnswers];
+            shuffleArray(answers);
+            
+            return {
+                category: category,
+                question: question,
+                answers: answers,
+                correctIndex: answers.indexOf(correctAnswer)
+            };
+        }
+
+        function generateCorrectAnswer(category, template) {
+            const correctAnswers = {
+                quantum: [
+                    "C'est un principe fondamental de la mécanique quantique",
+                    "Cette propriété permet l'informatique quantique",
+                    "Ce phénomène défie l'intuition classique",
+                    "Cela illustre la nature probabiliste du quantique"
+                ],
+                cosmos: [
+                    "Cette caractéristique définit les objets cosmiques extrêmes",
+                    "Ce phénomène façonne l'évolution de l'univers",
+                    "Cette propriété résulte de forces gravitationnelles intenses",
+                    "Cette mesure révèle l'immensité des échelles cosmiques"
+                ],
+                philosophy: [
+                    "Cela questionne la nature de la réalité objective",
+                    "Cette interrogation révèle les limites de la perception",
+                    "Ce paradoxe explore l'identité à travers le temps",
+                    "Cette idée challenge nos présupposés sur l'existence"
+                ]
+            };
+            
+            const answers = correctAnswers[category];
+            return answers[Math.floor(Math.random() * answers.length)];
+        }
+
+        function generateWrongAnswers(category, count) {
+            const wrongAnswers = [
+                "Cette théorie a été complètement réfutée",
+                "C'est uniquement une hypothèse non prouvée",
+                "Cela n'a aucune application pratique",
+                "Cette idée contredit les lois physiques",
+                "C'est juste une curiosité mathématique",
+                "Cette notion est purement spéculative"
+            ];
+            
+            const selected = [];
+            while (selected.length < count) {
+                const answer = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+                if (!selected.includes(answer)) {
+                    selected.push(answer);
+                }
+            }
+            
+            return selected;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function generateNewQuestion() {
+            currentQuestion = generateQuestion();
+            
+            // Afficher la question
+            document.getElementById('question-category').textContent = getCategoryEmoji(currentQuestion.category) + ' ' + getCategoryName(currentQuestion.category);
+            document.getElementById('question-text').textContent = currentQuestion.question;
+            
+            // Générer les boutons de réponse
+            const answersGrid = document.getElementById('answers-grid');
+            answersGrid.innerHTML = '';
+            
+            currentQuestion.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => selectAnswer(index);
+                answersGrid.appendChild(button);
+            });
+            
+            // Changer la sagesse
+            const randomWisdom = wisdomQuotes[Math.floor(Math.random() * wisdomQuotes.length)];
+            document.getElementById('wisdom-text').textContent = randomWisdom;
+        }
+
+        function selectAnswer(selectedIndex) {
+            const buttons = document.querySelectorAll('.answer-btn');
+            const isCorrect = selectedIndex === currentQuestion.correctIndex;
+            
+            stats.totalQuestions++;
+            
+            if (isCorrect) {
+                stats.correctAnswers++;
+                stats.currentStreak++;
+                if (stats.currentStreak > stats.bestStreak) {
+                    stats.bestStreak = stats.currentStreak;
+                }
+                buttons[selectedIndex].classList.add('correct');
+            } else {
+                stats.currentStreak = 0;
+                buttons[selectedIndex].classList.add('wrong');
+                buttons[currentQuestion.correctIndex].classList.add('correct');
+            }
+            
+            // Désactiver tous les boutons
+            buttons.forEach(btn => btn.disabled = true);
+            
+            updateStats();
+            checkAchievements();
+            
+            // Auto-générer une nouvelle question après 3 secondes
+            setTimeout(() => {
+                generateNewQuestion();
+            }, 3000);
+        }
+
+        function updateStats() {
+            document.getElementById('total-questions').textContent = stats.totalQuestions;
+            document.getElementById('correct-answers').textContent = stats.correctAnswers;
+            document.getElementById('current-streak').textContent = stats.currentStreak;
+            document.getElementById('best-streak').textContent = stats.bestStreak;
+            
+            const accuracy = stats.totalQuestions > 0 ? Math.round((stats.correctAnswers / stats.totalQuestions) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function checkAchievements() {
+            const newAchievements = [];
+            
+            if (stats.totalQuestions >= 1 && !achievements.has('first-question')) {
+                achievements.add('first-question');
+                newAchievements.push('first-question');
+            }
+            
+            if (stats.currentStreak >= 5 && !achievements.has('correct-streak-5')) {
+                achievements.add('correct-streak-5');
+                newAchievements.push('correct-streak-5');
+            }
+            
+            if (stats.totalQuestions >= 25 && !achievements.has('cosmic-scholar')) {
+                achievements.add('cosmic-scholar');
+                newAchievements.push('cosmic-scholar');
+            }
+            
+            if (stats.totalQuestions >= 50 && !achievements.has('sphinx-challenger')) {
+                achievements.add('sphinx-challenger');
+                newAchievements.push('sphinx-challenger');
+            }
+            
+            // Animer les nouveaux succès
+            newAchievements.forEach(achievementId => {
+                const element = document.getElementById(achievementId);
+                if (element) {
+                    element.classList.add('unlocked');
+                }
+            });
+        }
+
+        function getCategoryEmoji(category) {
+            const emojis = {
+                quantum: '⚛️',
+                cosmos: '🌌',
+                philosophy: '🤔'
+            };
+            return emojis[category] || '⚡';
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                quantum: 'Physique Quantique',
+                cosmos: 'Cosmologie',
+                philosophy: 'Philosophie'
+            };
+            return names[category] || 'Mystère';
+        }
+
+        // Particules de sable
+        function createSandParticles() {
+            const container = document.getElementById('sand-particles');
+            
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.width = particle.style.height = (Math.random() * 3 + 1) + 'px';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 8000);
+            }, 200);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            generateNewQuestion();
+            createSandParticles();
+            updateStats();
+        });
+    </script>
+</body>
+</html>

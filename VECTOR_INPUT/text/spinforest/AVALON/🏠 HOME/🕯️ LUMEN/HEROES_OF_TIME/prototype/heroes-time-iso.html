@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 Heroes of Time - Prototype ISO</title>
+    <style>
+        body {
+            margin: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+        
+        #heroInfo {
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #ffd700;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #666;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .control-hint {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        #temporalControls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #6495ED;
+            color: #fff;
+        }
+        
+        .temporal-button {
+            background: #4169E1;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .temporal-button:hover {
+            background: #6495ED;
+            transform: scale(1.05);
+        }
+        
+        .temporal-button:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd700;
+            font-size: 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="loading">
+        🌀 Chargement de la carte temporelle...
+    </div>
+    
+    <div id="ui" style="display: none;">
+        <div id="heroInfo">
+            <h3>🎮 Heroes of Time</h3>
+            <div>Héros: <span id="heroName">Marcheur Temporel</span></div>
+            <div>Position: <span id="heroPos">0,0</span></div>
+            <div>Mouvement: <span id="movePoints">5</span>/5</div>
+            <div>Charges temporelles: <span id="temporalCharges">3</span></div>
+        </div>
+    </div>
+    
+    <div id="temporalControls" style="display: none;">
+        <h4>🕐 Contrôles Temporels</h4>
+        <button class="temporal-button" id="undoBtn" title="Annuler le dernier mouvement">
+            ↶ Annuler (Ctrl+Z)
+        </button>
+        <button class="temporal-button" id="collapseBtn" title="Forcer le collapse causal">
+            💥 Collapse
+        </button>
+    </div>
+    
+    <div id="controls" style="display: none;">
+        <div class="control-hint">🖱️ Click = Déplacer | ⌨️ Flèches = Naviguer | ESPACE = Interagir</div>
+        <div class="control-hint">🕐 CTRL+Z = Annuler (si possible) | TAB = Vue d'ensemble</div>
+    </div>
+    
+    <script>
+        // Configuration
+        const TILE_WIDTH = 128;
+        const TILE_HEIGHT = 64;
+        const BACKEND_URL = 'http://localhost:8082';
+        
+        // État du jeu
+        let gameState = {
+            map: null,
+            hero: {
+                x: 2,
+                y: 5,
+                movePoints: 5,
+                temporalCharges: 3,
+                path: []
+            },
+            camera: {
+                x: 0,
+                y: 0
+            },
+            fog: {},
+            selectedTile: null,
+            history: [],
+            canUndo: true
+        };
+        
+        // Canvas et contexte
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Redimensionner le canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Conversion coordonnées isométriques
+        function cartToIso(x, y) {
+            return {
+                x: (x - y) * TILE_WIDTH / 2,
+                y: (x + y) * TILE_HEIGHT / 2
+            };
+        }
+        
+        function isoToCart(x, y) {
+            return {
+                x: Math.floor((x / (TILE_WIDTH / 2) + y / (TILE_HEIGHT / 2)) / 2),
+                y: Math.floor((y / (TILE_HEIGHT / 2) - x / (TILE_WIDTH / 2)) / 2)
+            };
+        }
+        
+        // Charger la carte
+        async function loadMap() {
+            try {
+                // Essayer de charger depuis le backend
+                const response = await fetch(`${BACKEND_URL}/api/game/map/fragments_001`);
+                if (response.ok) {
+                    gameState.map = await response.json();
+                } else {
+                    // Utiliser la carte locale si backend indisponible
+                    gameState.map = await loadLocalMap();
+                }
+            } catch (error) {
+                console.log("Backend non disponible, chargement carte locale");
+                gameState.map = await loadLocalMap();
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            document.getElementById('temporalControls').style.display = 'block';
+            document.getElementById('controls').style.display = 'block';
+            
+            initializeGame();
+        }
+        
+        // Charger carte locale
+        async function loadLocalMap() {
+            const response = await fetch('../maps/fragments_temporels.json');
+            return await response.json();
+        }
+        
+        // Initialiser le jeu
+        function initializeGame() {
+            // Placer le héros sur la position de départ
+            const start = gameState.map.starting_position;
+            gameState.hero.x = start.tile[0] + gameState.map.platforms[0].position.x;
+            gameState.hero.y = start.tile[1] + gameState.map.platforms[0].position.y;
+            
+            // Révéler la zone initiale
+            revealFog(gameState.hero.x, gameState.hero.y, 2);
+            
+            // Centrer la caméra
+            centerCamera();
+            
+            // Démarrer la boucle de rendu
+            gameLoop();
+        }
+        
+        // Révéler le brouillard
+        function revealFog(x, y, radius) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist <= radius) {
+                        const key = `${x+dx},${y+dy}`;
+                        if (!gameState.fog[key]) {
+                            gameState.fog[key] = 'revealed';
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Centrer la caméra sur le héros
+        function centerCamera() {
+            const heroIso = cartToIso(gameState.hero.x, gameState.hero.y);
+            gameState.camera.x = canvas.width / 2 - heroIso.x;
+            gameState.camera.y = canvas.height / 2 - heroIso.y;
+        }
+        
+        // Dessiner une tuile
+        function drawTile(x, y, color, height = 0) {
+            const iso = cartToIso(x, y);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y - height * 20;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            
+            // Face supérieure
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.lineTo(0, TILE_HEIGHT);
+            ctx.lineTo(-TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Bordure
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Faces latérales (si hauteur)
+            if (height > 0) {
+                const h = height * 20;
+                
+                // Face gauche
+                ctx.fillStyle = adjustColor(color, -30);
+                ctx.beginPath();
+                ctx.moveTo(-TILE_WIDTH/2, TILE_HEIGHT/2);
+                ctx.lineTo(-TILE_WIDTH/2, TILE_HEIGHT/2 + h);
+                ctx.lineTo(0, TILE_HEIGHT + h);
+                ctx.lineTo(0, TILE_HEIGHT);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Face droite
+                ctx.fillStyle = adjustColor(color, -50);
+                ctx.beginPath();
+                ctx.moveTo(0, TILE_HEIGHT);
+                ctx.lineTo(0, TILE_HEIGHT + h);
+                ctx.lineTo(TILE_WIDTH/2, TILE_HEIGHT/2 + h);
+                ctx.lineTo(TILE_WIDTH/2, TILE_HEIGHT/2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+        
+        // Ajuster la couleur
+        function adjustColor(color, amount) {
+            const num = parseInt(color.slice(1), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+        }
+        
+        // Dessiner le héros
+        function drawHero() {
+            const iso = cartToIso(gameState.hero.x, gameState.hero.y);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY - 40);
+            
+            // Corps
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(-15, -30, 30, 40);
+            
+            // Tête
+            ctx.fillStyle = '#FFB6C1';
+            ctx.beginPath();
+            ctx.arc(0, -40, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Épée
+            ctx.strokeStyle = '#C0C0C0';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(20, -20);
+            ctx.lineTo(30, -50);
+            ctx.stroke();
+            
+            // Aura temporelle
+            const time = Date.now() * 0.001;
+            ctx.strokeStyle = `rgba(100, 149, 237, ${0.5 + Math.sin(time) * 0.3})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, -20, 35 + Math.sin(time * 2) * 5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // Dessiner un vortex
+        function drawVortex(x, y) {
+            const iso = cartToIso(x, y);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            
+            const time = Date.now() * 0.001;
+            
+            // Spirales tournantes
+            for (let i = 0; i < 3; i++) {
+                ctx.strokeStyle = `rgba(100, 149, 237, ${0.7 - i * 0.2})`;
+                ctx.lineWidth = 3 - i;
+                ctx.beginPath();
+                
+                for (let angle = 0; angle < Math.PI * 4; angle += 0.1) {
+                    const r = angle * 5 + i * 10;
+                    const x = Math.cos(angle + time + i) * r;
+                    const y = Math.sin(angle + time + i) * r * 0.5;
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+            }
+            
+            // Centre lumineux
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(1, 'rgba(100, 149, 237, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // Boucle de rendu
+        function gameLoop() {
+            // Effacer
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Fond cosmique
+            drawCosmicBackground();
+            
+            // Dessiner les plateformes
+            if (gameState.map && gameState.map.platforms) {
+                gameState.map.platforms.forEach(platform => {
+                    const px = platform.position.x;
+                    const py = platform.position.y;
+                    
+                    // Dessiner chaque tuile de la plateforme
+                    for (let x = 0; x < platform.size.w; x++) {
+                        for (let y = 0; y < platform.size.h; y++) {
+                            const tileX = px + x;
+                            const tileY = py + y;
+                            const key = `${tileX},${tileY}`;
+                            
+                            // Vérifier le brouillard
+                            if (gameState.fog[key]) {
+                                const color = getPlatformColor(platform.type);
+                                drawTile(tileX, tileY, color, platform.height || 0);
+                                
+                                // Dessiner les éléments spéciaux
+                                if (x === 0 && y === 0 && platform.content) {
+                                    drawPlatformContent(tileX, tileY, platform);
+                                }
+                            } else {
+                                // Zone dans le brouillard
+                                drawFogTile(tileX, tileY);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Dessiner les vortex
+            if (gameState.map && gameState.map.vortexes) {
+                gameState.map.vortexes.forEach(vortex => {
+                    const key = `${vortex.position.x},${vortex.position.y}`;
+                    if (gameState.fog[key]) {
+                        drawVortex(vortex.position.x, vortex.position.y);
+                    }
+                });
+            }
+            
+            // Dessiner la sélection
+            if (gameState.selectedTile) {
+                drawSelection(gameState.selectedTile.x, gameState.selectedTile.y);
+            }
+            
+            // Dessiner le héros
+            drawHero();
+            
+            // Mettre à jour l'UI
+            updateUI();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Obtenir la couleur d'une plateforme
+        function getPlatformColor(type) {
+            const colors = {
+                'settlement': '#4a7c4e',
+                'structure': '#6b5b73',
+                'battleground': '#8b4513',
+                'artifact_site': '#ffd700',
+                'ruins': '#696969'
+            };
+            return colors[type] || '#444444';
+        }
+        
+        // Dessiner le contenu d'une plateforme
+        function drawPlatformContent(x, y, platform) {
+            const iso = cartToIso(x + platform.size.w/2, y + platform.size.h/2);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y - 40;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            
+            // Icône selon le type
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const icons = {
+                'settlement': '🏘️',
+                'structure': '🏰',
+                'battleground': '⚔️',
+                'artifact_site': '🗡️',
+                'ruins': '🏚️'
+            };
+            
+            ctx.fillText(icons[platform.type] || '📍', 0, 0);
+            
+            ctx.restore();
+        }
+        
+        // Dessiner une tuile de brouillard
+        function drawFogTile(x, y) {
+            const iso = cartToIso(x, y);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            
+            // Brouillard sombre
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.lineTo(0, TILE_HEIGHT);
+            ctx.lineTo(-TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Effet de brume
+            const time = Date.now() * 0.0005;
+            ctx.fillStyle = `rgba(100, 100, 150, ${0.2 + Math.sin(time + x + y) * 0.1})`;
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // Dessiner la sélection
+        function drawSelection(x, y) {
+            const iso = cartToIso(x, y);
+            const screenX = iso.x + gameState.camera.x;
+            const screenY = iso.y + gameState.camera.y;
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.lineDashOffset = Date.now() * 0.01;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.lineTo(0, TILE_HEIGHT);
+            ctx.lineTo(-TILE_WIDTH/2, TILE_HEIGHT/2);
+            ctx.closePath();
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // Dessiner le fond cosmique
+        function drawCosmicBackground() {
+            // Gradient de fond
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a0a2a');
+            gradient.addColorStop(0.5, '#1a1a3a');
+            gradient.addColorStop(1, '#2a1a4a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Étoiles
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137) % canvas.width;
+                const y = (i * 89) % canvas.height;
+                const size = (i % 3) + 1;
+                const opacity = 0.3 + (i % 7) / 10;
+                
+                ctx.globalAlpha = opacity;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        // Mettre à jour l'interface
+        function updateUI() {
+            document.getElementById('heroPos').textContent = `${gameState.hero.x},${gameState.hero.y}`;
+            document.getElementById('movePoints').textContent = gameState.hero.movePoints;
+            document.getElementById('temporalCharges').textContent = gameState.hero.temporalCharges;
+            
+            // Bouton annuler
+            const undoBtn = document.getElementById('undoBtn');
+            undoBtn.disabled = !gameState.canUndo || gameState.history.length === 0;
+        }
+        
+        // Gestion des clics
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left - gameState.camera.x;
+            const mouseY = e.clientY - rect.top - gameState.camera.y;
+            
+            const tile = isoToCart(mouseX, mouseY);
+            const key = `${tile.x},${tile.y}`;
+            
+            // Vérifier si la tuile est révélée
+            if (gameState.fog[key]) {
+                moveHero(tile.x, tile.y);
+            }
+        });
+        
+        // Déplacer le héros
+        async function moveHero(targetX, targetY) {
+            // Vérifier la distance
+            const dx = Math.abs(targetX - gameState.hero.x);
+            const dy = Math.abs(targetY - gameState.hero.y);
+            const distance = Math.max(dx, dy);
+            
+            if (distance > gameState.hero.movePoints) {
+                return; // Trop loin
+            }
+            
+            // Sauvegarder l'état pour l'annulation
+            gameState.history.push({
+                x: gameState.hero.x,
+                y: gameState.hero.y,
+                movePoints: gameState.hero.movePoints
+            });
+            
+            // Déplacer
+            gameState.hero.x = targetX;
+            gameState.hero.y = targetY;
+            gameState.hero.movePoints -= distance;
+            
+            // Révéler la nouvelle zone
+            revealFog(targetX, targetY, 2);
+            
+            // Envoyer au backend si disponible
+            try {
+                await fetch(`${BACKEND_URL}/api/hero/move`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        heroId: 'chrono_walker',
+                        x: targetX,
+                        y: targetY
+                    })
+                });
+            } catch (error) {
+                console.log("Backend non disponible");
+            }
+        }
+        
+        // Gestion du clavier
+        document.addEventListener('keydown', (e) => {
+            const moves = {
+                'ArrowUp': { x: 0, y: -1 },
+                'ArrowDown': { x: 0, y: 1 },
+                'ArrowLeft': { x: -1, y: 0 },
+                'ArrowRight': { x: 1, y: 0 }
+            };
+            
+            if (moves[e.key]) {
+                const newX = gameState.hero.x + moves[e.key].x;
+                const newY = gameState.hero.y + moves[e.key].y;
+                moveHero(newX, newY);
+            } else if (e.ctrlKey && e.key === 'z') {
+                undoMove();
+            }
+        });
+        
+        // Annuler le mouvement
+        function undoMove() {
+            if (!gameState.canUndo || gameState.history.length === 0) return;
+            
+            const lastState = gameState.history.pop();
+            gameState.hero.x = lastState.x;
+            gameState.hero.y = lastState.y;
+            gameState.hero.movePoints = lastState.movePoints;
+            gameState.hero.temporalCharges--;
+            
+            if (gameState.hero.temporalCharges <= 0) {
+                gameState.canUndo = false;
+            }
+        }
+        
+        // Boutons temporels
+        document.getElementById('undoBtn').addEventListener('click', undoMove);
+        
+        document.getElementById('collapseBtn').addEventListener('click', () => {
+            // Forcer le collapse causal de la zone actuelle
+            const key = `${gameState.hero.x},${gameState.hero.y}`;
+            gameState.fog[key] = 'collapsed';
+            gameState.canUndo = false;
+            alert("Zone causalement collapsée ! Plus d'annulation possible.");
+        });
+        
+        // Démarrer le jeu
+        loadMap();
+    </script>
+</body>
+</html>

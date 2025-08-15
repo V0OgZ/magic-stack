@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚗 TEMPORAL DRIFT - Save Jordi</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #e8d5b7;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .game-header {
+            background: rgba(138, 43, 226, 0.2);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #8A2BE2;
+        }
+        
+        .game-header h1 {
+            margin: 0;
+            color: #FFD700;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #FFD700;
+        }
+        
+        .objective {
+            margin: 5px 0;
+            color: #FFA500;
+            font-size: 1em;
+        }
+        
+        .game-area {
+            flex: 1;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a, #1a1a2e);
+        }
+        
+        .network-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8A2BE2;
+        }
+        
+        .progress {
+            margin: 10px 0;
+            color: #28a745;
+        }
+        
+        .timer {
+            font-size: 1.2em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .node {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+        
+        .node.jordi {
+            background: #ff4757;
+            border-color: #ff3838;
+            box-shadow: 0 0 15px #ff4757;
+        }
+        
+        .node.exit {
+            background: #2ed573;
+            border-color: #20bf6b;
+            box-shadow: 0 0 15px #2ed573;
+        }
+        
+        .node.relay {
+            background: #3742fa;
+            border-color: #2f3542;
+            box-shadow: 0 0 10px #3742fa;
+        }
+        
+        .node.connected {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transform-origin: left center;
+            box-shadow: 0 0 5px #FFD700;
+            z-index: 1;
+        }
+        
+        .game-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #28a745;
+            display: none;
+        }
+        
+        .game-failed {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #dc3545;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🚗 SAVE JORDI - Réseau Spatial</h1>
+            <div class="objective">Connecter Jordi à la sortie en 3 liens maximum</div>
+        </div>
+        
+        <div class="game-area" id="gameArea">
+            <canvas class="network-canvas" id="networkCanvas"></canvas>
+            
+            <div class="game-ui">
+                <div class="timer" id="timer">45s</div>
+                <div class="progress" id="progress">Liens: 0/3</div>
+                <div style="color: #888; font-size: 0.8em; margin-top: 10px;">
+                    Cliquez pour connecter les nœuds
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-complete" id="gameComplete">
+            <h2>🎉 JORDI SAUVÉ !</h2>
+            <p>Réseau spatial rétabli avec succès</p>
+            <div style="margin-top: 15px; color: #FFD700;">
+                Récompenses: +50 XP, +2 Essence
+            </div>
+        </div>
+        
+        <div class="game-failed" id="gameFailed">
+            <h2>⏰ TEMPS ÉCOULÉ</h2>
+            <p>Jordi reste perdu dans l'espace-temps</p>
+            <div style="margin-top: 15px; color: #888;">
+                Aucune récompense
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class SaveJordiGame {
+            constructor() {
+                this.canvas = document.getElementById('networkCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gameArea = document.getElementById('gameArea');
+                
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                this.nodes = [];
+                this.connections = [];
+                this.selectedNode = null;
+                this.connectionsCount = 0;
+                this.maxConnections = 3;
+                this.timeLeft = 45;
+                this.gameRunning = true;
+                
+                this.init();
+                this.startTimer();
+                this.gameLoop();
+            }
+            
+            resizeCanvas() {
+                const rect = this.gameArea.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+            
+            init() {
+                // Générer positions aléatoires pour les nœuds
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                // Jordi (rouge) - à gauche
+                this.nodes.push({
+                    id: 'jordi',
+                    type: 'jordi',
+                    x: 100,
+                    y: height / 2,
+                    connected: false
+                });
+                
+                // Sortie (verte) - à droite
+                this.nodes.push({
+                    id: 'exit',
+                    type: 'exit', 
+                    x: width - 100,
+                    y: height / 2,
+                    connected: false
+                });
+                
+                // Relais (bleus) - au milieu
+                for (let i = 0; i < 4; i++) {
+                    this.nodes.push({
+                        id: `relay_${i}`,
+                        type: 'relay',
+                        x: 200 + Math.random() * (width - 400),
+                        y: 100 + Math.random() * (height - 200),
+                        connected: false
+                    });
+                }
+                
+                this.canvas.addEventListener('click', (e) => this.handleClick(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+            }
+            
+            handleClick(e) {
+                if (!this.gameRunning) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const clickedNode = this.getNodeAt(x, y);
+                
+                if (clickedNode) {
+                    if (this.selectedNode === null) {
+                        this.selectedNode = clickedNode;
+                    } else if (this.selectedNode !== clickedNode) {
+                        this.createConnection(this.selectedNode, clickedNode);
+                        this.selectedNode = null;
+                    } else {
+                        this.selectedNode = null;
+                    }
+                }
+            }
+            
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const hoveredNode = this.getNodeAt(x, y);
+                this.canvas.style.cursor = hoveredNode ? 'pointer' : 'crosshair';
+            }
+            
+            getNodeAt(x, y) {
+                return this.nodes.find(node => {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    return Math.sqrt(dx * dx + dy * dy) < 15;
+                });
+            }
+            
+            createConnection(node1, node2) {
+                // Vérifier si connexion existe déjà
+                const exists = this.connections.some(conn => 
+                    (conn.from === node1 && conn.to === node2) ||
+                    (conn.from === node2 && conn.to === node1)
+                );
+                
+                if (!exists && this.connectionsCount < this.maxConnections) {
+                    this.connections.push({
+                        from: node1,
+                        to: node2
+                    });
+                    
+                    node1.connected = true;
+                    node2.connected = true;
+                    
+                    this.connectionsCount++;
+                    this.updateProgress();
+                    
+                    // Vérifier victoire
+                    this.checkWinCondition();
+                }
+            }
+            
+            checkWinCondition() {
+                // Vérifier si Jordi est connecté à la sortie via un chemin
+                const jordi = this.nodes.find(n => n.type === 'jordi');
+                const exit = this.nodes.find(n => n.type === 'exit');
+                
+                if (this.isConnectedPath(jordi, exit)) {
+                    this.gameWin();
+                }
+            }
+            
+            isConnectedPath(start, end, visited = new Set()) {
+                if (start === end) return true;
+                if (visited.has(start.id)) return false;
+                
+                visited.add(start.id);
+                
+                // Trouver toutes les connexions de ce nœud
+                const connectedNodes = this.connections
+                    .filter(conn => conn.from === start || conn.to === start)
+                    .map(conn => conn.from === start ? conn.to : conn.from);
+                
+                for (const node of connectedNodes) {
+                    if (this.isConnectedPath(node, end, visited)) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+            
+            updateProgress() {
+                document.getElementById('progress').textContent = 
+                    `Liens: ${this.connectionsCount}/${this.maxConnections}`;
+            }
+            
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('timer').textContent = `${this.timeLeft}s`;
+                    
+                    if (this.timeLeft <= 10) {
+                        document.getElementById('timer').style.color = '#ff4757';
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.gameTimeout();
+                    }
+                }, 1000);
+            }
+            
+            gameWin() {
+                this.gameRunning = false;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('gameComplete').style.display = 'block';
+                
+                // Notifier parent
+                setTimeout(() => {
+                    this.sendResult(true, 1000);
+                }, 2000);
+            }
+            
+            gameTimeout() {
+                this.gameRunning = false;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('gameFailed').style.display = 'block';
+                
+                // Notifier parent
+                setTimeout(() => {
+                    this.sendResult(false, 0);
+                }, 2000);
+            }
+            
+            sendResult(success, score) {
+                const result = {
+                    type: 'arcade:result',
+                    gameId: 'SAVE_JORDI',
+                    success: success,
+                    score: score,
+                    rewards: success ? [
+                        { kind: 'xp', qty: 50 },
+                        { kind: 'essence', qty: 2 }
+                    ] : []
+                };
+                
+                // PostMessage au parent
+                if (window.parent !== window) {
+                    window.parent.postMessage(result, '*');
+                }
+                
+                console.log('🚗 Game result:', result);
+            }
+            
+            gameLoop() {
+                this.render();
+                if (this.gameRunning) {
+                    requestAnimationFrame(() => this.gameLoop());
+                }
+            }
+            
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Dessiner connexions
+                this.ctx.strokeStyle = '#FFD700';
+                this.ctx.lineWidth = 3;
+                this.ctx.shadowBlur = 5;
+                this.ctx.shadowColor = '#FFD700';
+                
+                this.connections.forEach(conn => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(conn.from.x, conn.from.y);
+                    this.ctx.lineTo(conn.to.x, conn.to.y);
+                    this.ctx.stroke();
+                });
+                
+                this.ctx.shadowBlur = 0;
+                
+                // Dessiner nœuds
+                this.nodes.forEach(node => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, 10, 0, Math.PI * 2);
+                    
+                    if (node.type === 'jordi') {
+                        this.ctx.fillStyle = '#ff4757';
+                        this.ctx.strokeStyle = '#ff3838';
+                    } else if (node.type === 'exit') {
+                        this.ctx.fillStyle = '#2ed573';
+                        this.ctx.strokeStyle = '#20bf6b';
+                    } else {
+                        this.ctx.fillStyle = '#3742fa';
+                        this.ctx.strokeStyle = '#2f3542';
+                    }
+                    
+                    if (node === this.selectedNode) {
+                        this.ctx.shadowBlur = 15;
+                        this.ctx.shadowColor = this.ctx.fillStyle;
+                    }
+                    
+                    this.ctx.lineWidth = 2;
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                });
+                
+                // Dessiner ligne de connection temporaire
+                if (this.selectedNode) {
+                    this.ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([5, 5]);
+                    
+                    // Note: Pour une vraie implémentation, il faudrait tracker la position souris
+                    
+                    this.ctx.setLineDash([]);
+                }
+            }
+        }
+        
+        // Démarrer le jeu
+        new SaveJordiGame();
+    </script>
+</body>
+</html>

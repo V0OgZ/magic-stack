@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Learning System - Demo IA Apprenante</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a0033, #330066);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            color: #ff6ec7;
+            text-shadow: 0 0 20px #ff6ec7;
+            margin-bottom: 30px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #ff6ec7;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            color: #ff6ec7;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .experiment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .reactant-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .reactant-btn {
+            padding: 8px 15px;
+            background: rgba(255,110,199,0.2);
+            border: 1px solid #ff6ec7;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .reactant-btn:hover {
+            background: rgba(255,110,199,0.4);
+            transform: scale(1.05);
+        }
+        
+        .reactant-btn.selected {
+            background: #ff6ec7;
+            color: #000;
+        }
+        
+        .conditions-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .condition-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .condition-field label {
+            font-size: 12px;
+            color: #ff6ec7;
+            margin-bottom: 3px;
+        }
+        
+        .condition-field input {
+            padding: 5px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #ff6ec7;
+            color: #fff;
+            border-radius: 3px;
+        }
+        
+        .run-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff6ec7, #ff9a52);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        
+        .run-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff6ec7;
+        }
+        
+        .knowledge-display {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .knowledge-item {
+            background: rgba(255,110,199,0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid #ff6ec7;
+        }
+        
+        .success-item {
+            border-left-color: #0f0;
+            background: rgba(0,255,0,0.1);
+        }
+        
+        .failure-item {
+            border-left-color: #f00;
+            background: rgba(255,0,0,0.1);
+        }
+        
+        .prediction-display {
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f00, #ff0, #0f0);
+            transition: width 0.5s ease;
+        }
+        
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            color: #ff6ec7;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .insights {
+            margin-top: 20px;
+        }
+        
+        .insight {
+            background: rgba(255,255,0,0.1);
+            border-left: 3px solid #ff0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            animation: insight-appear 0.5s;
+        }
+        
+        @keyframes insight-appear {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .hypothesis {
+            background: rgba(0,255,255,0.1);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hypothesis:hover {
+            background: rgba(0,255,255,0.2);
+            transform: translateX(5px);
+        }
+        
+        .learning-progress {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .progress-circle {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .progress-svg {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            color: #ff6ec7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chemistry Learning System - IA Apprenante</h1>
+        
+        <div class="main-grid">
+            <!-- Panel Experimentation -->
+            <div class="panel">
+                <div class="panel-title">Experimentation</div>
+                
+                <div class="experiment-form">
+                    <div>Reactifs:</div>
+                    <div class="reactant-selector" id="reactantSelector">
+                        <button class="reactant-btn" data-reactant="H">Hydrogene (H)</button>
+                        <button class="reactant-btn" data-reactant="O">Oxygene (O)</button>
+                        <button class="reactant-btn" data-reactant="Cl">Chlore (Cl)</button>
+                        <button class="reactant-btn" data-reactant="Na">Sodium (Na)</button>
+                        <button class="reactant-btn" data-reactant="C">Carbone (C)</button>
+                        <button class="reactant-btn" data-reactant="N">Azote (N)</button>
+                        <button class="reactant-btn" data-reactant="S">Soufre (S)</button>
+                    </div>
+                    
+                    <div>Conditions:</div>
+                    <div class="conditions-input">
+                        <div class="condition-field">
+                            <label>Temperature (°C)</label>
+                            <input type="number" id="temperature" value="25">
+                        </div>
+                        <div class="condition-field">
+                            <label>Pression (atm)</label>
+                            <input type="number" id="pressure" value="1">
+                        </div>
+                        <div class="condition-field">
+                            <label>pH</label>
+                            <input type="number" id="ph" value="7" min="0" max="14">
+                        </div>
+                        <div class="condition-field">
+                            <label>Catalyseur</label>
+                            <input type="text" id="catalyst" placeholder="Aucun">
+                        </div>
+                    </div>
+                    
+                    <button class="run-btn" onclick="runExperiment()">
+                        Lancer l'Experience
+                    </button>
+                    
+                    <button class="run-btn" onclick="getPrediction()" style="background: linear-gradient(135deg, #00ffff, #0080ff);">
+                        Predire le Resultat
+                    </button>
+                </div>
+                
+                <div class="prediction-display" id="predictionDisplay" style="display: none;">
+                </div>
+            </div>
+            
+            <!-- Panel Connaissances -->
+            <div class="panel">
+                <div class="panel-title">Connaissances Acquises</div>
+                
+                <div class="knowledge-display" id="knowledgeDisplay">
+                    <div class="knowledge-item">
+                        <strong>H2O (Eau)</strong><br>
+                        Composants: H, H, O<br>
+                        Proprietes: liquide, solvant, polaire<br>
+                        Confiance: 100%
+                    </div>
+                </div>
+                
+                <div class="panel-title" style="margin-top: 20px;">Hypotheses</div>
+                <div id="hypothesesDisplay"></div>
+            </div>
+            
+            <!-- Panel Statistiques -->
+            <div class="panel">
+                <div class="panel-title">Statistiques d'Apprentissage</div>
+                
+                <div class="statistics">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalExperiments">0</div>
+                        <div class="stat-label">Experiences</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Taux de Succes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="knownReactions">0</div>
+                        <div class="stat-label">Reactions Connues</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgConfidence">0%</div>
+                        <div class="stat-label">Confiance Moyenne</div>
+                    </div>
+                </div>
+                
+                <div class="learning-progress">
+                    <div class="progress-circle">
+                        <svg class="progress-svg" width="150" height="150">
+                            <circle cx="75" cy="75" r="70" fill="none" stroke="#333" stroke-width="10"/>
+                            <circle id="progressCircle" cx="75" cy="75" r="70" fill="none" 
+                                    stroke="#ff6ec7" stroke-width="10" 
+                                    stroke-dasharray="440" stroke-dashoffset="440"/>
+                        </svg>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                    <div style="margin-top: 10px;">Progression d'Apprentissage</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">Insights et Decouvertes</div>
+            <div class="insights" id="insightsDisplay"></div>
+        </div>
+    </div>
+    
+    <script src="./chemistry-learning-system.js"></script>
+    <script>
+        // Instance du systeme d'apprentissage
+        const learningSystem = new ChemistryLearningSystem();
+        
+        // Charger les donnees sauvegardees
+        const savedData = localStorage.getItem('chemistry_learning_data');
+        if (savedData) {
+            learningSystem.loadKnowledge(savedData);
+            updateDisplay();
+        }
+        
+        // Reactifs selectionnes
+        let selectedReactants = [];
+        
+        // Gestion de la selection des reactifs
+        document.querySelectorAll('.reactant-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const reactant = btn.dataset.reactant;
+                
+                if (selectedReactants.includes(reactant)) {
+                    selectedReactants = selectedReactants.filter(r => r !== reactant);
+                    btn.classList.remove('selected');
+                } else {
+                    selectedReactants.push(reactant);
+                    btn.classList.add('selected');
+                }
+            });
+        });
+        
+        // Lancer une experience
+        async function runExperiment() {
+            if (selectedReactants.length < 2) {
+                alert('Selectionnez au moins 2 reactifs !');
+                return;
+            }
+            
+            const conditions = {
+                temperature: parseFloat(document.getElementById('temperature').value),
+                pressure: parseFloat(document.getElementById('pressure').value),
+                ph: parseFloat(document.getElementById('ph').value),
+                catalyst: document.getElementById('catalyst').value || 'none'
+            };
+            
+            // Simuler le resultat de l'experience
+            const result = simulateReaction(selectedReactants, conditions);
+            
+            // L'IA apprend de l'experience
+            const experiment = {
+                reactants: [...selectedReactants],
+                conditions: conditions,
+                result: result.product,
+                success: result.success
+            };
+            
+            const insights = learningSystem.learnFromExperiment(experiment);
+            
+            // Afficher les insights
+            displayInsights(insights);
+            
+            // Mettre a jour l'affichage
+            updateDisplay();
+            
+            // Sauvegarder
+            learningSystem.saveKnowledge();
+            
+            // Generer de nouvelles hypotheses
+            generateHypotheses();
+        }
+        
+        // Predire le resultat
+        function getPrediction() {
+            if (selectedReactants.length < 2) {
+                alert('Selectionnez au moins 2 reactifs !');
+                return;
+            }
+            
+            const conditions = {
+                temperature: parseFloat(document.getElementById('temperature').value),
+                pressure: parseFloat(document.getElementById('pressure').value),
+                ph: parseFloat(document.getElementById('ph').value),
+                catalyst: document.getElementById('catalyst').value || 'none'
+            };
+            
+            const prediction = learningSystem.predictReaction(selectedReactants, conditions);
+            
+            displayPrediction(prediction);
+        }
+        
+        // Simuler une reaction (simplifie)
+        function simulateReaction(reactants, conditions) {
+            // Quelques reactions connues
+            const key = reactants.sort().join('+');
+            
+            // Eau
+            if (key === 'H+H+O' && conditions.temperature > 100) {
+                return { success: true, product: 'H2O (vapeur)' };
+            }
+            
+            if (key === 'H+H+O') {
+                return { success: true, product: 'H2O (eau)' };
+            }
+            
+            // Sel
+            if (key === 'Cl+Na') {
+                return { success: true, product: 'NaCl (sel)' };
+            }
+            
+            // Acide chlorhydrique
+            if (key === 'Cl+H') {
+                return { success: true, product: 'HCl (acide)' };
+            }
+            
+            // Dioxyde de carbone
+            if (key === 'C+O+O' && conditions.temperature > 200) {
+                return { success: true, product: 'CO2' };
+            }
+            
+            // Ammoniac
+            if (key === 'H+H+H+N' && conditions.pressure > 10) {
+                return { success: true, product: 'NH3 (ammoniac)' };
+            }
+            
+            // Echec si conditions non optimales
+            if (conditions.temperature > 500 || conditions.pressure > 50) {
+                return { success: false, product: null };
+            }
+            
+            // Reaction inconnue - 30% de chance de succes
+            if (Math.random() > 0.7) {
+                return { success: true, product: `Compose inconnu (${key})` };
+            }
+            
+            return { success: false, product: null };
+        }
+        
+        // Afficher une prediction
+        function displayPrediction(prediction) {
+            const display = document.getElementById('predictionDisplay');
+            display.style.display = 'block';
+            
+            let html = '<strong>Prediction:</strong><br>';
+            
+            if (prediction.prediction) {
+                html += `Resultat probable: ${prediction.prediction}<br>`;
+                html += `Confiance: ${Math.round(prediction.confidence * 100)}%<br>`;
+                html += `<div class="confidence-bar">
+                    <div class="confidence-fill" style="width: ${prediction.confidence * 100}%"></div>
+                </div>`;
+                
+                if (prediction.suggestedConditions) {
+                    html += '<br>Conditions suggerees:<br>';
+                    for (const [param, value] of Object.entries(prediction.suggestedConditions)) {
+                        html += `${param}: ${value}<br>`;
+                    }
+                }
+            } else {
+                html += 'Aucune prediction possible<br>';
+                if (prediction.warning) {
+                    html += `<span style="color: #f00;">${prediction.warning}</span><br>`;
+                }
+                if (prediction.suggestion) {
+                    html += `Suggestion: ${prediction.suggestion}`;
+                }
+            }
+            
+            display.innerHTML = html;
+        }
+        
+        // Afficher les insights
+        function displayInsights(insights) {
+            const display = document.getElementById('insightsDisplay');
+            
+            for (const insight of insights) {
+                const div = document.createElement('div');
+                div.className = 'insight';
+                div.innerHTML = `
+                    <strong>${insight.type.toUpperCase()}</strong><br>
+                    ${insight.message}
+                    ${insight.suggestion ? `<br>Suggestion: ${insight.suggestion}` : ''}
+                `;
+                display.insertBefore(div, display.firstChild);
+                
+                // Limiter a 10 insights affiches
+                if (display.children.length > 10) {
+                    display.removeChild(display.lastChild);
+                }
+            }
+        }
+        
+        // Generer des hypotheses
+        function generateHypotheses() {
+            const availableReactants = ['H', 'O', 'Cl', 'Na', 'C', 'N', 'S'];
+            const hypotheses = learningSystem.generateHypotheses(availableReactants);
+            
+            const display = document.getElementById('hypothesesDisplay');
+            display.innerHTML = '';
+            
+            for (const hypothesis of hypotheses) {
+                const div = document.createElement('div');
+                div.className = 'hypothesis';
+                div.innerHTML = `
+                    ${hypothesis.reactants.join(' + ')} → ${hypothesis.expectedProduct || '?'}<br>
+                    Probabilite: ${Math.round(hypothesis.probability * 100)}%
+                `;
+                div.onclick = () => {
+                    // Selectionner ces reactifs
+                    selectedReactants = hypothesis.reactants;
+                    updateReactantButtons();
+                };
+                display.appendChild(div);
+            }
+        }
+        
+        // Mettre a jour les boutons de reactifs
+        function updateReactantButtons() {
+            document.querySelectorAll('.reactant-btn').forEach(btn => {
+                const reactant = btn.dataset.reactant;
+                if (selectedReactants.includes(reactant)) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Mettre a jour l'affichage
+        function updateDisplay() {
+            const stats = learningSystem.getStatistics();
+            
+            // Statistiques
+            document.getElementById('totalExperiments').textContent = stats.totalExperiments;
+            document.getElementById('knownReactions').textContent = stats.successfulReactions;
+            document.getElementById('avgConfidence').textContent = Math.round(stats.averageConfidence * 100) + '%';
+            
+            // Taux de succes
+            const successRate = stats.totalExperiments > 0 ? 
+                (stats.successfulReactions / stats.totalExperiments * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            // Progression
+            const progress = stats.learningProgress * 100;
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            const circle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 70;
+            circle.style.strokeDashoffset = circumference - (progress / 100 * circumference);
+            
+            // Connaissances
+            updateKnowledgeDisplay();
+        }
+        
+        // Afficher les connaissances
+        function updateKnowledgeDisplay() {
+            const display = document.getElementById('knowledgeDisplay');
+            display.innerHTML = '';
+            
+            // Substances connues
+            for (const [name, substance] of learningSystem.knowledgeBase) {
+                const div = document.createElement('div');
+                div.className = 'knowledge-item';
+                div.innerHTML = `
+                    <strong>${substance.formula || name}</strong><br>
+                    Composants: ${substance.components.join(', ')}<br>
+                    Proprietes: ${substance.properties.join(', ')}<br>
+                    Confiance: ${Math.round((substance.confidence || 1) * 100)}%
+                `;
+                display.appendChild(div);
+            }
+            
+            // Reactions reussies
+            for (const [key, reaction] of learningSystem.successfulReactions) {
+                if (reaction.confidence >= 0.5) {
+                    const div = document.createElement('div');
+                    div.className = 'knowledge-item success-item';
+                    const result = learningSystem.getMostLikelyResult(reaction);
+                    div.innerHTML = `
+                        <strong>${key} → ${result}</strong><br>
+                        Succes: ${reaction.occurrences} fois<br>
+                        Confiance: ${Math.round(reaction.confidence * 100)}%
+                    `;
+                    display.appendChild(div);
+                }
+            }
+        }
+        
+        // Initialisation
+        updateDisplay();
+        generateHypotheses();
+    </script>
+</body>
+</html>

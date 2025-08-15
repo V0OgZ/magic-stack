@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎴 Générateur de Cartes AVALON</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #ffd700;
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .card-preview {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card-preview:hover {
+            border-color: #ffd700;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .card-cost {
+            background: #4a90e2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        
+        .card-type {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .card-rarity {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .rarity-mythic { background: #ff6b35; }
+        .rarity-legendary { background: #ffa500; }
+        .rarity-epic { background: #9932cc; }
+        .rarity-rare { background: #0066cc; }
+        
+        .card-stats {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .stat {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .card-effect {
+            background: rgba(74, 144, 226, 0.2);
+            border-left: 4px solid #4a90e2;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .flavor-text {
+            font-style: italic;
+            color: #ccc;
+            font-size: 13px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .prompt-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .prompt-label {
+            font-size: 12px;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+        
+        .prompt-text {
+            background: #2a2a4a;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 1.4;
+            border: 1px solid #4a4a6a;
+        }
+        
+        .copy-btn {
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 5px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+        
+        .source-image {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-effect {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #8a2be2;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin: 5px 0;
+            display: inline-block;
+        }
+        
+        .elements {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .element {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+        
+        .generate-all {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .generate-all:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎴 GÉNÉRATEUR DE CARTES AVALON TCG</h1>
+    <button class="generate-all" onclick="generateAllPrompts()">📋 Copier Tous les Prompts</button>
+    
+    <div class="cards-container" id="cardsContainer"></div>
+    
+    <script>
+        // Base de données des cartes
+        const cardsData = {
+            "cards": [
+                {
+                    "id": "phantom_duel",
+                    "name": "Duel Spectral au Crépuscule",
+                    "type": "Combat",
+                    "rarity": "Epic",
+                    "cost": 4,
+                    "attack": 3,
+                    "health": 2,
+                    "source_image": "Warrior and Phantom Battle at Dusk.png",
+                    "prompt_generation": "Epic combat card art: Warrior facing a spectral phantom at twilight, dramatic duel scene with ghostly effects and purple-orange sky. Fantasy trading card game style, detailed digital art, mystical atmosphere, card template format.",
+                    "effect": "Deal 3 damage. If target is destroyed, summon a Phantom Echo (2/1).",
+                    "flavor_text": "Entre la vie et la mort, seuls les plus braves osent danser.",
+                    "timeline_effect": "Spectral",
+                    "elements": ["Shadow", "Twilight"]
+                },
+                {
+                    "id": "temporal_warrior",
+                    "name": "Guerrier des Trois Temps",
+                    "type": "Hero",
+                    "rarity": "Legendary",
+                    "cost": 6,
+                    "attack": 4,
+                    "health": 6,
+                    "source_image": "Warrior of the Three Times.png",
+                    "prompt_generation": "Legendary hero card art: Epic warrior existing in three time periods simultaneously - past, present, future. Triple exposure effect showing different ages of the same warrior. Temporal magic, glowing time rifts, heroic stance. Fantasy TCG style, detailed digital painting.",
+                    "effect": "Choose: Past (heal 3), Present (deal 3 damage), or Future (draw 2 cards).",
+                    "flavor_text": "Le temps n'est qu'une illusion pour celui qui maîtrise l'éternité.",
+                    "timeline_effect": "Multi-Temporal",
+                    "elements": ["Time", "Warrior", "Choice"]
+                },
+                {
+                    "id": "excalibur_time",
+                    "name": "Excalibur Temporelle",
+                    "type": "Artifact",
+                    "rarity": "Legendary",
+                    "cost": 7,
+                    "durability": 3,
+                    "source_image": "Excalibur Through Time at Twilight.png",
+                    "prompt_generation": "Legendary artifact card art: The mythical sword Excalibur radiating temporal energy, blade cutting through time itself, twilight background with swirling time portals. Golden divine light, mystical runes floating around, epic fantasy card art style.",
+                    "effect": "Equip to hero: +4 attack. When hero attacks, may rewind this turn and replay differently.",
+                    "flavor_text": "L'épée qui transcende le temps et forge le destin.",
+                    "timeline_effect": "Temporal Rewind",
+                    "elements": ["Artifact", "Time", "Legendary"]
+                },
+                {
+                    "id": "bear_gunman_fusion",
+                    "name": "Éveil de l'Ours Mystique",
+                    "type": "Transformation",
+                    "rarity": "Mythic",
+                    "cost": 8,
+                    "attack": 6,
+                    "health": 8,
+                    "source_image": "Shamanic Bear and the Gunman Emergence.png",
+                    "prompt_generation": "Mythic transformation card art: Colossal shamanic bear spirit emerging with a gunman figure, cosmic starry background, mystical tribal symbols glowing, powerful spiritual emergence scene. Ultra detailed fantasy card art, shamanic awakening theme, epic scale.",
+                    "effect": "Transform target hero: Gain Ranged attacks + Shamanic magic. Draw a spell card each turn.",
+                    "flavor_text": "Quand l'esprit de l'ours rencontre l'âme du voyageur, naît une légende.",
+                    "timeline_effect": "Shamanic Fusion",
+                    "elements": ["Bear", "Shaman", "Transformation", "Mythic"]
+                },
+                {
+                    "id": "time_sorcerer",
+                    "name": "Sorcier du Temps",
+                    "type": "Mage",
+                    "rarity": "Epic",
+                    "cost": 5,
+                    "attack": 2,
+                    "health": 5,
+                    "source_image": "Sorcerer of Time at Twilight.png",
+                    "prompt_generation": "Epic mage card art: Wise time sorcerer at twilight manipulating temporal energies, floating clocks and hourglasses around him, flowing mystical robes, arcane time symbols. Detailed magic card art, twilight purple-orange atmosphere.",
+                    "effect": "Cast temporal spell: Skip opponent's next turn OR rewind your last action.",
+                    "flavor_text": "Le crépuscule révèle les secrets que l'aube cache.",
+                    "timeline_effect": "Time Skip",
+                    "elements": ["Time", "Magic", "Twilight"]
+                },
+                {
+                    "id": "light_warrior",
+                    "name": "Guerrier de Lumière Temporelle",
+                    "type": "Hero",
+                    "rarity": "Epic",
+                    "cost": 5,
+                    "attack": 4,
+                    "health": 4,
+                    "source_image": "Warrior Through Time and Light.png",
+                    "prompt_generation": "Epic hero card art: Dynamic warrior traveling through streams of golden light and time, motion blur effects, luminous light trails, heroic journey through dimensions. Fantasy TCG art, dynamic movement, inspiring and powerful scene.",
+                    "effect": "Rush: Can attack immediately. When attacking, may teleport to any position on board.",
+                    "flavor_text": "Plus rapide que la lumière, plus fort que le temps.",
+                    "timeline_effect": "Light Speed",
+                    "elements": ["Light", "Speed", "Teleport"]
+                },
+                {
+                    "id": "cosmic_convergence",
+                    "name": "Convergence Cosmique",
+                    "type": "Ultimate Spell",
+                    "rarity": "Mythic",
+                    "cost": 10,
+                    "source_image": "Convergence of Cosmic Forces.png",
+                    "prompt_generation": "Ultimate spell card art: Massive convergence of cosmic forces, multiple galaxies and dimensions colliding in space, epic universe-scale event, reality-bending gravitational effects. Ultra detailed cosmic art, overwhelming cosmic power, space-time distortion.",
+                    "effect": "Ultimate: Reset battlefield. All players draw 5 cards. Timeline resets to turn 1 with current decks.",
+                    "flavor_text": "Quand les forces de l'univers s'alignent, tout devient possible.",
+                    "timeline_effect": "Reality Reset",
+                    "elements": ["Cosmic", "Reset", "Ultimate"]
+                },
+                {
+                    "id": "temporal_strike",
+                    "name": "Frappe Temporelle",
+                    "type": "Combat Spell",
+                    "rarity": "Epic",
+                    "cost": 4,
+                    "source_image": "Excalibur's Temporal Strike.png",
+                    "prompt_generation": "Epic combat spell card art: Excalibur sword delivering a devastating strike that cuts through time itself, energy waves radiating, temporal distortion effects around impact. Dynamic action scene, fantasy card game art, temporal energy.",
+                    "effect": "Deal 5 damage that cannot be prevented or healed. Target cannot act next turn.",
+                    "flavor_text": "Une frappe qui résonne à travers toutes les époques.",
+                    "timeline_effect": "Temporal Stun",
+                    "elements": ["Strike", "Time", "Unavoidable"]
+                },
+                {
+                    "id": "cosmic_shaman",
+                    "name": "Chaman Cosmique",
+                    "type": "Mystic",
+                    "rarity": "Legendary",
+                    "cost": 6,
+                    "attack": 3,
+                    "health": 6,
+                    "source_image": "Cosmic Shaman and Temporal Reflection.png",
+                    "prompt_generation": "Legendary mystic card art: Cosmic shaman with temporal reflection powers, mirror dimension effects creating multiple reflections, spiritual cosmic background with nebulae, shamanic symbols floating in space. Mystical card art, cosmic wisdom theme.",
+                    "effect": "Reflect: Copy the last spell played and cast it again with different targets.",
+                    "flavor_text": "Dans le miroir du cosmos, toute vérité se révèle.",
+                    "timeline_effect": "Spell Reflection",
+                    "elements": ["Cosmic", "Reflection", "Copy"]
+                },
+                {
+                    "id": "arcane_battle",
+                    "name": "Bataille Arcanique",
+                    "type": "Event",
+                    "rarity": "Rare",
+                    "cost": 3,
+                    "source_image": "Epic Battle of Arcane Heroes.png",
+                    "prompt_generation": "Epic event card art: Multiple arcane heroes engaged in spectacular battle, magical effects and spells clashing everywhere, team combat scene with diverse warriors and mages. Detailed group combat art, magical energy explosions.",
+                    "effect": "All heroes on battlefield gain +2/+2 and can attack twice this turn.",
+                    "flavor_text": "Quand les héros s'affrontent, la magie embrase le monde.",
+                    "timeline_effect": "Battle Frenzy",
+                    "elements": ["Battle", "Enhancement", "Multiple"]
+                }
+            ]
+        };
+        
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            
+            cardsData.cards.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card-preview';
+                
+                const stats = card.attack !== undefined ? 
+                    `<div class="card-stats">
+                        <div class="stat">⚔️ ${card.attack}</div>
+                        <div class="stat">❤️ ${card.health || card.durability || 'N/A'}</div>
+                    </div>` : '';
+                
+                const elements = card.elements.map(el => 
+                    `<span class="element">${el}</span>`
+                ).join('');
+                
+                cardDiv.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-cost">${card.cost}</div>
+                    </div>
+                    
+                    <div class="source-image">📷 ${card.source_image}</div>
+                    
+                    <div class="card-type">${card.type}
+                        <span class="card-rarity rarity-${card.rarity.toLowerCase()}">${card.rarity}</span>
+                    </div>
+                    
+                    ${stats}
+                    
+                    <div class="timeline-effect">⏰ ${card.timeline_effect}</div>
+                    
+                    <div class="elements">${elements}</div>
+                    
+                    <div class="card-effect">${card.effect}</div>
+                    
+                    <div class="flavor-text">"${card.flavor_text}"</div>
+                    
+                    <div class="prompt-section">
+                        <div class="prompt-label">🎨 Prompt pour génération :</div>
+                        <div class="prompt-text" id="prompt-${card.id}">${card.prompt_generation}</div>
+                        <button class="copy-btn" onclick="copyPrompt('${card.id}')">📋 Copier Prompt</button>
+                    </div>
+                `;
+                
+                container.appendChild(cardDiv);
+            });
+        }
+        
+        function copyPrompt(cardId) {
+            const promptText = document.getElementById(`prompt-${cardId}`).textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                alert('Prompt copié !');
+            });
+        }
+        
+        function generateAllPrompts() {
+            let allPrompts = "🎴 TOUS LES PROMPTS AVALON TCG :\n\n";
+            
+            cardsData.cards.forEach((card, index) => {
+                allPrompts += `${index + 1}. ${card.name} (${card.source_image}):\n`;
+                allPrompts += `${card.prompt_generation}\n\n`;
+            });
+            
+            navigator.clipboard.writeText(allPrompts).then(() => {
+                alert('Tous les prompts copiés !');
+            });
+        }
+        
+        // Initialiser
+        renderCards();
+    </script>
+</body>
+</html>

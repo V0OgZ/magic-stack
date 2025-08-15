@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Expérience Ultime - Jeu + Panopticon 6D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 150px;
+            height: 100vh;
+            gap: 2px;
+        }
+        
+        /* JEU HEROES OF TIME */
+        #game-container {
+            background: #001100;
+            border: 2px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #game-area {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 150, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(150, 100, 0, 0.2) 0%, transparent 50%),
+                linear-gradient(45deg, #001100 25%, transparent 25%),
+                linear-gradient(-45deg, #001100 25%, transparent 25%);
+            background-size: 60px 60px, 60px 60px, 30px 30px, 30px 30px;
+            position: relative;
+        }
+        
+        .hero {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+            font-size: 18px;
+        }
+        
+        .hero:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 30px currentColor;
+        }
+        
+        .hero.vincent { background: #ff00ff; border-color: #ff00ff; color: white; }
+        .hero.loumen { background: #00ffff; border-color: #00ffff; color: black; }
+        .hero.sid { background: #ff6600; border-color: #ff6600; color: white; }
+        .hero.urz { background: #00ff00; border-color: #00ff00; color: black; }
+        .hero.grokaen { background: #0066ff; border-color: #0066ff; color: white; }
+        
+        /* EFFETS DE JEU */
+        .action-effect {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .spell-cast {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--effect-color) 0%, transparent 70%);
+            animation: spell-expand 2s ease-out forwards;
+        }
+        
+        @keyframes spell-expand {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        
+        /* SIGNAUX NEURONAUX */
+        .neural-signal {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--signal-color);
+            box-shadow: 0 0 10px var(--signal-color);
+            pointer-events: none;
+            z-index: 8;
+            animation: neural-travel 3s linear forwards;
+        }
+        
+        @keyframes neural-travel {
+            0% { opacity: 0; transform: scale(0); }
+            10% { opacity: 1; transform: scale(1); }
+            90% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+        
+        /* PANOPTICON 6D */
+        #panopticon-container {
+            background: radial-gradient(circle at center, #000011 0%, #000000 100%);
+            border: 2px solid #00ffff;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* LIGHTNING CAUSALE */
+        .causal-lightning {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        
+        .causal-active {
+            opacity: 1;
+            animation: causal-chain 2s ease-out;
+        }
+        
+        @keyframes causal-chain {
+            0% { background: radial-gradient(circle at 20% 20%, rgba(255, 0, 255, 0.8) 0%, transparent 40%); }
+            25% { background: radial-gradient(circle at 80% 30%, rgba(0, 255, 255, 0.6) 0%, transparent 50%); }
+            50% { background: radial-gradient(circle at 50% 80%, rgba(255, 255, 0, 0.7) 0%, transparent 45%); }
+            75% { background: radial-gradient(circle at 30% 70%, rgba(255, 100, 0, 0.5) 0%, transparent 60%); }
+            100% { background: transparent; }
+        }
+        
+        /* CONTRÔLES */
+        #controls-container {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid #00ff00;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            overflow-x: auto;
+        }
+        
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 150px;
+        }
+        
+        .control-btn {
+            padding: 10px 15px;
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        
+        .action-btn.fireball { border-color: #ff6600; color: #ff6600; }
+        .action-btn.lightning { border-color: #ffff00; color: #ffff00; }
+        .action-btn.heal { border-color: #00ff00; color: #00ff00; }
+        .action-btn.move { border-color: #00ffff; color: #00ffff; }
+        
+        .status-display {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+            font-size: 0.9em;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .neural-activity {
+            color: #ff00ff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- JEU HEROES OF TIME -->
+        <div id="game-container">
+            <div id="game-area">
+                <div class="hero vincent" id="hero-vincent" style="left: 45%; top: 45%;">V</div>
+                <div class="hero loumen" id="hero-loumen" style="left: 20%; top: 25%;">L</div>
+                <div class="hero sid" id="hero-sid" style="left: 75%; top: 20%;">S</div>
+                <div class="hero urz" id="hero-urz" style="left: 80%; top: 75%;">U</div>
+                <div class="hero grokaen" id="hero-grokaen" style="left: 25%; top: 80%;">G</div>
+                <div class="hero merlin" id="hero-merlin" style="left: 15%; top: 15%;">M</div>
+            </div>
+        </div>
+        
+        <!-- PANOPTICON 6D -->
+        <div id="panopticon-container">
+            <canvas id="canvas3d"></canvas>
+            <div class="causal-lightning" id="causal-lightning"></div>
+        </div>
+        
+        <!-- CONTRÔLES -->
+        <div id="controls-container">
+            <div class="control-section">
+                <label>🏹 Héros Actif</label>
+                <select id="active-hero" class="control-btn">
+                    <option value="vincent">Vincent (V)</option>
+                    <option value="loumen">Loumen (L)</option>
+                    <option value="sid">Sid (S)</option>
+                    <option value="urz">Urz-Kôm (U)</option>
+                    <option value="grokaen">Grokæn (G)</option>
+                    <option value="merlin">Merlin (M)</option>
+                </select>
+            </div>
+            
+            <div class="control-section">
+                <label>⚔️ Actions Magiques</label>
+                <div style="display: flex; gap: 8px;">
+                    <button class="control-btn action-btn fireball" onclick="castAction('fireball')">🔥 Fire</button>
+                    <button class="control-btn action-btn lightning" onclick="castAction('lightning')">⚡ Lightning</button>
+                    <button class="control-btn action-btn heal" onclick="castAction('heal')">💚 Heal</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <label>🎮 Actions Jeu</label>
+                <div style="display: flex; gap: 8px;">
+                    <button class="control-btn action-btn move" onclick="castAction('move')">🚶 Move</button>
+                    <button class="control-btn" onclick="castAction('attack')">⚔️ Attack</button>
+                    <button class="control-btn" onclick="castAction('defend')">🛡️ Defend</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <label>🧠 Système Neural</label>
+                <div style="display: flex; gap: 8px;">
+                    <button class="control-btn" onclick="triggerNeuralPulse()">⚡ Pulse</button>
+                    <button class="control-btn" onclick="triggerCausalChain()">🌀 Causal</button>
+                </div>
+            </div>
+            
+            <div class="status-display">
+                <div class="status-item">
+                    <span>🎮 Jeu</span>
+                    <span id="game-status">ACTIF</span>
+                </div>
+                <div class="status-item">
+                    <span>🧠 Neural</span>
+                    <span id="neural-status" class="neural-activity">PULSE</span>
+                </div>
+                <div class="status-item">
+                    <span>⚡ Causal</span>
+                    <span id="causal-status">SYNC</span>
+                </div>
+                <div class="status-item">
+                    <span>🌌 6D</span>
+                    <span id="dimension-status">LIVE</span>
+                </div>
+                <div class="status-item">
+                    <span>🤖 Actions</span>
+                    <span id="action-counter">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            backendUrl: 'http://localhost:8082',
+            neuralSpeed: 3000,
+            causalDelay: 500,
+            signalCount: 3
+        };
+        
+        // Variables globales
+        let scene, camera, renderer;
+        let actionCounter = 0;
+        let neuralSignalId = 0;
+        
+        // Données des mages (synchronisées)
+        const magesData = {
+            vincent: { name: 'Vincent', color: 0xff00ff, position: { x: 0, y: 0, z: 0 }, activity: 0.875 },
+            loumen: { name: 'Loumen', color: 0x00ffff, position: { x: -4, y: 3, z: -2 }, activity: 0.853 },
+            urz: { name: 'Urz-Kôm', color: 0x00ff00, position: { x: 5, y: -2, z: 3 }, activity: 0.870 },
+            sid: { name: 'Sid', color: 0xff6600, position: { x: 6, y: 1, z: -1 }, activity: 0.634 },
+            grokaen: { name: 'Grokæn', color: 0x0066ff, position: { x: -3, y: -4, z: 2 }, activity: 0.749 }
+        };
+        
+        // Connexions causales
+        const causalConnections = [
+            { from: 'vincent', to: 'loumen', strength: 0.9 },
+            { from: 'vincent', to: 'sid', strength: 0.8 },
+            { from: 'loumen', to: 'urz', strength: 0.7 },
+            { from: 'sid', to: 'grokaen', strength: 0.6 }
+        ];
+        
+        // Initialisation
+        async function init() {
+            console.log('🎮 Initialisation Expérience Ultime');
+            
+            initThreeJS();
+            setupGameEvents();
+            startNeuralLoop();
+            renderGalaxy();
+            
+            animate();
+        }
+        
+        // Configuration Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas3d'), antialias: true });
+            
+            const container = document.getElementById('panopticon-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
+            scene.add(ambientLight);
+            
+            camera.position.set(0, 0, 12);
+        }
+        
+        // Rendu de la galaxie 6D
+        function renderGalaxy() {
+            // Nettoyer la scène
+            while(scene.children.length > 1) {
+                scene.remove(scene.children[1]);
+            }
+            
+            // Rendu des étoiles mages
+            Object.entries(magesData).forEach(([mageId, mage]) => {
+                const activity = mage.activity;
+                const size = 0.15 * (0.8 + activity * 0.4);
+                
+                const starGeometry = new THREE.SphereGeometry(size, 12, 12);
+                const starMaterial = new THREE.MeshBasicMaterial({ 
+                    color: mage.color,
+                    transparent: true,
+                    opacity: 0.9 + activity * 0.1
+                });
+                
+                const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+                starMesh.position.copy(mage.position);
+                starMesh.userData = { mageId, mage };
+                
+                // Pulse neural
+                const time = Date.now() * 0.001;
+                const pulse = 1 + Math.sin(time + mage.position.x) * (0.1 + activity * 0.1);
+                starMesh.scale.setScalar(pulse);
+                
+                scene.add(starMesh);
+                
+                // Halo neural
+                const haloGeometry = new THREE.SphereGeometry(size * 3, 16, 16);
+                const haloMaterial = new THREE.MeshBasicMaterial({ 
+                    color: mage.color,
+                    transparent: true,
+                    opacity: 0.05 + activity * 0.1
+                });
+                const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+                halo.position.copy(mage.position);
+                scene.add(halo);
+            });
+            
+            // Connexions causales
+            causalConnections.forEach(connection => {
+                const fromMage = magesData[connection.from];
+                const toMage = magesData[connection.to];
+                
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(fromMage.position.x, fromMage.position.y, fromMage.position.z),
+                    new THREE.Vector3(toMage.position.x, toMage.position.y, toMage.position.z)
+                ]);
+                
+                const intensity = (fromMage.activity + toMage.activity) / 2;
+                const connectionColor = new THREE.Color().setHex(fromMage.color).lerp(
+                    new THREE.Color().setHex(toMage.color), 0.5
+                );
+                
+                const material = new THREE.LineBasicMaterial({ 
+                    color: connectionColor,
+                    opacity: connection.strength * intensity * 0.7,
+                    transparent: true
+                });
+                
+                const line = new THREE.Line(geometry, material);
+                scene.add(line);
+            });
+        }
+        
+        // Action de jeu (1+2+4 combo!)
+        function castAction(actionType) {
+            const heroId = document.getElementById('active-hero').value;
+            const heroElement = document.getElementById(`hero-${heroId}`);
+            
+            if (!heroElement) return;
+            
+            actionCounter++;
+            document.getElementById('action-counter').textContent = actionCounter;
+            
+            // 1. EFFET SUR LE JEU
+            createGameEffect(heroElement, actionType);
+            
+            // 2. SIGNAUX NEURONAUX
+            triggerNeuralSignals(heroId, actionType);
+            
+            // 3. CONNEXIONS CAUSALES ANIMÉES
+            setTimeout(() => triggerCausalChain(heroId, actionType), CONFIG.causalDelay);
+            
+            // 4. SYNCHRONISATION BACKEND
+            syncWithBackend(heroId, actionType);
+            
+            // Boost d'activité du mage
+            if (magesData[heroId]) {
+                magesData[heroId].activity = Math.min(1, magesData[heroId].activity + 0.2);
+            }
+            
+            console.log(`🎮 ${heroId} → ${actionType} | Neural + Causal + Sync!`);
+        }
+        
+        // 1. Effet visuel sur le jeu
+        function createGameEffect(heroElement, actionType) {
+            const rect = heroElement.getBoundingClientRect();
+            const gameRect = document.getElementById('game-area').getBoundingClientRect();
+            
+            const effect = document.createElement('div');
+            effect.className = 'action-effect spell-cast';
+            effect.style.left = (rect.left - gameRect.left - 15) + 'px';
+            effect.style.top = (rect.top - gameRect.top - 15) + 'px';
+            effect.style.setProperty('--effect-color', getActionColor(actionType));
+            
+            document.getElementById('game-area').appendChild(effect);
+            
+            setTimeout(() => {
+                if (effect.parentNode) {
+                    effect.parentNode.removeChild(effect);
+                }
+            }, 2000);
+        }
+        
+        // 2. Signaux neuronaux entre mages
+        function triggerNeuralSignals(fromMageId, actionType) {
+            const fromMage = magesData[fromMageId];
+            if (!fromMage) return;
+            
+            // Envoyer des signaux vers les mages connectés
+            causalConnections.forEach(connection => {
+                if (connection.from === fromMageId) {
+                    createNeuralSignal(fromMageId, connection.to, actionType);
+                }
+                if (connection.to === fromMageId) {
+                    createNeuralSignal(fromMageId, connection.from, actionType);
+                }
+            });
+        }
+        
+        // Créer un signal neural visuel
+        function createNeuralSignal(fromId, toId, actionType) {
+            const fromHero = document.getElementById(`hero-${fromId}`);
+            const toHero = document.getElementById(`hero-${toId}`);
+            
+            if (!fromHero || !toHero) return;
+            
+            const signal = document.createElement('div');
+            signal.className = 'neural-signal';
+            signal.style.setProperty('--signal-color', getActionColor(actionType));
+            signal.id = `signal-${neuralSignalId++}`;
+            
+            const fromRect = fromHero.getBoundingClientRect();
+            const toRect = toHero.getBoundingClientRect();
+            const gameRect = document.getElementById('game-area').getBoundingClientRect();
+            
+            const startX = fromRect.left - gameRect.left + 25;
+            const startY = fromRect.top - gameRect.top + 25;
+            const endX = toRect.left - gameRect.left + 25;
+            const endY = toRect.top - gameRect.top + 25;
+            
+            signal.style.left = startX + 'px';
+            signal.style.top = startY + 'px';
+            
+            document.getElementById('game-area').appendChild(signal);
+            
+            // Animation du signal
+            let progress = 0;
+            const duration = CONFIG.neuralSpeed;
+            const startTime = Date.now();
+            
+            function animateSignal() {
+                const elapsed = Date.now() - startTime;
+                progress = Math.min(elapsed / duration, 1);
+                
+                const currentX = startX + (endX - startX) * progress;
+                const currentY = startY + (endY - startY) * progress;
+                
+                signal.style.left = currentX + 'px';
+                signal.style.top = currentY + 'px';
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateSignal);
+                } else {
+                    // Signal arrivé - boost du mage cible
+                    if (magesData[toId]) {
+                        magesData[toId].activity = Math.min(1, magesData[toId].activity + 0.1);
+                    }
+                    
+                    if (signal.parentNode) {
+                        signal.parentNode.removeChild(signal);
+                    }
+                }
+            }
+            
+            animateSignal();
+        }
+        
+        // 3. Chaîne causale animée
+        function triggerCausalChain(originMage, actionType) {
+            const lightning = document.getElementById('causal-lightning');
+            lightning.classList.add('causal-active');
+            
+            setTimeout(() => {
+                lightning.classList.remove('causal-active');
+            }, 2000);
+            
+            // Propager l'effet causal
+            setTimeout(() => {
+                causalConnections.forEach(connection => {
+                    if (connection.from === originMage || connection.to === originMage) {
+                        const targetMage = connection.from === originMage ? connection.to : connection.from;
+                        if (magesData[targetMage]) {
+                            magesData[targetMage].activity = Math.min(1, magesData[targetMage].activity + 0.15);
+                        }
+                    }
+                });
+                renderGalaxy();
+            }, 1000);
+        }
+        
+        // 4. Synchronisation backend
+        async function syncWithBackend(heroId, actionType) {
+            try {
+                await fetch(`${CONFIG.backendUrl}/api/panopticon/feature-log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mageId: heroId.toUpperCase(),
+                        feature: `Action: ${actionType}`,
+                        description: `${heroId} utilise ${actionType} - Neural + Causal sync`,
+                        color: getActionColor(actionType)
+                    })
+                });
+            } catch (error) {
+                console.log('Sync backend échoué:', error);
+            }
+        }
+        
+        // Couleurs par action
+        function getActionColor(actionType) {
+            switch(actionType) {
+                case 'fireball': return '#ff6600';
+                case 'lightning': return '#ffff00';
+                case 'heal': return '#00ff00';
+                case 'move': return '#00ffff';
+                case 'attack': return '#ff0000';
+                case 'defend': return '#0066ff';
+                default: return '#ffffff';
+            }
+        }
+        
+        // Pulse neural global
+        function triggerNeuralPulse() {
+            Object.values(magesData).forEach(mage => {
+                mage.activity = Math.min(1, mage.activity + 0.25);
+            });
+            renderGalaxy();
+            
+            // Signaux vers tous les mages
+            Object.keys(magesData).forEach(mageId => {
+                triggerNeuralSignals(mageId, 'pulse');
+            });
+        }
+        
+        // Configuration événements jeu
+        function setupGameEvents() {
+            // Clic sur héros pour sélection
+            document.querySelectorAll('.hero').forEach(hero => {
+                hero.addEventListener('click', () => {
+                    const heroId = hero.id.replace('hero-', '');
+                    document.getElementById('active-hero').value = heroId;
+                    
+                    // Highlight
+                    document.querySelectorAll('.hero').forEach(h => h.style.transform = 'scale(1)');
+                    hero.style.transform = 'scale(1.3)';
+                    
+                    // Action automatique
+                    castAction('select');
+                });
+            });
+            
+            // Clic sur aire de jeu pour déplacement
+            document.getElementById('game-area').addEventListener('click', (e) => {
+                const heroId = document.getElementById('active-hero').value;
+                const heroElement = document.getElementById(`hero-${heroId}`);
+                const rect = e.currentTarget.getBoundingClientRect();
+                
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                
+                heroElement.style.left = x + '%';
+                heroElement.style.top = y + '%';
+                
+                castAction('move');
+            });
+        }
+        
+        // Boucle neuronale
+        function startNeuralLoop() {
+            setInterval(() => {
+                // Décroissance naturelle
+                Object.values(magesData).forEach(mage => {
+                    mage.activity = Math.max(0.2, mage.activity - 0.01);
+                });
+                
+                renderGalaxy();
+            }, 1000);
+        }
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0001;
+            camera.position.x = Math.cos(time) * 15;
+            camera.position.z = Math.sin(time) * 15;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('panopticon-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+        
+        // Initialisation
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

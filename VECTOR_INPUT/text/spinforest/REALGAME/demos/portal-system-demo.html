@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀⚡ Demo Système de Portails Interdimensionnels - LOUMEN & URZ-KÔM</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #demoCanvas {
+            display: block;
+            cursor: pointer;
+        }
+        
+        /* HUD épique */
+        .epic-hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            color: white;
+            z-index: 100;
+        }
+        
+        .hud-title {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #FF6600;
+            animation: glow-pulse 2s infinite;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 20px #FF6600; }
+            50% { text-shadow: 0 0 40px #FF6600, 0 0 60px #FF0000; }
+        }
+        
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .portal-info {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        
+        .portal-info:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+        
+        .portal-name {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .portal-status {
+            font-size: 14px;
+            color: #AAA;
+        }
+        
+        .status-active {
+            color: #00FF00;
+        }
+        
+        .status-locked {
+            color: #FF0000;
+        }
+        
+        /* Inventaire */
+        .inventory {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+        }
+        
+        .inventory-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+        
+        .inventory-item {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #FFD700;
+            border-radius: 5px;
+        }
+        
+        /* Contrôles */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00D9FF;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+        }
+        
+        .control-btn {
+            display: block;
+            margin: 10px 0;
+            padding: 10px 20px;
+            background: rgba(0,217,255,0.2);
+            border: 2px solid #00D9FF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0,217,255,0.4);
+            transform: scale(1.1);
+        }
+        
+        /* Messages */
+        .message-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #8A2BE2;
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+        }
+        
+        .message-overlay.active {
+            display: block;
+            animation: message-appear 0.5s ease-out;
+        }
+        
+        @keyframes message-appear {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas principal -->
+    <canvas id="demoCanvas"></canvas>
+    
+    <!-- HUD -->
+    <div class="epic-hud">
+        <h1 class="hud-title">🌀 Système de Portails Interdimensionnels 🌀</h1>
+        <div class="portal-grid" id="portalGrid">
+            <!-- Généré dynamiquement -->
+        </div>
+    </div>
+    
+    <!-- Inventaire -->
+    <div class="inventory">
+        <div class="inventory-title">🎒 Inventaire</div>
+        <div id="inventoryItems">
+            <div class="inventory-item">🔑 temporal_key</div>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls">
+        <div style="font-size: 20px; margin-bottom: 10px; color: #00D9FF;">⚡ Contrôles</div>
+        <button class="control-btn" onclick="addRandomItem()">➕ Ajouter Item</button>
+        <button class="control-btn" onclick="createNewPortal()">🌀 Nouveau Portail</button>
+        <button class="control-btn" onclick="toggleEffects()">✨ Toggle Effets</button>
+        <button class="control-btn" onclick="activateAllPortals()">🔓 Tout Activer</button>
+    </div>
+    
+    <!-- Message overlay -->
+    <div class="message-overlay" id="messageOverlay"></div>
+    
+    <script type="module">
+        // Import du système de portails
+        const script = document.createElement('script');
+        script.src = '../core/narrative/portal-system-epic.js';
+        document.head.appendChild(script);
+        
+        script.onload = () => {
+            // Configuration
+            const canvas = document.getElementById('demoCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // État de la démo
+            const demoState = {
+                portalSystem: new PortalSystemEpic(),
+                portals: [],
+                playerInventory: ['temporal_key'],
+                camera: { x: 0, y: 0 },
+                mouse: { x: 0, y: 0 },
+                selectedPortal: null,
+                effects: {
+                    particles: true,
+                    lightning: true,
+                    preview: true
+                },
+                background: {
+                    stars: [],
+                    nebula: 0
+                }
+            };
+            
+            // Initialiser le fond étoilé
+            for (let i = 0; i < 200; i++) {
+                demoState.background.stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    brightness: Math.random()
+                });
+            }
+            
+            // Créer les portails de démo
+            function initializePortals() {
+                // Portail 1: Frontière de Feu et Foi (débloqué)
+                const portal1 = demoState.portalSystem.createPortal(
+                    canvas.width * 0.25,
+                    canvas.height * 0.5,
+                    'frontiere_feu_foi',
+                    { radius: 80 }
+                );
+                demoState.portals.push(portal1);
+                
+                // Portail 2: Nexus de Cristal (verrouillé)
+                const portal2 = demoState.portalSystem.createPortal(
+                    canvas.width * 0.5,
+                    canvas.height * 0.5,
+                    'crystal_nexus',
+                    { radius: 70, quantumFlux: true }
+                );
+                demoState.portals.push(portal2);
+                
+                // Portail 3: Royaume des Ombres (verrouillé)
+                const portal3 = demoState.portalSystem.createPortal(
+                    canvas.width * 0.75,
+                    canvas.height * 0.5,
+                    'shadow_realm',
+                    { radius: 75, vortex: true }
+                );
+                demoState.portals.push(portal3);
+                
+                updatePortalGrid();
+            }
+            
+            // Mettre à jour la grille de portails
+            function updatePortalGrid() {
+                const grid = document.getElementById('portalGrid');
+                grid.innerHTML = '';
+                
+                for (const world in demoState.portalSystem.worlds) {
+                    const worldData = demoState.portalSystem.worlds[world];
+                    const portal = demoState.portals.find(p => 
+                        demoState.portalSystem.portals.get(p)?.targetWorld === world
+                    );
+                    
+                    const div = document.createElement('div');
+                    div.className = 'portal-info';
+                    div.innerHTML = `
+                        <div class="portal-name">${worldData.name}</div>
+                        <div class="portal-status ${worldData.unlocked ? 'status-active' : 'status-locked'}">
+                            ${worldData.unlocked ? '✅ Accessible' : '🔒 Verrouillé'}
+                        </div>
+                        ${worldData.requiredItems.length > 0 ? 
+                            `<div style="font-size: 12px; margin-top: 5px;">
+                                Requis: ${worldData.requiredItems.join(', ')}
+                            </div>` : ''
+                        }
+                    `;
+                    
+                    grid.appendChild(div);
+                }
+            }
+            
+            // Rendu principal
+            function render() {
+                // Effacer le canvas
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Fond étoilé animé
+                renderStarfield();
+                
+                // Rendu du système de portails
+                demoState.portalSystem.render(ctx, demoState.camera);
+                
+                // Effet de hover
+                if (demoState.selectedPortal) {
+                    const portal = demoState.portalSystem.portals.get(demoState.selectedPortal);
+                    if (portal) {
+                        ctx.strokeStyle = '#FFD700';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(portal.x, portal.y, portal.radius + 30, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+                
+                requestAnimationFrame(render);
+            }
+            
+            // Rendu du fond étoilé
+            function renderStarfield() {
+                // Nébuleuse de fond
+                const gradient = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, 0,
+                    canvas.width / 2, canvas.height / 2, canvas.width / 2
+                );
+                gradient.addColorStop(0, 'rgba(138, 43, 226, 0.1)');
+                gradient.addColorStop(0.5, 'rgba(75, 0, 130, 0.05)');
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Étoiles
+                demoState.background.stars.forEach(star => {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Animation scintillement
+                    star.brightness += (Math.random() - 0.5) * 0.05;
+                    star.brightness = Math.max(0.3, Math.min(1, star.brightness));
+                });
+            }
+            
+            // Gestion des événements
+            canvas.addEventListener('mousemove', (e) => {
+                demoState.mouse.x = e.clientX;
+                demoState.mouse.y = e.clientY;
+                
+                // Détecter le survol des portails
+                demoState.selectedPortal = null;
+                for (const portalId of demoState.portals) {
+                    const portal = demoState.portalSystem.portals.get(portalId);
+                    if (portal) {
+                        const dx = e.clientX - portal.x;
+                        const dy = e.clientY - portal.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < portal.radius + 20) {
+                            demoState.selectedPortal = portalId;
+                            canvas.style.cursor = 'pointer';
+                            break;
+                        } else {
+                            canvas.style.cursor = 'default';
+                        }
+                    }
+                }
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                if (demoState.selectedPortal) {
+                    const result = demoState.portalSystem.interactWithPortal(
+                        demoState.selectedPortal,
+                        demoState.playerInventory
+                    );
+                    
+                    showMessage(result.message);
+                    
+                    if (result.success) {
+                        updatePortalGrid();
+                    }
+                }
+            });
+            
+            // Fonctions globales pour les boutons
+            window.addRandomItem = () => {
+                const items = ['shadow_cloak', 'light_orb', 'master_key'];
+                const newItem = items[Math.floor(Math.random() * items.length)];
+                
+                if (!demoState.playerInventory.includes(newItem)) {
+                    demoState.playerInventory.push(newItem);
+                    updateInventory();
+                    showMessage(`✨ Nouvel item obtenu: ${newItem}`);
+                }
+            };
+            
+            window.createNewPortal = () => {
+                const worlds = Object.keys(demoState.portalSystem.worlds);
+                const randomWorld = worlds[Math.floor(Math.random() * worlds.length)];
+                const x = Math.random() * (canvas.width - 200) + 100;
+                const y = Math.random() * (canvas.height - 200) + 100;
+                
+                const portalId = demoState.portalSystem.createPortal(x, y, randomWorld, {
+                    radius: 60 + Math.random() * 40,
+                    quantumFlux: Math.random() > 0.5
+                });
+                
+                demoState.portals.push(portalId);
+                showMessage(`🌀 Nouveau portail créé vers ${demoState.portalSystem.worlds[randomWorld].name}`);
+            };
+            
+            window.toggleEffects = () => {
+                demoState.effects.particles = !demoState.effects.particles;
+                demoState.effects.lightning = !demoState.effects.lightning;
+                demoState.effects.preview = !demoState.effects.preview;
+                
+                // Appliquer aux portails existants
+                for (const portalId of demoState.portals) {
+                    const portal = demoState.portalSystem.portals.get(portalId);
+                    if (portal) {
+                        portal.specialEffects.lightning = demoState.effects.lightning;
+                        portal.specialEffects.preview = demoState.effects.preview;
+                    }
+                }
+                
+                showMessage(`✨ Effets: ${demoState.effects.particles ? 'ON' : 'OFF'}`);
+            };
+            
+            window.activateAllPortals = () => {
+                // Débloquer tous les mondes
+                for (const world in demoState.portalSystem.worlds) {
+                    demoState.portalSystem.worlds[world].unlocked = true;
+                }
+                
+                // Ajouter tous les items requis
+                const allItems = ['temporal_key', 'shadow_cloak', 'light_orb', 'master_key'];
+                demoState.playerInventory = [...new Set([...demoState.playerInventory, ...allItems])];
+                updateInventory();
+                
+                // Activer tous les portails
+                for (const portalId of demoState.portals) {
+                    const portal = demoState.portalSystem.portals.get(portalId);
+                    if (portal && !portal.active) {
+                        portal.active = true;
+                        demoState.portalSystem.activePortals.add(portalId);
+                    }
+                }
+                
+                updatePortalGrid();
+                showMessage('🔓 Tous les portails ont été activés !');
+            };
+            
+            // Mettre à jour l'inventaire
+            function updateInventory() {
+                const container = document.getElementById('inventoryItems');
+                container.innerHTML = '';
+                
+                demoState.playerInventory.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'inventory-item';
+                    div.textContent = `🔑 ${item}`;
+                    container.appendChild(div);
+                });
+            }
+            
+            // Afficher un message
+            function showMessage(text) {
+                const overlay = document.getElementById('messageOverlay');
+                overlay.textContent = text;
+                overlay.classList.add('active');
+                
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 3000);
+            }
+            
+            // Redimensionnement
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            
+            // Démarrage
+            initializePortals();
+            render();
+            
+            // Message de bienvenue
+            setTimeout(() => {
+                showMessage('🌀 Cliquez sur un portail pour interagir !');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

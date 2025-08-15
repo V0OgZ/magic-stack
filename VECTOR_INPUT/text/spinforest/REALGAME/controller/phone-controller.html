@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Phone Controller (PWA) — Heroes of Time</title>
+  <link rel="manifest" href="./phone-manifest.webmanifest">
+  <meta name="theme-color" content="#111831" />
+  <style>
+    html,body{margin:0;background:#0a0a1a;color:#e8d5b7;font-family:Courier,monospace}
+    #top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:2px solid #8A2BE2;background:#111831}
+    .container{max-width:500px;margin:0 auto;padding:12px}
+    .row{display:flex;gap:10px}
+    .col{flex:1}
+    .btn{display:inline-block;width:100%;padding:14px 10px;margin:6px 0;text-align:center;border:1px solid #4a4f5c;background:#182034;color:#e6e6e6;border-radius:10px;font-size:18px}
+    .pad{display:grid;grid-template-columns:80px 80px 80px;grid-template-rows:80px 80px 80px;gap:8px;justify-content:center;margin:16px 0}
+    .pad button{border-radius:12px;border:1px solid #4a4f5c;background:#20283a;color:#e6e6e6;font-size:18px}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #2b3350;background:#0a0f1f;color:#e6e6e6}
+    label{font-size:12px;color:#9aa4c4}
+    .small{font-size:12px;color:#9aa4c4}
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div>Phone Controller</div>
+    <div><a style="color:#FFD700;text-decoration:none" href="../adventure/homm3/hub-aventure.html">Hub</a></div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <label>Server URL</label>
+        <input id="baseUrl" placeholder="http://localhost:3001" />
+      </div>
+      <div class="col">
+        <label>heroId</label>
+        <input id="heroId" placeholder="hero:alice" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col"><button class="btn" id="connectBtn">Connect</button></div>
+    </div>
+
+    <div class="small" id="status">Not connected</div>
+
+    <div class="pad">
+      <div></div>
+      <button id="up">Up</button>
+      <div></div>
+      <button id="left">Left</button>
+      <button id="observe">Obs</button>
+      <button id="right">Right</button>
+      <div></div>
+      <button id="down">Down</button>
+      <div></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><button class="btn" id="collect">Collect</button></div>
+      <div class="col"><button class="btn" id="resolve">Resolve</button></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><button class="btn" id="tcgAuto">TCG Auto</button></div>
+      <div class="col"><button class="btn" id="tcgCoach">TCG Coach</button></div>
+    </div>
+  </div>
+
+  <script src="../adventure/homm3/orchestrator-client.js"></script>
+  <script>
+    let client = null;
+    let session = null;
+    let base = localStorage.getItem('controller.base') || 'http://localhost:3001';
+    let hero = localStorage.getItem('controller.hero') || 'hero:alice';
+    const baseEl = document.getElementById('baseUrl');
+    const heroEl = document.getElementById('heroId');
+    const statusEl = document.getElementById('status');
+    baseEl.value = base; heroEl.value = hero;
+
+    function setStatus(text){ statusEl.textContent = text; }
+
+    async function connect(){
+      base = baseEl.value || base; hero = heroEl.value || hero;
+      localStorage.setItem('controller.base', base);
+      localStorage.setItem('controller.hero', hero);
+      client = new OrchestratorClient({ baseUrl: base });
+      try {
+        session = await client.startSession(hero, 'phone-controller');
+        setStatus('Connected. tick='+ (session.tick||0));
+        try { if (window.sessionStorage) sessionStorage.setItem('heroId', hero); } catch(_){ }
+      } catch(e){ setStatus('Connect failed: ' + e.message); }
+    }
+
+    document.getElementById('connectBtn').onclick = connect;
+
+    // Controls
+    async function sendMove(dx, dy){
+      if (!client || !session) return;
+      const intent = { type: 'MOVE', heroId: hero, delta: { dx, dy, dz: 0 } };
+      try { await client.sendIntent(session.sessionId, intent); } catch(_){ }
+    }
+    async function sendObserve(){
+      if (!client || !session) return;
+      const intent = { type: 'OBSERVE', heroId: hero, center: { x: 10, y: 10, z: 0, t: 0, c: 1 }, radius: 3 };
+      try { await client.sendIntent(session.sessionId, intent); } catch(_){ }
+    }
+    async function sendCollect(){
+      if (!client || !session) return;
+      const intent = { type: 'COLLECT', heroId: hero, spotId: 'spot_10_20' };
+      try { await client.sendIntent(session.sessionId, intent); } catch(_){ }
+    }
+    async function sendResolve(){
+      if (!client || !session) return;
+      const intent = { type: 'REQUEST_RESOLVE', mode: 'QUANTUM', node_ids: ['player_hero','npc_guardian'] };
+      try { await client.sendIntent(session.sessionId, intent); } catch(_){ }
+    }
+    async function sendTCGAuto(){
+      if (!client) return;
+      try { await client._request('/tcg/ai/decide', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ state: { stub:true }, ai_prefs: { mode: 'play', difficulty: 'normal' } }) }); } catch(_){ }
+    }
+    async function sendTCGCoach(){
+      if (!client) return;
+      try { await client._request('/tcg/ai/coach', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ state: { stub:true }, question: 'best line?' }) }); } catch(_){ }
+    }
+
+    document.getElementById('up').onclick = () => sendMove(0,-1);
+    document.getElementById('down').onclick = () => sendMove(0,1);
+    document.getElementById('left').onclick = () => sendMove(-1,0);
+    document.getElementById('right').onclick = () => sendMove(1,0);
+    document.getElementById('observe').onclick = sendObserve;
+    document.getElementById('collect').onclick = sendCollect;
+    document.getElementById('resolve').onclick = sendResolve;
+    document.getElementById('tcgAuto').onclick = sendTCGAuto;
+    document.getElementById('tcgCoach').onclick = sendTCGCoach;
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  </script>
+</body>
+</html>
+
+

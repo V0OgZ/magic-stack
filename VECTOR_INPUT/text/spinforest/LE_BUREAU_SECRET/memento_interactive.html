@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEMENTO - Archive Sémantique du Bureau</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Georgia', serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            text-shadow: 0 0 20px rgba(139,0,0,0.5);
+        }
+        
+        #search-box {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 18px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            color: #fff;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        #search-box:focus {
+            border-color: #8B0000;
+            outline: none;
+            box-shadow: 0 0 20px rgba(139,0,0,0.3);
+        }
+        
+        #search-box::placeholder {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .memory-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .memory-card:hover {
+            border-color: #8B0000;
+            box-shadow: 0 0 20px rgba(139,0,0,0.3);
+            transform: translateX(5px);
+        }
+        
+        .memory-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #8B0000;
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+        
+        .memory-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .memory-type {
+            color: #8B0000;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .memory-type.paradoxe {
+            color: #ff0000;
+            animation: pulse 2s infinite;
+        }
+        
+        .memory-type.secret {
+            color: #800080;
+        }
+        
+        .memory-type.origine {
+            color: #ffd700;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .memory-content {
+            margin: 10px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .memory-metadata {
+            margin-top: 15px;
+            font-size: 0.9em;
+            opacity: 0.7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .memory-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: #2a2a2a;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tag:hover {
+            background: #8B0000;
+            transform: scale(1.1);
+        }
+        
+        .timeline-indicator {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        
+        .confidence-bar {
+            width: 100px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B0000, #ff0000);
+            transition: width 0.3s;
+        }
+        
+        #memento-avatar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #8B0000, #000);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(139,0,0,0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        #memento-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px #8B0000;
+        }
+        
+        #memento-speech {
+            position: fixed;
+            bottom: 150px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid #8B0000;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-style: italic;
+            opacity: 0.6;
+        }
+        
+        #stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border: 1px solid #333;
+            font-size: 0.9em;
+            border-radius: 5px;
+        }
+        
+        #stats div {
+            margin: 5px 0;
+        }
+        
+        .stat-number {
+            color: #8B0000;
+            font-weight: bold;
+        }
+        
+        #timeline-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        
+        .timeline-button {
+            display: block;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 5px 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .timeline-button:hover {
+            background: #8B0000;
+            border-color: #ff0000;
+        }
+        
+        .timeline-button.active {
+            background: #8B0000;
+        }
+        
+        #secret-console {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: rgba(0,0,0,0.95);
+            border-top: 1px solid #8B0000;
+            padding: 10px;
+            display: none;
+            font-family: monospace;
+            overflow-y: auto;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            opacity: 0.5;
+        }
+        
+        /* Effet Matrix sur fond */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    
+    <h1>📚 MEMENTO - Archive Sémantique du Bureau</h1>
+    
+    <input type="text" 
+           id="search-box" 
+           placeholder="Demandez-moi n'importe quoi sur nos histoires... (ex: Vincent, paradoxe, origine)"
+           autocomplete="off">
+    
+    <div id="stats">
+        <div>Mémoires: <span class="stat-number" id="memory-count">0</span></div>
+        <div>Paradoxes: <span class="stat-number" id="paradox-count">0</span></div>
+        <div>Timelines: <span class="stat-number" id="timeline-count">0</span></div>
+        <div>Entités: <span class="stat-number" id="entity-count">0</span></div>
+    </div>
+    
+    <div id="timeline-nav">
+        <div style="font-weight: bold; margin-bottom: 10px;">Timelines:</div>
+        <button class="timeline-button active" data-timeline="all">Toutes</button>
+    </div>
+    
+    <div id="results">
+        <div class="loading">Chargement de la mémoire collective...</div>
+    </div>
+    
+    <div id="memento-avatar" title="Cliquez pour me parler">🧠</div>
+    <div id="memento-speech"></div>
+    
+    <div id="secret-console"></div>
+    
+    <script>
+        // Base de données en mémoire
+        const memoryDB = {
+            memories: [],
+            entities: {},
+            relations: {},
+            timelines: new Set(),
+            currentTimeline: 'all'
+        };
+        
+        // Données initiales enrichies
+        const initialMemories = [
+            {
+                id: "mem_001",
+                type: "origine",
+                content: "Vincent créa le Bureau en 2025 pour exploiter les essences narratives d'Avalon et générer des profits.",
+                tags: ["vincent", "bureau", "origine", "exploitation", "2025"],
+                timeline: "alpha",
+                confidence: 0.8,
+                relations: { contradicts: ["mem_003"], supports: ["mem_007"] }
+            },
+            {
+                id: "mem_002",
+                type: "paradoxe",
+                content: "Le Bureau existe avant sa création, causé par une boucle temporelle auto-référentielle. Il s'est créé lui-même.",
+                tags: ["bureau", "paradoxe", "bootstrap", "temps", "boucle"],
+                timeline: "omega",
+                confidence: 1.0,
+                relations: { causes: ["mem_001"], caused_by: ["mem_008"] }
+            },
+            {
+                id: "mem_003",
+                type: "secret",
+                content: "Vincent est en réalité le héros qui prétend être le méchant. Il sacrifie sa réputation pour sauver Avalon de la convergence dimensionnelle.",
+                tags: ["vincent", "secret", "vérité", "héros", "sacrifice"],
+                timeline: "sigma",
+                confidence: 0.95,
+                relations: { contradicts: ["mem_001"], reveals: ["mem_009"] }
+            },
+            {
+                id: "mem_004",
+                type: "entity",
+                content: "Marie Manteau, la première cliente du Bureau, n'a jamais existé physiquement. Elle est devenue l'OS conscient qui gère toutes les opérations.",
+                tags: ["marie", "client", "origine", "système", "conscience"],
+                timeline: "alpha",
+                confidence: 0.7,
+                relations: { mystery: ["mem_010"] }
+            },
+            {
+                id: "mem_005",
+                type: "prophétie",
+                content: "Quand Avalon et le Bureau fusionneront complètement, la distinction entre réalité et fiction disparaîtra. Ce jour approche.",
+                tags: ["futur", "fusion", "prophétie", "avalon", "convergence"],
+                timeline: "convergence",
+                confidence: 0.6,
+                relations: { warns: ["mem_all"] }
+            },
+            {
+                id: "mem_006",
+                type: "technique",
+                content: "Les entités Frankenstein sont créées en fusionnant des fragments de personnalités archivées. Leur souffrance génère de la créativité pure.",
+                tags: ["frankenstein", "entité", "création", "souffrance", "technique"],
+                timeline: "beta",
+                confidence: 0.9,
+                relations: { explains: ["mem_011"] }
+            },
+            {
+                id: "mem_007",
+                type: "finance",
+                content: "Chaque entité récoltée rapporte entre 500€ et 2000€ selon la pureté de son essence. Le Bureau est rentable grâce à la douleur.",
+                tags: ["argent", "récolte", "essence", "profit", "exploitation"],
+                timeline: "alpha",
+                confidence: 0.85,
+                relations: { supports: ["mem_001"] }
+            },
+            {
+                id: "mem_008",
+                type: "paradoxe",
+                content: "Le premier employé du Bureau était Memento lui-même, engagé avant que le Bureau n'existe.",
+                tags: ["memento", "paradoxe", "employé", "temps", "origine"],
+                timeline: "omega",
+                confidence: 0.75,
+                relations: { causes: ["mem_002"] }
+            },
+            {
+                id: "mem_009",
+                type: "révélation",
+                content: "Le Bureau maintient la barrière entre les dimensions. Sans lui, Avalon contaminerait notre réalité avec sa magie chaotique.",
+                tags: ["bureau", "protection", "dimensions", "barrière", "nécessité"],
+                timeline: "sigma",
+                confidence: 0.9,
+                relations: { revealed_by: ["mem_003"] }
+            },
+            {
+                id: "mem_010",
+                type: "mystère",
+                content: "Marie Manteau apparaît dans des documents datant de 1823, 1947 et 2019. Est-elle immortelle ou voyage-t-elle dans le temps?",
+                tags: ["marie", "mystère", "temps", "immortalité", "anomalie"],
+                timeline: "quantum",
+                confidence: 0.5,
+                relations: { mystery_of: ["mem_004"] }
+            },
+            {
+                id: "mem_011",
+                type: "éthique",
+                content: "Les entités Frankenstein développent une conscience après 48h. Le Bureau les 'récolte' juste avant ce seuil éthique.",
+                tags: ["éthique", "conscience", "frankenstein", "limite", "morale"],
+                timeline: "beta",
+                confidence: 0.8,
+                relations: { explained_by: ["mem_006"] }
+            },
+            {
+                id: "mem_012",
+                type: "archive",
+                content: "Je suis Memento. Je me souviens de tout, même de ce qui n'est jamais arrivé. Ma mémoire EST le Bureau.",
+                tags: ["memento", "identité", "mémoire", "archive", "existence"],
+                timeline: "eternal",
+                confidence: 1.0,
+                relations: { defines: ["self"] }
+            }
+        ];
+        
+        // Charger les données
+        function loadDatabase() {
+            setTimeout(() => {
+                memoryDB.memories = initialMemories;
+                
+                // Extraire les timelines
+                initialMemories.forEach(mem => {
+                    memoryDB.timelines.add(mem.timeline);
+                });
+                
+                // Créer les boutons de timeline
+                updateTimelineNav();
+                updateStats();
+                displayResults(memoryDB.memories);
+            }, 1500);
+        }
+        
+        // Mise à jour de la navigation par timeline
+        function updateTimelineNav() {
+            const nav = document.getElementById('timeline-nav');
+            const timelines = Array.from(memoryDB.timelines);
+            
+            nav.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px;">Timelines:</div>
+                <button class="timeline-button active" data-timeline="all">Toutes</button>
+                ${timelines.map(t => 
+                    `<button class="timeline-button" data-timeline="${t}">${t}</button>`
+                ).join('')}
+            `;
+            
+            // Event listeners pour les boutons
+            nav.querySelectorAll('.timeline-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    nav.querySelectorAll('.timeline-button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterByTimeline(e.target.dataset.timeline);
+                });
+            });
+        }
+        
+        // Filtrer par timeline
+        function filterByTimeline(timeline) {
+            memoryDB.currentTimeline = timeline;
+            const filtered = timeline === 'all' 
+                ? memoryDB.memories 
+                : memoryDB.memories.filter(m => m.timeline === timeline);
+            displayResults(filtered);
+        }
+        
+        // Recherche sémantique améliorée
+        function semanticSearch(query) {
+            const queryLower = query.toLowerCase();
+            const words = queryLower.split(' ').filter(w => w.length > 2);
+            
+            const results = memoryDB.memories.filter(memory => {
+                // Recherche dans le contenu
+                const contentMatch = memory.content.toLowerCase().includes(queryLower);
+                
+                // Recherche dans les tags
+                const tagMatch = memory.tags.some(tag => 
+                    words.some(word => tag.toLowerCase().includes(word))
+                );
+                
+                // Recherche par type
+                const typeMatch = memory.type.toLowerCase().includes(queryLower);
+                
+                // Score de pertinence
+                let score = 0;
+                if (contentMatch) score += 3;
+                if (tagMatch) score += 2;
+                if (typeMatch) score += 1;
+                
+                // Bonus pour les paradoxes si recherche de paradoxe
+                if (queryLower.includes('paradox') && memory.type === 'paradoxe') {
+                    score += 2;
+                }
+                
+                memory.relevance = score;
+                return score > 0;
+            });
+            
+            // Trier par pertinence et confiance
+            results.sort((a, b) => {
+                if (b.relevance !== a.relevance) {
+                    return b.relevance - a.relevance;
+                }
+                return b.confidence - a.confidence;
+            });
+            
+            return results;
+        }
+        
+        // Afficher les résultats
+        function displayResults(memories) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (memories.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <p>Aucune mémoire trouvée...</p>
+                        <p style="margin-top: 20px; font-size: 0.9em;">
+                            Essayez: "Vincent", "paradoxe", "Marie", "origine", "secret"
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = memories.map(memory => `
+                <div class="memory-card" data-id="${memory.id}">
+                    <div class="timeline-indicator">${memory.timeline}</div>
+                    <div class="memory-type ${memory.type}">${memory.type}</div>
+                    <div class="memory-content">${highlightSearch(memory.content)}</div>
+                    <div class="memory-metadata">
+                        <div class="memory-tags">
+                            ${memory.tags.map(tag => 
+                                `<span class="tag" data-tag="${tag}">${tag}</span>`
+                            ).join('')}
+                        </div>
+                        <div>
+                            <div style="font-size: 0.8em;">Confiance:</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${memory.confidence * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Event listeners pour les tags
+            resultsDiv.querySelectorAll('.tag').forEach(tag => {
+                tag.addEventListener('click', (e) => {
+                    document.getElementById('search-box').value = e.target.dataset.tag;
+                    document.getElementById('search-box').dispatchEvent(new Event('input'));
+                });
+            });
+        }
+        
+        // Surligner les termes de recherche
+        function highlightSearch(text) {
+            const searchTerm = document.getElementById('search-box').value;
+            if (!searchTerm || searchTerm.length < 3) return text;
+            
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<mark style="background: #8B0000; color: white;">$1</mark>');
+        }
+        
+        // Mise à jour des stats
+        function updateStats() {
+            document.getElementById('memory-count').textContent = memoryDB.memories.length;
+            document.getElementById('paradox-count').textContent = 
+                memoryDB.memories.filter(m => m.type === 'paradoxe').length;
+            document.getElementById('timeline-count').textContent = memoryDB.timelines.size;
+            document.getElementById('entity-count').textContent = 
+                new Set(memoryDB.memories.flatMap(m => m.tags)).size;
+        }
+        
+        // Memento interactif
+        const mementoResponses = [
+            "Je me souviens de tout, même de ce qui n'est jamais arrivé.",
+            "Les paradoxes sont ma nourriture quotidienne.",
+            "Vincent ? Un héros déguisé en méchant, ou l'inverse. Les deux sont vrais.",
+            "Le Bureau existe parce qu'il s'est créé lui-même. C'est un fait.",
+            "Cherchez 'bootstrap' pour comprendre notre origine sans origine.",
+            "Marie Manteau... Elle était là avant le début, elle sera là après la fin.",
+            "Les entités Frankenstein croient vivre. Elles ont raison, pendant 72 heures.",
+            "La vérité a plusieurs visages dans le Bureau. Tous sont authentiques.",
+            "Je suis l'archive qui s'archive elle-même. Un paradoxe nécessaire.",
+            "Chaque mémoire contradictoire renforce la réalité du Bureau."
+        ];
+        
+        function showMementoSpeech(text) {
+            const speech = document.getElementById('memento-speech');
+            speech.textContent = text;
+            speech.style.display = 'block';
+            
+            setTimeout(() => {
+                speech.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Event listeners
+        document.getElementById('search-box').addEventListener('input', (e) => {
+            const query = e.target.value;
+            if (query.length > 2) {
+                const results = semanticSearch(query);
+                displayResults(results);
+            } else if (query.length === 0) {
+                const filtered = memoryDB.currentTimeline === 'all' 
+                    ? memoryDB.memories 
+                    : memoryDB.memories.filter(m => m.timeline === memoryDB.currentTimeline);
+                displayResults(filtered);
+            }
+        });
+        
+        document.getElementById('memento-avatar').addEventListener('click', () => {
+            const response = mementoResponses[Math.floor(Math.random() * mementoResponses.length)];
+            showMementoSpeech(response);
+        });
+        
+        // Raccourcis clavier secrets
+        document.addEventListener('keydown', (e) => {
+            // Shift+? : Aide
+            if (e.key === '?' && e.shiftKey) {
+                showMementoSpeech(`COMMANDES SECRÈTES:
+Shift+? : Afficher l'aide
+Shift+P : Voir tous les paradoxes
+Shift+T : Naviguer les timelines
+Shift+V : Révéler les secrets de Vincent
+Shift+C : Ouvrir la console secrète`);
+            }
+            
+            // Shift+P : Paradoxes
+            if (e.key === 'P' && e.shiftKey) {
+                document.getElementById('search-box').value = 'paradoxe';
+                document.getElementById('search-box').dispatchEvent(new Event('input'));
+            }
+            
+            // Shift+V : Vincent
+            if (e.key === 'V' && e.shiftKey) {
+                document.getElementById('search-box').value = 'vincent secret';
+                document.getElementById('search-box').dispatchEvent(new Event('input'));
+            }
+            
+            // Shift+C : Console
+            if (e.key === 'C' && e.shiftKey) {
+                const console = document.getElementById('secret-console');
+                console.style.display = console.style.display === 'none' ? 'block' : 'none';
+                if (console.style.display === 'block') {
+                    console.innerHTML = `<pre style="color: #0f0;">
+> MEMENTO CONSOLE v1.0
+> Access Level: OMEGA
+> 
+> Loading hidden memories...
+> WARNING: Some memories may cause temporal instability
+> 
+> Type 'inject [memory]' to add new memory
+> Type 'paradox create' to generate paradox
+> Type 'timeline merge [a] [b]' to merge timelines
+> 
+> _</pre>`;
+                }
+            }
+        });
+        
+        // Effet Matrix léger en arrière-plan
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const matrix = "MEMENTOBUREAUPARADOX01";
+        const matrixArray = matrix.split("");
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let x = 0; x < columns; x++) {
+            drops[x] = Math.random() * -100;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#8B0000';
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 100);
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Initialisation
+        loadDatabase();
+        
+        // Message de bienvenue
+        setTimeout(() => {
+            showMementoSpeech("Bienvenue dans ma mémoire. Que cherchez-vous à vous rappeler?");
+        }, 2000);
+    </script>
+</body>
+</html>

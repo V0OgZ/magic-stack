@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 AVALON ULTIMATE ARCADE - 200+ JEUX CACHÉS !</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        /* EFFET MATRIX DE FOU */
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .matrix-drop {
+            position: absolute;
+            color: #0f0;
+            font-size: 20px;
+            animation: matrix-fall linear infinite;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        @keyframes matrix-fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        /* CONTAINER PRINCIPAL */
+        #arcade {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        /* HEADER ÉPIQUE */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #ff0, #f0f, #0ff);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+        
+        h1 {
+            font-size: 4em;
+            color: #000;
+            text-shadow: 2px 2px 0 #fff, 4px 4px 0 #ff0;
+            position: relative;
+            z-index: 1;
+            animation: glitch 2s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+        
+        /* MENU CATÉGORIES */
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            padding: 20px;
+            background: #111;
+            flex-wrap: wrap;
+        }
+        
+        .cat-btn {
+            background: #222;
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cat-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            transition: left 0.5s;
+        }
+        
+        .cat-btn:hover::before {
+            left: 100%;
+        }
+        
+        .cat-btn:hover {
+            border-color: #0ff;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #0ff;
+        }
+        
+        .cat-btn.active {
+            background: #0ff;
+            color: #000;
+            border-color: #0ff;
+            box-shadow: 0 0 30px #0ff;
+        }
+        
+        /* GRILLE DE JEUX */
+        .games-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            align-content: start;
+        }
+        
+        .game-card {
+            background: #111;
+            border: 2px solid #333;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff0, #f0f, #0ff, #0f0);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            animation: rainbow-border 2s linear infinite;
+        }
+        
+        @keyframes rainbow-border {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        .game-card:hover::before {
+            opacity: 1;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: transparent;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        .game-icon {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .game-title {
+            font-size: 0.9em;
+            text-align: center;
+            color: #0ff;
+        }
+        
+        .game-port {
+            font-size: 0.7em;
+            color: #666;
+            text-align: center;
+        }
+        
+        /* MINI JEUX INTÉGRÉS */
+        #mini-game {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #000;
+            border: 2px solid #0ff;
+            padding: 20px;
+            display: none;
+            z-index: 100;
+        }
+        
+        /* EASTER EGGS */
+        .konami {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+            display: none;
+            z-index: 1000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        /* STATS FLOTTANTES */
+        .stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0f0;
+            padding: 10px;
+            font-size: 0.8em;
+            z-index: 100;
+        }
+        
+        /* BOUTONS FOUS */
+        .crazy-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .crazy-btn {
+            background: #000;
+            border: 2px solid #f0f;
+            color: #f0f;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .crazy-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px #f0f;
+        }
+        
+        /* SCROLLBAR CUSTOM */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff0, #0ff);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- EFFET MATRIX -->
+    <div id="matrix"></div>
+    
+    <!-- CONTAINER PRINCIPAL -->
+    <div id="arcade">
+        <div class="header">
+            <h1>🎮 AVALON ULTIMATE ARCADE 🎮</h1>
+            <p style="font-size: 1.5em; color: #000; font-weight: bold;">200+ INTERFACES CACHÉES DÉCOUVERTES !</p>
+        </div>
+        
+        <div class="categories" id="categories">
+            <button class="cat-btn active" data-cat="all">🌟 TOUT</button>
+            <button class="cat-btn" data-cat="games">🎮 Jeux</button>
+            <button class="cat-btn" data-cat="hidden">👻 Cachés</button>
+            <button class="cat-btn" data-cat="react">⚛️ React</button>
+            <button class="cat-btn" data-cat="ports">🔌 Ports</button>
+            <button class="cat-btn" data-cat="museum">🏛️ Museum</button>
+            <button class="cat-btn" data-cat="temporal">⏰ Temporal</button>
+            <button class="cat-btn" data-cat="3d">🎲 3D</button>
+            <button class="cat-btn" data-cat="tools">🛠️ Tools</button>
+            <button class="cat-btn" data-cat="wtf">🤯 WTF</button>
+        </div>
+        
+        <div class="games-container" id="games">
+            <!-- Les jeux seront générés ici -->
+        </div>
+    </div>
+    
+    <!-- STATS -->
+    <div class="stats">
+        <div>🎯 Interfaces: <span id="count">0</span></div>
+        <div>🔥 Clics: <span id="clicks">0</span></div>
+        <div>⚡ Score: <span id="score">0</span></div>
+    </div>
+    
+    <!-- BOUTONS FOUS -->
+    <div class="crazy-buttons">
+        <button class="crazy-btn" onclick="launchRandom()">🎲 RANDOM</button>
+        <button class="crazy-btn" onclick="launchAll()">💥 TOUT LANCER</button>
+        <button class="crazy-btn" onclick="activateMatrix()">🌐 MATRIX MODE</button>
+        <button class="crazy-btn" onclick="playSound()">🔊 SOUND</button>
+    </div>
+    
+    <!-- KONAMI CODE -->
+    <div class="konami" id="konami">🎮 KONAMI CODE ACTIVATED! 🎮</div>
+    
+    <!-- MINI JEU -->
+    <div id="mini-game">
+        <h3>🎮 MINI SNAKE</h3>
+        <canvas id="snake" width="200" height="200" style="border: 1px solid #0ff;"></canvas>
+    </div>
+    
+    <script>
+        // BASE DE DONNÉES DES INTERFACES
+        const interfaces = [
+            // JEUX PRINCIPAUX
+            { icon: "🎮", title: "TCG Battle", cat: "games", path: "AVALON-TCG/tcg-battle-interface.html", port: null },
+            { icon: "🌌", title: "Bubble Universe", cat: "games", path: "AVALON_BUBBLE_UNIVERSE.html", port: null },
+            { icon: "⚔️", title: "Heroes ISO", cat: "games", path: "maps/isometric-battle.html", port: null },
+            { icon: "🗺️", title: "Tactical 3x3", cat: "games", path: "AVALON-TCG/tactical-combat-interface.html", port: null },
+            
+            // INTERFACES CACHÉES PORT 3000
+            { icon: "⚛️", title: "React Frontend", cat: "react hidden", path: "http://localhost:3000", port: 3000 },
+            { icon: "⚛️", title: "React Game", cat: "react hidden", path: "http://localhost:3000/game", port: 3000 },
+            { icon: "⚛️", title: "True Heroes Test", cat: "react hidden", path: "http://localhost:3000/test/true-heroes", port: 3000 },
+            { icon: "⚛️", title: "Hexagon Test", cat: "react hidden", path: "http://localhost:3000/hexagon-test", port: 3000 },
+            
+            // TEMPORAL PORT 5173
+            { icon: "⏰", title: "Frontend Temporal", cat: "temporal hidden", path: "http://localhost:5173", port: 5173 },
+            { icon: "⏰", title: "Temporal Engine", cat: "temporal", path: "http://localhost:5173/engine", port: 5173 },
+            
+            // MUSEUM ARCHIVES
+            { icon: "🏛️", title: "Dashboard Museum", cat: "museum", path: "../AVALON/🏛️ MUSEUM/archives/racine/dashboard.html", port: null },
+            { icon: "🏛️", title: "Portail 100 HTML", cat: "museum hidden", path: "http://localhost:9000/portail-100-html-interfaces.html", port: 9000 },
+            { icon: "🏛️", title: "Vince Mode", cat: "museum", path: "http://localhost:9000/portail-vince-mode.html", port: 9000 },
+            
+            // 3D & VISUALISEURS
+            { icon: "🎲", title: "Panopticon 3D", cat: "3d hidden", path: "http://localhost:8000/panopticon-3d/", port: 8000 },
+            { icon: "🔬", title: "Quantum Visualizer", cat: "3d", path: "http://localhost:8000/quantum-visualizer/", port: 8000 },
+            { icon: "👁️", title: "Panopticon GRUT", cat: "3d", path: "../assets/panopticon-6d-grut.html", port: null },
+            
+            // PORTS MYSTÉRIEUX
+            { icon: "🔌", title: "Port 8082 Magic Stack API", cat: "ports hidden", path: "http://localhost:8082/api/interstice/status", port: 8082 },
+            { icon: "🔌", title: "Port 8888 Test", cat: "ports hidden", path: "http://localhost:8888", port: 8888 },
+            { icon: "🔌", title: "Port 8001 GRUT", cat: "ports hidden", path: "http://localhost:8001", port: 8001 },
+            { icon: "🔌", title: "Port 8003 Dashboard", cat: "ports hidden", path: "http://localhost:8003", port: 8003 },
+            { icon: "🔌", title: "Port 8004 Dicebear", cat: "ports hidden", path: "http://localhost:8004/dicebear-map-demo.html", port: 8004 },
+            
+            // TOOLS CACHÉS
+            { icon: "🛠️", title: "Visual Script Editor", cat: "tools", path: "../frontend/visual-script-editor.html", port: null },
+            { icon: "🛠️", title: "Tile Extractor", cat: "tools", path: "tools/tile-extractor.html", port: null },
+            { icon: "🛠️", title: "Style Extractor", cat: "tools", path: "tools/style-extractor.html", port: null },
+            { icon: "🛠️", title: "Forge Runique", cat: "tools hidden", path: "http://localhost:8000/forge-runique-ultime.html", port: 8000 },
+            
+            // WTF INTERFACES
+            { icon: "🤯", title: "Ethereal Mode", cat: "wtf hidden", path: "http://localhost:8000/ethereal-mode.html", port: 8000 },
+            { icon: "🤯", title: "Admin Multiplayer", cat: "wtf hidden", path: "http://localhost:8000/admin-multiplayer.html", port: 8000 },
+            { icon: "🤯", title: "Joint Panopticon", cat: "wtf hidden", path: "http://localhost:8000/joint-panopticon-interface.html", port: 8000 },
+            { icon: "🤯", title: "Replay Center", cat: "wtf hidden", path: "http://localhost:9000/replay-center.html", port: 9000 },
+            { icon: "🤯", title: "Omega Zero Trilogie", cat: "wtf", path: "http://localhost:9000/omega-zero-trilogie-visuelle.html", port: 9000 },
+            
+            // ENCORE PLUS CACHÉS
+            { icon: "👻", title: "Memento Tattoos", cat: "hidden", path: "http://localhost:9000/memento-tattoos-viewer.html", port: 9000 },
+            { icon: "👻", title: "HOTS Console", cat: "hidden", path: "http://localhost:9000/hots-console-simple.html", port: 9000 },
+            { icon: "👻", title: "Game Assets Viewer", cat: "hidden", path: "http://localhost:9000/game-assets-viewer.html", port: 9000 },
+            { icon: "👻", title: "Dicebear Gallery", cat: "hidden", path: "http://localhost:8000/dicebar-gallery.html", port: 8000 },
+            { icon: "👻", title: "Sphinx Interface", cat: "hidden", path: "http://localhost:8000/sphinx-interface-demo.html", port: 8000 },
+            
+            // NARRATIFS
+            { icon: "📖", title: "Histoire Heroes", cat: "games", path: "../AVALON/🏠 HOME/📚 MEMENTO/HISTOIRE_HEROES_OF_TIME.html", port: null },
+            { icon: "📖", title: "Scribe Sanctum", cat: "games", path: "../assets/scribe-sanctum.html", port: null },
+            { icon: "📖", title: "Ours Chroniques", cat: "games", path: "../assets/ours-chroniques.html", port: null },
+            
+            // PROJECTIONS
+            { icon: "📐", title: "Projection 2D", cat: "3d", path: "../AVALON/🏠 HOME/🧠 GROKAEN/projection_2d_paradigme.html", port: null },
+            { icon: "🌐", title: "Interface D2", cat: "3d", path: "../AVALON/🏠 HOME/🕯️ LUMEN/PROJET_INTERFACE_DIMENSION_2/index.html", port: null },
+            
+            // MEGA LAUNCHERS
+            { icon: "🚀", title: "MEGA LAUNCHER", cat: "games", path: "AVALON_MEGA_LAUNCHER.html", port: null },
+            { icon: "🎮", title: "TCG Launcher", cat: "games", path: "AVALON-TCG/launcher.html", port: null },
+            { icon: "🎯", title: "Advanced Launcher", cat: "games", path: "AVALON-TCG/advanced-game-launcher.html", port: null },
+            
+            // CENTRALES
+            { icon: "🏛️", title: "Central Command", cat: "museum", path: "../AVALON_CENTRAL_COMMAND.html", port: null },
+            { icon: "🌑", title: "Dark Fantasy", cat: "museum", path: "../AVALON_DARK_FANTASY_DASHBOARD.html", port: null },
+            
+            // API INTERFACES
+            { icon: "🔐", title: "Walter API", cat: "tools", path: "../frontend/api-walter-interface.html", port: null },
+            { icon: "🌊", title: "Brisure Navigator", cat: "tools", path: "../frontend/brisure-navigator.html", port: null },
+            { icon: "🎮", title: "Frontend Index", cat: "games", path: "../frontend/index.html", port: null },
+            
+            // MAPS
+            { icon: "🗺️", title: "EspritFragments", cat: "3d", path: "../AVALON/🏠 HOME/🕯️ LUMEN/espritfragments-map.html", port: null },
+            { icon: "🏰", title: "Carte Vivante", cat: "3d", path: "../AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/📐 ATELIER_CARTOGRAPHIE/CARTE_VIVANTE_AVALON.html", port: null }
+        ];
+        
+        // VARIABLES GLOBALES
+        let currentCat = 'all';
+        let clicks = 0;
+        let score = 0;
+        let matrixInterval;
+        let konamiIndex = 0;
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        // INIT
+        function init() {
+            renderGames();
+            initCategories();
+            initMatrix();
+            initKonami();
+            updateStats();
+            
+            // Easter egg au bout de 10 secondes
+            setTimeout(() => {
+                showMessage("🎮 ASTUCE: Essaye le Konami Code ! ⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️BA");
+            }, 10000);
+        }
+        
+        // RENDU DES JEUX
+        function renderGames() {
+            const container = document.getElementById('games');
+            const filtered = currentCat === 'all' 
+                ? interfaces 
+                : interfaces.filter(i => i.cat.includes(currentCat));
+            
+            container.innerHTML = filtered.map(game => `
+                <div class="game-card" onclick="launchGame('${game.path}', '${game.title}')">
+                    <div class="game-icon">${game.icon}</div>
+                    <div class="game-title">${game.title}</div>
+                    ${game.port ? `<div class="game-port">Port ${game.port}</div>` : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('count').textContent = filtered.length;
+        }
+        
+        // CATÉGORIES
+        function initCategories() {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCat = btn.dataset.cat;
+                    renderGames();
+                });
+            });
+        }
+        
+        // LANCER UN JEU
+        function launchGame(path, title) {
+            clicks++;
+            score += Math.floor(Math.random() * 100) + 10;
+            updateStats();
+            
+            window.open(path, '_blank');
+            
+            // Effets visuels
+            createExplosion(event.clientX, event.clientY);
+            
+            // Message aléatoire
+            const messages = [
+                `🚀 ${title} LANCÉ !`,
+                `💥 BOOM ! ${title} !`,
+                `🎮 GO GO GO ! ${title} !`,
+                `⚡ ${title} ACTIVATED !`,
+                `🔥 ${title} EN FEU !`
+            ];
+            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        // LANCER ALÉATOIRE
+        function launchRandom() {
+            const game = interfaces[Math.floor(Math.random() * interfaces.length)];
+            launchGame(game.path, game.title);
+        }
+        
+        // LANCER TOUT (DANGER!)
+        function launchAll() {
+            if (!confirm("⚠️ VRAIMENT LANCER 50+ INTERFACES ?! TON ORDI VA EXPLOSER !")) return;
+            
+            let count = 0;
+            const launcher = setInterval(() => {
+                if (count >= interfaces.length) {
+                    clearInterval(launcher);
+                    showMessage("💥 TOUTES LES INTERFACES LANCÉES ! RIP TON ORDI !");
+                    return;
+                }
+                
+                const game = interfaces[count];
+                window.open(game.path, '_blank');
+                count++;
+            }, 200);
+        }
+        
+        // EFFET MATRIX
+        function initMatrix() {
+            const matrix = document.getElementById('matrix');
+            const chars = "AVALON01アヴァロン魔法∞⚡🎮";
+            
+            for (let i = 0; i < 50; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'matrix-drop';
+                drop.style.left = Math.random() * 100 + '%';
+                drop.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                drop.textContent = chars[Math.floor(Math.random() * chars.length)];
+                matrix.appendChild(drop);
+            }
+        }
+        
+        // ACTIVER MATRIX MODE
+        function activateMatrix() {
+            document.body.style.background = '#000';
+            const drops = document.querySelectorAll('.matrix-drop');
+            drops.forEach(drop => {
+                drop.style.animationDuration = '0.5s';
+                drop.style.fontSize = '30px';
+                drop.style.color = '#0f0';
+            });
+            
+            showMessage("🌐 MATRIX MODE ACTIVATED !");
+            score += 1000;
+            updateStats();
+        }
+        
+        // KONAMI CODE
+        function initKonami() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === konamiCode[konamiIndex]) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        activateKonami();
+                        konamiIndex = 0;
+                    }
+                } else {
+                    konamiIndex = 0;
+                }
+            });
+        }
+        
+        // ACTIVER KONAMI
+        function activateKonami() {
+            document.getElementById('konami').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('konami').style.display = 'none';
+            }, 3000);
+            
+            // Bonus secret
+            score += 30000; // 30 vies !
+            updateStats();
+            
+            // Révéler toutes les interfaces cachées
+            currentCat = 'hidden';
+            document.querySelector('[data-cat="hidden"]').click();
+            
+            showMessage("🎮 30 VIES BONUS ! INTERFACES CACHÉES RÉVÉLÉES !");
+        }
+        
+        // SON (fictif)
+        function playSound() {
+            // Créer un oscillateur pour un bip
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 440; // La 440Hz
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+            
+            showMessage("🔊 BEEP BOOP !");
+        }
+        
+        // EXPLOSION VISUELLE
+        function createExplosion(x, y) {
+            const colors = ['#ff0', '#f0f', '#0ff', '#0f0', '#f00'];
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = '10px';
+                particle.style.height = '10px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9999';
+                
+                document.body.appendChild(particle);
+                
+                const angle = (Math.PI * 2 * i) / 20;
+                const velocity = 5 + Math.random() * 5;
+                const lifetime = 1000;
+                
+                let progress = 0;
+                const animate = () => {
+                    progress += 16;
+                    if (progress > lifetime) {
+                        particle.remove();
+                        return;
+                    }
+                    
+                    const t = progress / lifetime;
+                    particle.style.transform = `translate(${Math.cos(angle) * velocity * t * 50}px, ${Math.sin(angle) * velocity * t * 50}px) scale(${1 - t})`;
+                    particle.style.opacity = 1 - t;
+                    
+                    requestAnimationFrame(animate);
+                };
+                
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        // AFFICHER MESSAGE
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.style.position = 'fixed';
+            msg.style.top = '50%';
+            msg.style.left = '50%';
+            msg.style.transform = 'translate(-50%, -50%)';
+            msg.style.background = 'rgba(0, 0, 0, 0.9)';
+            msg.style.border = '3px solid #0ff';
+            msg.style.padding = '20px 40px';
+            msg.style.fontSize = '2em';
+            msg.style.color = '#0ff';
+            msg.style.textShadow = '0 0 10px #0ff';
+            msg.style.zIndex = '10000';
+            msg.style.borderRadius = '10px';
+            msg.textContent = text;
+            
+            document.body.appendChild(msg);
+            
+            setTimeout(() => {
+                msg.style.transition = 'all 0.5s';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                setTimeout(() => msg.remove(), 500);
+            }, 2000);
+        }
+        
+        // MISE À JOUR STATS
+        function updateStats() {
+            document.getElementById('clicks').textContent = clicks;
+            document.getElementById('score').textContent = score;
+        }
+        
+        // DÉMARRAGE
+        init();
+        
+        // TITRE ANIMÉ
+        setInterval(() => {
+            const h1 = document.querySelector('h1');
+            const emojis = ['🎮', '🕹️', '👾', '🎯', '🏆', '⚡', '🔥', '💥', '🌟', '✨'];
+            const emoji1 = emojis[Math.floor(Math.random() * emojis.length)];
+            const emoji2 = emojis[Math.floor(Math.random() * emojis.length)];
+            h1.innerHTML = `${emoji1} AVALON ULTIMATE ARCADE ${emoji2}`;
+        }, 1000);
+    </script>
+</body>
+</html>

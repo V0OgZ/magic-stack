@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Panopticon Backend Integration - Vraies Données</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 120px;
+            height: 100vh;
+            gap: 2px;
+        }
+        
+        /* JEU HEROES OF TIME */
+        #game-container {
+            background: #001100;
+            border: 2px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #game-area {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 150, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(150, 100, 0, 0.2) 0%, transparent 50%),
+                linear-gradient(45deg, #001100 25%, transparent 25%);
+            background-size: 60px 60px, 60px 60px, 30px 30px;
+            position: relative;
+        }
+        
+        .hero {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 3px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+            font-size: 16px;
+        }
+        
+        .hero:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 30px currentColor;
+        }
+        
+        /* PANOPTICON 6D */
+        #panopticon-container {
+            background: radial-gradient(circle at center, #000011 0%, #000000 100%);
+            border: 2px solid #00ffff;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .lightning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .lightning-active {
+            opacity: 1;
+            animation: backend-lightning 2s ease-out;
+        }
+        
+        @keyframes backend-lightning {
+            0% { background: radial-gradient(circle at 20% 20%, rgba(255, 0, 255, 0.8) 0%, transparent 40%); }
+            25% { background: radial-gradient(circle at 80% 30%, rgba(0, 255, 255, 0.6) 0%, transparent 50%); }
+            50% { background: radial-gradient(circle at 50% 80%, rgba(255, 255, 0, 0.7) 0%, transparent 45%); }
+            75% { background: radial-gradient(circle at 30% 70%, rgba(255, 100, 0, 0.5) 0%, transparent 60%); }
+            100% { background: transparent; }
+        }
+        
+        /* CONTRÔLES */
+        #controls-container {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid #00ff00;
+            padding: 10px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            overflow-x: auto;
+        }
+        
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 120px;
+        }
+        
+        .control-btn {
+            padding: 8px 12px;
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .status-display {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+            font-size: 0.8em;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .backend-connected {
+            color: #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- JEU HEROES OF TIME -->
+        <div id="game-container">
+            <div id="game-area">
+                <!-- Les héros seront créés dynamiquement depuis le backend -->
+            </div>
+        </div>
+        
+        <!-- PANOPTICON 6D -->
+        <div id="panopticon-container">
+            <canvas id="canvas3d"></canvas>
+            <div class="lightning-overlay" id="lightning-overlay"></div>
+        </div>
+        
+        <!-- CONTRÔLES -->
+        <div id="controls-container">
+            <div class="control-section">
+                <label>🏹 Mage Actif</label>
+                <select id="active-mage" class="control-btn">
+                    <!-- Sera rempli dynamiquement -->
+                </select>
+            </div>
+            
+            <div class="control-section">
+                <label>⚔️ Actions Backend</label>
+                <div style="display: flex; gap: 5px;">
+                    <button class="control-btn" onclick="castBackendSpell('fire_ball_temporal')">🔥 Fire</button>
+                    <button class="control-btn" onclick="castBackendSpell('lightning_bolt')">⚡ Lightning</button>
+                    <button class="control-btn" onclick="castBackendSpell('healing_wave')">💚 Heal</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <label>🧙 Mage Actions</label>
+                <div style="display: flex; gap: 5px;">
+                    <button class="control-btn" onclick="mageUpdate()">🔄 Update</button>
+                    <button class="control-btn" onclick="refreshBackend()">🌀 Refresh</button>
+                </div>
+            </div>
+            
+            <div class="status-display">
+                <div class="status-item">
+                    <span>🔗 Backend</span>
+                    <span id="backend-status" class="backend-connected">LIVE</span>
+                </div>
+                <div class="status-item">
+                    <span>👥 Mages</span>
+                    <span id="mage-count">0</span>
+                </div>
+                <div class="status-item">
+                    <span>⚡ Features</span>
+                    <span id="feature-count">0</span>
+                </div>
+                <div class="status-item">
+                    <span>🎮 Actions</span>
+                    <span id="action-count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            backendUrl: 'http://localhost:8082',
+            refreshInterval: 3000
+        };
+        
+        // Variables globales
+        let scene, camera, renderer;
+        let worldStateGraph = null;
+        let magesData = {};
+        let featuresData = {};
+        let actionCount = 0;
+        
+        // Couleurs par mage
+        const mageColors = {
+            'VINCENT_GRUT': 0xff00ff,
+            'LOUMEN_PHOENIX': 0x00ffff,
+            'SID_MEIER': 0xff6600,
+            'URZ_KOM': 0x00ff00,
+            'GROKAEN': 0x0066ff,
+            'MERLIN_RUST': 0xff0000
+        };
+        
+        // Initialisation
+        async function init() {
+            console.log('🎮 Initialisation Backend Integration');
+            
+            initThreeJS();
+            await loadBackendData();
+            startBackendLoop();
+            
+            animate();
+        }
+        
+        // Configuration Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas3d'), antialias: true });
+            
+            const container = document.getElementById('panopticon-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
+            scene.add(ambientLight);
+            
+            camera.position.set(0, 0, 15);
+        }
+        
+        // Chargement données backend
+        async function loadBackendData() {
+            try {
+                document.getElementById('backend-status').textContent = 'LOADING...';
+                
+                const response = await fetch(`${CONFIG.backendUrl}/api/panopticon/world-state-graph`);
+                worldStateGraph = await response.json();
+                
+                console.log('📊 Données backend chargées:', worldStateGraph);
+                
+                // Séparer mages et features
+                magesData = {};
+                featuresData = {};
+                
+                worldStateGraph.nodes.forEach(node => {
+                    if (node.type === 'FEATURE') {
+                        featuresData[node.id] = node;
+                    } else {
+                        magesData[node.id] = node;
+                    }
+                });
+                
+                updateUI();
+                renderBackendData();
+                
+                document.getElementById('backend-status').textContent = 'CONNECTED';
+                document.getElementById('backend-status').className = 'backend-connected';
+                
+            } catch (error) {
+                console.error('❌ Erreur backend:', error);
+                document.getElementById('backend-status').textContent = 'ERROR';
+                document.getElementById('backend-status').style.color = '#ff0000';
+            }
+        }
+        
+        // Mise à jour UI
+        function updateUI() {
+            const mageCount = Object.keys(magesData).length;
+            const featureCount = Object.keys(featuresData).length;
+            
+            document.getElementById('mage-count').textContent = mageCount;
+            document.getElementById('feature-count').textContent = featureCount;
+            
+            // Remplir le dropdown des mages
+            const select = document.getElementById('active-mage');
+            select.innerHTML = '';
+            
+            Object.entries(magesData).forEach(([mageId, mage]) => {
+                const option = document.createElement('option');
+                option.value = mageId;
+                option.textContent = `${mage.name} (${mageId.charAt(0)})`;
+                select.appendChild(option);
+            });
+            
+            // Créer les héros sur la carte
+            createGameHeroes();
+        }
+        
+        // Créer héros sur la carte de jeu
+        function createGameHeroes() {
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = ''; // Clear existing
+            
+            Object.entries(magesData).forEach(([mageId, mage]) => {
+                const hero = document.createElement('div');
+                hero.className = 'hero';
+                hero.id = `hero-${mageId}`;
+                hero.textContent = mageId.charAt(0);
+                
+                // Position basée sur les coordonnées 6D
+                const x = (mage.x / 100) * 90 + 5; // 5-95%
+                const y = (mage.y / 100) * 90 + 5;
+                
+                hero.style.left = x + '%';
+                hero.style.top = y + '%';
+                hero.style.background = `#${mageColors[mageId].toString(16)}`;
+                hero.style.borderColor = `#${mageColors[mageId].toString(16)}`;
+                hero.style.color = mageColors[mageId] === 0x00ff00 || mageColors[mageId] === 0x00ffff ? '#000' : '#fff';
+                
+                hero.addEventListener('click', () => {
+                    document.getElementById('active-mage').value = mageId;
+                    selectMage(mageId);
+                });
+                
+                gameArea.appendChild(hero);
+            });
+        }
+        
+        // Rendu données backend
+        function renderBackendData() {
+            // Nettoyer la scène
+            while(scene.children.length > 1) {
+                scene.remove(scene.children[1]);
+            }
+            
+            // Rendu des mages
+            Object.entries(magesData).forEach(([mageId, mage]) => {
+                const color = mageColors[mageId] || 0xffffff;
+                const size = 0.2;
+                
+                const geometry = new THREE.SphereGeometry(size, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: color,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(
+                    (mage.x - 50) / 10, 
+                    (mage.y - 50) / 10, 
+                    (mage.z - 50) / 10
+                );
+                sphere.userData = { mageId, mage };
+                
+                // Pulse basé sur luminosity
+                const time = Date.now() * 0.001;
+                const pulse = 1 + Math.sin(time + mage.x) * 0.2;
+                sphere.scale.setScalar(pulse);
+                
+                scene.add(sphere);
+                
+                // Halo
+                const haloGeometry = new THREE.SphereGeometry(size * 3, 16, 16);
+                const haloMaterial = new THREE.MeshBasicMaterial({ 
+                    color: color,
+                    transparent: true,
+                    opacity: 0.1
+                });
+                const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+                halo.position.copy(sphere.position);
+                scene.add(halo);
+            });
+            
+            // Rendu des features (actions récentes)
+            Object.entries(featuresData).forEach(([featureId, feature]) => {
+                const color = new THREE.Color(feature.color || '#ffffff');
+                const size = 0.1;
+                
+                const geometry = new THREE.SphereGeometry(size, 12, 12);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: color,
+                    transparent: true,
+                    opacity: feature.luminosity || 0.8
+                });
+                
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(
+                    (feature.x - 50) / 10, 
+                    (feature.y - 50) / 10, 
+                    (feature.z - 50) / 10
+                );
+                
+                // Animation scintillante pour les features
+                const time = Date.now() * 0.005;
+                const twinkle = 0.5 + Math.sin(time + feature.x * 0.1) * 0.5;
+                material.opacity = twinkle * (feature.luminosity || 0.8);
+                
+                scene.add(sphere);
+            });
+            
+            // Rendu des connexions (edges)
+            if (worldStateGraph.edges) {
+                worldStateGraph.edges.forEach(edge => {
+                    const fromNode = worldStateGraph.nodes.find(n => n.id === edge.from);
+                    const toNode = worldStateGraph.nodes.find(n => n.id === edge.to);
+                    
+                    if (fromNode && toNode) {
+                        const geometry = new THREE.BufferGeometry().setFromPoints([
+                            new THREE.Vector3(
+                                (fromNode.x - 50) / 10, 
+                                (fromNode.y - 50) / 10, 
+                                (fromNode.z - 50) / 10
+                            ),
+                            new THREE.Vector3(
+                                (toNode.x - 50) / 10, 
+                                (toNode.y - 50) / 10, 
+                                (toNode.z - 50) / 10
+                            )
+                        ]);
+                        
+                        const material = new THREE.LineBasicMaterial({ 
+                            color: 0x666666,
+                            opacity: edge.strength || 0.5,
+                            transparent: true
+                        });
+                        
+                        const line = new THREE.Line(geometry, material);
+                        scene.add(line);
+                    }
+                });
+            }
+        }
+        
+        // Lancer sort via backend
+        async function castBackendSpell(formula) {
+            const activeMage = document.getElementById('active-mage').value;
+            if (!activeMage) return;
+            
+            try {
+                // 1. Lancer le sort via l'API Magic
+                const castResponse = await fetch(`${CONFIG.backendUrl}/api/magic/cast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: formula,
+                        power: 50,
+                        caster: activeMage,
+                        targetX: Math.random() * 100,
+                        targetY: Math.random() * 100,
+                        targetZ: Math.random() * 100
+                    })
+                });
+                
+                // 2. Logger l'action dans le Panopticon
+                const logResponse = await fetch(`${CONFIG.backendUrl}/api/panopticon/feature-log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mageId: activeMage,
+                        feature: `Backend Spell: ${formula}`,
+                        description: `${activeMage} cast ${formula} via backend API`,
+                        color: getSpellColor(formula)
+                    })
+                });
+                
+                // 3. Effet visuel
+                triggerLightning();
+                
+                actionCount++;
+                document.getElementById('action-count').textContent = actionCount;
+                
+                // 4. Recharger les données
+                setTimeout(() => loadBackendData(), 1000);
+                
+                console.log(`✨ ${activeMage} cast ${formula} via backend!`);
+                
+            } catch (error) {
+                console.error('❌ Erreur cast spell:', error);
+            }
+        }
+        
+        // Auto-update mage
+        async function mageUpdate() {
+            const activeMage = document.getElementById('active-mage').value;
+            if (!activeMage) return;
+            
+            try {
+                const response = await fetch(`${CONFIG.backendUrl}/api/mage/self-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mageId: activeMage,
+                        state: {
+                            action: 'self-update',
+                            timestamp: Date.now(),
+                            energy: Math.random() * 100
+                        }
+                    })
+                });
+                
+                console.log(`🔄 ${activeMage} self-updated!`);
+                setTimeout(() => loadBackendData(), 500);
+                
+            } catch (error) {
+                console.error('❌ Erreur mage update:', error);
+            }
+        }
+        
+        // Refresh backend
+        async function refreshBackend() {
+            await loadBackendData();
+            triggerLightning();
+        }
+        
+        // Lightning effect
+        function triggerLightning() {
+            const overlay = document.getElementById('lightning-overlay');
+            overlay.classList.add('lightning-active');
+            
+            setTimeout(() => {
+                overlay.classList.remove('lightning-active');
+            }, 2000);
+        }
+        
+        // Sélection mage
+        function selectMage(mageId) {
+            // Highlight sur la carte
+            document.querySelectorAll('.hero').forEach(h => h.style.transform = 'scale(1)');
+            const hero = document.getElementById(`hero-${mageId}`);
+            if (hero) {
+                hero.style.transform = 'scale(1.3)';
+            }
+        }
+        
+        // Couleur par sort
+        function getSpellColor(formula) {
+            if (formula.includes('fire')) return '#ff6600';
+            if (formula.includes('lightning')) return '#ffff00';
+            if (formula.includes('heal')) return '#00ff00';
+            return '#ffffff';
+        }
+        
+        // Boucle backend
+        function startBackendLoop() {
+            setInterval(() => {
+                loadBackendData();
+            }, CONFIG.refreshInterval);
+        }
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0001;
+            camera.position.x = Math.cos(time) * 12;
+            camera.position.z = Math.sin(time) * 12;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('panopticon-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+        
+        // Initialisation
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

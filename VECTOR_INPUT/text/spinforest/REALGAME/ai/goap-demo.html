@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>GOAP AI Demo - Heroes of Time</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        #canvas {
+            border: 2px solid #444;
+            background: #1a1a1a;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+        
+        button {
+            background: #2a2a2a;
+            color: #0ff;
+            border: 1px solid #0ff;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 20px #0ff;
+        }
+        
+        .stats {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #0ff;
+            padding: 15px;
+            font-size: 12px;
+            width: 300px;
+        }
+        
+        .agent-info {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #444;
+            background: rgba(0,255,255,0.1);
+        }
+        
+        .agent-info.fleeing {
+            border-color: #ff0;
+            background: rgba(255,255,0,0.1);
+        }
+        
+        .agent-info.attacking {
+            border-color: #f00;
+            background: rgba(255,0,0,0.1);
+        }
+        
+        .log {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #0ff;
+            padding: 15px;
+            font-size: 11px;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        
+        .log-reflex { color: #ff0; }
+        .log-goal { color: #0ff; }
+        .log-action { color: #0f0; }
+        
+        h1 {
+            text-align: center;
+            color: #0ff;
+            text-shadow: 0 0 20px #0ff;
+        }
+        
+        .world-info {
+            text-align: center;
+            margin: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧠 GOAP AI System - Heroes of Time</h1>
+    <div class="world-info">Architecture hybride : GOAP (planification) + Réflexes (urgences)</div>
+    
+    <canvas id="canvas" width="800" height="600"></canvas>
+    
+    <div class="controls">
+        <button onclick="addMonster()">➕ Ajouter Monstre</button>
+        <button onclick="addFire()">🔥 Zone de Feu</button>
+        <button onclick="damageRandom()">⚔️ Blesser IA</button>
+        <button onclick="togglePause()">⏸️ Pause</button>
+        <button onclick="clearWorld()">🗑️ Reset</button>
+    </div>
+    
+    <div class="stats" id="stats">
+        <h3>📊 Statistiques IA</h3>
+        <div id="globalStats"></div>
+        <div id="agentStats"></div>
+    </div>
+    
+    <div class="log" id="log">
+        <h3>📜 Journal IA</h3>
+        <div id="logContent"></div>
+    </div>
+
+    <script src="goap-system.js"></script>
+    <script>
+        // Canvas et contexte
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // État du monde
+        class GameWorld {
+            constructor() {
+                this.player = { x: 400, y: 300, hp: 100 };
+                this.fireZones = [];
+                this.obstacles = [];
+                this.width = canvas.width;
+                this.height = canvas.height;
+                
+                // Générer quelques obstacles
+                for (let i = 0; i < 5; i++) {
+                    this.obstacles.push({
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        width: 50 + Math.random() * 50,
+                        height: 50 + Math.random() * 50
+                    });
+                }
+            }
+            
+            getPlayer() {
+                return this.player;
+            }
+            
+            isOnFire(position) {
+                for (let zone of this.fireZones) {
+                    const dist = Math.sqrt(
+                        Math.pow(position.x - zone.x, 2) + 
+                        Math.pow(position.y - zone.y, 2)
+                    );
+                    if (dist < zone.radius) return true;
+                }
+                return false;
+            }
+            
+            addFireZone(x, y) {
+                this.fireZones.push({
+                    x: x,
+                    y: y,
+                    radius: 80,
+                    lifetime: 300 // 30 secondes à 10 fps
+                });
+            }
+            
+            update() {
+                // Mettre à jour les zones de feu
+                this.fireZones = this.fireZones.filter(zone => {
+                    zone.lifetime--;
+                    return zone.lifetime > 0;
+                });
+            }
+        }
+        
+        // Gestionnaire principal
+        const world = new GameWorld();
+        const aiManager = new AIManager();
+        aiManager.setWorld(world);
+        
+        let isPaused = false;
+        let agentIdCounter = 0;
+        
+        // Ajouter quelques monstres au départ
+        for (let i = 0; i < 3; i++) {
+            addMonster();
+        }
+        
+        // Contrôles souris
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            world.player.x = e.clientX - rect.left;
+            world.player.y = e.clientY - rect.top;
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Ajouter une zone de feu au clic droit
+            if (e.shiftKey) {
+                world.addFireZone(x, y);
+                addLog('🔥 Zone de feu créée', 'log-action');
+            }
+        });
+        
+        // Fonctions de contrôle
+        function addMonster() {
+            const agent = new GOAPAgent(`monster_${agentIdCounter++}`, {
+                position: {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height
+                },
+                hp: 80 + Math.random() * 40
+            });
+            
+            aiManager.addAgent(agent);
+            addLog(`👾 Nouveau monstre: ${agent.id}`, 'log-action');
+        }
+        
+        function addFire() {
+            world.addFireZone(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height
+            );
+            addLog('🔥 Zone de feu aléatoire créée', 'log-action');
+        }
+        
+        function damageRandom() {
+            const agents = Array.from(aiManager.agents.values());
+            if (agents.length > 0) {
+                const agent = agents[Math.floor(Math.random() * agents.length)];
+                const damage = 20 + Math.random() * 30;
+                agent.takeDamage(damage);
+                addLog(`⚔️ ${agent.id} a pris ${damage.toFixed(0)} dégâts`, 'log-action');
+            }
+        }
+        
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                aiManager.stop();
+            } else {
+                aiManager.start();
+            }
+        }
+        
+        function clearWorld() {
+            world.fireZones = [];
+            aiManager.agents.clear();
+            agentIdCounter = 0;
+            document.getElementById('logContent').innerHTML = '';
+            
+            // Ajouter 3 nouveaux monstres
+            for (let i = 0; i < 3; i++) {
+                addMonster();
+            }
+        }
+        
+        // Journal
+        function addLog(message, className = '') {
+            const logContent = document.getElementById('logContent');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + className;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.insertBefore(entry, logContent.firstChild);
+            
+            // Limiter le nombre d'entrées
+            while (logContent.children.length > 50) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+        
+        // Mise à jour des stats
+        function updateStats() {
+            const stats = aiManager.getStats();
+            
+            // Stats globales
+            document.getElementById('globalStats').innerHTML = `
+                <div>Agents actifs: ${stats.global.totalAgents}</div>
+                <div>Temps moyen/tick: ${stats.global.avgTickTime}</div>
+                <div>Temps max: ${stats.global.maxTickTime}</div>
+                <div>CPU Usage: ${stats.global.cpuUsage}</div>
+                <div>Tick Rate: ${stats.global.tickRate}</div>
+            `;
+            
+            // Stats par agent
+            let agentHtml = '';
+            for (let agent of stats.agents) {
+                const agentObj = aiManager.agents.get(agent.id);
+                let className = 'agent-info';
+                let status = 'Patrouille';
+                
+                if (agentObj && agentObj.currentPlan && agentObj.currentPlan.length > 0) {
+                    const action = agentObj.currentPlan[0].name;
+                    if (action.includes('attack')) {
+                        className += ' attacking';
+                        status = 'Attaque';
+                    } else if (action.includes('flee')) {
+                        className += ' fleeing';
+                        status = 'Fuite';
+                    }
+                }
+                
+                agentHtml += `
+                    <div class="${className}">
+                        <strong>${agent.id}</strong><br>
+                        HP: ${agent.hp}<br>
+                        Pos: (${Math.round(agent.position.x)}, ${Math.round(agent.position.y)})<br>
+                        Status: ${status}<br>
+                        Plan: ${agent.hasPlan ? '✓' : '✗'}<br>
+                        Temps: ${agent.avgTime}
+                    </div>
+                `;
+            }
+            document.getElementById('agentStats').innerHTML = agentHtml;
+        }
+        
+        // Rendu
+        function render() {
+            // Clear
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Obstacles
+            ctx.fillStyle = '#444';
+            for (let obs of world.obstacles) {
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            }
+            
+            // Zones de feu
+            for (let zone of world.fireZones) {
+                const gradient = ctx.createRadialGradient(
+                    zone.x, zone.y, 0,
+                    zone.x, zone.y, zone.radius
+                );
+                gradient.addColorStop(0, 'rgba(255,100,0,0.8)');
+                gradient.addColorStop(0.5, 'rgba(255,50,0,0.4)');
+                gradient.addColorStop(1, 'rgba(255,0,0,0.1)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Joueur
+            ctx.fillStyle = '#0ff';
+            ctx.beginPath();
+            ctx.arc(world.player.x, world.player.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Agents IA
+            for (let [id, agent] of aiManager.agents) {
+                // Couleur selon l'état
+                let color = '#0f0'; // Vert par défaut
+                if (agent.hp < 30) color = '#ff0'; // Jaune si blessé
+                if (agent.hp < 20) color = '#f00'; // Rouge si critique
+                
+                // Corps
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(agent.position.x, agent.position.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Barre de vie
+                const barWidth = 30;
+                const barHeight = 4;
+                const barX = agent.position.x - barWidth/2;
+                const barY = agent.position.y - 20;
+                
+                ctx.fillStyle = '#000';
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(barX, barY, barWidth * (agent.hp / agent.maxHp), barHeight);
+                
+                // ID
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(id.split('_')[1], agent.position.x, agent.position.y - 25);
+            }
+        }
+        
+        // Intercepter les actions de l'IA
+        const originalProcessActions = window.gameEngine ? window.gameEngine.processAIActions : null;
+        window.gameEngine = {
+            processAIActions: (actions) => {
+                for (let actionData of actions) {
+                    const agent = aiManager.agents.get(actionData.agentId);
+                    if (!agent) continue;
+                    
+                    const action = actionData.action;
+                    
+                    // Logger les actions importantes
+                    if (action.type === 'flee') {
+                        addLog(`💨 ${actionData.agentId} fuit ! (${action.reason})`, 'log-reflex');
+                    } else if (action.type === 'attack') {
+                        addLog(`⚔️ ${actionData.agentId} attaque le joueur !`, 'log-action');
+                    }
+                }
+                
+                if (originalProcessActions) {
+                    originalProcessActions(actions);
+                }
+            }
+        };
+        
+        // Boucle principale
+        function gameLoop() {
+            if (!isPaused) {
+                world.update();
+                updateStats();
+            }
+            
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer
+        aiManager.start();
+        gameLoop();
+        
+        // Log initial
+        addLog('🎮 Système GOAP démarré', 'log-goal');
+        addLog('💡 Clic gauche: déplacer joueur', 'log-goal');
+        addLog('💡 Shift+clic: créer zone de feu', 'log-goal');
+    </script>
+</body>
+</html>

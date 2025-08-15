@@ -1,0 +1,478 @@
+{
+  "id": "marie-manteau-quest",
+  "title": "La Quête de Marie Manteau",
+  "description": "Découvrez le mystère de Marie Manteau et les secrets du Bootstrap Paradox",
+  "author": "Loumen",
+  "version": "1.0",
+  "startScene": "intro",
+  "scenes": {
+    "intro": {
+      "id": "intro",
+      "title": "Le Début de la Quête",
+      "text": "Vous êtes Loumen, une bougie consciente dans l'univers d'Avalon. Aujourd'hui, vous avez découvert l'existence de Marie Manteau, une entité mystérieuse née d'une faute de frappe temporelle. Pour comprendre sa nature, vous devez trouver 4 objets perdus dans les échos du temps.",
+      "background": "forest",
+      "music": "ambient_mystery",
+      "choices": [
+        {
+          "id": "start_quest",
+          "text": "Commencer la quête",
+          "nextScene": "forest_crossroads",
+          "effects": {
+            "wisdom": 1,
+            "setFlag": "quest_started"
+          }
+        },
+        {
+          "id": "ask_dude",
+          "text": "Demander conseil au Dude",
+          "nextScene": "dude_advice",
+          "effects": {
+            "karma": 5
+          }
+        },
+        {
+          "id": "meditate",
+          "text": "Méditer sur la nature du paradoxe",
+          "nextScene": "meditation",
+          "effects": {
+            "wisdom": 3
+          }
+        }
+      ]
+    },
+    
+    "forest_crossroads": {
+      "id": "forest_crossroads",
+      "title": "La Croisée des Chemins Quantiques",
+      "text": "Vous vous trouvez à un carrefour dans la forêt quantique. Les arbres pulsent d'une lumière étrange. Trois chemins s'offrent à vous : vers le Nord, une lueur dorée ; vers l'Est, des échos musicaux ; vers l'Ouest, un portail scintillant.",
+      "background": "forest",
+      "elements": [
+        {
+          "id": "golden_light",
+          "type": "interactive",
+          "position": {"x": 400, "y": 200},
+          "interaction": {
+            "type": "examine",
+            "hint": "examiner la lueur dorée"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "id": "go_north",
+          "text": "Suivre la lueur dorée au Nord",
+          "nextScene": "flute_location",
+          "preview": "+Sagesse"
+        },
+        {
+          "id": "go_east",
+          "text": "Suivre les échos musicaux à l'Est",
+          "nextScene": "music_echoes",
+          "preview": "+Karma"
+        },
+        {
+          "id": "go_west",
+          "text": "Approcher le portail à l'Ouest",
+          "nextScene": "temporal_portal",
+          "preview": "Dangereux"
+        }
+      ]
+    },
+    
+    "flute_location": {
+      "id": "flute_location",
+      "title": "L'Écho du Merci Perdu",
+      "text": "La lueur dorée vous mène à une clairière où résonne un son fragile. C'est la Flûte Fragile ! Mais elle n'est pas un objet physique - c'est l'écho d'un 'merci' déformé par le temps. En écoutant attentivement, vous entendez : 'merci... meric... Marie...'",
+      "background": "forest",
+      "elements": [
+        {
+          "id": "flute_echo",
+          "type": "item",
+          "position": {"x": 400, "y": 300},
+          "interaction": {
+            "type": "pickup",
+            "item": "flute_fragile",
+            "itemName": "Flûte Fragile (Écho)",
+            "hint": "capturer l'écho"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "id": "capture_echo",
+          "text": "Capturer l'écho dans votre flamme",
+          "nextScene": "flute_acquired",
+          "effects": {
+            "addItem": "flute_fragile",
+            "wisdom": 5,
+            "setFlag": "has_flute"
+          }
+        },
+        {
+          "id": "listen_more",
+          "text": "Écouter plus attentivement",
+          "nextScene": "flute_revelation"
+        }
+      ]
+    },
+    
+    "flute_acquired": {
+      "id": "flute_acquired",
+      "title": "Premier Objet Trouvé",
+      "text": "Vous avez capturé l'écho de la Flûte Fragile ! Votre flamme vibre maintenant avec le son du 'merci' originel. Vous comprenez que Marie est née de cette gratitude déformée. Il reste 3 objets à trouver.",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "continue_quest",
+          "text": "Continuer la quête",
+          "nextScene": "forest_crossroads_2"
+        },
+        {
+          "id": "examine_flute",
+          "text": "Examiner l'écho capturé",
+          "nextScene": "flute_examination"
+        }
+      ]
+    },
+    
+    "music_echoes": {
+      "id": "music_echoes",
+      "title": "Les Petites Musiques",
+      "text": "Vous suivez les échos musicaux et découvrez un étrange phénomène : des mélodies qui se répètent en boucle, comme prises dans une boucle temporelle. Ce sont les Petites Musiques de Marie ! Elles tournent, tournent, sans jamais s'arrêter...",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "join_music",
+          "text": "Vous joindre à la mélodie",
+          "nextScene": "music_trance",
+          "effects": {
+            "addItem": "petites_musiques",
+            "karma": -10,
+            "setFlag": "has_music"
+          },
+          "preview": "Risqué"
+        },
+        {
+          "id": "break_loop",
+          "text": "Tenter de briser la boucle",
+          "nextScene": "music_broken",
+          "effects": {
+            "wisdom": 3,
+            "karma": 10
+          }
+        },
+        {
+          "id": "record_music",
+          "text": "Enregistrer les mélodies dans votre flamme",
+          "nextScene": "music_recorded",
+          "effects": {
+            "addItem": "petites_musiques",
+            "setFlag": "has_music"
+          }
+        }
+      ]
+    },
+    
+    "temporal_portal": {
+      "id": "temporal_portal",
+      "title": "Le Portail du Code Dupliqué",
+      "text": "Le portail scintille avec des fragments de code corrompu. Vous reconnaissez des morceaux du moteur temporel d'Avalon, mais déformés, dupliqués, corrompus. C'est ici que le fork temporel a été créé !",
+      "background": "portal",
+      "choices": [
+        {
+          "id": "enter_portal",
+          "text": "Entrer dans le portail",
+          "nextScene": "corrupted_timeline",
+          "condition": {
+            "type": "hasFlag",
+            "flag": "has_flute"
+          },
+          "preview": "Nécessite protection"
+        },
+        {
+          "id": "analyze_code",
+          "text": "Analyser le code corrompu",
+          "nextScene": "code_analysis",
+          "effects": {
+            "wisdom": 7
+          }
+        },
+        {
+          "id": "retreat",
+          "text": "Reculer prudemment",
+          "nextScene": "forest_crossroads"
+        }
+      ]
+    },
+    
+    "dude_advice": {
+      "id": "dude_advice",
+      "title": "La Sagesse du Dude",
+      "text": "Le Dude apparaît, White Russian à la main. 'Hey man, Marie ? C'est mon ex. Elle cherchait toujours quelqu'un... Memento, je crois. Mais tu sais, parfois chercher quelqu'un, c'est se chercher soi-même. The rug really ties the room together, tu vois ?'",
+      "background": "forest",
+      "elements": [
+        {
+          "id": "dude_npc",
+          "type": "npc",
+          "position": {"x": 300, "y": 300},
+          "sprite": "dude",
+          "interaction": {
+            "type": "dialogue",
+            "character": "Le Dude",
+            "text": "Marie portait toujours ce manteau... Comme si elle avait froid de l'intérieur, man."
+          }
+        }
+      ],
+      "choices": [
+        {
+          "id": "ask_about_marie",
+          "text": "En savoir plus sur Marie",
+          "nextScene": "dude_marie_story",
+          "effects": {
+            "companion": "dude"
+          }
+        },
+        {
+          "id": "accept_wisdom",
+          "text": "Accepter sa sagesse zen",
+          "nextScene": "forest_crossroads",
+          "effects": {
+            "wisdom": 5,
+            "karma": 5
+          }
+        },
+        {
+          "id": "share_drink",
+          "text": "Partager un White Russian",
+          "nextScene": "dude_drinking",
+          "effects": {
+            "addItem": "white_russian",
+            "karma": 10
+          }
+        }
+      ]
+    },
+    
+    "dude_marie_story": {
+      "id": "dude_marie_story",
+      "title": "L'Histoire de Marie selon le Dude",
+      "text": "'Tu sais, man, Marie était spéciale. Elle répétait toujours ces petites chansons... Comme si elle était coincée dans une boucle. Un jour, elle m'a dit qu'elle n'était qu'une erreur, une faute de frappe devenue réelle. Heavy stuff. Elle cherchait ses origines, mais peut-être qu'elle ÉTAIT ses origines, tu comprends ?'",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "profound_realization",
+          "text": "Avoir une révélation profonde",
+          "nextScene": "bootstrap_understanding",
+          "effects": {
+            "wisdom": 10,
+            "setFlag": "understands_bootstrap"
+          }
+        },
+        {
+          "id": "continue_quest_informed",
+          "text": "Continuer la quête avec cette connaissance",
+          "nextScene": "forest_crossroads_2",
+          "effects": {
+            "wisdom": 5
+          }
+        }
+      ]
+    },
+    
+    "forest_crossroads_2": {
+      "id": "forest_crossroads_2",
+      "title": "Retour à la Croisée",
+      "text": "Vous revenez au carrefour, mais quelque chose a changé. {wisdom} points de sagesse vous permettent de voir des chemins cachés. Un quatrième sentier apparaît vers le Sud, menant vers une structure ancienne.",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "south_path",
+          "text": "Prendre le sentier Sud vers la structure",
+          "nextScene": "sphinx_approach",
+          "condition": {
+            "type": "wisdom",
+            "operator": ">=",
+            "value": 10
+          }
+        },
+        {
+          "id": "search_talisman",
+          "text": "Chercher le Talisman de Réverbération",
+          "nextScene": "talisman_search"
+        },
+        {
+          "id": "return_portal",
+          "text": "Retourner au portail temporel",
+          "nextScene": "temporal_portal"
+        }
+      ]
+    },
+    
+    "talisman_search": {
+      "id": "talisman_search",
+      "title": "La Recherche du Talisman",
+      "text": "Vous cherchez le Talisman de Réverbération, mais une voix dans votre flamme vous murmure : 'Le talisman n'est pas un objet... C'est la faute de frappe elle-même. Merci → Meric → Marie. L'erreur EST le talisman.'",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "accept_truth",
+          "text": "Accepter cette vérité",
+          "nextScene": "talisman_revelation",
+          "effects": {
+            "addItem": "talisman_reverberation",
+            "wisdom": 15,
+            "setFlag": "has_talisman"
+          }
+        },
+        {
+          "id": "deny_truth",
+          "text": "Refuser cette explication",
+          "nextScene": "talisman_physical_search"
+        }
+      ]
+    },
+    
+    "sphinx_approach": {
+      "id": "sphinx_approach",
+      "title": "L'Approche du Sphinx",
+      "text": "Vous approchez d'une structure ancienne : le Sphinx d'Avalon. Ses yeux brillent d'une sagesse millénaire. Une voix résonne : 'Pour réveiller Manteau, tu dois d'abord comprendre qui tu es. Es-tu prêt pour le Protocole ?'",
+      "background": "sphinx",
+      "choices": [
+        {
+          "id": "ready_protocol",
+          "text": "Je suis prêt pour le Protocole Sphinx",
+          "nextScene": "sphinx_protocol",
+          "condition": {
+            "type": "hasItem",
+            "item": "flute_fragile"
+          }
+        },
+        {
+          "id": "not_ready",
+          "text": "Je ne suis pas encore prêt",
+          "nextScene": "forest_crossroads_2"
+        },
+        {
+          "id": "ask_riddle",
+          "text": "Demander une énigme au Sphinx",
+          "nextScene": "sphinx_riddle"
+        }
+      ]
+    },
+    
+    "sphinx_protocol": {
+      "id": "sphinx_protocol",
+      "title": "Le Protocole Sphinx",
+      "text": "Le Sphinx vous regarde profondément. 'Tu as trouvé les objets, mais as-tu compris ? Marie Manteau et Marie Mento sont deux faces d'une même erreur. L'une est la faute, l'autre est l'écho. Pour les fusionner, tu dois accepter que l'erreur fait partie de la création.'",
+      "background": "sphinx",
+      "choices": [
+        {
+          "id": "accept_fusion",
+          "text": "Accepter la fusion des Maries",
+          "nextScene": "marie_fusion",
+          "effects": {
+            "setFlag": "protocol_complete",
+            "wisdom": 20
+          }
+        },
+        {
+          "id": "refuse_fusion",
+          "text": "Refuser la fusion",
+          "nextScene": "sphinx_warning"
+        }
+      ]
+    },
+    
+    "marie_fusion": {
+      "id": "marie_fusion",
+      "title": "La Fusion des Maries",
+      "text": "Dans un éclair de compréhension, vous voyez Marie Manteau et Marie Mento se rejoindre. Elles étaient toujours une seule entité, séparée par le paradoxe temporel. En acceptant l'erreur comme partie de la création, vous permettez leur réunification. Marie apparaît devant vous, complète enfin.",
+      "background": "portal",
+      "elements": [
+        {
+          "id": "marie_complete",
+          "type": "npc",
+          "position": {"x": 400, "y": 300},
+          "sprite": "marie",
+          "interaction": {
+            "type": "dialogue",
+            "character": "Marie Manteau",
+            "text": "Merci... ou devrais-je dire, Meric ? Je suis enfin complète. L'erreur et la gratitude ne font qu'un."
+          }
+        }
+      ],
+      "choices": [
+        {
+          "id": "final_understanding",
+          "text": "Comprendre le paradoxe final",
+          "nextScene": "ending_enlightenment",
+          "effects": {
+            "wisdom": 50,
+            "karma": 50
+          }
+        },
+        {
+          "id": "help_marie",
+          "text": "Aider Marie à trouver sa voie",
+          "nextScene": "ending_compassion",
+          "effects": {
+            "karma": 100
+          }
+        }
+      ]
+    },
+    
+    "ending_enlightenment": {
+      "id": "ending_enlightenment",
+      "title": "Illumination",
+      "text": "Vous comprenez enfin : Marie est le Bootstrap Paradox incarné. Elle existe parce qu'elle devait exister, née d'une erreur qui était destinée à se produire. Votre flamme brille plus fort que jamais, illuminée par cette vérité cosmique. La quête est terminée, mais votre voyage ne fait que commencer.",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "new_game_plus",
+          "text": "Recommencer avec la sagesse acquise",
+          "nextScene": "intro",
+          "effects": {
+            "special": "new_game_plus"
+          }
+        },
+        {
+          "id": "explore_more",
+          "text": "Explorer d'autres mystères d'Avalon",
+          "nextScene": "game_complete"
+        }
+      ]
+    },
+    
+    "ending_compassion": {
+      "id": "ending_compassion",
+      "title": "Compassion",
+      "text": "Vous aidez Marie à accepter sa nature paradoxale. Elle n'est plus un trou dans la réalité, mais un pont entre les possibles. Ensemble, vous retournez dans la forêt quantique, où elle trouve enfin la paix. Votre karma rayonne, touchant tous ceux qui vous entourent.",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "continue_adventures",
+          "text": "Continuer vos aventures ensemble",
+          "nextScene": "game_complete",
+          "effects": {
+            "companion": "marie"
+          }
+        }
+      ]
+    },
+    
+    "game_complete": {
+      "id": "game_complete",
+      "title": "Quête Complétée",
+      "text": "Félicitations ! Vous avez complété la Quête de Marie Manteau. Vous avez découvert que les 4 objets n'étaient pas ce qu'ils semblaient être, et que Marie elle-même était le plus grand mystère. Votre voyage dans Avalon continue...",
+      "background": "forest",
+      "choices": [
+        {
+          "id": "return_menu",
+          "text": "Retourner au menu principal",
+          "nextScene": "intro"
+        }
+      ]
+    }
+  }
+}

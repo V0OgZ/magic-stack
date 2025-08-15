@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimental Lab - Heroes of Time</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(180deg, #000, #001122);
+            border-bottom: 2px solid #0ff;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin: 0;
+            text-shadow: 0 0 20px #0ff;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #0ff; }
+            50% { text-shadow: 0 0 40px #0ff, 0 0 60px #00f; }
+        }
+        
+        .subtitle {
+            color: #888;
+            margin-top: 10px;
+        }
+        
+        .lab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .experiment-card {
+            background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(0,0,0,0.8));
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .experiment-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #0ff;
+            border-color: #0f0;
+        }
+        
+        .experiment-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,255,255,0.1), transparent);
+            animation: rotate 10s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            color: #0ff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .card-desc {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .card-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: rgba(0,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid #0ff;
+        }
+        
+        .tag.new {
+            background: rgba(255,0,0,0.3);
+            border-color: #f00;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #0ff;
+            color: #0ff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #0ff;
+            color: #000;
+        }
+        
+        .category-section {
+            margin: 40px 0;
+        }
+        
+        .category-title {
+            font-size: 28px;
+            color: #0f0;
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px #0f0;
+        }
+    </style>
+</head>
+<body>
+    <a href="../AVALON-TCG/launcher.html" class="back-btn">← Retour</a>
+    
+    <div class="header">
+        <h1>EXPERIMENTAL LAB</h1>
+        <div class="subtitle">Sandbox des Features Avancees</div>
+    </div>
+    
+    <div class="category-section">
+        <div class="category-title">Intelligence Artificielle</div>
+        <div class="lab-grid">
+            <div class="experiment-card" onclick="window.location.href='../ai/goap-demo.html'">
+                <div class="card-icon">🧠</div>
+                <div class="card-title">GOAP System</div>
+                <div class="card-desc">Systeme de planification par objectifs pour IA intelligente</div>
+                <div class="card-tags">
+                    <span class="tag">AI</span>
+                    <span class="tag">Planning</span>
+                    <span class="tag">Demo</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../ai/bootstrap-paradox-demo.html'">
+                <div class="card-icon">⏰</div>
+                <div class="card-title">Bootstrap Paradox</div>
+                <div class="card-desc">IA qui voyage dans le temps et apprend de son futur</div>
+                <div class="card-tags">
+                    <span class="tag new">NEW</span>
+                    <span class="tag">Time Travel</span>
+                    <span class="tag">AI</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../ai/chemistry-learning-demo.html'">
+                <div class="card-icon">🧪</div>
+                <div class="card-title">Chemistry Learning</div>
+                <div class="card-desc">IA qui apprend et optimise les reactions chimiques</div>
+                <div class="card-tags">
+                    <span class="tag new">NEW</span>
+                    <span class="tag">Learning</span>
+                    <span class="tag">Dr. Stone</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../ai/goap-cache-demo.html'">
+                <div class="card-icon">⚡</div>
+                <div class="card-title">Intelligent Cache</div>
+                <div class="card-desc">Optimisation des performances avec cache predictif</div>
+                <div class="card-tags">
+                    <span class="tag new">NEW</span>
+                    <span class="tag">Performance</span>
+                    <span class="tag">Cache</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-section">
+        <div class="category-title">Effets Visuels & Gameplay</div>
+        <div class="lab-grid">
+            <div class="experiment-card" onclick="window.location.href='../non-euclidean-demo.html'">
+                <div class="card-icon">🌀</div>
+                <div class="card-title">Non-Euclidean Space</div>
+                <div class="card-desc">Deformation de l'espace-temps dans le combat</div>
+                <div class="card-tags">
+                    <span class="tag">Visual</span>
+                    <span class="tag">Space</span>
+                    <span class="tag">Effects</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../maps/portal-system-epic.html'">
+                <div class="card-icon">🌌</div>
+                <div class="card-title">Portal System</div>
+                <div class="card-desc">Systeme de portails interdimensionnels epique</div>
+                <div class="card-tags">
+                    <span class="tag">Portals</span>
+                    <span class="tag">Epic</span>
+                    <span class="tag">Visual</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../mini-tcg-demo.html'">
+                <div class="card-icon">🎯</div>
+                <div class="card-title">Mini-TCG System</div>
+                <div class="card-desc">Combat de sorts rapides sur la carte</div>
+                <div class="card-tags">
+                    <span class="tag">TCG</span>
+                    <span class="tag">Quick</span>
+                    <span class="tag">Map</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-section">
+        <div class="category-title">Modes Speciaux</div>
+        <div class="lab-grid">
+            <div class="experiment-card" onclick="window.location.href='../AVALON-TCG/senku-chemistry-demo.html'">
+                <div class="card-icon">🧑‍🔬</div>
+                <div class="card-title">Senku Lab</div>
+                <div class="card-desc">Laboratoire interactif de chimie avec Senku</div>
+                <div class="card-tags">
+                    <span class="tag new">NEW</span>
+                    <span class="tag">Chemistry</span>
+                    <span class="tag">Interactive</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='../ai/archives-vivantes-demo.html'">
+                <div class="card-icon">📚</div>
+                <div class="card-title">Archives Vivantes</div>
+                <div class="card-desc">Exploration 3D des archives du jeu</div>
+                <div class="card-tags">
+                    <span class="tag">3D</span>
+                    <span class="tag">Archives</span>
+                    <span class="tag">Vector</span>
+                </div>
+            </div>
+            
+            <div class="experiment-card" onclick="window.location.href='battle-royale-avalon.html'">
+                <div class="card-icon">👑</div>
+                <div class="card-title">Battle Royale</div>
+                <div class="card-desc">Mode survie avec 100 heros</div>
+                <div class="card-tags">
+                    <span class="tag">Battle</span>
+                    <span class="tag">Royale</span>
+                    <span class="tag">100</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; padding: 40px; color: #666;">
+        <p>Ces features experimentales peuvent etre instables</p>
+        <p>Certaines necessitent des backends actifs pour fonctionner</p>
+    </div>
+</body>
+</html>

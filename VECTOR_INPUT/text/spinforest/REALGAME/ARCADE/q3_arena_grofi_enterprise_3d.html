@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌟 Q3 ARENA GROFI ENTERPRISE - GOLDORAK 3D ENGINE 🌟</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #0ff;
+            font-size: 14px;
+        }
+        
+        #magicBar {
+            width: 200px;
+            height: 20px;
+            background: #222;
+            border: 1px solid #0ff;
+            margin: 5px 0;
+        }
+        
+        #magicFill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f, #0ff, #0f0);
+            width: 100%;
+            transition: width 0.3s;
+        }
+        
+        #console {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            height: 150px;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid #0ff;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .spell-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: spellPulse 1s ease-out;
+        }
+        
+        @keyframes spellPulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        #grofiLogo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            text-shadow: 0 0 10px #0f0;
+            animation: logoGlow 2s infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 10px #0f0; }
+            50% { text-shadow: 0 0 20px #0f0, 0 0 30px #0f0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="grofiLogo">🌲GROFI ENTERPRISE🌲</div>
+    
+    <div id="hud">
+        <div>👤 GROAKEN - Mage Polygonal</div>
+        <div>❤️ HP: <span id="hp">100</span>/100</div>
+        <div>🔮 MANA: <div id="magicBar"><div id="magicFill"></div></div></div>
+        <div>📦 Polygones: <span id="polyCount">0</span></div>
+        <div>🎯 Frags: <span id="frags">0</span></div>
+        <div>🌟 Formule Active: <span id="activeSpell">AUCUNE</span></div>
+    </div>
+    
+    <canvas id="gameCanvas" width="1024" height="768"></canvas>
+    
+    <div id="console">
+        <div>🌟 GROFI Q3 ARENA 3D - GOLDORAK ENGINE ACTIVÉ</div>
+        <div>📡 Connexion à la Magic Stack établie...</div>
+        <div>🔮 Chargement des formules polygonales...</div>
+    </div>
+
+    <script>
+        // 🌟 GOLDORAK 3D ENGINE - Q3 ARENA GROFI EDITION
+        class Vector3 {
+            constructor(x = 0, y = 0, z = 0) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+            
+            add(v) {
+                return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z);
+            }
+            
+            multiply(scalar) {
+                return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
+            }
+            
+            normalize() {
+                const len = Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
+                if (len > 0) {
+                    return new Vector3(this.x/len, this.y/len, this.z/len);
+                }
+                return this;
+            }
+            
+            cross(v) {
+                return new Vector3(
+                    this.y * v.z - this.z * v.y,
+                    this.z * v.x - this.x * v.z,
+                    this.x * v.y - this.y * v.x
+                );
+            }
+        }
+        
+        class Polygon3D {
+            constructor(vertices, color, magicType = 'neutral') {
+                this.vertices = vertices;
+                this.color = color;
+                this.magicType = magicType;
+                this.emissive = magicType !== 'neutral' ? 0.5 : 0;
+            }
+        }
+        
+        class GameObject3D {
+            constructor(name, polygons, position = new Vector3()) {
+                this.name = name;
+                this.polygons = polygons;
+                this.position = position;
+                this.rotation = new Vector3();
+                this.scale = new Vector3(1, 1, 1);
+                this.velocity = new Vector3();
+                this.magicProperties = {};
+                this.health = 100;
+            }
+            
+            update(deltaTime) {
+                // Physique simple
+                this.position = this.position.add(this.velocity.multiply(deltaTime));
+                
+                // Rotation automatique pour certains objets
+                if (this.magicProperties.autoRotate) {
+                    this.rotation.y += deltaTime * 2;
+                }
+            }
+        }
+        
+        class Q3ArenaEngine {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.width = canvas.width;
+                this.height = canvas.height;
+                
+                // Caméra FPS
+                this.camera = {
+                    position: new Vector3(0, 5, -20),
+                    rotation: new Vector3(0, 0, 0),
+                    fov: 60
+                };
+                
+                // Joueur
+                this.player = {
+                    position: new Vector3(0, 2, -10),
+                    rotation: new Vector3(0, 0, 0),
+                    velocity: new Vector3(),
+                    health: 100,
+                    mana: 100,
+                    activeSpell: null,
+                    frags: 0
+                };
+                
+                // Objets de la scène
+                this.objects = [];
+                this.projectiles = [];
+                this.particles = [];
+                
+                // Contrôles
+                this.keys = {};
+                this.mouse = { x: 0, y: 0, down: false };
+                
+                // Stats
+                this.polyCount = 0;
+                this.frameCount = 0;
+                
+                // Formules magiques GROFI
+                this.spells = {
+                    'FIREBALL': { mana: 20, damage: 30, color: '#ff3300', speed: 50 },
+                    'ICE_SHARD': { mana: 15, damage: 20, color: '#00ccff', speed: 40 },
+                    'QUANTUM_BOLT': { mana: 25, damage: 40, color: '#ff00ff', speed: 60 },
+                    'GROFI_BEAM': { mana: 50, damage: 100, color: '#00ff00', speed: 80 }
+                };
+                
+                this.selectedSpell = 'FIREBALL';
+                
+                this.initControls();
+                this.createArena();
+                this.gameLoop();
+            }
+            
+            initControls() {
+                // Clavier
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    
+                    // Sélection des sorts
+                    if (e.key >= '1' && e.key <= '4') {
+                        const spellNames = Object.keys(this.spells);
+                        this.selectedSpell = spellNames[parseInt(e.key) - 1];
+                        this.log(`🔮 Sort activé: ${this.selectedSpell}`);
+                    }
+                });
+                
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+                
+                // Souris
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouse.x = e.clientX - rect.left;
+                    this.mouse.y = e.clientY - rect.top;
+                    
+                    // Rotation caméra FPS
+                    const deltaX = (this.mouse.x - this.width/2) * 0.001;
+                    this.player.rotation.y += deltaX;
+                });
+                
+                this.canvas.addEventListener('mousedown', () => {
+                    this.mouse.down = true;
+                    this.castSpell();
+                });
+                
+                this.canvas.addEventListener('mouseup', () => {
+                    this.mouse.down = false;
+                });
+            }
+            
+            createArena() {
+                // Sol de l'arène
+                const floorSize = 50;
+                const floorPolys = this.createFloor(floorSize, '#333366');
+                this.objects.push(new GameObject3D('Floor', floorPolys, new Vector3(0, 0, 0)));
+                
+                // Cristaux GROFI autour de l'arène
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const x = Math.cos(angle) * 20;
+                    const z = Math.sin(angle) * 20;
+                    
+                    const crystal = this.createCrystal(2, '#00ff00');
+                    const crystalObj = new GameObject3D(`GrofiCrystal${i}`, crystal, new Vector3(x, 2, z));
+                    crystalObj.magicProperties = { autoRotate: true, element: 'grofi' };
+                    this.objects.push(crystalObj);
+                }
+                
+                // Pyramides de pouvoir
+                for (let i = 0; i < 4; i++) {
+                    const angle = (Math.PI / 2) * i;
+                    const x = Math.cos(angle) * 15;
+                    const z = Math.sin(angle) * 15;
+                    
+                    const pyramid = this.createPyramid(3, '#ff6600');
+                    const pyramidObj = new GameObject3D(`PowerPyramid${i}`, pyramid, new Vector3(x, 0, z));
+                    pyramidObj.magicProperties = { element: 'fire', powerBoost: 25 };
+                    this.objects.push(pyramidObj);
+                }
+                
+                // Cubes quantiques flottants
+                for (let i = 0; i < 6; i++) {
+                    const x = (Math.random() - 0.5) * 30;
+                    const y = 5 + Math.random() * 5;
+                    const z = (Math.random() - 0.5) * 30;
+                    
+                    const cube = this.createCube(1.5, '#ff00ff');
+                    const cubeObj = new GameObject3D(`QuantumCube${i}`, cube, new Vector3(x, y, z));
+                    cubeObj.magicProperties = { autoRotate: true, element: 'quantum' };
+                    cubeObj.velocity = new Vector3(
+                        (Math.random() - 0.5) * 5,
+                        (Math.random() - 0.5) * 2,
+                        (Math.random() - 0.5) * 5
+                    );
+                    this.objects.push(cubeObj);
+                }
+                
+                // Boss central GROAKEN
+                const boss = this.createBoss();
+                const bossObj = new GameObject3D('GROAKEN_BOSS', boss, new Vector3(0, 5, 0));
+                bossObj.magicProperties = { 
+                    autoRotate: true, 
+                    isBoss: true,
+                    health: 500,
+                    shield: 'quantum'
+                };
+                this.objects.push(bossObj);
+                
+                this.log('🌟 Arène GROFI créée avec succès!');
+                this.log('🎮 Contrôles: WASD=Déplacement, Souris=Viser, Clic=Lancer sort');
+                this.log('🔮 Sorts: 1=Fireball, 2=Ice Shard, 3=Quantum Bolt, 4=GROFI BEAM');
+            }
+            
+            createFloor(size, color) {
+                const polygons = [];
+                const gridSize = 5;
+                const tileSize = size / gridSize;
+                
+                for (let x = 0; x < gridSize; x++) {
+                    for (let z = 0; z < gridSize; z++) {
+                        const x0 = (x - gridSize/2) * tileSize;
+                        const z0 = (z - gridSize/2) * tileSize;
+                        const x1 = x0 + tileSize;
+                        const z1 = z0 + tileSize;
+                        
+                        const tileColor = (x + z) % 2 === 0 ? color : '#222244';
+                        
+                        const vertices = [
+                            new Vector3(x0, 0, z0),
+                            new Vector3(x1, 0, z0),
+                            new Vector3(x1, 0, z1),
+                            new Vector3(x0, 0, z1)
+                        ];
+                        
+                        polygons.push(new Polygon3D(vertices, tileColor));
+                    }
+                }
+                
+                return polygons;
+            }
+            
+            createCube(size, color) {
+                const s = size / 2;
+                const vertices = [
+                    new Vector3(-s, -s, -s), new Vector3(s, -s, -s),
+                    new Vector3(s, s, -s), new Vector3(-s, s, -s),
+                    new Vector3(-s, -s, s), new Vector3(s, -s, s),
+                    new Vector3(s, s, s), new Vector3(-s, s, s)
+                ];
+                
+                const faces = [
+                    [0, 1, 2, 3], [5, 4, 7, 6],
+                    [4, 0, 3, 7], [1, 5, 6, 2],
+                    [3, 2, 6, 7], [4, 5, 1, 0]
+                ];
+                
+                return faces.map(face => 
+                    new Polygon3D(face.map(i => vertices[i]), color, 'quantum')
+                );
+            }
+            
+            createPyramid(size, color) {
+                const s = size / 2;
+                const h = size;
+                
+                const vertices = [
+                    new Vector3(-s, 0, -s), new Vector3(s, 0, -s),
+                    new Vector3(s, 0, s), new Vector3(-s, 0, s),
+                    new Vector3(0, h, 0)
+                ];
+                
+                const faces = [
+                    [0, 1, 4], [1, 2, 4],
+                    [2, 3, 4], [3, 0, 4],
+                    [0, 3, 2, 1]
+                ];
+                
+                return faces.map((face, i) => 
+                    new Polygon3D(
+                        face.map(idx => vertices[idx]), 
+                        i < 4 ? color : '#111111',
+                        'fire'
+                    )
+                );
+            }
+            
+            createCrystal(size, color) {
+                const polygons = [];
+                const segments = 6;
+                const h = size * 1.5;
+                const r = size * 0.5;
+                
+                const topVerts = [];
+                const botVerts = [];
+                
+                for (let i = 0; i < segments; i++) {
+                    const angle = (2 * Math.PI * i) / segments;
+                    const x = r * Math.cos(angle);
+                    const z = r * Math.sin(angle);
+                    
+                    topVerts.push(new Vector3(x, h * 0.3, z));
+                    botVerts.push(new Vector3(x * 0.7, -h * 0.3, z * 0.7));
+                }
+                
+                const topPoint = new Vector3(0, h, 0);
+                const botPoint = new Vector3(0, -h * 0.5, 0);
+                
+                // Faces supérieures
+                for (let i = 0; i < segments; i++) {
+                    const next = (i + 1) % segments;
+                    polygons.push(new Polygon3D(
+                        [topVerts[i], topVerts[next], topPoint],
+                        color, 'grofi'
+                    ));
+                }
+                
+                // Faces inférieures
+                for (let i = 0; i < segments; i++) {
+                    const next = (i + 1) % segments;
+                    polygons.push(new Polygon3D(
+                        [botVerts[next], botVerts[i], botPoint],
+                        color, 'grofi'
+                    ));
+                }
+                
+                // Faces latérales
+                for (let i = 0; i < segments; i++) {
+                    const next = (i + 1) % segments;
+                    polygons.push(new Polygon3D(
+                        [topVerts[i], topVerts[next], botVerts[next], botVerts[i]],
+                        color, 'grofi'
+                    ));
+                }
+                
+                return polygons;
+            }
+            
+            createBoss() {
+                // GROAKEN BOSS - Forme complexe
+                const polygons = [];
+                
+                // Corps principal (dodécaèdre modifié)
+                const phi = (1 + Math.sqrt(5)) / 2;
+                const a = 2;
+                const b = 2 / phi;
+                
+                const vertices = [
+                    // Sommets du dodécaèdre
+                    new Vector3(0, a, b), new Vector3(0, a, -b),
+                    new Vector3(0, -a, b), new Vector3(0, -a, -b),
+                    new Vector3(a, b, 0), new Vector3(a, -b, 0),
+                    new Vector3(-a, b, 0), new Vector3(-a, -b, 0),
+                    new Vector3(b, 0, a), new Vector3(-b, 0, a),
+                    new Vector3(b, 0, -a), new Vector3(-b, 0, -a)
+                ];
+                
+                // Couleurs arc-en-ciel pour le boss
+                const colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0077ff', '#7700ff'];
+                
+                // Créer des faces triangulaires
+                for (let i = 0; i < vertices.length; i++) {
+                    for (let j = i + 1; j < vertices.length; j++) {
+                        for (let k = j + 1; k < vertices.length; k++) {
+                            // Vérifier si les 3 points forment un triangle valide
+                            const v1 = vertices[i];
+                            const v2 = vertices[j];
+                            const v3 = vertices[k];
+                            
+                            const d12 = Math.sqrt(
+                                Math.pow(v1.x - v2.x, 2) + 
+                                Math.pow(v1.y - v2.y, 2) + 
+                                Math.pow(v1.z - v2.z, 2)
+                            );
+                            const d23 = Math.sqrt(
+                                Math.pow(v2.x - v3.x, 2) + 
+                                Math.pow(v2.y - v3.y, 2) + 
+                                Math.pow(v2.z - v3.z, 2)
+                            );
+                            const d31 = Math.sqrt(
+                                Math.pow(v3.x - v1.x, 2) + 
+                                Math.pow(v3.y - v1.y, 2) + 
+                                Math.pow(v3.z - v1.z, 2)
+                            );
+                            
+                            // Si les distances sont similaires, c'est une face valide
+                            if (Math.abs(d12 - d23) < 0.5 && Math.abs(d23 - d31) < 0.5) {
+                                const color = colors[polygons.length % colors.length];
+                                polygons.push(new Polygon3D([v1, v2, v3], color, 'boss'));
+                            }
+                        }
+                    }
+                }
+                
+                return polygons;
+            }
+            
+            castSpell() {
+                const spell = this.spells[this.selectedSpell];
+                
+                if (this.player.mana >= spell.mana) {
+                    this.player.mana -= spell.mana;
+                    
+                    // Créer projectile
+                    const direction = new Vector3(
+                        Math.sin(this.player.rotation.y),
+                        0,
+                        Math.cos(this.player.rotation.y)
+                    );
+                    
+                    const projectile = {
+                        position: this.player.position.add(new Vector3(0, 1, 0)),
+                        velocity: direction.multiply(spell.speed),
+                        spell: this.selectedSpell,
+                        damage: spell.damage,
+                        color: spell.color,
+                        lifetime: 3
+                    };
+                    
+                    this.projectiles.push(projectile);
+                    this.createSpellEffect(projectile.position, spell.color);
+                    this.log(`🔮 ${this.selectedSpell} lancé! (-${spell.mana} mana)`);
+                }
+            }
+            
+            createSpellEffect(position, color) {
+                // Effet visuel du sort
+                const effect = document.createElement('div');
+                effect.className = 'spell-effect';
+                effect.style.left = this.width/2 + 'px';
+                effect.style.top = this.height/2 + 'px';
+                effect.style.width = '50px';
+                effect.style.height = '50px';
+                effect.style.background = `radial-gradient(circle, ${color}, transparent)`;
+                effect.style.borderRadius = '50%';
+                document.body.appendChild(effect);
+                
+                setTimeout(() => effect.remove(), 1000);
+            }
+            
+            updatePlayer(deltaTime) {
+                // Déplacement WASD
+                const speed = 10;
+                const moveVector = new Vector3();
+                
+                if (this.keys['w']) moveVector.z = 1;
+                if (this.keys['s']) moveVector.z = -1;
+                if (this.keys['a']) moveVector.x = -1;
+                if (this.keys['d']) moveVector.x = 1;
+                
+                // Rotation selon l'angle du joueur
+                const cos = Math.cos(this.player.rotation.y);
+                const sin = Math.sin(this.player.rotation.y);
+                
+                const rotatedMove = new Vector3(
+                    moveVector.x * cos - moveVector.z * sin,
+                    0,
+                    moveVector.x * sin + moveVector.z * cos
+                );
+                
+                this.player.velocity = rotatedMove.normalize().multiply(speed);
+                this.player.position = this.player.position.add(this.player.velocity.multiply(deltaTime));
+                
+                // Limites de l'arène
+                const limit = 25;
+                this.player.position.x = Math.max(-limit, Math.min(limit, this.player.position.x));
+                this.player.position.z = Math.max(-limit, Math.min(limit, this.player.position.z));
+                
+                // Régénération mana
+                this.player.mana = Math.min(100, this.player.mana + deltaTime * 10);
+                
+                // Caméra suit le joueur
+                this.camera.position = this.player.position.add(new Vector3(0, 3, -5));
+                this.camera.rotation = this.player.rotation;
+            }
+            
+            updateProjectiles(deltaTime) {
+                for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                    const proj = this.projectiles[i];
+                    
+                    // Déplacement
+                    proj.position = proj.position.add(proj.velocity.multiply(deltaTime));
+                    proj.lifetime -= deltaTime;
+                    
+                    // Collision avec objets
+                    for (const obj of this.objects) {
+                        if (obj.magicProperties.isBoss) {
+                            const dist = Math.sqrt(
+                                Math.pow(proj.position.x - obj.position.x, 2) +
+                                Math.pow(proj.position.y - obj.position.y, 2) +
+                                Math.pow(proj.position.z - obj.position.z, 2)
+                            );
+                            
+                            if (dist < 3) {
+                                // Touché!
+                                obj.magicProperties.health -= proj.damage;
+                                this.createParticles(proj.position, proj.color);
+                                this.log(`💥 Touché! Boss HP: ${obj.magicProperties.health}`);
+                                
+                                if (obj.magicProperties.health <= 0) {
+                                    this.player.frags++;
+                                    this.log('🏆 BOSS VAINCU! GROFI ENTERPRISE TRIOMPHE!');
+                                    obj.magicProperties.health = 500; // Respawn
+                                }
+                                
+                                this.projectiles.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Supprimer si expiré
+                    if (proj.lifetime <= 0) {
+                        this.projectiles.splice(i, 1);
+                    }
+                }
+            }
+            
+            createParticles(position, color) {
+                for (let i = 0; i < 20; i++) {
+                    this.particles.push({
+                        position: position.add(new Vector3(
+                            (Math.random() - 0.5) * 2,
+                            (Math.random() - 0.5) * 2,
+                            (Math.random() - 0.5) * 2
+                        )),
+                        velocity: new Vector3(
+                            (Math.random() - 0.5) * 10,
+                            Math.random() * 10,
+                            (Math.random() - 0.5) * 10
+                        ),
+                        color: color,
+                        lifetime: 1
+                    });
+                }
+            }
+            
+            projectToScreen(vertex) {
+                // Transformation vue
+                const view = vertex.add(this.camera.position.multiply(-1));
+                
+                // Rotation caméra
+                const cos = Math.cos(-this.camera.rotation.y);
+                const sin = Math.sin(-this.camera.rotation.y);
+                
+                const rotated = new Vector3(
+                    view.x * cos - view.z * sin,
+                    view.y,
+                    view.x * sin + view.z * cos
+                );
+                
+                // Projection perspective
+                if (rotated.z <= 0.1) return null;
+                
+                const fovRad = this.camera.fov * Math.PI / 180;
+                const scale = this.height / (2 * Math.tan(fovRad / 2));
+                
+                const x = (rotated.x * scale / rotated.z) + this.width / 2;
+                const y = (-rotated.y * scale / rotated.z) + this.height / 2;
+                
+                return { x, y, z: rotated.z };
+            }
+            
+            renderPolygon(polygon, obj) {
+                const projectedVerts = [];
+                
+                // Projeter tous les vertices
+                for (const vert of polygon.vertices) {
+                    // Transformation objet
+                    const transformed = this.transformVertex(vert, obj);
+                    const projected = this.projectToScreen(transformed);
+                    
+                    if (!projected) return; // Derrière la caméra
+                    projectedVerts.push(projected);
+                }
+                
+                // Vérifier si visible
+                if (projectedVerts.every(v => v.x < 0 || v.x > this.width || v.y < 0 || v.y > this.height)) {
+                    return;
+                }
+                
+                // Dessiner le polygone
+                this.ctx.beginPath();
+                this.ctx.moveTo(projectedVerts[0].x, projectedVerts[0].y);
+                
+                for (let i = 1; i < projectedVerts.length; i++) {
+                    this.ctx.lineTo(projectedVerts[i].x, projectedVerts[i].y);
+                }
+                
+                this.ctx.closePath();
+                
+                // Appliquer couleur avec effet magique
+                let color = polygon.color;
+                if (polygon.magicType !== 'neutral') {
+                    // Effet de brillance magique
+                    const glow = 0.5 + 0.5 * Math.sin(this.frameCount * 0.05);
+                    this.ctx.shadowBlur = 10 * glow;
+                    this.ctx.shadowColor = color;
+                }
+                
+                // Distance pour fog
+                const avgZ = projectedVerts.reduce((sum, v) => sum + v.z, 0) / projectedVerts.length;
+                const fogFactor = Math.max(0, 1 - avgZ / 50);
+                
+                this.ctx.fillStyle = color;
+                this.ctx.globalAlpha = fogFactor;
+                this.ctx.fill();
+                
+                // Contour
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
+                
+                this.ctx.globalAlpha = 1;
+                this.ctx.shadowBlur = 0;
+                
+                this.polyCount++;
+            }
+            
+            transformVertex(vertex, obj) {
+                // Scale
+                let v = vertex.multiply(obj.scale.x);
+                
+                // Rotation Y
+                if (obj.rotation.y !== 0) {
+                    const cos = Math.cos(obj.rotation.y);
+                    const sin = Math.sin(obj.rotation.y);
+                    const x = v.x * cos - v.z * sin;
+                    const z = v.x * sin + v.z * cos;
+                    v = new Vector3(x, v.y, z);
+                }
+                
+                // Translation
+                return v.add(obj.position);
+            }
+            
+            render() {
+                // Clear
+                this.ctx.fillStyle = '#000011';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                
+                this.polyCount = 0;
+                
+                // Trier objets par distance
+                const sortedObjects = [...this.objects].sort((a, b) => {
+                    const distA = Math.sqrt(
+                        Math.pow(a.position.x - this.camera.position.x, 2) +
+                        Math.pow(a.position.z - this.camera.position.z, 2)
+                    );
+                    const distB = Math.sqrt(
+                        Math.pow(b.position.x - this.camera.position.x, 2) +
+                        Math.pow(b.position.z - this.camera.position.z, 2)
+                    );
+                    return distB - distA;
+                });
+                
+                // Rendre objets
+                for (const obj of sortedObjects) {
+                    for (const polygon of obj.polygons) {
+                        this.renderPolygon(polygon, obj);
+                    }
+                }
+                
+                // Rendre projectiles
+                this.ctx.shadowBlur = 20;
+                for (const proj of this.projectiles) {
+                    const screen = this.projectToScreen(proj.position);
+                    if (screen && screen.z > 0) {
+                        this.ctx.fillStyle = proj.color;
+                        this.ctx.shadowColor = proj.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(screen.x, screen.y, 10 / screen.z * 10, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+                
+                // Rendre particules
+                for (const particle of this.particles) {
+                    const screen = this.projectToScreen(particle.position);
+                    if (screen && screen.z > 0) {
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.globalAlpha = particle.lifetime;
+                        this.ctx.fillRect(screen.x - 2, screen.y - 2, 4, 4);
+                    }
+                }
+                
+                this.ctx.shadowBlur = 0;
+                this.ctx.globalAlpha = 1;
+                
+                // Réticule
+                this.ctx.strokeStyle = '#0ff';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.width/2 - 10, this.height/2);
+                this.ctx.lineTo(this.width/2 + 10, this.height/2);
+                this.ctx.moveTo(this.width/2, this.height/2 - 10);
+                this.ctx.lineTo(this.width/2, this.height/2 + 10);
+                this.ctx.stroke();
+            }
+            
+            updateHUD() {
+                document.getElementById('hp').textContent = this.player.health;
+                document.getElementById('magicFill').style.width = this.player.mana + '%';
+                document.getElementById('polyCount').textContent = this.polyCount;
+                document.getElementById('frags').textContent = this.player.frags;
+                document.getElementById('activeSpell').textContent = this.selectedSpell;
+            }
+            
+            log(message) {
+                const console = document.getElementById('console');
+                const line = document.createElement('div');
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                console.appendChild(line);
+                console.scrollTop = console.scrollHeight;
+            }
+            
+            gameLoop() {
+                const deltaTime = 1/60; // 60 FPS
+                
+                // Updates
+                this.updatePlayer(deltaTime);
+                this.updateProjectiles(deltaTime);
+                
+                // Update objets
+                for (const obj of this.objects) {
+                    obj.update(deltaTime);
+                }
+                
+                // Update particules
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.position = p.position.add(p.velocity.multiply(deltaTime));
+                    p.velocity.y -= 20 * deltaTime; // Gravité
+                    p.lifetime -= deltaTime;
+                    
+                    if (p.lifetime <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // Render
+                this.render();
+                this.updateHUD();
+                
+                this.frameCount++;
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // 🚀 LANCEMENT DU JEU
+        window.onload = () => {
+            const canvas = document.getElementById('gameCanvas');
+            const game = new Q3ArenaEngine(canvas);
+            
+            // Message d'accueil GROAKEN
+            setTimeout(() => {
+                game.log('🌟 GROAKEN ACTIVÉ! Magic Stack chargée!');
+                game.log('💚 GROFI ENTERPRISE - "La nature trouve toujours son chemin"');
+                game.log('🔮 Formules castables validées et opérationnelles!');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

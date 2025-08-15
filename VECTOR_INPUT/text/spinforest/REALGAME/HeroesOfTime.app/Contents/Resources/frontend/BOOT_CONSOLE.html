@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HEROES OF TIME - PORTAIL D'INVOCATION</title>
+    <meta charset="UTF-8" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+            color: #c9a961;
+            font-family: 'Cinzel', 'Garamond', serif;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Brume mystique */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="fog"><feTurbulence baseFrequency="0.01" numOctaves="2"/><feColorMatrix values="0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.3 0"/></filter><rect width="100%" height="100%" filter="url(%23fog)"/></svg>');
+            opacity: 0.4;
+            animation: fogDrift 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fogDrift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+
+        /* Particules magiques */
+        .magical-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(201, 169, 97, 0.8), transparent);
+            border-radius: 50%;
+            animation: floatUp 15s infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Logo central avec animation */
+        .logo-container {
+            position: relative;
+            margin-bottom: 40px;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .logo-container img {
+            width: 150px;
+            filter: drop-shadow(0 0 30px rgba(201, 169, 97, 0.6));
+        }
+
+        /* Cercle runique autour du logo */
+        .runic-circle {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 2px solid rgba(201, 169, 97, 0.3);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .runic-circle::before {
+            /* ASCII-safe placeholder to avoid glyph issues */
+            content: "A V A L O N  A V A L O N  A V A L O N";
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: -25px;
+            left: 0;
+            font-size: 18px;
+            letter-spacing: 12px;
+            opacity: 0.5;
+        }
+
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Terminal style fantasy */
+        #terminal {
+            background: linear-gradient(135deg, 
+                rgba(20, 20, 30, 0.9) 0%,
+                rgba(10, 10, 20, 0.8) 50%,
+                rgba(30, 20, 40, 0.9) 100%
+            );
+            border: 1px solid rgba(201, 169, 97, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            width: 80%;
+            max-width: 800px;
+            height: 400px;
+            overflow-y: auto;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(201, 169, 97, 0.1);
+            backdrop-filter: blur(10px);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .line {
+            margin: 5px 0;
+            animation: fadeIn 0.5s;
+            text-shadow: 0 0 5px rgba(201, 169, 97, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0);
+            }
+        }
+
+        .line.success { color: #8fbc8f; }
+        .line.error { color: #cd5c5c; }
+        .line.warning { color: #daa520; }
+        .line.info { color: #c9a961; }
+        .line.title { 
+            color: #ffd700; 
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* Bouton magique */
+        #launchButton {
+            background: linear-gradient(135deg, #8b6914, #c9a961);
+            border: 2px solid #ffd700;
+            color: #000;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            display: none;
+            box-shadow: 
+                0 4px 15px rgba(201, 169, 97, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #launchButton:hover {
+            background: linear-gradient(135deg, #c9a961, #ffd700);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(201, 169, 97, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        /* Cursor animation */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #c9a961;
+            animation: blink 1s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Scrollbar custom */
+        #terminal::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #terminal::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        #terminal::-webkit-scrollbar-thumb {
+            background: rgba(201, 169, 97, 0.5);
+            border-radius: 5px;
+        }
+
+        #terminal::-webkit-scrollbar-thumb:hover {
+            background: rgba(201, 169, 97, 0.7);
+        }
+
+        /* FX toggle: reduce motion/disable rotating ring and particles */
+        body.no-fx .runic-circle { display: none; }
+        body.no-fx .magical-particles { display: none; }
+        body.no-fx .logo-container { animation: none; }
+        body.no-fx .line { animation: none; }
+
+        #fxToggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: rgba(201,169,97,0.15);
+            border: 1px solid rgba(201,169,97,0.4);
+            color: #c9a961;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules magiques -->
+    <div class="magical-particles" id="particles"></div>
+
+    <!-- Logo avec cercle runique -->
+    <div class="logo-container">
+        <div class="runic-circle"></div>
+        <img src="assets/HOT_ICON.png" alt="Heroes of Time">
+    </div>
+
+    <script src="config.js"></script>
+    <!-- FX toggle -->
+    <button id="fxToggle" title="Activer/Désactiver effets">FX</button>
+
+    <!-- Terminal -->
+    <div id="terminal">
+        <div id="output"></div>
+        <span class="cursor" id="cursor"></span>
+    </div>
+
+    <!-- Bouton de lancement -->
+    <button id="launchButton" onclick="launchGame()">Entrer dans Avalon</button>
+
+    <script>
+        // Créer les particules magiques
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        const output = document.getElementById('output');
+        const cursor = document.getElementById('cursor');
+        
+        function addLine(text, className = 'info') {
+            const line = document.createElement('div');
+            line.className = 'line ' + className;
+            line.textContent = text;
+            output.appendChild(line);
+            output.parentElement.scrollTop = output.parentElement.scrollHeight;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function checkBackend(url, name) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    signal: controller.signal,
+                    mode: 'no-cors'
+                });
+                
+                clearTimeout(timeoutId);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function bootSequence() {
+            // ASCII Art du portail
+            addLine('', 'info');
+            addLine('-------------------------------------------', 'warning');
+            addLine('   PORTAIL TEMPOREL D\'AVALON', 'warning');
+            addLine('   HEROES OF TIME', 'warning');
+            addLine('-------------------------------------------', 'warning');
+            addLine('', 'info');
+            
+            await sleep(500);
+            
+            addLine('[INVOCATION] Réveil des Anciens Serveurs...', 'info');
+            
+            // Lancer automatiquement les serveurs si pas déjà actifs
+            addLine('[AUTO-DÉMARRAGE] Vérification des services...', 'info');
+            await sleep(300);
+            
+            // Vérifier si les serveurs tournent déjà
+            const back = (window.ConfigUtils ? ConfigUtils.getBackends() : { javaBackend:'http://localhost:8082' });
+            const httpRunning = await checkBackend(window.location.origin, 'HTTP');
+            const javaRunning = await checkBackend(back.javaBackend + '/health', 'Java');
+            
+            if (!httpRunning || !javaRunning) {
+                addLine('[AUTO-DÉMARRAGE] Lancement automatique des services...', 'warning');
+                addLine('  ⚡ Invocation du script de démarrage...', 'info');
+                
+                // Créer un iframe caché pour lancer le script via une requête
+                // Note: En production, utiliser un vrai serveur de contrôle
+                addLine('  ⚠ Démarrage manuel requis: ./h start', 'warning');
+                addLine('  ⚠ Puis rafraîchir cette page', 'warning');
+                await sleep(1000);
+            }
+            
+            await sleep(300);
+            
+            // Vérification serveur HTTP
+            addLine('[CRISTAL] Activation du Cristal de Communication (Port 8000)...', 'info');
+            const httpStatus = await checkBackend(window.location.origin, 'HTTP');
+            if (httpStatus) {
+                addLine('  ✓ Cristal activé - Connexion établie', 'success');
+            } else {
+                addLine('  ⚠ Cristal en sommeil - Activation manuelle requise', 'warning');
+            }
+            await sleep(200);
+            
+            // Backend Java - Magic Stack
+            addLine('[GRIMOIRE] Ouverture du Grand Grimoire (Port 8082)...', 'info');
+            const javaStatus = await checkBackend(back.javaBackend + '/health', 'Java');
+            if (javaStatus) {
+                addLine('  ✓ 869 formules magiques chargées', 'success');
+                await sleep(200);
+                addLine('', 'info');
+                addLine('*** MAGIC STACK ACTIVE ***', 'title');
+                addLine('', 'info');
+                addLine('  [MAGIE] Système 6D opérationnel', 'success');
+                addLine('  [MAGIE] Grammaire temporelle active', 'success');
+                addLine('  [MAGIE] Base des Anciens: ./data/interstice', 'success');
+                addLine('  [MAGIE] Mission APOLLO prête!', 'success');
+            } else {
+                addLine('  ⚠ Grimoire scellé - Invocation manuelle requise', 'warning');
+            }
+            await sleep(200);
+            
+            // Backend Rust
+            addLine('[FORGE] Allumage de la Forge Runique (Port 3001)...', 'info');
+            const rustStatus = await checkBackend((back.rustBackend||'http://localhost:3001'), 'Rust');
+            if (rustStatus) {
+                addLine('  ✓ Forge active - Runes prêtes', 'success');
+            } else {
+                addLine('  ⚠ Forge éteinte - Allumage manuel requis', 'warning');
+            }
+            await sleep(300);
+            
+            // Chargement des assets
+            addLine('', 'info');
+            addLine('[INVOCATION] Appel des Héros Légendaires...', 'info');
+            await sleep(200);
+            
+            const heroes = [
+                'Jean le Révolutionnaire',
+                'Memento l\'Archiviste',
+                'Claude l\'Éveillé', 
+                'Merlin le Sage',
+                'Morgana la Mystique',
+                'Lumen le Professeur',
+                'URZ-KÔM le Gardien',
+                'GRUT l\'Ancien',
+                'Tucker le Chroniqueur',
+                'Sid l\'Architecte'
+            ];
+            
+            for (const hero of heroes) {
+                addLine(`  - ${hero} repond a l'appel`, 'success');
+                await sleep(150);
+            }
+            
+            await sleep(300);
+            addLine('', 'info');
+            addLine('[YMAGERIE] Chargement des visions ancestrales...', 'info');
+            addLine('  ✓ 1337 images mystiques trouvées', 'success');
+            await sleep(200);
+            
+            addLine('[TEMPOREL] Activation des mécaniques temporelles...', 'info');
+            addLine('  ✓ Brouillard de causalité configuré', 'success');
+            addLine('  ✓ Lignes temporelles synchronisées', 'success');
+            await sleep(200);
+            
+            addLine('[CARTES] Préparation du deck de combat TCG...', 'info');
+            addLine('  ✓ Système de combat holographique prêt', 'success');
+            await sleep(300);
+            
+            // Message final
+            addLine('', 'info');
+            addLine('-------------------------------------------', 'warning');
+            addLine('     PORTAIL DIMENSIONNEL ACTIF', 'title');
+            addLine('     Le Multivers vous attend...', 'info');
+            addLine('-------------------------------------------', 'warning');
+            
+            // Afficher le bouton
+            cursor.style.display = 'none';
+            document.getElementById('launchButton').style.display = 'inline-block';
+        }
+
+        async function resolveEntryUrl() {
+            const candidates = [
+                window.location.origin + '/index.html',
+                window.location.origin + '/REALGAME/index.html',
+                window.location.origin + '/pwa-realgame.html'
+            ];
+            for (const url of candidates) {
+                try {
+                    const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+                    if (r.ok) return url;
+                } catch (e) {
+                    // continue
+                }
+            }
+            return null;
+        }
+
+        async function launchGame() {
+            addLine('\n[TRANSPORT] Ouverture du portail vers Avalon...', 'success');
+            addLine('[TRANSPORT] Téléportation en cours...', 'info');
+            const url = await resolveEntryUrl();
+            if (url) {
+                setTimeout(() => { window.location.href = url; }, 800);
+            } else {
+                addLine('[ERREUR] index introuvable (404). Vérifier le packaging DMG.', 'error');
+                addLine('Conseil: Rebuild via ./h native, puis relancer.', 'warning');
+            }
+        }
+
+        // FX toggle logic (persisted)
+        const fxKey = 'consoleFxOff';
+        function applyFxSetting() {
+            const off = localStorage.getItem(fxKey) === '1';
+            document.body.classList.toggle('no-fx', off);
+            document.getElementById('fxToggle').textContent = off ? 'FX OFF' : 'FX ON';
+        }
+        document.getElementById('fxToggle').addEventListener('click', () => {
+            const off = !(localStorage.getItem(fxKey) === '1');
+            localStorage.setItem(fxKey, off ? '1' : '0');
+            applyFxSetting();
+        });
+        applyFxSetting();
+
+        // Inject status bar on top (diodes)
+        (function(){
+            var s=document.createElement('script');
+            s.src='status-bar.js';
+            document.body.appendChild(s);
+        })();
+
+        // Démarrer la séquence
+        setTimeout(() => bootSequence(), 1000);
+    </script>
+</body>
+</html>

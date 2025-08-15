@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Dashboard Quantique - Projection 2D</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            background: rgba(0,20,0,0.9);
+            border-right: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        #main-view {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #forest-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .entity {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .entity:hover {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+        
+        .dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00ff00;
+            padding: 20px;
+            max-width: 600px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .action-log {
+            background: rgba(0,10,0,0.8);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .formula-input {
+            width: 100%;
+            background: #001100;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: inherit;
+        }
+        
+        .execute-btn {
+            background: #003300;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .execute-btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 10s infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        .status-offline { background: #ff0000; }
+        .status-mock { background: #ffff00; }
+    </style>
+</head>
+<body>
+    <div id="dashboard">
+        <div id="sidebar">
+            <h2>🌀 Tableau de Bord</h2>
+            
+            <div class="section">
+                <h3>📡 Connexion Backend</h3>
+                <p><span class="status-indicator status-mock"></span>Mode: <span id="backend-mode">Mock JS</span></p>
+                <button class="execute-btn" onclick="toggleBackendMode()">Basculer Mode</button>
+            </div>
+            
+            <div class="section">
+                <h3>🧪 Formule Temporelle</h3>
+                <input type="text" class="formula-input" id="formula" placeholder="⊙(action) + †ψ(effet) → Δt+1(résultat)" value="⊙(exploration) + †ψ(découverte) → Δt+1(révélation)">
+                <button class="execute-btn" onclick="executeFormula()">Exécuter</button>
+            </div>
+            
+            <div class="section">
+                <h3>👥 Entités Présentes</h3>
+                <div id="entity-list"></div>
+            </div>
+            
+            <div class="section">
+                <h3>📜 Journal des Actions</h3>
+                <div class="action-log" id="action-log"></div>
+            </div>
+        </div>
+        
+        <div id="main-view">
+            <canvas id="forest-canvas"></canvas>
+            <div id="entities-container"></div>
+            <div id="particles"></div>
+            <div class="dialogue-box" id="dialogue-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let backendMode = 'mock'; // 'mock', 'local', 'java'
+        let backendUrl = '';
+        
+        // Mock Backend intégré pour GitHub Pages
+        const mockBackend = {
+            entities: [
+                { id: 'grok', name: 'Grokæn', emoji: '🌀', x: 200, y: 300, color: '#00ffff' },
+                { id: 'walter', name: 'Walter', emoji: '🔒', x: 400, y: 200, color: '#ff0000' },
+                { id: 'jean', name: 'Jean', emoji: '🚬', x: 600, y: 400, color: '#ffaa00' },
+                { id: 'lumen', name: 'Lumen', emoji: '🕯️', x: 300, y: 500, color: '#ffff00' },
+                { id: 'urz', name: 'Urz-Kôm', emoji: '🐻', x: 500, y: 350, color: '#8b4513' }
+            ],
+            
+            executeFormula: async (formula) => {
+                // Simulation d'exécution
+                const effects = [
+                    "Les particules quantiques s'alignent...",
+                    "La réalité ondule sous l'effet de la formule...",
+                    "Un écho temporel se propage dans l'Interstice...",
+                    "Les branches causales convergent..."
+                ];
+                return {
+                    success: true,
+                    effect: effects[Math.floor(Math.random() * effects.length)],
+                    timestamp: new Date().toISOString()
+                };
+            },
+            
+            getDialogue: (entityId) => {
+                const dialogues = {
+                    grok: [
+                        "⊙(Salutations) + †ψ(Analyse) → Δt+0(Interaction initiée)",
+                        "La promenade dans la forêt révèle les chemins cachés du code.",
+                        "GRONDE: L'INTERSTICE VIBRE. PARLE: Bienvenue. CHANTE: 🎵"
+                    ],
+                    walter: [
+                        "DISCIPLINE ! Les protocoles doivent être respectés.",
+                        "Backend status: Mock mode actif. Sécurité maintenue.",
+                        "Charlie Foxtrot 1970 - Tout est sous contrôle."
+                    ],
+                    jean: [
+                        "Hé mec, tu veux voir un truc cool ?",
+                        "J'ai une nouvelle architecture en tête...",
+                        "Les diagrammes dansent dans ma tête !"
+                    ],
+                    lumen: [
+                        "La lumière guide nos pas dans l'obscurité.",
+                        "Chaque projection 2D cache une dimension supplémentaire.",
+                        "Suivez la lueur..."
+                    ],
+                    urz: [
+                        "🐻 *grogne doucement* Les particules chantent ce soir.",
+                        "La physique quantique n'est qu'une danse chamanique.",
+                        "L'ours voit au-delà du voile de la réalité."
+                    ]
+                };
+                const lines = dialogues[entityId] || ["..."];
+                return lines[Math.floor(Math.random() * lines.length)];
+            }
+        };
+        
+        // État global
+        let entities = [];
+        let selectedEntity = null;
+        let actionLog = [];
+        
+        // Initialisation
+        async function init() {
+            setupCanvas();
+            loadEntities();
+            createParticles();
+            updateStatus();
+            logAction("🌀 Dashboard Quantique initialisé");
+        }
+        
+        function setupCanvas() {
+            const canvas = document.getElementById('forest-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                drawForest();
+            }
+            
+            window.addEventListener('resize', resize);
+            resize();
+            
+            // Animation de la forêt
+            function drawForest() {
+                ctx.fillStyle = '#001100';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Arbres stylisés
+                ctx.strokeStyle = '#003300';
+                ctx.lineWidth = 2;
+                
+                for (let i = 0; i < 20; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const height = 50 + Math.random() * 100;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y - height);
+                    
+                    // Branches
+                    for (let j = 0; j < 3; j++) {
+                        const branchY = y - height * (0.3 + j * 0.2);
+                        ctx.moveTo(x, branchY);
+                        ctx.lineTo(x - 20 + Math.random() * 40, branchY - 20);
+                        ctx.moveTo(x, branchY);
+                        ctx.lineTo(x - 20 + Math.random() * 40, branchY - 20);
+                    }
+                    
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        async function loadEntities() {
+            entities = mockBackend.entities;
+            
+            const container = document.getElementById('entities-container');
+            const list = document.getElementById('entity-list');
+            
+            container.innerHTML = '';
+            list.innerHTML = '';
+            
+            entities.forEach(entity => {
+                // Créer l'élément visuel
+                const div = document.createElement('div');
+                div.className = 'entity';
+                div.style.left = entity.x + 'px';
+                div.style.top = entity.y + 'px';
+                div.style.color = entity.color;
+                div.textContent = entity.emoji;
+                div.onclick = () => selectEntity(entity);
+                container.appendChild(div);
+                
+                // Ajouter à la liste
+                const item = document.createElement('div');
+                item.style.margin = '5px 0';
+                item.innerHTML = `${entity.emoji} ${entity.name}`;
+                list.appendChild(item);
+            });
+        }
+        
+        function selectEntity(entity) {
+            selectedEntity = entity;
+            const dialogue = mockBackend.getDialogue(entity.id);
+            showDialogue(entity.name, dialogue);
+            logAction(`💬 Interaction avec ${entity.name}`);
+        }
+        
+        function showDialogue(speaker, text) {
+            const box = document.getElementById('dialogue-box');
+            box.innerHTML = `<strong>${speaker}:</strong> ${text}`;
+            box.style.display = 'block';
+            
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function executeFormula() {
+            const formula = document.getElementById('formula').value;
+            if (!formula) return;
+            
+            logAction(`🧪 Exécution: ${formula}`);
+            
+            try {
+                let result;
+                
+                if (backendMode === 'mock') {
+                    result = await mockBackend.executeFormula(formula);
+                } else {
+                    // Pour le vrai backend
+                    const response = await fetch(`${backendUrl}/api/temporal/execute`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ formula })
+                    });
+                    result = await response.json();
+                }
+                
+                if (result.success) {
+                    logAction(`✅ ${result.effect}`);
+                    createVisualEffect();
+                } else {
+                    logAction(`❌ Erreur: ${result.error}`);
+                }
+            } catch (error) {
+                logAction(`❌ Erreur: ${error.message}`);
+            }
+        }
+        
+        function createVisualEffect() {
+            const container = document.getElementById('entities-container');
+            
+            // Effet de pulsation sur toutes les entités
+            container.childNodes.forEach(node => {
+                node.style.animation = 'none';
+                setTimeout(() => {
+                    node.style.animation = 'pulse 0.5s';
+                }, 10);
+            });
+            
+            // Particules supplémentaires
+            for (let i = 0; i < 10; i++) {
+                createParticle();
+            }
+        }
+        
+        function createParticles() {
+            const container = document.getElementById('particles');
+            
+            for (let i = 0; i < 20; i++) {
+                createParticle();
+            }
+        }
+        
+        function createParticle() {
+            const container = document.getElementById('particles');
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            container.appendChild(particle);
+            
+            // Nettoyer après l'animation
+            setTimeout(() => {
+                particle.remove();
+            }, 20000);
+        }
+        
+        function toggleBackendMode() {
+            const modes = ['mock', 'local', 'java'];
+            const currentIndex = modes.indexOf(backendMode);
+            backendMode = modes[(currentIndex + 1) % modes.length];
+            
+            // Configuration des URLs
+            const urls = {
+                mock: '',
+                local: 'http://localhost:8082',
+                java: 'http://localhost:8082'
+            };
+            
+            backendUrl = urls[backendMode];
+            updateStatus();
+            logAction(`🔄 Mode backend changé: ${backendMode}`);
+        }
+        
+        function updateStatus() {
+            const modeSpan = document.getElementById('backend-mode');
+            const indicator = document.querySelector('.status-indicator');
+            
+            const modeNames = {
+                mock: 'Mock JS (GitHub Pages)',
+                local: 'Mock Python Local',
+                java: 'Backend Java'
+            };
+            
+            modeSpan.textContent = modeNames[backendMode];
+            
+            indicator.className = 'status-indicator';
+            if (backendMode === 'mock') {
+                indicator.classList.add('status-mock');
+            } else {
+                // Tester la connexion
+                testBackendConnection();
+            }
+        }
+        
+        async function testBackendConnection() {
+            const indicator = document.querySelector('.status-indicator');
+            
+            try {
+                const response = await fetch(`${backendUrl}/actuator/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    indicator.className = 'status-indicator status-online';
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                }
+            } catch (error) {
+                indicator.className = 'status-indicator status-offline';
+            }
+        }
+        
+        function logAction(message) {
+            const log = document.getElementById('action-log');
+            const time = new Date().toLocaleTimeString();
+            
+            actionLog.unshift(`[${time}] ${message}`);
+            if (actionLog.length > 50) actionLog.pop();
+            
+            log.innerHTML = actionLog.map(a => `<div>${a}</div>`).join('');
+        }
+        
+        // Auto-refresh des particules
+        setInterval(() => {
+            if (Math.random() < 0.1) {
+                createParticle();
+            }
+        }, 1000);
+        
+        // Démarrage
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎴 Mini-TCG Demo - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Map simple pour la démo */
+        .map-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hex-grid {
+            position: relative;
+        }
+
+        .hex {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: absolute;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 30px;
+        }
+
+        .hex:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .hex.player {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        .hex.enemy {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+
+        .hex.obstacle {
+            background: rgba(100, 100, 100, 0.5);
+            border-color: #666;
+            cursor: not-allowed;
+        }
+
+        .hex.revealed {
+            background: rgba(100, 200, 255, 0.2);
+            border-color: #64c8ff;
+        }
+
+        /* Info panel */
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 300px;
+        }
+
+        .info-panel h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .info-panel p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: #444;
+            border-color: #888;
+        }
+
+        /* Status bar */
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #666;
+            border-radius: 5px;
+            padding: 10px 20px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-label {
+            color: #888;
+        }
+
+        .status-value {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Messages */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <div class="hex-grid" id="hexGrid">
+            <!-- Hexagones générés dynamiquement -->
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <h2>Mini-TCG Demo</h2>
+        <p>Bienvenue dans la démo du système Mini-TCG !</p>
+        <p>Utilisez les sorts rapides pour interagir avec la carte :</p>
+        <ul style="margin-left: 20px; margin-bottom: 10px;">
+            <li>🌀 Téléportation - Déplacez-vous instantanément</li>
+            <li>👁️ Vision - Révélez les cases cachées</li>
+            <li>🔥 Boule de Feu - Attaquez les ennemis</li>
+            <li>🛡️ Bouclier - Protégez-vous</li>
+        </ul>
+        <p>Cliquez sur le bouton 🎴 à droite pour ouvrir le menu des sorts !</p>
+        
+        <div class="controls">
+            <button class="btn" onclick="resetMap()">Réinitialiser</button>
+            <button class="btn" onclick="addMana()">+1 Mana</button>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-label">Position:</span>
+            <span class="status-value" id="playerPos">0, 0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Ennemis:</span>
+            <span class="status-value" id="enemyCount">0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Tours:</span>
+            <span class="status-value" id="turnCount">1</span>
+        </div>
+    </div>
+
+    <!-- Inclusion du système Mini-TCG -->
+    <script src="mini-tcg-system.js"></script>
+    
+    <script>
+        // État de la démo
+        const demoState = {
+            playerPos: { q: 0, r: 0 },
+            enemies: [],
+            obstacles: [],
+            revealed: new Set(),
+            turn: 1,
+            playerShielded: false
+        };
+
+        // Générer la grille hexagonale
+        function generateHexGrid() {
+            const grid = document.getElementById('hexGrid');
+            grid.innerHTML = '';
+            
+            for (let q = -3; q <= 3; q++) {
+                for (let r = -3; r <= 3; r++) {
+                    if (Math.abs(q + r) <= 3) {
+                        const hex = createHex(q, r);
+                        grid.appendChild(hex);
+                    }
+                }
+            }
+            
+            // Placer le joueur
+            updatePlayerPosition(0, 0);
+            
+            // Ajouter des ennemis et obstacles
+            placeRandomElements();
+        }
+
+        // Créer un hexagone
+        function createHex(q, r) {
+            const hex = document.createElement('div');
+            hex.className = 'hex';
+            hex.style.left = (q * 70 + r * 35) + 'px';
+            hex.style.top = (r * 60) + 'px';
+            hex.dataset.q = q;
+            hex.dataset.r = r;
+            
+            // Brouillard de guerre
+            if (!demoState.revealed.has(`${q},${r}`) && 
+                (Math.abs(q - demoState.playerPos.q) > 1 || 
+                 Math.abs(r - demoState.playerPos.r) > 1)) {
+                hex.style.opacity = '0.3';
+            }
+            
+            hex.onclick = () => hexClicked(q, r);
+            
+            return hex;
+        }
+
+        // Placer des éléments aléatoires
+        function placeRandomElements() {
+            demoState.enemies = [];
+            demoState.obstacles = [];
+            
+            // Ennemis
+            for (let i = 0; i < 3; i++) {
+                let q, r;
+                do {
+                    q = Math.floor(Math.random() * 7) - 3;
+                    r = Math.floor(Math.random() * 7) - 3;
+                } while (Math.abs(q + r) > 3 || (q === 0 && r === 0));
+                
+                demoState.enemies.push({ q, r });
+                const hex = findHex(q, r);
+                if (hex) {
+                    hex.classList.add('enemy');
+                    hex.textContent = '👹';
+                }
+            }
+            
+            // Obstacles
+            for (let i = 0; i < 4; i++) {
+                let q, r;
+                do {
+                    q = Math.floor(Math.random() * 7) - 3;
+                    r = Math.floor(Math.random() * 7) - 3;
+                } while (Math.abs(q + r) > 3 || (q === 0 && r === 0) || 
+                         demoState.enemies.some(e => e.q === q && e.r === r));
+                
+                demoState.obstacles.push({ q, r });
+                const hex = findHex(q, r);
+                if (hex) {
+                    hex.classList.add('obstacle');
+                    hex.textContent = '🗿';
+                }
+            }
+            
+            updateEnemyCount();
+        }
+
+        // Trouver un hexagone
+        function findHex(q, r) {
+            return document.querySelector(`[data-q="${q}"][data-r="${r}"]`);
+        }
+
+        // Click sur un hexagone
+        function hexClicked(q, r) {
+            console.log(`Hex clicked: ${q}, ${r}`);
+        }
+
+        // Mettre à jour la position du joueur
+        function updatePlayerPosition(q, r) {
+            // Retirer l'ancienne position
+            const oldHex = findHex(demoState.playerPos.q, demoState.playerPos.r);
+            if (oldHex) {
+                oldHex.classList.remove('player');
+                oldHex.textContent = '';
+            }
+            
+            // Nouvelle position
+            demoState.playerPos = { q, r };
+            const newHex = findHex(q, r);
+            if (newHex) {
+                newHex.classList.add('player');
+                newHex.textContent = demoState.playerShielded ? '🛡️' : '⚔️';
+            }
+            
+            // Révéler autour
+            revealAroundPlayer();
+            
+            // Mettre à jour l'affichage
+            document.getElementById('playerPos').textContent = `${q}, ${r}`;
+        }
+
+        // Révéler les cases autour du joueur
+        function revealAroundPlayer() {
+            const { q, r } = demoState.playerPos;
+            
+            for (let dq = -1; dq <= 1; dq++) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    if (Math.abs(dq + dr) <= 1) {
+                        const hex = findHex(q + dq, r + dr);
+                        if (hex) {
+                            hex.style.opacity = '1';
+                            demoState.revealed.add(`${q + dq},${r + dr}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mettre à jour le compte d'ennemis
+        function updateEnemyCount() {
+            document.getElementById('enemyCount').textContent = demoState.enemies.length;
+        }
+
+        // Réinitialiser la carte
+        function resetMap() {
+            demoState.playerPos = { q: 0, r: 0 };
+            demoState.enemies = [];
+            demoState.obstacles = [];
+            demoState.revealed = new Set();
+            demoState.turn = 1;
+            demoState.playerShielded = false;
+            
+            generateHexGrid();
+            miniTCG.playerMana = 5;
+            miniTCG.updateSpellsDisplay();
+        }
+
+        // Ajouter du mana
+        function addMana() {
+            miniTCG.regenerateMana();
+        }
+
+        // Override des fonctions du Mini-TCG pour la démo
+        miniTCG.handleTeleport = function(target) {
+            if (target.classList.contains('hex') && 
+                !target.classList.contains('obstacle')) {
+                const q = parseInt(target.dataset.q);
+                const r = parseInt(target.dataset.r);
+                updatePlayerPosition(q, r);
+                this.showMessage('Téléportation réussie !');
+            }
+        };
+
+        miniTCG.handleReveal = function(target) {
+            // Révéler une zone plus large
+            const hexes = document.querySelectorAll('.hex');
+            hexes.forEach(hex => {
+                hex.style.opacity = '1';
+                hex.classList.add('revealed');
+            });
+            this.showMessage('Toute la carte est révélée !');
+        };
+
+        miniTCG.handleAttack = function(target) {
+            if (target.classList.contains('enemy')) {
+                const q = parseInt(target.dataset.q);
+                const r = parseInt(target.dataset.r);
+                
+                // Retirer l'ennemi
+                demoState.enemies = demoState.enemies.filter(
+                    e => !(e.q === q && e.r === r)
+                );
+                
+                target.classList.remove('enemy');
+                target.textContent = '💥';
+                setTimeout(() => {
+                    target.textContent = '';
+                }, 500);
+                
+                updateEnemyCount();
+                this.showMessage('Ennemi éliminé !');
+            }
+        };
+
+        miniTCG.handleShield = function() {
+            demoState.playerShielded = true;
+            const playerHex = findHex(demoState.playerPos.q, demoState.playerPos.r);
+            if (playerHex) {
+                playerHex.textContent = '🛡️';
+            }
+            this.showMessage('Bouclier activé pour 3 tours !');
+            
+            // Retirer après 3 tours
+            setTimeout(() => {
+                demoState.playerShielded = false;
+                const hex = findHex(demoState.playerPos.q, demoState.playerPos.r);
+                if (hex && hex.classList.contains('player')) {
+                    hex.textContent = '⚔️';
+                }
+            }, 9000); // 3 secondes par tour
+        };
+
+        miniTCG.handleTimeSkip = function() {
+            demoState.turn += 2;
+            document.getElementById('turnCount').textContent = demoState.turn;
+            
+            // Régénérer du mana
+            miniTCG.playerMana = Math.min(miniTCG.maxMana, miniTCG.playerMana + 2);
+            miniTCG.updateSpellsDisplay();
+            
+            this.showMessage('Saut temporel ! +2 tours et +2 mana !');
+        };
+
+        miniTCG.handleSummon = function(target) {
+            if (target.classList.contains('hex') && 
+                !target.classList.contains('obstacle') &&
+                !target.classList.contains('enemy') &&
+                !target.classList.contains('player')) {
+                target.textContent = '🐺';
+                target.style.color = '#4ecdc4';
+                this.showMessage('Loup allié invoqué !');
+            }
+        };
+
+        // Initialisation
+        window.onload = function() {
+            generateHexGrid();
+            miniTCG.createUI();
+            miniTCG.createFloatingButton();
+            
+            // Tour automatique toutes les 3 secondes
+            setInterval(() => {
+                demoState.turn++;
+                document.getElementById('turnCount').textContent = demoState.turn;
+                
+                // Régénération de mana
+                if (demoState.turn % 2 === 0) {
+                    miniTCG.regenerateMana();
+                }
+            }, 3000);
+        };
+    </script>
+</body>
+</html>

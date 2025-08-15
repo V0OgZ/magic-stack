@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Panopticon Toile de Galaxie - Vision Fine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #000011 0%, #000000 100%);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #controls {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.95);
+            border-left: 1px solid #333;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .mage-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #222;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .mage-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--mage-color);
+        }
+        
+        .mage-item.active {
+            border-color: var(--mage-color);
+            box-shadow: 0 0 5px var(--mage-color);
+        }
+        
+        .mage-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--mage-color);
+            margin-right: 10px;
+            box-shadow: 0 0 8px var(--mage-color);
+        }
+        
+        .mage-info {
+            flex: 1;
+        }
+        
+        .mage-name {
+            font-weight: bold;
+            color: var(--mage-color);
+            font-size: 0.85em;
+        }
+        
+        .mage-stats {
+            font-size: 0.7em;
+            color: #888;
+        }
+        
+        .dimension-selector {
+            margin: 15px 0;
+        }
+        
+        .dimension-btn {
+            display: block;
+            width: 100%;
+            margin: 3px 0;
+            padding: 6px;
+            background: #111;
+            color: #666;
+            border: 1px solid #333;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+        
+        .dimension-btn:hover, .dimension-btn.active {
+            background: #222;
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+        
+        .stats-panel {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .connection-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .lightning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .lightning-active {
+            opacity: 1;
+            animation: galaxy-pulse 2s ease-out;
+        }
+        
+        @keyframes galaxy-pulse {
+            0% { background: radial-gradient(circle at 30% 30%, rgba(255, 0, 255, 0.3) 0%, transparent 60%); }
+            25% { background: radial-gradient(circle at 70% 20%, rgba(0, 255, 255, 0.3) 0%, transparent 60%); }
+            50% { background: radial-gradient(circle at 80% 80%, rgba(255, 255, 0, 0.3) 0%, transparent 60%); }
+            75% { background: radial-gradient(circle at 20% 70%, rgba(255, 100, 0, 0.3) 0%, transparent 60%); }
+            100% { background: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <canvas id="canvas3d"></canvas>
+            <div class="lightning-overlay" id="lightning-overlay"></div>
+            <div class="connection-indicator">
+                <div>🌌 Galaxie: <span id="galaxy-status">Active</span></div>
+                <div>⭐ Étoiles: <span id="star-count">5</span></div>
+                <div>🌐 Réseau: <span id="network-status">Connecté</span></div>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <h3>🌌 TOILE GALAXIE</h3>
+            
+            <div class="mage-controls">
+                <h4>⭐ Étoiles Mages</h4>
+                
+                <div class="mage-item active" data-mage="vincent" style="--mage-color: #ff00ff">
+                    <div class="mage-dot"></div>
+                    <div class="mage-info">
+                        <div class="mage-name">VINCENT</div>
+                        <div class="mage-stats">Créateur • <span id="vincent-activity">87.5%</span></div>
+                    </div>
+                </div>
+                
+                <div class="mage-item active" data-mage="loumen" style="--mage-color: #00ffff">
+                    <div class="mage-dot"></div>
+                    <div class="mage-info">
+                        <div class="mage-name">LOUMEN</div>
+                        <div class="mage-stats">Narratif • <span id="loumen-activity">85.3%</span></div>
+                    </div>
+                </div>
+                
+                <div class="mage-item active" data-mage="urz" style="--mage-color: #00ff00">
+                    <div class="mage-dot"></div>
+                    <div class="mage-info">
+                        <div class="mage-name">URZ-KÔM</div>
+                        <div class="mage-stats">Gardien • <span id="urz-activity">87.0%</span></div>
+                    </div>
+                </div>
+                
+                <div class="mage-item active" data-mage="sid" style="--mage-color: #ff6600">
+                    <div class="mage-dot"></div>
+                    <div class="mage-info">
+                        <div class="mage-name">SID</div>
+                        <div class="mage-stats">Manager • <span id="sid-activity">63.4%</span></div>
+                    </div>
+                </div>
+                
+                <div class="mage-item active" data-mage="grokaen" style="--mage-color: #0066ff">
+                    <div class="mage-dot"></div>
+                    <div class="mage-info">
+                        <div class="mage-name">GROKÆN</div>
+                        <div class="mage-stats">Arbre • <span id="grokaen-activity">74.9%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dimension-selector">
+                <h4>🌀 Dimensions</h4>
+                <button class="dimension-btn active" data-dimension="ALL">TOILE COMPLÈTE</button>
+                <button class="dimension-btn" data-dimension="CAUSALE">CAUSALE</button>
+                <button class="dimension-btn" data-dimension="TEMPORELLE">TEMPORELLE</button>
+                <button class="dimension-btn" data-dimension="SPATIALE">SPATIALE</button>
+                <button class="dimension-btn" data-dimension="QUANTIQUE">QUANTIQUE</button>
+                <button class="dimension-btn" data-dimension="NARRATIVE">NARRATIVE</button>
+            </div>
+            
+            <div class="stats-panel">
+                <h4>📊 Stats Galaxie</h4>
+                <div>Étoiles actives: <span id="active-stars">5</span></div>
+                <div>Connexions: <span id="active-links">4</span></div>
+                <div>Énergie totale: <span id="total-energy">396%</span></div>
+                <div>Densité réseau: <span id="network-density">Dense</span></div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button onclick="refreshGalaxy()" style="width: 100%; padding: 8px; background: #111; color: #00ff00; border: 1px solid #333; cursor: pointer; border-radius: 3px; font-size: 0.8em;">
+                    🔄 Refresh Galaxie
+                </button>
+                <button onclick="pulseGalaxy()" style="width: 100%; padding: 8px; margin-top: 8px; background: #111; color: #ff00ff; border: 1px solid #333; cursor: pointer; border-radius: 3px; font-size: 0.8em;">
+                    ⚡ Pulse Galaxie
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            backendUrl: 'http://localhost:8082',
+            updateInterval: 3000,
+            starSize: 0.15,        // PLUS PETIT !
+            connectionWidth: 1,    // PLUS FIN !
+            particleSize: 0.03     // TRÈS FIN !
+        };
+        
+        // Variables globales
+        let scene, camera, renderer;
+        let activeDimension = 'ALL';
+        let activeMages = new Set(['vincent', 'loumen', 'urz', 'sid', 'grokaen']);
+        
+        // Données des mages (étoiles)
+        const starsData = {
+            vincent: {
+                name: 'Vincent',
+                color: 0xff00ff,
+                position: { x: 0, y: 0, z: 0 },           // Centre
+                activity: 0.875,
+                dimension: 'QUANTIQUE'
+            },
+            loumen: {
+                name: 'Loumen',
+                color: 0x00ffff,
+                position: { x: -4, y: 3, z: -2 },         // Nord-Ouest
+                activity: 0.853,
+                dimension: 'NARRATIVE'
+            },
+            urz: {
+                name: 'Urz-Kôm',
+                color: 0x00ff00,
+                position: { x: 5, y: -2, z: 3 },          // Sud-Est
+                activity: 0.870,
+                dimension: 'SPATIALE'
+            },
+            sid: {
+                name: 'Sid',
+                color: 0xff6600,
+                position: { x: 6, y: 1, z: -1 },          // Est
+                activity: 0.634,
+                dimension: 'CAUSALE'
+            },
+            grokaen: {
+                name: 'Grokæn',
+                color: 0x0066ff,
+                position: { x: -3, y: -4, z: 2 },         // Sud-Ouest
+                activity: 0.749,
+                dimension: 'TEMPORELLE'
+            }
+        };
+        
+        // Connexions de la toile
+        const galaxyConnections = [
+            { from: 'vincent', to: 'loumen', strength: 0.9 },
+            { from: 'vincent', to: 'sid', strength: 0.8 },
+            { from: 'vincent', to: 'urz', strength: 0.7 },
+            { from: 'vincent', to: 'grokaen', strength: 0.6 },
+            { from: 'loumen', to: 'urz', strength: 0.7 },
+            { from: 'sid', to: 'grokaen', strength: 0.6 },
+            { from: 'urz', to: 'grokaen', strength: 0.5 }
+        ];
+        
+        // Initialisation
+        async function init() {
+            console.log('🌌 Initialisation Toile de Galaxie');
+            
+            initThreeJS();
+            setupControls();
+            startGalaxyLoop();
+            renderGalaxy();
+            
+            animate();
+        }
+        
+        // Configuration Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('canvas3d'), 
+                antialias: true,
+                alpha: true
+            });
+            
+            const container = document.getElementById('canvas-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x000000, 1);
+            
+            // Lumières très douces
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
+            scene.add(ambientLight);
+            
+            camera.position.set(0, 0, 12);
+        }
+        
+        // Rendu de la galaxie
+        function renderGalaxy() {
+            // Nettoyer la scène
+            while(scene.children.length > 1) {
+                scene.remove(scene.children[1]);
+            }
+            
+            // Rendu des étoiles (très petites)
+            Object.entries(starsData).forEach(([starId, star]) => {
+                if (!activeMages.has(starId)) return;
+                
+                const activity = star.activity;
+                const size = CONFIG.starSize * (0.8 + activity * 0.4);
+                
+                // Étoile principale
+                const starGeometry = new THREE.SphereGeometry(size, 12, 12);
+                const starMaterial = new THREE.MeshBasicMaterial({ 
+                    color: star.color,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+                starMesh.position.copy(star.position);
+                
+                // Pulse très doux
+                const time = Date.now() * 0.001;
+                const pulse = 1 + Math.sin(time + star.position.x) * 0.1;
+                starMesh.scale.setScalar(pulse);
+                
+                scene.add(starMesh);
+                
+                // Halo autour de l'étoile
+                const haloGeometry = new THREE.SphereGeometry(size * 2, 16, 16);
+                const haloMaterial = new THREE.MeshBasicMaterial({ 
+                    color: star.color,
+                    transparent: true,
+                    opacity: 0.1 * activity
+                });
+                const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+                halo.position.copy(star.position);
+                scene.add(halo);
+                
+                // Particules autour de l'étoile
+                for (let i = 0; i < 8; i++) {
+                    const particleGeometry = new THREE.SphereGeometry(CONFIG.particleSize, 6, 6);
+                    const particleMaterial = new THREE.MeshBasicMaterial({ 
+                        color: star.color,
+                        transparent: true,
+                        opacity: 0.6
+                    });
+                    
+                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    const angle = (i / 8) * Math.PI * 2;
+                    const radius = size * 8;
+                    particle.position.set(
+                        star.position.x + Math.cos(angle + time) * radius,
+                        star.position.y + Math.sin(angle + time) * radius,
+                        star.position.z + Math.sin(time * 0.5) * radius * 0.5
+                    );
+                    scene.add(particle);
+                }
+            });
+            
+            // Rendu des connexions (très fines)
+            galaxyConnections.forEach(connection => {
+                const fromStar = starsData[connection.from];
+                const toStar = starsData[connection.to];
+                
+                if (!activeMages.has(connection.from) || !activeMages.has(connection.to)) return;
+                
+                // Ligne principale très fine
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(fromStar.position.x, fromStar.position.y, fromStar.position.z),
+                    new THREE.Vector3(toStar.position.x, toStar.position.y, toStar.position.z)
+                ]);
+                
+                const intensity = (fromStar.activity + toStar.activity) / 2;
+                const connectionColor = new THREE.Color().setHex(fromStar.color).lerp(
+                    new THREE.Color().setHex(toStar.color), 0.5
+                );
+                
+                const material = new THREE.LineBasicMaterial({ 
+                    color: connectionColor,
+                    opacity: connection.strength * intensity * 0.6,
+                    transparent: true,
+                    linewidth: CONFIG.connectionWidth
+                });
+                
+                const line = new THREE.Line(geometry, material);
+                scene.add(line);
+                
+                // Particules voyageuses très petites
+                if (intensity > 0.7) {
+                    for (let i = 0; i < 2; i++) {
+                        const particleGeometry = new THREE.SphereGeometry(CONFIG.particleSize * 1.5, 6, 6);
+                        const particleMaterial = new THREE.MeshBasicMaterial({ 
+                            color: connectionColor,
+                            transparent: true,
+                            opacity: 0.8
+                        });
+                        
+                        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                        const t = (i / 2 + Date.now() * 0.0005) % 1;
+                        particle.position.lerpVectors(
+                            new THREE.Vector3(fromStar.position.x, fromStar.position.y, fromStar.position.z),
+                            new THREE.Vector3(toStar.position.x, toStar.position.y, toStar.position.z),
+                            t
+                        );
+                        scene.add(particle);
+                    }
+                }
+            });
+            
+            // Fond d'étoiles lointaines
+            for (let i = 0; i < 100; i++) {
+                const starGeometry = new THREE.SphereGeometry(0.01, 4, 4);
+                const starMaterial = new THREE.MeshBasicMaterial({ 
+                    color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
+                    transparent: true,
+                    opacity: Math.random() * 0.3
+                });
+                
+                const backgroundStar = new THREE.Mesh(starGeometry, starMaterial);
+                backgroundStar.position.set(
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50
+                );
+                scene.add(backgroundStar);
+            }
+            
+            updateGalaxyStats();
+        }
+        
+        // Configuration des contrôles
+        function setupControls() {
+            // Toggle étoiles
+            document.querySelectorAll('.mage-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const mageId = item.dataset.mage;
+                    
+                    if (activeMages.has(mageId)) {
+                        activeMages.delete(mageId);
+                        item.classList.remove('active');
+                    } else {
+                        activeMages.add(mageId);
+                        item.classList.add('active');
+                    }
+                    
+                    renderGalaxy();
+                });
+            });
+            
+            // Boutons dimensions
+            document.querySelectorAll('.dimension-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.dimension-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    activeDimension = btn.dataset.dimension;
+                    renderGalaxy();
+                });
+            });
+        }
+        
+        // Pulse de la galaxie
+        function pulseGalaxy() {
+            const overlay = document.getElementById('lightning-overlay');
+            overlay.classList.add('lightning-active');
+            
+            setTimeout(() => {
+                overlay.classList.remove('lightning-active');
+            }, 2000);
+            
+            // Boost d'activité
+            Object.values(starsData).forEach(star => {
+                star.activity = Math.min(1, star.activity + 0.15);
+            });
+            
+            renderGalaxy();
+        }
+        
+        // Actualisation galaxie
+        async function refreshGalaxy() {
+            try {
+                const response = await fetch(`${CONFIG.backendUrl}/api/interstice/status`);
+                if (response.ok) {
+                    document.getElementById('network-status').textContent = 'Connecté';
+                    pulseGalaxy();
+                }
+            } catch (error) {
+                document.getElementById('network-status').textContent = 'Déconnecté';
+            }
+        }
+        
+        // Mise à jour stats
+        function updateGalaxyStats() {
+            const activeCount = activeMages.size;
+            const totalEnergy = Array.from(activeMages).reduce((sum, mageId) => {
+                return sum + (starsData[mageId]?.activity || 0);
+            }, 0);
+            
+            document.getElementById('star-count').textContent = activeCount;
+            document.getElementById('active-stars').textContent = activeCount;
+            document.getElementById('active-links').textContent = galaxyConnections.length;
+            document.getElementById('total-energy').textContent = (totalEnergy * 100).toFixed(0) + '%';
+            document.getElementById('network-density').textContent = activeCount > 3 ? 'Dense' : 'Éparse';
+            
+            // Mise à jour activités individuelles
+            Object.entries(starsData).forEach(([starId, star]) => {
+                const element = document.getElementById(`${starId}-activity`);
+                if (element) {
+                    element.textContent = (star.activity * 100).toFixed(1) + '%';
+                }
+            });
+        }
+        
+        // Boucle de la galaxie
+        function startGalaxyLoop() {
+            setInterval(() => {
+                // Fluctuation naturelle très douce
+                Object.values(starsData).forEach(star => {
+                    star.activity += (Math.random() - 0.5) * 0.02;
+                    star.activity = Math.max(0.2, Math.min(1, star.activity));
+                });
+                
+                renderGalaxy();
+                
+            }, CONFIG.updateInterval);
+        }
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotation très lente de la caméra
+            const time = Date.now() * 0.00005;
+            camera.position.x = Math.cos(time) * 15;
+            camera.position.z = Math.sin(time) * 15;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Gestion redimensionnement
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+        
+        // Initialisation
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

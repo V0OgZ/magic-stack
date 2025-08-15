@@ -1,0 +1,77 @@
+{
+  "id": "tour_magic_stack",
+  "nom": "Tour de la Magic Stack",
+  "type": "TOUR_MAGIQUE",
+  "position": {"q": 109, "r": 13},
+  "proprietaire": "URZ-KOM",
+  "niveau": 3,
+  
+  "description": "Une tour de pierre noire pulsant d'énergie bleue. Le cristal backend au sommet maintient 869 formules magiques actives en permanence.",
+  
+  "etages": [
+    {
+      "niveau": 0,
+      "nom": "Salle du Backend",
+      "contenu": [
+        "Serveur magique (Spring Boot)",
+        "Console de monitoring",
+        "869 parchemins de formules"
+      ],
+      "effet": "Maintient le backend actif (port 8080)"
+    },
+    {
+      "niveau": 1,
+      "nom": "Bibliothèque technique",
+      "contenu": [
+        "Documentation API",
+        "Guides HOWTO",
+        "Livres de sorts Java"
+      ],
+      "effet": "+10 connaissance pour les visiteurs"
+    },
+    {
+      "niveau": 2,
+      "nom": "Observatoire",
+      "contenu": [
+        "Orbe de Supervisor",
+        "Carte de l'interstice",
+        "Télescope 6D"
+      ],
+      "effet": "Vision +5 hexagones, détecte les anomalies"
+    }
+  ],
+  
+  "capacites_speciales": [
+    {
+      "nom": "Pulse du Backend",
+      "description": "Émet une onde magique toutes les heures",
+      "effet": "Vérifie la santé de tous les services magiques"
+    },
+    {
+      "nom": "Protection Supervisor",
+      "description": "Redémarre automatiquement si problème détecté",
+      "effet": "Immunité aux crashes"
+    },
+    {
+      "nom": "Connexion Interstice",
+      "description": "Portail direct vers l'espace 6D",
+      "effet": "Upload/Download instantané des entités"
+    }
+  ],
+  
+  "gardes": [
+    {
+      "nom": "Process Gardien",
+      "type": "Daemon",
+      "niveau": 5,
+      "pv": 100,
+      "competence": "Tue les processus zombies"
+    }
+  ],
+  
+  "ressources_produites": {
+    "logs_magiques": 10,
+    "api_calls": 100,
+    "stabilite": 99.9
+  }
+}

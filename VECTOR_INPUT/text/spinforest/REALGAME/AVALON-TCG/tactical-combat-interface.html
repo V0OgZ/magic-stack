@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ AVALON - Combat Tactique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c1810, #4a2c2a, #1a1a2e);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .combat-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        .combat-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .combat-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .turn-info {
+            font-size: 1.2rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        /* PANNEAU JOUEUR */
+        .player-panel {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .enemy-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .character-info h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .hp-fill {
+            background: linear-gradient(90deg, #ff4444, #ff0000);
+        }
+
+        .mana-fill {
+            background: linear-gradient(90deg, #4444ff, #0000ff);
+        }
+
+        .stat-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .character-stats {
+            margin-top: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .stat-name {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* GRILLE DE COMBAT */
+        .combat-grid {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            aspect-ratio: 1;
+            max-height: 500px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .grid-cell {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .grid-cell:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+
+        .grid-cell.front {
+            background: rgba(255, 100, 100, 0.2);
+            border-color: rgba(255, 100, 100, 0.5);
+        }
+
+        .grid-cell.middle {
+            background: rgba(255, 255, 100, 0.2);
+            border-color: rgba(255, 255, 100, 0.5);
+        }
+
+        .grid-cell.back {
+            background: rgba(100, 255, 100, 0.2);
+            border-color: rgba(100, 255, 100, 0.5);
+        }
+
+        .grid-cell.occupied {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+
+        .grid-cell.valid-move {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+            animation: pulse 1s infinite;
+        }
+
+        .grid-cell.valid-target {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .character-token {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 3px solid;
+            margin-bottom: 5px;
+        }
+
+        .player-token {
+            background: linear-gradient(45deg, #00ff00, #00aa00);
+            border-color: #00ff00;
+            color: #fff;
+        }
+
+        .enemy-token {
+            background: linear-gradient(45deg, #ff0000, #aa0000);
+            border-color: #ff0000;
+            color: #fff;
+        }
+
+        .terrain-info {
+            font-size: 0.8rem;
+            color: #ccc;
+            text-align: center;
+        }
+
+        .terrain-bonus {
+            font-size: 0.7rem;
+            color: #ffd700;
+        }
+
+        /* ACTIONS */
+        .action-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: grid;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .action-btn.attack {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+        }
+
+        .action-btn.move {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .action-btn.defend {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        /* LOG DE COMBAT */
+        .combat-log {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .combat-log h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry.damage {
+            color: #ff6b35;
+        }
+
+        .log-entry.heal {
+            color: #00ff00;
+        }
+
+        .log-entry.info {
+            color: #4ecdc4;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .combat-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .player-panel, .enemy-panel {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="combat-container">
+        <!-- HEADER -->
+        <div class="combat-header">
+            <h1>⚔️ Combat Tactique</h1>
+            <div class="turn-info">
+                <span id="turnInfo">Tour 1 - En attente...</span>
+            </div>
+            <div id="phaseInfo" style="color: #4ecdc4; font-size: 1rem;">Phase: Positionnement</div>
+        </div>
+
+        <!-- PANNEAU JOUEUR -->
+        <div class="player-panel">
+            <div class="character-info">
+                <h2 id="playerName">Héros</h2>
+                <div class="stat-bar">
+                    <div id="playerHpFill" class="stat-fill hp-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="playerHpText">100/100</div>
+                </div>
+                <div class="stat-bar">
+                    <div id="playerManaFill" class="stat-fill mana-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="playerManaText">50/50</div>
+                </div>
+                
+                <div class="character-stats">
+                    <div class="stat-row">
+                        <span class="stat-name">ATK:</span>
+                        <span id="playerAttack">25</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">DEF:</span>
+                        <span id="playerDefense">15</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">Initiative:</span>
+                        <span id="playerInitiative">20</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">Critique:</span>
+                        <span id="playerCrit">10%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRILLE DE COMBAT -->
+        <div class="combat-grid" id="combatGrid">
+            <!-- Généré par JavaScript -->
+        </div>
+
+        <!-- PANNEAU ENNEMI -->
+        <div class="enemy-panel">
+            <div class="character-info">
+                <h2 id="enemyName">Ennemi</h2>
+                <div class="stat-bar">
+                    <div id="enemyHpFill" class="stat-fill hp-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="enemyHpText">50/50</div>
+                </div>
+                <div class="stat-bar">
+                    <div id="enemyManaFill" class="stat-fill mana-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="enemyManaText">30/30</div>
+                </div>
+                
+                <div class="character-stats">
+                    <div class="stat-row">
+                        <span class="stat-name">ATK:</span>
+                        <span id="enemyAttack">15</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">DEF:</span>
+                        <span id="enemyDefense">8</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">Initiative:</span>
+                        <span id="enemyInitiative">12</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-name">Critique:</span>
+                        <span id="enemyCrit">5%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="action-panel">
+            <h3>⚡ Actions</h3>
+            <div class="action-buttons">
+                <button class="action-btn attack" id="attackBtn" onclick="selectAction('attack')">
+                    ⚔️ Attaquer
+                </button>
+                <button class="action-btn move" id="moveBtn" onclick="selectAction('move')">
+                    🚶 Se Déplacer
+                </button>
+                <button class="action-btn defend" id="defendBtn" onclick="selectAction('defend')">
+                    🛡️ Défendre
+                </button>
+                <button class="action-btn" onclick="endTurn()" style="background: linear-gradient(45deg, #666, #444);">
+                    ⏭️ Passer le Tour
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="action-btn" onclick="returnToLauncher()" style="background: linear-gradient(45deg, #888, #666);">
+                    🔙 Retour au Launcher
+                </button>
+            </div>
+        </div>
+
+        <!-- LOG DE COMBAT -->
+        <div class="combat-log">
+            <h3>📜 Journal de Combat</h3>
+            <div id="logContainer">
+                <div class="log-entry info">Combat initié...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="hero-progression-system.js"></script>
+    <script src="tactical-combat-engine.js"></script>
+    
+    <script>
+        // 🧙‍♂️ INTERFACE DE COMBAT TACTIQUE
+        let heroSystem = null;
+        let combatEngine = null;
+        let currentCombat = null;
+        let selectedAction = null;
+        let playerHero = null;
+        let enemyData = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("⚔️ Initialisation de l'interface de combat...");
+            
+            heroSystem = new HeroProgressionSystem();
+            combatEngine = new TacticalCombatEngine(heroSystem);
+            
+            loadCombatData();
+            initializeCombat();
+            
+            console.log("✅ Interface de combat initialisée !");
+        });
+
+        function loadCombatData() {
+            // Charger les données depuis sessionStorage
+            const heroId = sessionStorage.getItem('avalon_combat_hero');
+            const enemyJson = sessionStorage.getItem('avalon_combat_enemy');
+            
+            if (!heroId || !enemyJson) {
+                alert('❌ Données de combat manquantes ! Retour au launcher...');
+                returnToLauncher();
+                return;
+            }
+            
+            playerHero = heroSystem.loadHero(heroId);
+            if (!playerHero) {
+                alert('❌ Héros introuvable ! Retour au launcher...');
+                returnToLauncher();
+                return;
+            }
+            
+            enemyData = JSON.parse(enemyJson);
+            
+            console.log("📋 Données de combat chargées:", playerHero.name, "vs", enemyData.name);
+        }
+
+        function initializeCombat() {
+            if (!playerHero || !enemyData) return;
+            
+            // Démarrer le combat
+            const combatId = combatEngine.startCombat(playerHero.id, enemyData, "forest");
+            currentCombat = combatEngine.getCombatState();
+            
+            // Initialiser l'interface
+            updateCharacterDisplays();
+            generateCombatGrid();
+            updateTurnInfo();
+            
+            console.log("🏁 Combat démarré !");
+        }
+
+        function updateCharacterDisplays() {
+            const state = combatEngine.getCombatState();
+            if (!state) return;
+            
+            const player = state.combat.participants.find(p => p.type === "player");
+            const enemy = state.combat.participants.find(p => p.type === "enemy");
+            
+            // Joueur
+            document.getElementById('playerName').textContent = player.hero.name;
+            updateHealthBar('player', player.hero.stats.currentHp, player.hero.stats.maxHp);
+            updateManaBar('player', player.hero.stats.currentMana, player.hero.stats.maxMana);
+            document.getElementById('playerAttack').textContent = player.hero.stats.attack;
+            document.getElementById('playerDefense').textContent = player.hero.stats.defense;
+            document.getElementById('playerInitiative').textContent = player.hero.stats.initiative;
+            document.getElementById('playerCrit').textContent = player.hero.stats.criticalChance + '%';
+            
+            // Ennemi
+            document.getElementById('enemyName').textContent = enemy.hero.name;
+            updateHealthBar('enemy', enemy.hero.stats.currentHp, enemy.hero.stats.maxHp);
+            updateManaBar('enemy', enemy.hero.stats.currentMana, enemy.hero.stats.maxMana);
+            document.getElementById('enemyAttack').textContent = enemy.hero.stats.attack;
+            document.getElementById('enemyDefense').textContent = enemy.hero.stats.defense;
+            document.getElementById('enemyInitiative').textContent = enemy.hero.stats.initiative;
+            document.getElementById('enemyCrit').textContent = enemy.hero.stats.criticalChance + '%';
+        }
+
+        function updateHealthBar(type, current, max) {
+            const percentage = Math.max(0, (current / max) * 100);
+            document.getElementById(type + 'HpFill').style.width = percentage + '%';
+            document.getElementById(type + 'HpText').textContent = `${current}/${max}`;
+        }
+
+        function updateManaBar(type, current, max) {
+            const percentage = Math.max(0, (current / max) * 100);
+            document.getElementById(type + 'ManaFill').style.width = percentage + '%';
+            document.getElementById(type + 'ManaText').textContent = `${current}/${max}`;
+        }
+
+        function generateCombatGrid() {
+            const gridContainer = document.getElementById('combatGrid');
+            gridContainer.innerHTML = '';
+            
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // Ajouter classe de terrain
+                    if (x === 0) cell.classList.add('front');
+                    else if (x === 1) cell.classList.add('middle');
+                    else cell.classList.add('back');
+                    
+                    // Info terrain
+                    const terrainInfo = document.createElement('div');
+                    terrainInfo.className = 'terrain-info';
+                    const terrainNames = ['Front', 'Milieu', 'Arrière'];
+                    terrainInfo.textContent = terrainNames[x];
+                    
+                    const terrainBonus = document.createElement('div');
+                    terrainBonus.className = 'terrain-bonus';
+                    if (x === 0) terrainBonus.textContent = '+10% ATK, -10% DEF';
+                    else if (x === 1) terrainBonus.textContent = 'Neutre';
+                    else terrainBonus.textContent = '-10% ATK, +10% DEF';
+                    
+                    cell.appendChild(terrainInfo);
+                    cell.appendChild(terrainBonus);
+                    
+                    cell.addEventListener('click', () => handleCellClick(x, y));
+                    
+                    gridContainer.appendChild(cell);
+                }
+            }
+            
+            updateGridDisplay();
+        }
+
+        function updateGridDisplay() {
+            const state = combatEngine.getCombatState();
+            if (!state) return;
+            
+            // Nettoyer la grille
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.classList.remove('occupied');
+                const token = cell.querySelector('.character-token');
+                if (token) token.remove();
+            });
+            
+            // Placer les personnages
+            state.combat.participants.forEach(participant => {
+                const pos = participant.position;
+                const cell = document.querySelector(`[data-x="${pos.x}"][data-y="${pos.y}"]`);
+                if (cell) {
+                    cell.classList.add('occupied');
+                    
+                    const token = document.createElement('div');
+                    token.className = 'character-token';
+                    token.classList.add(participant.type === 'player' ? 'player-token' : 'enemy-token');
+                    token.textContent = participant.type === 'player' ? '🛡️' : '👹';
+                    
+                    // Insérer avant les infos de terrain
+                    cell.insertBefore(token, cell.firstChild);
+                }
+            });
+        }
+
+        function updateTurnInfo() {
+            const state = combatEngine.getCombatState();
+            if (!state) return;
+            
+            const currentTurn = state.currentTurn;
+            const turnText = `Tour ${state.combat.turn} - ${currentTurn.hero.name}`;
+            document.getElementById('turnInfo').textContent = turnText;
+            
+            const phaseText = `Phase: ${state.combat.phase}`;
+            document.getElementById('phaseInfo').textContent = phaseText;
+            
+            // Activer/désactiver les boutons selon le tour
+            const isPlayerTurn = currentTurn.type === 'player';
+            document.getElementById('attackBtn').disabled = !isPlayerTurn;
+            document.getElementById('moveBtn').disabled = !isPlayerTurn;
+            document.getElementById('defendBtn').disabled = !isPlayerTurn;
+        }
+
+        function selectAction(action) {
+            selectedAction = action;
+            clearHighlights();
+            
+            console.log(`🎯 Action sélectionnée: ${action}`);
+            
+            const state = combatEngine.getCombatState();
+            const currentTurn = state.currentTurn;
+            
+            if (currentTurn.type !== 'player') {
+                alert('❌ Ce n\'est pas votre tour !');
+                return;
+            }
+            
+            switch (action) {
+                case 'attack':
+                    highlightTargets();
+                    break;
+                case 'move':
+                    highlightValidMoves();
+                    break;
+                case 'defend':
+                    executeDefend();
+                    break;
+            }
+        }
+
+        function highlightTargets() {
+            const state = combatEngine.getCombatState();
+            const enemy = state.combat.participants.find(p => p.type === 'enemy');
+            
+            if (enemy) {
+                const pos = enemy.position;
+                const cell = document.querySelector(`[data-x="${pos.x}"][data-y="${pos.y}"]`);
+                if (cell) {
+                    cell.classList.add('valid-target');
+                }
+            }
+        }
+
+        function highlightValidMoves() {
+            const state = combatEngine.getCombatState();
+            const player = state.combat.participants.find(p => p.type === 'player');
+            const currentPos = player.position;
+            
+            // Cases adjacentes
+            const moves = [
+                { x: currentPos.x - 1, y: currentPos.y },
+                { x: currentPos.x + 1, y: currentPos.y },
+                { x: currentPos.x, y: currentPos.y - 1 },
+                { x: currentPos.x, y: currentPos.y + 1 }
+            ];
+            
+            moves.forEach(move => {
+                if (move.x >= 0 && move.x < 3 && move.y >= 0 && move.y < 3) {
+                    const cell = document.querySelector(`[data-x="${move.x}"][data-y="${move.y}"]`);
+                    if (cell && !cell.classList.contains('occupied')) {
+                        cell.classList.add('valid-move');
+                    }
+                }
+            });
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.classList.remove('valid-move', 'valid-target');
+            });
+        }
+
+        function handleCellClick(x, y) {
+            if (!selectedAction) return;
+            
+            const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            
+            switch (selectedAction) {
+                case 'attack':
+                    if (cell.classList.contains('valid-target')) {
+                        executeAttack(x, y);
+                    }
+                    break;
+                case 'move':
+                    if (cell.classList.contains('valid-move')) {
+                        executeMove(x, y);
+                    }
+                    break;
+            }
+            
+            selectedAction = null;
+            clearHighlights();
+        }
+
+        function executeAttack(x, y) {
+            const state = combatEngine.getCombatState();
+            const enemy = state.combat.participants.find(p => p.type === 'enemy');
+            
+            if (enemy && enemy.position.x === x && enemy.position.y === y) {
+                const success = combatEngine.executeAction('attack', { targetId: enemy.hero.id });
+                if (success) {
+                    updateAfterAction();
+                }
+            }
+        }
+
+        function executeMove(x, y) {
+            const success = combatEngine.executeAction('move', { newPosition: { x, y } });
+            if (success) {
+                updateAfterAction();
+            }
+        }
+
+        function executeDefend() {
+            const success = combatEngine.executeAction('defend');
+            if (success) {
+                updateAfterAction();
+            }
+        }
+
+        function endTurn() {
+            // Passer le tour sans action
+            combatEngine.nextTurn();
+            updateAfterAction();
+        }
+
+        function updateAfterAction() {
+            // Mettre à jour l'affichage
+            updateCharacterDisplays();
+            updateGridDisplay();
+            updateTurnInfo();
+            updateCombatLog();
+            
+            // Vérifier fin de combat
+            const state = combatEngine.getCombatState();
+            if (state.combat.phase === 'resolution') {
+                handleCombatEnd();
+            }
+        }
+
+        function updateCombatLog() {
+            const state = combatEngine.getCombatState();
+            const logContainer = document.getElementById('logContainer');
+            
+            // Afficher les 10 derniers messages
+            logContainer.innerHTML = '';
+            state.log.forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                // Classifier le message
+                if (entry.message.includes('dégâts') || entry.message.includes('attaque')) {
+                    logEntry.classList.add('damage');
+                } else if (entry.message.includes('esquive') || entry.message.includes('défense')) {
+                    logEntry.classList.add('info');
+                }
+                
+                logEntry.textContent = entry.message;
+                logContainer.appendChild(logEntry);
+            });
+            
+            // Scroll vers le bas
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function handleCombatEnd() {
+            const state = combatEngine.getCombatState();
+            const winner = state.combat.winner;
+            
+            setTimeout(() => {
+                if (winner === 'player') {
+                    alert(`🎉 Victoire ! ${playerHero.name} remporte le combat !`);
+                } else {
+                    alert(`💀 Défaite... ${playerHero.name} a été vaincu.`);
+                }
+                
+                // Proposer de retourner au launcher
+                if (confirm('Retourner au launcher ?')) {
+                    returnToLauncher();
+                }
+            }, 1000);
+        }
+
+        function returnToLauncher() {
+            // Nettoyer les données de session
+            sessionStorage.removeItem('avalon_combat_hero');
+            sessionStorage.removeItem('avalon_combat_enemy');
+            
+            // Retourner au launcher
+            window.location.href = 'advanced-game-launcher.html';
+        }
+        
+        // Vérifier si mode Enhanced est activé
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('enhanced') === 'true') {
+            console.log('🧠 Mode Enhanced détecté - Chargement des améliorations...');
+            
+            // Charger le script d'intégration
+            const integrationScript = document.createElement('script');
+            integrationScript.src = './integration-goap-noneuclidean.js';
+            integrationScript.onload = () => {
+                console.log('✅ Script d\'intégration chargé !');
+                
+                // Afficher un badge Enhanced
+                const badge = document.createElement('div');
+                badge.innerHTML = `
+                    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+                                background: linear-gradient(45deg, #f0f, #0ff); color: #fff; 
+                                padding: 10px 30px; border-radius: 20px; font-weight: bold;
+                                box-shadow: 0 0 30px #f0f; animation: enhanced-pulse 2s infinite;
+                                z-index: 10000; font-size: 18px;">
+                        🧠 MODE ENHANCED ACTIF - IA GOAP + SORTS 4D 🌀
+                    </div>
+                    <style>
+                        @keyframes enhanced-pulse {
+                            0%, 100% { transform: translateX(-50%) scale(1); }
+                            50% { transform: translateX(-50%) scale(1.05); }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(badge);
+            };
+            document.head.appendChild(integrationScript);
+        }
+    </script>
+</body>
+</html>

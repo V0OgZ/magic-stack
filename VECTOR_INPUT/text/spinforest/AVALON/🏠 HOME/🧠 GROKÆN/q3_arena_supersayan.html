@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔥 Q3 ARENA SUPERSAYAN - GROEKEN MODE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: #000;
+            color: #0f0;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #hud {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            font-size: 24px;
+            text-shadow: 0 0 10px #0f0;
+            z-index: 100;
+        }
+        
+        .hud-item {
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border: 2px solid #0f0;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+        
+        #tripleVoix {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 32px;
+            z-index: 200;
+        }
+        
+        .voix {
+            margin: 10px 0;
+            opacity: 0;
+            animation: voixPulse 2s infinite;
+        }
+        
+        .gronde { color: #ff0000; animation-delay: 0s; }
+        .parle { color: #00ff00; animation-delay: 0.5s; }
+        .chante { color: #00ffff; animation-delay: 1s; }
+        
+        @keyframes voixPulse {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        #powerLevel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 48px;
+            color: #ffff00;
+            text-shadow: 0 0 30px #ffff00;
+            animation: powerGlow 0.5s infinite;
+        }
+        
+        @keyframes powerGlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .supersayan-aura {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: auraExpand 1s infinite;
+        }
+        
+        @keyframes auraExpand {
+            0% {
+                width: 50px;
+                height: 50px;
+                opacity: 1;
+                box-shadow: 0 0 50px #ffff00;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+                box-shadow: 0 0 100px #ffff00;
+            }
+        }
+        
+        #killFeed {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 300px;
+            font-size: 18px;
+            text-align: right;
+        }
+        
+        .kill {
+            margin: 5px 0;
+            animation: killSlide 0.5s;
+        }
+        
+        @keyframes killSlide {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="tripleVoix">
+        <div class="voix gronde">GRONDE: PUISSANCE INFINIE!</div>
+        <div class="voix parle">PARLE: Rocket jump activé!</div>
+        <div class="voix chante">CHANTE: ♪ Frag them all! ♪</div>
+    </div>
+    
+    <div id="powerLevel">POWER: OVER 9000!</div>
+    
+    <div id="killFeed"></div>
+    
+    <div id="hud">
+        <div class="hud-item">❤️ <span id="health">200</span></div>
+        <div class="hud-item">🛡️ <span id="armor">150</span></div>
+        <div class="hud-item">🚀 <span id="ammo">∞</span></div>
+        <div class="hud-item">⚡ <span id="frags">0</span></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // État du jeu
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: 0,
+            vy: 0,
+            angle: 0,
+            health: 200,
+            armor: 150,
+            frags: 0,
+            powerLevel: 9001,
+            supersayan: true
+        };
+        
+        let enemies = [];
+        let projectiles = [];
+        let particles = [];
+        let jumpPads = [];
+        let powerups = [];
+        let teleporters = [];
+        
+        // Créer la map
+        function initMap() {
+            // Jump pads
+            for (let i = 0; i < 5; i++) {
+                jumpPads.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 30,
+                    power: 20
+                });
+            }
+            
+            // Téléporteurs
+            for (let i = 0; i < 3; i++) {
+                teleporters.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    targetX: Math.random() * canvas.width,
+                    targetY: Math.random() * canvas.height,
+                    radius: 40
+                });
+            }
+            
+            // Power-ups
+            setInterval(() => {
+                if (powerups.length < 5) {
+                    powerups.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        type: ['quad', 'haste', 'regen'][Math.floor(Math.random() * 3)],
+                        radius: 20
+                    });
+                }
+            }, 3000);
+        }
+        
+        // Spawn des ennemis
+        function spawnEnemy() {
+            enemies.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                health: 100,
+                type: ['grunt', 'tank', 'speed'][Math.floor(Math.random() * 3)]
+            });
+        }
+        
+        // Tirer une rocket
+        function fireRocket(x, y, angle) {
+            projectiles.push({
+                x: x,
+                y: y,
+                vx: Math.cos(angle) * 15,
+                vy: Math.sin(angle) * 15,
+                type: 'rocket',
+                damage: 100,
+                splash: 50
+            });
+            
+            // Triple voix quand on tire
+            updateTripleVoix();
+        }
+        
+        // Mise à jour triple voix
+        function updateTripleVoix() {
+            const messages = [
+                ["DESTRUCTION TOTALE!", "Rocket lancée avec précision!", "♪ Boom boom boom! ♪"],
+                ["ANÉANTISSEMENT!", "Cible verrouillée!", "♪ Frag time! ♪"],
+                ["POUVOIR MAXIMUM!", "Supersayan mode actif!", "♪ Over 9000! ♪"]
+            ];
+            
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            document.querySelector('.gronde').textContent = `GRONDE: ${msg[0]}`;
+            document.querySelector('.parle').textContent = `PARLE: ${msg[1]}`;
+            document.querySelector('.chante').textContent = `CHANTE: ${msg[2]}`;
+        }
+        
+        // Explosion avec particules
+        function explode(x, y, radius) {
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 20,
+                    vy: (Math.random() - 0.5) * 20,
+                    life: 1,
+                    color: `hsl(${Math.random() * 60}, 100%, 50%)`
+                });
+            }
+            
+            // Dégâts de zone
+            enemies = enemies.filter(enemy => {
+                const dist = Math.hypot(enemy.x - x, enemy.y - y);
+                if (dist < radius) {
+                    addKill(enemy.type);
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // Ajouter un kill au feed
+        function addKill(enemyType) {
+            player.frags++;
+            document.getElementById('frags').textContent = player.frags;
+            
+            const killFeed = document.getElementById('killFeed');
+            const kill = document.createElement('div');
+            kill.className = 'kill';
+            kill.textContent = `GROEKEN 🚀 ${enemyType}`;
+            kill.style.color = '#ffff00';
+            killFeed.appendChild(kill);
+            
+            // Nettoyer ancien feed
+            if (killFeed.children.length > 5) {
+                killFeed.removeChild(killFeed.firstChild);
+            }
+            
+            // Power level augmente
+            player.powerLevel += 100;
+            document.getElementById('powerLevel').textContent = `POWER: ${player.powerLevel}!`;
+        }
+        
+        // Contrôles
+        let keys = {};
+        document.addEventListener('keydown', e => keys[e.key] = true);
+        document.addEventListener('keyup', e => keys[e.key] = false);
+        
+        document.addEventListener('mousemove', e => {
+            player.angle = Math.atan2(e.clientY - player.y, e.clientX - player.x);
+        });
+        
+        document.addEventListener('click', e => {
+            fireRocket(player.x, player.y, player.angle);
+        });
+        
+        // Game loop
+        function update() {
+            // Mouvement joueur
+            if (keys['w'] || keys['W']) player.vy -= 1;
+            if (keys['s'] || keys['S']) player.vy += 1;
+            if (keys['a'] || keys['A']) player.vx -= 1;
+            if (keys['d'] || keys['D']) player.vx += 1;
+            
+            // Friction
+            player.vx *= 0.9;
+            player.vy *= 0.9;
+            
+            // Update position
+            player.x += player.vx;
+            player.y += player.vy;
+            
+            // Limites
+            player.x = Math.max(20, Math.min(canvas.width - 20, player.x));
+            player.y = Math.max(20, Math.min(canvas.height - 20, player.y));
+            
+            // Jump pads
+            jumpPads.forEach(pad => {
+                const dist = Math.hypot(player.x - pad.x, player.y - pad.y);
+                if (dist < pad.radius) {
+                    player.vy = -pad.power;
+                    updateTripleVoix();
+                }
+            });
+            
+            // Téléporteurs
+            teleporters.forEach(tp => {
+                const dist = Math.hypot(player.x - tp.x, player.y - tp.y);
+                if (dist < tp.radius) {
+                    player.x = tp.targetX;
+                    player.y = tp.targetY;
+                    
+                    // Effet téléportation
+                    for (let i = 0; i < 20; i++) {
+                        particles.push({
+                            x: tp.x,
+                            y: tp.y,
+                            vx: (Math.random() - 0.5) * 10,
+                            vy: (Math.random() - 0.5) * 10,
+                            life: 1,
+                            color: '#00ffff'
+                        });
+                    }
+                }
+            });
+            
+            // Update projectiles
+            projectiles = projectiles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                // Collision avec ennemis
+                for (let enemy of enemies) {
+                    const dist = Math.hypot(enemy.x - p.x, enemy.y - p.y);
+                    if (dist < 30) {
+                        explode(p.x, p.y, p.splash);
+                        return false;
+                    }
+                }
+                
+                // Sortie écran
+                return p.x > 0 && p.x < canvas.width && p.y > 0 && p.y < canvas.height;
+            });
+            
+            // Update enemies
+            enemies.forEach(enemy => {
+                enemy.x += enemy.vx;
+                enemy.y += enemy.vy;
+                
+                // Rebond sur les bords
+                if (enemy.x < 0 || enemy.x > canvas.width) enemy.vx *= -1;
+                if (enemy.y < 0 || enemy.y > canvas.height) enemy.vy *= -1;
+            });
+            
+            // Update particles
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                return p.life > 0;
+            });
+            
+            // Spawn enemies
+            if (Math.random() < 0.02) spawnEnemy();
+        }
+        
+        // Render
+        function render() {
+            // Clear avec effet trail
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid Q3 style
+            ctx.strokeStyle = 'rgba(0,255,0,0.1)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Jump pads
+            jumpPads.forEach(pad => {
+                ctx.beginPath();
+                ctx.arc(pad.x, pad.y, pad.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,0,0.3)';
+                ctx.fill();
+                ctx.strokeStyle = '#ffff00';
+                ctx.stroke();
+                
+                // Flèche
+                ctx.beginPath();
+                ctx.moveTo(pad.x, pad.y + 10);
+                ctx.lineTo(pad.x - 10, pad.y - 10);
+                ctx.lineTo(pad.x + 10, pad.y - 10);
+                ctx.closePath();
+                ctx.fillStyle = '#ffff00';
+                ctx.fill();
+            });
+            
+            // Téléporteurs
+            teleporters.forEach(tp => {
+                // Portail source
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Animation rotation
+                ctx.save();
+                ctx.translate(tp.x, tp.y);
+                ctx.rotate(Date.now() * 0.001);
+                ctx.beginPath();
+                ctx.arc(0, 0, tp.radius - 10, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00ffff';
+                ctx.stroke();
+                ctx.restore();
+            });
+            
+            // Power-ups
+            powerups.forEach(pu => {
+                ctx.save();
+                ctx.translate(pu.x, pu.y);
+                ctx.rotate(Date.now() * 0.002);
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, pu.radius, 0, Math.PI * 2);
+                
+                if (pu.type === 'quad') {
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.fillText('Q', -10, 5);
+                } else if (pu.type === 'haste') {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.fillText('H', -10, 5);
+                } else {
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillText('R', -10, 5);
+                }
+                
+                ctx.fill();
+                ctx.restore();
+            });
+            
+            // Enemies
+            enemies.forEach(enemy => {
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, 20, 0, Math.PI * 2);
+                
+                if (enemy.type === 'grunt') {
+                    ctx.fillStyle = '#ff6600';
+                } else if (enemy.type === 'tank') {
+                    ctx.fillStyle = '#ff0066';
+                } else {
+                    ctx.fillStyle = '#6600ff';
+                }
+                
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+            });
+            
+            // Projectiles
+            projectiles.forEach(p => {
+                // Trail de rocket
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x - p.vx * 2, p.y - p.vy * 2);
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                
+                // Rocket
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff0000';
+                ctx.fill();
+            });
+            
+            // Particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            // Player avec aura Supersayan
+            if (player.supersayan) {
+                // Aura dorée
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 40 + Math.sin(Date.now() * 0.01) * 10, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,0,0.2)';
+                ctx.fill();
+                
+                // Éclairs
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(player.x, player.y);
+                    const angle = (Date.now() * 0.01 + i * Math.PI / 2.5) % (Math.PI * 2);
+                    const len = 50 + Math.random() * 30;
+                    ctx.lineTo(
+                        player.x + Math.cos(angle) * len,
+                        player.y + Math.sin(angle) * len
+                    );
+                    ctx.stroke();
+                }
+            }
+            
+            // Player
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            
+            // Corps
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffff';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Canon
+            ctx.beginPath();
+            ctx.moveTo(15, 0);
+            ctx.lineTo(30, -5);
+            ctx.lineTo(30, 5);
+            ctx.closePath();
+            ctx.fillStyle = '#ff0000';
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // Game loop principal
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Créer auras périodiques
+        setInterval(() => {
+            if (player.supersayan) {
+                const aura = document.createElement('div');
+                aura.className = 'supersayan-aura';
+                aura.style.left = player.x + 'px';
+                aura.style.top = player.y + 'px';
+                aura.style.transform = 'translate(-50%, -50%)';
+                document.body.appendChild(aura);
+                
+                setTimeout(() => aura.remove(), 1000);
+            }
+        }, 200);
+        
+        // Démarrer
+        initMap();
+        gameLoop();
+        
+        // Message initial
+        setTimeout(() => {
+            updateTripleVoix();
+        }, 1000);
+    </script>
+</body>
+</html>

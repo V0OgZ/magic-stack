@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ AVALON TCG - Combat Final</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Effet Matrix en arrière-plan */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .matrix-column {
+            position: absolute;
+            top: -100%;
+            font-size: 14px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            animation: matrix-fall linear infinite;
+        }
+
+        @keyframes matrix-fall {
+            to {
+                top: 100%;
+            }
+        }
+
+        /* Container principal */
+        .combat-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            height: 100vh;
+        }
+
+        /* Header Cyberpunk */
+        .combat-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1));
+            padding: 20px;
+            border: 2px solid #ff00ff;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .combat-header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+            border-radius: 20px;
+            z-index: -1;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .combat-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: color-shift 5s ease-in-out infinite;
+        }
+
+        @keyframes color-shift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+
+        /* Panneaux de personnage */
+        .character-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-panel {
+            border-color: #00ff00;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+        }
+
+        .enemy-panel {
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+        }
+
+        .character-portrait {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .character-portrait img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .character-portrait::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(transparent 60%, rgba(255,215,0,0.3));
+            pointer-events: none;
+        }
+
+        /* Barres de stats avec animation */
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shine 2s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            to { left: 100%; }
+        }
+
+        .hp-fill {
+            background: linear-gradient(90deg, #ff0000, #ff6666);
+        }
+
+        .mana-fill {
+            background: linear-gradient(90deg, #0066ff, #66ccff);
+        }
+
+        .xp-fill {
+            background: linear-gradient(90deg, #ffcc00, #ffff66);
+        }
+
+        /* Grille de combat 6D */
+        .combat-grid {
+            background: radial-gradient(ellipse at center, rgba(0,255,255,0.1), transparent);
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .grid-cell {
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 140px;
+        }
+
+        .grid-cell:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Tokens 3D */
+        .character-token {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border: 3px solid;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .character-token:hover {
+            transform: scale(1.1) rotateZ(5deg);
+        }
+
+        .player-token {
+            background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00);
+            border-color: #00ff00;
+            animation: pulse-green 2s ease-in-out infinite;
+        }
+
+        .enemy-token {
+            background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);
+            border-color: #ff0000;
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,0,0.8); }
+            50% { box-shadow: 0 0 40px rgba(0,255,0,1); }
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,0,0,0.8); }
+            50% { box-shadow: 0 0 40px rgba(255,0,0,1); }
+        }
+
+        /* Indicateurs 6D */
+        .dimension-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.7rem;
+            color: #00ffff;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+        }
+
+        /* Actions avec effets néon */
+        .action-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255,0,255,0.5);
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: 2px solid transparent;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.6);
+            border-color: #fff;
+        }
+
+        .action-btn.attack {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            animation: attack-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes attack-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,107,53,0.5); }
+            50% { box-shadow: 0 0 20px rgba(255,107,53,0.8); }
+        }
+
+        /* Log de combat futuriste */
+        .combat-log {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0,255,255,0.2);
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            animation: log-appear 0.5s ease-out;
+        }
+
+        @keyframes log-appear {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-entry.damage {
+            color: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        .log-entry.heal {
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+
+        .log-entry.info {
+            color: #00ffff;
+            border-color: #00ffff;
+        }
+
+        .log-entry.critical {
+            color: #ffff00;
+            border-color: #ffff00;
+            font-weight: bold;
+            animation: critical-flash 0.5s ease-out;
+        }
+
+        @keyframes critical-flash {
+            0%, 100% { background: rgba(255,255,0,0.1); }
+            50% { background: rgba(255,255,0,0.3); }
+        }
+
+        /* Effets spéciaux */
+        .spell-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: spell-cast 1s ease-out forwards;
+        }
+
+        @keyframes spell-cast {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Scrollbar personnalisée */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border-radius: 5px;
+        }
+
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            font-size: 2rem;
+            color: #00ffff;
+            text-transform: uppercase;
+            animation: loading-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-text">Initialisation Combat 6D...</div>
+    </div>
+
+    <!-- Matrix Background -->
+    <div id="matrix-bg"></div>
+
+    <div class="combat-container">
+        <!-- HEADER -->
+        <div class="combat-header">
+            <h1>⚔️ AVALON TCG COMBAT ⚔️</h1>
+            <div class="turn-info">
+                <span id="turnInfo" style="color: #ffff00; font-size: 1.3rem;">Tour 1 - Initialisation...</span>
+            </div>
+            <div id="phaseInfo" style="color: #00ffff; font-size: 1rem;">Phase: Préparation</div>
+            <div id="dimensionInfo" style="color: #ff00ff; font-size: 0.9rem; margin-top: 10px;">
+                Position 6D: [X:0, Y:0, Z:0, T:NOW, C:1.0, Ψ:0.5]
+            </div>
+        </div>
+
+        <!-- PANNEAU JOUEUR -->
+        <div class="player-panel character-panel">
+            <div class="character-portrait">
+                <img src="../../assets/HEROHDPORTAIT/hero-warrior.png" alt="Hero" onerror="this.style.display='none'">
+            </div>
+            <div class="character-info">
+                <h2 id="playerName" style="color: #00ff00; text-align: center; margin-bottom: 20px;">HÉROS</h2>
+                
+                <div class="stat-bar">
+                    <div id="playerHpFill" class="stat-fill hp-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="playerHpText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;">100/100</div>
+                </div>
+                
+                <div class="stat-bar">
+                    <div id="playerManaFill" class="stat-fill mana-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="playerManaText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;">50/50</div>
+                </div>
+                
+                <div class="stat-bar">
+                    <div id="playerXpFill" class="stat-fill xp-fill" style="width: 30%;"></div>
+                    <div class="stat-text" id="playerXpText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;">LVL 5</div>
+                </div>
+                
+                <div class="character-stats" style="margin-top: 20px;">
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">⚔️ ATK:</span>
+                        <span id="playerAttack" style="color: #fff;">25</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">🛡️ DEF:</span>
+                        <span id="playerDefense" style="color: #fff;">15</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">⚡ INIT:</span>
+                        <span id="playerInitiative" style="color: #fff;">20</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">💥 CRIT:</span>
+                        <span id="playerCrit" style="color: #fff;">15%</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between;">
+                        <span style="color: #ffd700;">🌀 DIM:</span>
+                        <span id="playerDimension" style="color: #00ffff;">6D</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRILLE DE COMBAT 6D -->
+        <div class="combat-grid" id="combatGrid">
+            <!-- Généré dynamiquement -->
+        </div>
+
+        <!-- PANNEAU ENNEMI -->
+        <div class="enemy-panel character-panel">
+            <div class="character-portrait">
+                <img src="../../assets/HEROHDPORTAIT/enemy-demon.png" alt="Enemy" onerror="this.style.display='none'">
+            </div>
+            <div class="character-info">
+                <h2 id="enemyName" style="color: #ff0000; text-align: center; margin-bottom: 20px;">ENNEMI</h2>
+                
+                <div class="stat-bar">
+                    <div id="enemyHpFill" class="stat-fill hp-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="enemyHpText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;">75/75</div>
+                </div>
+                
+                <div class="stat-bar">
+                    <div id="enemyManaFill" class="stat-fill mana-fill" style="width: 100%;"></div>
+                    <div class="stat-text" id="enemyManaText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;">30/30</div>
+                </div>
+                
+                <div class="character-stats" style="margin-top: 20px;">
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">⚔️ ATK:</span>
+                        <span id="enemyAttack" style="color: #fff;">20</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">🛡️ DEF:</span>
+                        <span id="enemyDefense" style="color: #fff;">12</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">⚡ INIT:</span>
+                        <span id="enemyInitiative" style="color: #fff;">15</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #ffd700;">💥 CRIT:</span>
+                        <span id="enemyCrit" style="color: #fff;">8%</span>
+                    </div>
+                    <div class="stat-row" style="display: flex; justify-content: space-between;">
+                        <span style="color: #ffd700;">🌀 DIM:</span>
+                        <span id="enemyDimension" style="color: #ff00ff;">4D</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="action-panel">
+            <h3 style="color: #ff00ff; text-align: center; margin-bottom: 20px; font-size: 1.3rem;">⚡ ACTIONS DISPONIBLES</h3>
+            <div class="action-buttons">
+                <button class="action-btn attack" id="attackBtn" onclick="selectAction('attack')">
+                    ⚔️ ATTAQUE DIMENSIONNELLE
+                </button>
+                <button class="action-btn move" id="moveBtn" onclick="selectAction('move')">
+                    🌀 DÉPLACEMENT 6D
+                </button>
+                <button class="action-btn defend" id="defendBtn" onclick="selectAction('defend')">
+                    🛡️ DÉFENSE QUANTIQUE
+                </button>
+                <button class="action-btn" onclick="castSpell()" style="background: linear-gradient(45deg, #ff00ff, #00ffff);">
+                    ✨ SORT MAGIQUE
+                </button>
+                <button class="action-btn" onclick="endTurn()" style="background: linear-gradient(45deg, #666, #444);">
+                    ⏭️ PASSER LE TOUR
+                </button>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ff00ff;">
+                <button class="action-btn" onclick="returnToDashboard()" style="background: linear-gradient(45deg, #333, #222);">
+                    🏰 RETOUR AU DASHBOARD
+                </button>
+            </div>
+        </div>
+
+        <!-- LOG DE COMBAT -->
+        <div class="combat-log">
+            <h3 style="color: #00ffff; margin-bottom: 15px;">📜 JOURNAL DE COMBAT 6D</h3>
+            <div id="logContainer">
+                <div class="log-entry info">🌀 Initialisation du combat en 6 dimensions...</div>
+                <div class="log-entry info">⚡ Connexion à l'Interstice établie</div>
+                <div class="log-entry info">🎯 Combat prêt à démarrer !</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="hero-progression-system.js"></script>
+    <script src="tactical-combat-engine.js"></script>
+    
+    <script>
+        // 🌟 SYSTÈME DE COMBAT TCG 6D FINAL
+        
+        // Matrix background effect
+        function createMatrixRain() {
+            const matrix = document.getElementById('matrix-bg');
+            const columns = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                column.style.left = i * 20 + 'px';
+                column.style.animationDuration = Math.random() * 5 + 5 + 's';
+                column.style.animationDelay = Math.random() * 5 + 's';
+                
+                let text = '';
+                for (let j = 0; j < 50; j++) {
+                    text += Math.random() > 0.5 ? '1' : '0';
+                    text += '<br>';
+                }
+                column.innerHTML = text;
+                
+                matrix.appendChild(column);
+            }
+        }
+        
+        createMatrixRain();
+        
+        // Variables globales
+        let heroSystem = null;
+        let combatEngine = null;
+        let currentCombat = null;
+        let selectedAction = null;
+        let playerHero = null;
+        let enemyData = null;
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("⚔️ Initialisation du système de combat TCG 6D...");
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 1500);
+            
+            heroSystem = new HeroProgressionSystem();
+            combatEngine = new TacticalCombatEngine(heroSystem);
+            
+            // Utiliser des données de test si pas de session
+            if (!sessionStorage.getItem('avalon_combat_hero')) {
+                initTestCombat();
+            } else {
+                loadCombatData();
+            }
+            
+            initializeCombat();
+            
+            console.log("✅ Système de combat TCG 6D initialisé !");
+        });
+        
+        function initTestCombat() {
+            // Créer un héros de test
+            playerHero = {
+                id: 'test-hero',
+                name: 'Chevalier 6D',
+                class: 'warrior',
+                level: 5,
+                stats: {
+                    maxHp: 100,
+                    currentHp: 100,
+                    maxMana: 50,
+                    currentMana: 50,
+                    attack: 25,
+                    defense: 15,
+                    initiative: 20,
+                    criticalChance: 15,
+                    dimension: 6
+                }
+            };
+            
+            enemyData = {
+                id: 'test-enemy',
+                name: 'Démon Quantique',
+                class: 'demon',
+                level: 4,
+                stats: {
+                    maxHp: 75,
+                    currentHp: 75,
+                    maxMana: 30,
+                    currentMana: 30,
+                    attack: 20,
+                    defense: 12,
+                    initiative: 15,
+                    criticalChance: 8,
+                    dimension: 4
+                }
+            };
+        }
+        
+        function loadCombatData() {
+            const heroId = sessionStorage.getItem('avalon_combat_hero');
+            const enemyJson = sessionStorage.getItem('avalon_combat_enemy');
+            
+            if (!heroId || !enemyJson) {
+                initTestCombat();
+                return;
+            }
+            
+            playerHero = heroSystem.loadHero(heroId);
+            if (!playerHero) {
+                initTestCombat();
+                return;
+            }
+            
+            enemyData = JSON.parse(enemyJson);
+        }
+        
+        function initializeCombat() {
+            if (!playerHero || !enemyData) return;
+            
+            updateCharacterDisplays();
+            generateCombatGrid();
+            updateTurnInfo();
+            
+            addLogEntry("🌟 " + playerHero.name + " affronte " + enemyData.name + " !", "info");
+        }
+        
+        function updateCharacterDisplays() {
+            // Joueur
+            document.getElementById('playerName').textContent = playerHero.name;
+            updateHealthBar('player', playerHero.stats.currentHp, playerHero.stats.maxHp);
+            updateManaBar('player', playerHero.stats.currentMana, playerHero.stats.maxMana);
+            document.getElementById('playerAttack').textContent = playerHero.stats.attack;
+            document.getElementById('playerDefense').textContent = playerHero.stats.defense;
+            document.getElementById('playerInitiative').textContent = playerHero.stats.initiative;
+            document.getElementById('playerCrit').textContent = playerHero.stats.criticalChance + '%';
+            document.getElementById('playerDimension').textContent = playerHero.stats.dimension + 'D';
+            
+            // Ennemi
+            document.getElementById('enemyName').textContent = enemyData.name;
+            updateHealthBar('enemy', enemyData.stats.currentHp, enemyData.stats.maxHp);
+            updateManaBar('enemy', enemyData.stats.currentMana, enemyData.stats.maxMana);
+            document.getElementById('enemyAttack').textContent = enemyData.stats.attack;
+            document.getElementById('enemyDefense').textContent = enemyData.stats.defense;
+            document.getElementById('enemyInitiative').textContent = enemyData.stats.initiative;
+            document.getElementById('enemyCrit').textContent = enemyData.stats.criticalChance + '%';
+            document.getElementById('enemyDimension').textContent = enemyData.stats.dimension + 'D';
+        }
+        
+        function updateHealthBar(type, current, max) {
+            const percentage = Math.max(0, (current / max) * 100);
+            document.getElementById(type + 'HpFill').style.width = percentage + '%';
+            document.getElementById(type + 'HpText').textContent = `${current}/${max}`;
+        }
+        
+        function updateManaBar(type, current, max) {
+            const percentage = Math.max(0, (current / max) * 100);
+            document.getElementById(type + 'ManaFill').style.width = percentage + '%';
+            document.getElementById(type + 'ManaText').textContent = `${current}/${max}`;
+        }
+        
+        function generateCombatGrid() {
+            const gridContainer = document.getElementById('combatGrid');
+            gridContainer.innerHTML = '';
+            
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // Indicateur de dimension
+                    const dimIndicator = document.createElement('div');
+                    dimIndicator.className = 'dimension-indicator';
+                    dimIndicator.textContent = `${x},${y}`;
+                    
+                    cell.appendChild(dimIndicator);
+                    cell.addEventListener('click', () => handleCellClick(x, y));
+                    
+                    gridContainer.appendChild(cell);
+                }
+            }
+            
+            // Placer les personnages
+            placeCharacters();
+        }
+        
+        function placeCharacters() {
+            // Placer le joueur
+            const playerCell = document.querySelector('[data-x="0"][data-y="1"]');
+            if (playerCell) {
+                const playerToken = document.createElement('div');
+                playerToken.className = 'character-token player-token';
+                playerToken.innerHTML = '⚔️';
+                playerToken.id = 'playerToken';
+                playerCell.appendChild(playerToken);
+            }
+            
+            // Placer l'ennemi
+            const enemyCell = document.querySelector('[data-x="2"][data-y="1"]');
+            if (enemyCell) {
+                const enemyToken = document.createElement('div');
+                enemyToken.className = 'character-token enemy-token';
+                enemyToken.innerHTML = '👹';
+                enemyToken.id = 'enemyToken';
+                enemyCell.appendChild(enemyToken);
+            }
+        }
+        
+        function updateTurnInfo() {
+            document.getElementById('turnInfo').textContent = `Tour 1 - ${playerHero.name}`;
+            document.getElementById('phaseInfo').textContent = 'Phase: Combat';
+            updateDimensionInfo();
+        }
+        
+        function updateDimensionInfo() {
+            const time = new Date().toLocaleTimeString();
+            const info = `Position 6D: [X:${Math.random().toFixed(1)}, Y:${Math.random().toFixed(1)}, Z:${Math.random().toFixed(1)}, T:${time}, C:${Math.random().toFixed(2)}, Ψ:${Math.random().toFixed(2)}]`;
+            document.getElementById('dimensionInfo').textContent = info;
+        }
+        
+        function selectAction(action) {
+            selectedAction = action;
+            clearHighlights();
+            
+            addLogEntry(`🎯 Action sélectionnée: ${action.toUpperCase()}`, 'info');
+            
+            switch (action) {
+                case 'attack':
+                    highlightTargets();
+                    break;
+                case 'move':
+                    highlightValidMoves();
+                    break;
+                case 'defend':
+                    executeDefend();
+                    break;
+            }
+        }
+        
+        function highlightTargets() {
+            const enemyCell = document.querySelector('#enemyToken').parentElement;
+            if (enemyCell) {
+                enemyCell.style.background = 'rgba(255, 0, 0, 0.5)';
+                enemyCell.style.animation = 'pulse-red 0.5s ease-in-out infinite';
+            }
+        }
+        
+        function highlightValidMoves() {
+            // Highlight adjacent cells
+            const playerToken = document.querySelector('#playerToken');
+            const currentCell = playerToken.parentElement;
+            const x = parseInt(currentCell.dataset.x);
+            const y = parseInt(currentCell.dataset.y);
+            
+            const moves = [
+                [x-1, y], [x+1, y], [x, y-1], [x, y+1]
+            ];
+            
+            moves.forEach(([mx, my]) => {
+                if (mx >= 0 && mx < 3 && my >= 0 && my < 3) {
+                    const cell = document.querySelector(`[data-x="${mx}"][data-y="${my}"]`);
+                    if (cell && !cell.querySelector('.character-token')) {
+                        cell.style.background = 'rgba(0, 255, 0, 0.5)';
+                        cell.style.animation = 'pulse-green 0.5s ease-in-out infinite';
+                    }
+                }
+            });
+        }
+        
+        function clearHighlights() {
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.style.background = 'rgba(0, 255, 255, 0.05)';
+                cell.style.animation = '';
+            });
+        }
+        
+        function handleCellClick(x, y) {
+            if (!selectedAction) return;
+            
+            if (selectedAction === 'attack') {
+                const enemyToken = document.querySelector('#enemyToken');
+                const enemyCell = enemyToken.parentElement;
+                if (enemyCell.dataset.x == x && enemyCell.dataset.y == y) {
+                    executeAttack();
+                }
+            } else if (selectedAction === 'move') {
+                executeMove(x, y);
+            }
+            
+            selectedAction = null;
+            clearHighlights();
+        }
+        
+        function executeAttack() {
+            const damage = playerHero.stats.attack - Math.floor(enemyData.stats.defense / 2);
+            const isCritical = Math.random() * 100 < playerHero.stats.criticalChance;
+            const finalDamage = isCritical ? damage * 2 : damage;
+            
+            enemyData.stats.currentHp -= finalDamage;
+            
+            if (isCritical) {
+                addLogEntry(`💥 COUP CRITIQUE ! ${playerHero.name} inflige ${finalDamage} dégâts !`, 'critical');
+                createSpellEffect(document.querySelector('#enemyToken').parentElement, '💥');
+            } else {
+                addLogEntry(`⚔️ ${playerHero.name} attaque et inflige ${finalDamage} dégâts !`, 'damage');
+            }
+            
+            updateCharacterDisplays();
+            checkCombatEnd();
+            
+            if (enemyData.stats.currentHp > 0) {
+                setTimeout(enemyTurn, 1500);
+            }
+        }
+        
+        function executeMove(x, y) {
+            const playerToken = document.querySelector('#playerToken');
+            const targetCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            
+            if (targetCell && !targetCell.querySelector('.character-token')) {
+                playerToken.parentElement.removeChild(playerToken);
+                targetCell.appendChild(playerToken);
+                
+                addLogEntry(`🌀 ${playerHero.name} se déplace en dimension [${x},${y}]`, 'info');
+                updateDimensionInfo();
+                
+                setTimeout(enemyTurn, 1000);
+            }
+        }
+        
+        function executeDefend() {
+            playerHero.defending = true;
+            addLogEntry(`🛡️ ${playerHero.name} se met en position défensive !`, 'info');
+            createSpellEffect(document.querySelector('#playerToken').parentElement, '🛡️');
+            
+            setTimeout(enemyTurn, 1000);
+        }
+        
+        function castSpell() {
+            if (playerHero.stats.currentMana >= 10) {
+                playerHero.stats.currentMana -= 10;
+                const spellDamage = 30;
+                enemyData.stats.currentHp -= spellDamage;
+                
+                addLogEntry(`✨ ${playerHero.name} lance un sort dimensionnel ! ${spellDamage} dégâts !`, 'damage');
+                createSpellEffect(document.querySelector('#enemyToken').parentElement, '✨');
+                
+                updateCharacterDisplays();
+                checkCombatEnd();
+                
+                if (enemyData.stats.currentHp > 0) {
+                    setTimeout(enemyTurn, 1500);
+                }
+            } else {
+                addLogEntry(`❌ Pas assez de mana !`, 'info');
+            }
+        }
+        
+        function enemyTurn() {
+            const damage = enemyData.stats.attack - Math.floor(playerHero.stats.defense / 2);
+            const finalDamage = playerHero.defending ? Math.floor(damage / 2) : damage;
+            
+            playerHero.stats.currentHp -= finalDamage;
+            playerHero.defending = false;
+            
+            addLogEntry(`👹 ${enemyData.name} attaque et inflige ${finalDamage} dégâts !`, 'damage');
+            
+            updateCharacterDisplays();
+            checkCombatEnd();
+        }
+        
+        function endTurn() {
+            addLogEntry(`⏭️ ${playerHero.name} passe son tour`, 'info');
+            setTimeout(enemyTurn, 500);
+        }
+        
+        function checkCombatEnd() {
+            if (playerHero.stats.currentHp <= 0) {
+                setTimeout(() => {
+                    addLogEntry(`💀 ${playerHero.name} a été vaincu...`, 'damage');
+                    alert('💀 Défaite ! Vous avez été vaincu...');
+                    returnToDashboard();
+                }, 1000);
+            } else if (enemyData.stats.currentHp <= 0) {
+                setTimeout(() => {
+                    addLogEntry(`🎉 VICTOIRE ! ${enemyData.name} a été vaincu !`, 'heal');
+                    alert('🎉 VICTOIRE ! Vous avez triomphé !');
+                    returnToDashboard();
+                }, 1000);
+            }
+        }
+        
+        function createSpellEffect(targetElement, emoji) {
+            const effect = document.createElement('div');
+            effect.className = 'spell-effect';
+            effect.textContent = emoji;
+            effect.style.fontSize = '3rem';
+            effect.style.left = '50%';
+            effect.style.top = '50%';
+            effect.style.transform = 'translate(-50%, -50%)';
+            
+            targetElement.appendChild(effect);
+            
+            setTimeout(() => {
+                effect.remove();
+            }, 1000);
+        }
+        
+        function addLogEntry(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Garder seulement les 20 derniers messages
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+        
+        function returnToDashboard() {
+            sessionStorage.removeItem('avalon_combat_hero');
+            sessionStorage.removeItem('avalon_combat_enemy');
+            window.location.href = '/AVALON_DASHBOARD.html';
+        }
+        
+        // Update dimension info every second
+        setInterval(updateDimensionInfo, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Panopticon Neuronal 6D - Vision de GRUT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #001122 0%, #000000 100%);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #controls {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .neural-pulse {
+            animation: pulse 1s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .neural-signal {
+            animation: signal-travel 2s linear infinite;
+        }
+        
+        @keyframes signal-travel {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .dimension-btn {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dimension-btn:hover, .dimension-btn.active {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        .neural-status {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .connection-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        
+        .connected {
+            color: #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        .entity-item {
+            padding: 8px;
+            margin: 3px 0;
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .entity-item:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .neural-activity {
+            color: #ff6600;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <canvas id="canvas3d"></canvas>
+            <div class="connection-indicator">
+                <div>🔗 Backend: <span id="backend-status">Connexion...</span></div>
+                <div>🧠 Neural: <span id="connection-status">Initialisation...</span></div>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <h2>🧠 CONTRÔLES NEURAUX</h2>
+            
+            <div class="dimension-selector">
+                <h4>🌀 Dimensions</h4>
+                <button class="dimension-btn active" data-dimension="CAUSALE">D1: CAUSALE</button>
+                <button class="dimension-btn" data-dimension="TEMPORELLE">D2: TEMPORELLE</button>
+                <button class="dimension-btn" data-dimension="SPATIALE">D3: SPATIALE</button>
+                <button class="dimension-btn" data-dimension="QUANTIQUE">D4: QUANTIQUE</button>
+                <button class="dimension-btn" data-dimension="IDENTITAIRE">D5: IDENTITAIRE</button>
+                <button class="dimension-btn" data-dimension="NARRATIVE">D6: NARRATIVE</button>
+            </div>
+            
+            <div class="neural-status">
+                <h4>🧠 Réseau Neuronal</h4>
+                <div>Status: <span id="neural-status">Initialisation...</span></div>
+                <div>Neurones: <span id="node-count">0</span></div>
+                <div>Synapses: <span id="edge-count">0</span></div>
+                <div>Activité: <span id="neural-activity" class="neural-activity">0%</span></div>
+            </div>
+            
+            <div class="entity-list">
+                <h4>🧠 Neurones Actifs</h4>
+                <div id="entities-container">
+                    <div class="entity-item">🔄 Scan neuronal...</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="refreshNeuralNetwork()" style="width: 100%; padding: 10px; background: #006600; color: white; border: none; cursor: pointer; border-radius: 5px;">
+                    🧠 Actualiser Réseau
+                </button>
+                <button onclick="simulateNeuralPulse()" style="width: 100%; padding: 10px; margin-top: 10px; background: #660066; color: white; border: none; cursor: pointer; border-radius: 5px;">
+                    ⚡ Pulse Neuronal
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            backendUrl: 'http://localhost:8082',
+            wsUrl: 'ws://localhost:8082/ws/panopticon',
+            neuralUpdateInterval: 100, // ms
+            pulseIntensity: 1.0
+        };
+        
+        // Variables globales
+        let scene, camera, renderer;
+        let activeDimension = 'CAUSALE';
+        let worldStateGraph = null;
+        let entities = [];
+        let websocket = null;
+        let neuralPulses = [];
+        let neuralActivity = 0;
+        
+        // Initialisation
+        async function init() {
+            console.log('🧠 GRUT: Initialisation Réseau Neuronal 6D');
+            
+            initThreeJS();
+            await connectToBackend();
+            setupWebSocket();
+            setupControls();
+            startNeuralLoop();
+            
+            animate();
+        }
+        
+        // Connexion au backend RÉEL
+        async function connectToBackend() {
+            const statusEl = document.getElementById('connection-status');
+            const backendStatusEl = document.getElementById('backend-status');
+            
+            try {
+                statusEl.textContent = '🔄 Connexion réseau neuronal...';
+                statusEl.className = 'loading';
+                
+                // Test de connexion au backend réel
+                const response = await fetch(`${CONFIG.backendUrl}/api/interstice/status`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    statusEl.textContent = '✅ Réseau connecté';
+                    statusEl.className = 'connected';
+                    backendStatusEl.textContent = 'Connecté';
+                    
+                    // Charger le réseau neuronal réel
+                    await loadRealNeuralNetwork();
+                } else {
+                    throw new Error('Backend non disponible');
+                }
+                
+            } catch (error) {
+                console.log('🧠 Backend non disponible, simulation neuronale');
+                statusEl.textContent = '⚠️ Mode Simulation';
+                statusEl.className = 'error';
+                backendStatusEl.textContent = 'Simulation';
+                
+                // Utiliser simulation neuronale
+                await loadSimulatedNeuralNetwork();
+            }
+        }
+        
+        // Chargement réseau neuronal réel
+        async function loadRealNeuralNetwork() {
+            try {
+                const response = await fetch(`${CONFIG.backendUrl}/api/panopticon/world-state-graph`);
+                worldStateGraph = await response.json();
+                
+                document.getElementById('neural-status').textContent = 'Réel (Backend)';
+                updateNeuralDisplay();
+                renderNeuralDimension(activeDimension);
+                
+            } catch (error) {
+                console.log('Erreur chargement réseau:', error);
+                await loadSimulatedNeuralNetwork();
+            }
+        }
+        
+        // Simulation réseau neuronal
+        async function loadSimulatedNeuralNetwork() {
+            worldStateGraph = {
+                nodes: [
+                    { id: 'LOUMEN_PHOENIX', name: 'LOUMEN', x: 4.82, y: 58.01, z: 29.73, type: 'MAGE', dimension: 'NARRATIVE', activity: 0.8 },
+                    { id: 'SID_DECISION', name: 'SID', x: 100.0, y: 5.0, z: 45.0, type: 'MANAGER', dimension: 'CAUSALE', activity: 0.6 },
+                    { id: 'URZ_KOM', name: 'URZ-KÔM', x: 109.0, y: 13.0, z: 60.0, type: 'GUARDIAN', dimension: 'SPATIALE', activity: 0.9 },
+                    { id: 'GROKAEN', name: 'GROKÆN', x: 105.0, y: 15.0, z: 40.0, type: 'TREE', dimension: 'TEMPORELLE', activity: 0.7 },
+                    { id: 'VINCENT_CORE', name: 'Vincent', x: 50.0, y: 50.0, z: 50.0, type: 'CREATOR', dimension: 'QUANTIQUE', activity: 1.0 }
+                ],
+                edges: [
+                    { from: 'VINCENT_CORE', to: 'LOUMEN_PHOENIX', strength: 0.9, type: 'COMMAND' },
+                    { from: 'VINCENT_CORE', to: 'SID_DECISION', strength: 0.8, type: 'DIRECTIVE' },
+                    { from: 'LOUMEN_PHOENIX', to: 'URZ_KOM', strength: 0.7, type: 'COLLABORATION' },
+                    { from: 'SID_DECISION', to: 'GROKAEN', strength: 0.6, type: 'COORDINATION' }
+                ],
+                dimensions: {
+                    CAUSALE: { color: '#ff6600', nodes: ['SID_DECISION', 'VINCENT_CORE'] },
+                    TEMPORELLE: { color: '#0066ff', nodes: ['GROKAEN'] },
+                    SPATIALE: { color: '#00ff00', nodes: ['URZ_KOM'] },
+                    QUANTIQUE: { color: '#ff00ff', nodes: ['VINCENT_CORE'] },
+                    IDENTITAIRE: { color: '#ffff00', nodes: [] },
+                    NARRATIVE: { color: '#00ffff', nodes: ['LOUMEN_PHOENIX'] }
+                }
+            };
+            
+            document.getElementById('neural-status').textContent = 'Simulation Neuronale';
+            updateNeuralDisplay();
+            renderNeuralDimension(activeDimension);
+        }
+        
+        // Mise à jour affichage neuronal
+        function updateNeuralDisplay() {
+            document.getElementById('node-count').textContent = worldStateGraph.nodes.length;
+            document.getElementById('edge-count').textContent = worldStateGraph.edges.length;
+            
+            // Calculer activité neuronale moyenne
+            const totalActivity = worldStateGraph.nodes.reduce((sum, node) => sum + (node.activity || 0), 0);
+            neuralActivity = (totalActivity / worldStateGraph.nodes.length * 100).toFixed(1);
+            document.getElementById('neural-activity').textContent = neuralActivity + '%';
+            
+            // Mise à jour liste des neurones
+            const container = document.getElementById('entities-container');
+            container.innerHTML = '';
+            
+            worldStateGraph.nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'entity-item';
+                const activityLevel = (node.activity || 0) * 100;
+                div.innerHTML = `
+                    <div>${node.name} (${node.dimension})</div>
+                    <div style="font-size: 0.8em; color: #${activityLevel > 70 ? 'ff6600' : activityLevel > 40 ? 'ffff00' : '666666'};">
+                        Activité: ${activityLevel.toFixed(1)}%
+                    </div>
+                `;
+                div.onclick = () => focusOnNeuron(node);
+                container.appendChild(div);
+            });
+        }
+        
+        // Configuration Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas3d'), antialias: true });
+            
+            const container = document.getElementById('canvas-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            // Lumières
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(10, 10, 5);
+            scene.add(directionalLight);
+            
+            camera.position.set(0, 0, 20);
+        }
+        
+        // Rendu dimension neuronale
+        function renderNeuralDimension(dimension) {
+            // Nettoyer la scène
+            while(scene.children.length > 2) { // Garder les lumières
+                scene.remove(scene.children[2]);
+            }
+            
+            if (!worldStateGraph) return;
+            
+            const dimensionData = worldStateGraph.dimensions[dimension];
+            const color = new THREE.Color(dimensionData.color);
+            
+            // Rendu des neurones
+            worldStateGraph.nodes.forEach(node => {
+                const isActive = dimensionData.nodes.includes(node.id);
+                const activity = node.activity || 0;
+                
+                // Taille basée sur l'activité
+                const size = 0.3 + (activity * 0.4);
+                const geometry = new THREE.SphereGeometry(size, 16, 16);
+                
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: isActive ? color : 0x333333,
+                    emissive: isActive ? color : 0x000000,
+                    emissiveIntensity: activity * 0.5
+                });
+                
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(
+                    node.x / 10 - 5, 
+                    node.y / 10 - 5, 
+                    node.z / 10 - 5
+                );
+                sphere.userData = node;
+                
+                // Animation de pulse pour neurones actifs
+                if (activity > 0.5) {
+                    sphere.scale.setScalar(1 + Math.sin(Date.now() * 0.01) * 0.2);
+                }
+                
+                scene.add(sphere);
+                
+                // Nom du neurone
+                if (isActive) {
+                    const textGeometry = new THREE.RingGeometry(size + 0.1, size + 0.2, 8);
+                    const textMaterial = new THREE.MeshBasicMaterial({ 
+                        color: color,
+                        transparent: true,
+                        opacity: activity
+                    });
+                    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                    textMesh.position.set(
+                        node.x / 10 - 5, 
+                        node.y / 10 - 5 + 1, 
+                        node.z / 10 - 5
+                    );
+                    scene.add(textMesh);
+                }
+            });
+            
+            // Rendu des synapses
+            worldStateGraph.edges.forEach(edge => {
+                const fromNode = worldStateGraph.nodes.find(n => n.id === edge.from);
+                const toNode = worldStateGraph.nodes.find(n => n.id === edge.to);
+                
+                if (fromNode && toNode) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(fromNode.x / 10 - 5, fromNode.y / 10 - 5, fromNode.z / 10 - 5),
+                        new THREE.Vector3(toNode.x / 10 - 5, toNode.y / 10 - 5, toNode.z / 10 - 5)
+                    ]);
+                    
+                    // Intensité basée sur l'activité des neurones connectés
+                    const intensity = (fromNode.activity + toNode.activity) / 2;
+                    
+                    const material = new THREE.LineBasicMaterial({ 
+                        color: color,
+                        opacity: edge.strength * intensity,
+                        transparent: true,
+                        linewidth: 2 + intensity * 3
+                    });
+                    
+                    const line = new THREE.Line(geometry, material);
+                    scene.add(line);
+                }
+            });
+        }
+        
+        // Boucle neuronale temps réel
+        function startNeuralLoop() {
+            setInterval(() => {
+                if (worldStateGraph) {
+                    // Simuler activité neuronale
+                    worldStateGraph.nodes.forEach(node => {
+                        if (!node.activity) node.activity = Math.random();
+                        
+                        // Fluctuation d'activité
+                        node.activity += (Math.random() - 0.5) * 0.1;
+                        node.activity = Math.max(0, Math.min(1, node.activity));
+                    });
+                    
+                    updateNeuralDisplay();
+                    renderNeuralDimension(activeDimension);
+                }
+            }, CONFIG.neuralUpdateInterval);
+        }
+        
+        // Simulation pulse neuronal
+        function simulateNeuralPulse() {
+            if (!worldStateGraph) return;
+            
+            // Boost d'activité sur tous les neurones
+            worldStateGraph.nodes.forEach(node => {
+                node.activity = Math.min(1, (node.activity || 0) + 0.3);
+            });
+            
+            console.log('🧠 Pulse neuronal déclenché !');
+        }
+        
+        // Actualisation réseau
+        async function refreshNeuralNetwork() {
+            await connectToBackend();
+        }
+        
+        // Focus sur neurone
+        function focusOnNeuron(neuron) {
+            camera.position.set(
+                neuron.x / 10 - 5 + 3, 
+                neuron.y / 10 - 5 + 3, 
+                neuron.z / 10 - 5 + 3
+            );
+            camera.lookAt(
+                neuron.x / 10 - 5, 
+                neuron.y / 10 - 5, 
+                neuron.z / 10 - 5
+            );
+        }
+        
+        // Configuration des contrôles
+        function setupControls() {
+            document.querySelectorAll('.dimension-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.dimension-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    activeDimension = btn.dataset.dimension;
+                    renderNeuralDimension(activeDimension);
+                });
+            });
+        }
+        
+        // WebSocket pour temps réel
+        function setupWebSocket() {
+            try {
+                websocket = new WebSocket(CONFIG.wsUrl);
+                
+                websocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'NEURAL_UPDATE') {
+                        worldStateGraph = data.network;
+                        updateNeuralDisplay();
+                        renderNeuralDimension(activeDimension);
+                    }
+                };
+                
+            } catch (error) {
+                console.log('WebSocket non disponible, mode polling');
+            }
+        }
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotation automatique de la caméra
+            const time = Date.now() * 0.0003;
+            camera.position.x = Math.cos(time) * 15;
+            camera.position.z = Math.sin(time) * 15;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Gestion du redimensionnement
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+        
+        // Initialisation au chargement
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

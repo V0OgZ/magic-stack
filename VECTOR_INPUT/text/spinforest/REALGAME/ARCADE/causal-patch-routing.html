@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚗 TEMPORAL DRIFT - Causal Patch</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e, #0f0f1f);
+            color: #e8d5b7;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .game-header {
+            background: rgba(138, 43, 226, 0.2);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #8A2BE2;
+        }
+        
+        .game-header h1 {
+            margin: 0;
+            color: #FFD700;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #FFD700;
+        }
+        
+        .objective {
+            margin: 5px 0;
+            color: #FFA500;
+            font-size: 1em;
+        }
+        
+        .game-area {
+            flex: 1;
+            position: relative;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(138, 43, 226, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 20, 147, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a1a, #1a1a2e);
+            padding: 20px;
+        }
+        
+        .causal-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 500px;
+            margin: 0 auto;
+        }
+        
+        .causal-node {
+            background: rgba(26, 26, 46, 0.8);
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 80px;
+        }
+        
+        .causal-node:hover {
+            border-color: #8A2BE2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+        
+        .causal-node.source {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .causal-node.destination {
+            background: linear-gradient(135deg, #2ed573, #20bf6b);
+            border-color: #2ed573;
+            box-shadow: 0 0 20px rgba(46, 213, 115, 0.5);
+        }
+        
+        .causal-node.broken {
+            background: linear-gradient(135deg, #ffa502, #ff6348);
+            border-color: #ffa502;
+            box-shadow: 0 0 20px rgba(255, 165, 2, 0.5);
+            animation: pulse-broken 1s infinite;
+        }
+        
+        .causal-node.fixed {
+            background: linear-gradient(135deg, #3742fa, #2f3542);
+            border-color: #3742fa;
+            box-shadow: 0 0 20px rgba(55, 66, 250, 0.5);
+        }
+        
+        .causal-node.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 25px #FFD700;
+            transform: scale(1.05);
+        }
+        
+        @keyframes pulse-broken {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .node-label {
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .node-icon {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .causal-connection {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, #8A2BE2, #FF1493);
+            transform-origin: left center;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.6);
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .causal-connection.broken {
+            background: linear-gradient(90deg, #ff6348, #ffa502);
+            animation: flicker 0.5s infinite;
+        }
+        
+        .causal-connection.fixed {
+            background: linear-gradient(90deg, #3742fa, #00d2d3);
+            box-shadow: 0 0 15px rgba(55, 66, 250, 0.8);
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8A2BE2;
+            min-width: 200px;
+        }
+        
+        .timer {
+            font-size: 1.2em;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+        
+        .game-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #28a745;
+            display: none;
+            z-index: 100;
+        }
+        
+        .game-failed {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #dc3545;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🚗 CAUSAL PATCH - Réparation Liens Causaux</h1>
+            <div class="objective">Réparez 3 liens causaux en rétablissant les connexions</div>
+        </div>
+        
+        <div class="game-area">
+            <div class="causal-grid" id="causalGrid">
+                <!-- Nodes generated by JS -->
+            </div>
+            
+            <div class="game-ui">
+                <div class="timer" id="timer">50s</div>
+                <div class="progress" id="progress">Liens réparés: 0/3</div>
+                <div class="instructions">
+                    1. Cliquez sur un nœud source<br>
+                    2. Cliquez sur un nœud cassé<br>
+                    3. Répétez pour réparer tous
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-complete" id="gameComplete">
+            <h2>🔗 LIENS CAUSAUX RÉPARÉS !</h2>
+            <p>La continuité temporelle est rétablie</p>
+            <div style="margin-top: 15px; color: #FFD700;">
+                Récompenses: +60 XP, +1 Cristal Temporel
+            </div>
+        </div>
+        
+        <div class="game-failed" id="gameFailed">
+            <h2>⏰ TEMPS ÉCOULÉ</h2>
+            <p>Les liens causaux restent brisés</p>
+            <div style="margin-top: 15px; color: #888;">
+                Aucune récompense
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class CausalPatchGame {
+            constructor() {
+                this.timeLeft = 50;
+                this.gameRunning = true;
+                this.linksFixed = 0;
+                this.targetLinks = 3;
+                this.selectedNode = null;
+                this.connections = [];
+                
+                this.nodes = [];
+                this.brokenNodes = [];
+                this.sourceNodes = [];
+                
+                this.initializeGrid();
+                this.setupEventListeners();
+                this.startTimer();
+            }
+            
+            initializeGrid() {
+                const grid = document.getElementById('causalGrid');
+                
+                // Créer 24 nœuds (6x4)
+                for (let i = 0; i < 24; i++) {
+                    const node = document.createElement('div');
+                    node.className = 'causal-node';
+                    node.dataset.index = i;
+                    
+                    const icon = document.createElement('div');
+                    icon.className = 'node-icon';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'node-label';
+                    
+                    // Déterminer le type de nœud
+                    if (i === 0 || i === 5 || i === 18 || i === 23) {
+                        // Sources aux coins
+                        node.classList.add('source');
+                        icon.textContent = '🌟';
+                        label.textContent = `S${this.sourceNodes.length + 1}`;
+                        this.sourceNodes.push(i);
+                    } else if ([6, 11, 16].includes(i)) {
+                        // Nœuds cassés
+                        node.classList.add('broken');
+                        icon.textContent = '💥';
+                        label.textContent = 'CASSÉ';
+                        this.brokenNodes.push(i);
+                    } else if ([1, 10, 22].includes(i)) {
+                        // Destinations
+                        node.classList.add('destination');
+                        icon.textContent = '🎯';
+                        label.textContent = 'DEST';
+                    } else {
+                        // Nœuds normaux
+                        icon.textContent = '⚫';
+                        label.textContent = `N${i}`;
+                    }
+                    
+                    node.appendChild(icon);
+                    node.appendChild(label);
+                    grid.appendChild(node);
+                    
+                    this.nodes.push({
+                        element: node,
+                        index: i,
+                        type: node.classList.contains('source') ? 'source' :
+                              node.classList.contains('broken') ? 'broken' :
+                              node.classList.contains('destination') ? 'destination' : 'normal',
+                        fixed: false
+                    });
+                }
+                
+                this.drawInitialConnections();
+            }
+            
+            drawInitialConnections() {
+                // Dessiner quelques connexions existantes (cassées)
+                const brokenConnections = [
+                    { from: 0, to: 6 }, // S1 vers cassé
+                    { from: 5, to: 11 }, // S2 vers cassé
+                    { from: 18, to: 16 } // S3 vers cassé
+                ];
+                
+                brokenConnections.forEach(conn => {
+                    this.drawConnection(conn.from, conn.to, 'broken');
+                });
+            }
+            
+            drawConnection(fromIndex, toIndex, status = 'normal') {
+                const grid = document.getElementById('causalGrid');
+                const fromNode = this.nodes[fromIndex].element;
+                const toNode = this.nodes[toIndex].element;
+                
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
+                const gridRect = grid.getBoundingClientRect();
+                
+                const x1 = fromRect.left + fromRect.width / 2 - gridRect.left;
+                const y1 = fromRect.top + fromRect.height / 2 - gridRect.top;
+                const x2 = toRect.left + toRect.width / 2 - gridRect.left;
+                const y2 = toRect.top + toRect.height / 2 - gridRect.top;
+                
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                const connection = document.createElement('div');
+                connection.className = `causal-connection ${status}`;
+                connection.style.left = `${x1}px`;
+                connection.style.top = `${y1}px`;
+                connection.style.width = `${length}px`;
+                connection.style.transform = `rotate(${angle}deg)`;
+                
+                grid.appendChild(connection);
+                
+                this.connections.push({
+                    element: connection,
+                    from: fromIndex,
+                    to: toIndex,
+                    status: status
+                });
+            }
+            
+            setupEventListeners() {
+                this.nodes.forEach(node => {
+                    node.element.addEventListener('click', () => this.handleNodeClick(node));
+                });
+            }
+            
+            handleNodeClick(node) {
+                if (!this.gameRunning) return;
+                
+                if (this.selectedNode === null) {
+                    // Sélectionner le premier nœud (doit être une source)
+                    if (node.type === 'source') {
+                        this.selectedNode = node;
+                        node.element.classList.add('selected');
+                    }
+                } else {
+                    // Sélectionner le deuxième nœud
+                    if (node === this.selectedNode) {
+                        // Désélectionner
+                        this.selectedNode.element.classList.remove('selected');
+                        this.selectedNode = null;
+                    } else if (node.type === 'broken' && !node.fixed) {
+                        // Réparer le lien
+                        this.repairLink(this.selectedNode, node);
+                        this.selectedNode.element.classList.remove('selected');
+                        this.selectedNode = null;
+                    } else {
+                        // Changer la sélection
+                        this.selectedNode.element.classList.remove('selected');
+                        if (node.type === 'source') {
+                            this.selectedNode = node;
+                            node.element.classList.add('selected');
+                        } else {
+                            this.selectedNode = null;
+                        }
+                    }
+                }
+            }
+            
+            repairLink(sourceNode, brokenNode) {
+                // Marquer le nœud comme réparé
+                brokenNode.fixed = true;
+                brokenNode.element.classList.remove('broken');
+                brokenNode.element.classList.add('fixed');
+                brokenNode.element.querySelector('.node-icon').textContent = '🔧';
+                brokenNode.element.querySelector('.node-label').textContent = 'RÉPARÉ';
+                
+                // Dessiner nouvelle connexion
+                this.drawConnection(sourceNode.index, brokenNode.index, 'fixed');
+                
+                // Mettre à jour le compteur
+                this.linksFixed++;
+                this.updateProgress();
+                
+                // Vérifier victoire
+                if (this.linksFixed >= this.targetLinks) {
+                    setTimeout(() => this.gameWin(), 500);
+                }
+            }
+            
+            updateProgress() {
+                document.getElementById('progress').textContent = 
+                    `Liens réparés: ${this.linksFixed}/${this.targetLinks}`;
+            }
+            
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('timer').textContent = `${this.timeLeft}s`;
+                    
+                    if (this.timeLeft <= 10) {
+                        document.getElementById('timer').style.color = '#ff4757';
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.gameTimeout();
+                    }
+                }, 1000);
+            }
+            
+            gameWin() {
+                this.gameRunning = false;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('gameComplete').style.display = 'block';
+                
+                // Effet visuel - toutes les connexions brillent
+                this.connections.forEach(conn => {
+                    if (conn.status === 'fixed') {
+                        conn.element.style.boxShadow = '0 0 25px rgba(55, 66, 250, 1)';
+                    }
+                });
+                
+                // Notifier parent
+                setTimeout(() => {
+                    this.sendResult(true, 1200);
+                }, 2000);
+            }
+            
+            gameTimeout() {
+                this.gameRunning = false;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('gameFailed').style.display = 'block';
+                
+                // Notifier parent
+                setTimeout(() => {
+                    this.sendResult(false, 0);
+                }, 2000);
+            }
+            
+            sendResult(success, score) {
+                const result = {
+                    type: 'arcade:result',
+                    gameId: 'CAUSAL_PATCH',
+                    success: success,
+                    score: score,
+                    rewards: success ? [
+                        { kind: 'xp', qty: 60 },
+                        { kind: 'time_crystals', qty: 1 }
+                    ] : []
+                };
+                
+                // PostMessage au parent
+                if (window.parent !== window) {
+                    window.parent.postMessage(result, '*');
+                }
+                
+                console.log('🚗 Game result:', result);
+            }
+        }
+        
+        // Démarrer le jeu
+        new CausalPatchGame();
+    </script>
+</body>
+</html>

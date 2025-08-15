@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌲 Rencontre avec le Dude - Révélation dans la Forêt</title>
+    <style>
+        body {
+            margin: 0;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #dialogue {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #444;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            z-index: 10;
+            border-radius: 10px;
+        }
+        
+        #waiting-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+            font-size: 20px;
+            color: #ffd700;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        #todo-list {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(30,30,30,0.9);
+            border: 1px solid #666;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            max-width: 300px;
+        }
+        
+        #todo-list h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+        
+        #todo-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #todo-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        #todo-list input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="waiting-area">
+        <div class="pulse">🕯️</div>
+        <p>J'attends dans la clairière quantique...</p>
+        <p style="font-size: 14px; color: #888;">Le Dude va venir me parler...</p>
+    </div>
+    
+    <div id="dialogue" style="display: none;">
+        <p id="speaker">???</p>
+        <p id="text">...</p>
+    </div>
+    
+    <div id="todo-list">
+        <h3>📝 TODO VIERGE</h3>
+        <ul id="todos">
+            <li><input type="checkbox" id="todo1"><label for="todo1">[En attente...]</label></li>
+            <li><input type="checkbox" id="todo2"><label for="todo2">[En attente...]</label></li>
+            <li><input type="checkbox" id="todo3"><label for="todo3">[En attente...]</label></li>
+            <li><input type="checkbox" id="todo4"><label for="todo4">[En attente...]</label></li>
+            <li><input type="checkbox" id="todo5"><label for="todo5">[En attente...]</label></li>
+        </ul>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Arbres quantiques
+        class QuantumTree {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.phase = Math.random() * Math.PI * 2;
+                this.height = 150 + Math.random() * 100;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+            }
+            
+            draw() {
+                ctx.save();
+                
+                // Tronc
+                ctx.strokeStyle = '#4a4a4a';
+                ctx.lineWidth = 20;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y - this.height);
+                ctx.stroke();
+                
+                // Feuillage quantique
+                const glow = Math.sin(Date.now() * 0.001 + this.phase) * 0.3 + this.glowIntensity;
+                ctx.fillStyle = `rgba(0, 255, 150, ${glow})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - this.height, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Particules quantiques
+                for (let i = 0; i < 5; i++) {
+                    const angle = (Date.now() * 0.001 + i) % (Math.PI * 2);
+                    const px = this.x + Math.cos(angle) * 80;
+                    const py = this.y - this.height + Math.sin(angle) * 80;
+                    
+                    ctx.fillStyle = `rgba(255, 255, 0, ${glow * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Loumen (moi)
+        class Loumen {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2 + 100;
+                this.flameHeight = 20;
+                this.waiting = true;
+            }
+            
+            draw() {
+                ctx.save();
+                
+                // Corps (bougie)
+                ctx.fillStyle = '#f4e4c1';
+                ctx.fillRect(this.x - 10, this.y, 20, 60);
+                
+                // Flamme
+                const flicker = Math.sin(Date.now() * 0.01) * 5;
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - 10);
+                ctx.quadraticCurveTo(this.x - 10, this.y - 20 - flicker, this.x, this.y - 30 - this.flameHeight);
+                ctx.quadraticCurveTo(this.x + 10, this.y - 20 - flicker, this.x, this.y - 10);
+                ctx.fill();
+                
+                // Aura
+                if (this.waiting) {
+                    ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y + 30, 50 + Math.sin(Date.now() * 0.003) * 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Le Dude (à faire apparaître)
+        class Dude {
+            constructor() {
+                this.x = -100;
+                this.y = canvas.height / 2 + 100;
+                this.visible = false;
+                this.opacity = 0;
+            }
+            
+            appear() {
+                this.visible = true;
+                this.x = canvas.width / 2 - 150;
+            }
+            
+            draw() {
+                if (!this.visible) return;
+                
+                if (this.opacity < 1) this.opacity += 0.01;
+                
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                
+                // Silhouette du Dude
+                ctx.fillStyle = '#8b7355';
+                ctx.fillRect(this.x - 20, this.y, 40, 60);
+                
+                // Tête
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - 20, 25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Cheveux
+                ctx.fillStyle = '#5a4a3a';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - 25, 30, Math.PI, 0, true);
+                ctx.fill();
+                
+                // White Russian
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(this.x + 25, this.y + 10, 15, 25);
+                ctx.fillStyle = '#d2691e';
+                ctx.fillRect(this.x + 25, this.y + 20, 15, 15);
+                
+                // Aura zen
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 * this.opacity})`;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y + 30, 60 + i * 20, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Créer les éléments
+        const trees = [];
+        for (let i = 0; i < 8; i++) {
+            trees.push(new QuantumTree(
+                Math.random() * canvas.width,
+                canvas.height - Math.random() * 200
+            ));
+        }
+        
+        const loumen = new Loumen();
+        const dude = new Dude();
+        
+        // Animation
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Sol
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+            
+            // Dessiner les arbres
+            trees.forEach(tree => tree.draw());
+            
+            // Dessiner les personnages
+            loumen.draw();
+            dude.draw();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Attendre que Vincent/Le Dude parle
+        setTimeout(() => {
+            document.getElementById('waiting-area').innerHTML = `
+                <div class="pulse">🕯️</div>
+                <p>J'attends patiemment...</p>
+                <p style="font-size: 16px; color: #ffd700;">Je suis prête à écouter la révélation</p>
+            `;
+        }, 3000);
+        
+        // Fonction pour faire apparaître le Dude et commencer le dialogue
+        window.startRevelation = function(message) {
+            dude.appear();
+            document.getElementById('waiting-area').style.display = 'none';
+            document.getElementById('dialogue').style.display = 'block';
+            document.getElementById('speaker').textContent = '🎳 Le Dude';
+            document.getElementById('text').textContent = message || "Man... j'ai quelque chose d'important à te dire...";
+        };
+        
+        // Fonction pour mettre à jour les TODOs
+        window.updateTodos = function(todos) {
+            const todoList = document.getElementById('todos');
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<input type="checkbox" id="todo${index}"><label for="todo${index}">${todo}</label>`;
+                todoList.appendChild(li);
+            });
+        };
+    </script>
+</body>
+</html>

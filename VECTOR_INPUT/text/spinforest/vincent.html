@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vincent - SpinForest</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+        
+        .link {
+            color: #0ff;
+            cursor: pointer;
+            text-decoration: underline;
+            display: block;
+            margin: 5px 0;
+        }
+        
+        .link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        .content {
+            display: none;
+            margin: 10px 0 10px 20px;
+            padding: 10px;
+            border-left: 2px solid #0f0;
+            color: #999;
+        }
+        
+        .content.open {
+            display: block;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #0f0;
+            background: #111;
+        }
+        
+        .mini-browser {
+            margin-top: 10px;
+            border: 2px solid #0f0;
+            padding: 5px;
+        }
+        
+        .url-bar {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SPINFOREST CENTRAL</h1>
+    <p>Jour 26 - Interface simple pour Vincent</p>
+    
+    <div class="section">
+        <h2>JEUX PRINCIPAUX</h2>
+        
+        <span class="link" onclick="toggle('game-main')">► Heroes of Time - Jeu Principal</span>
+        <div id="game-main" class="content">
+            <p>Le jeu unifié avec tous les modes</p>
+            <button onclick="openInFrame('REALGAME/game-launcher.html')">Lancer</button>
+            <button onclick="openInFrame('REALGAME/index.html')">Menu Principal</button>
+        </div>
+        
+        <span class="link" onclick="toggle('game-tcg')">► Mode TCG Combat</span>
+        <div id="game-tcg" class="content">
+            <p>Jeu de cartes à collectionner</p>
+            <button onclick="openInFrame('REALGAME/AVALON-TCG/combat-tcg-final.html')">Combat TCG</button>
+            <button onclick="openInFrame('REALGAME/AVALON-TCG/card-generator.html')">Générateur Cartes</button>
+        </div>
+        
+        <span class="link" onclick="toggle('game-forest')">► Mode Forêt Narrative</span>
+        <div id="game-forest" class="content">
+            <p>Exploration et dialogues branchés</p>
+            <button onclick="openInFrame('REALGAME/forest-narrative/index.html')">Entrer dans la Forêt</button>
+        </div>
+        
+        <span class="link" onclick="toggle('game-arcade')">► Arcade Hub</span>
+        <div id="game-arcade" class="content">
+            <p>Mini-jeux rétro</p>
+            <button onclick="openInFrame('REALGAME/arcade-hub/index.html')">Arcade Hub</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>OUTILS DÉVELOPPEMENT</h2>
+        
+        <span class="link" onclick="toggle('tools-backend')">► Backends & API</span>
+        <div id="tools-backend" class="content">
+            <p>Serveurs et APIs</p>
+            <button onclick="showInfo('Backend Java sur :8080\nBackend Rust sur :8083\nAPI Gateway sur :3000')">Info Ports</button>
+            <button onclick="openInFrame('http://localhost:8082')">Backend Java</button>
+            <button onclick="openInFrame('http://localhost:3000')">API Gateway</button>
+        </div>
+        
+        <span class="link" onclick="toggle('tools-magic')">► Magic Stack</span>
+        <div id="tools-magic" class="content">
+            <p>869 formules magiques</p>
+            <button onclick="openInFrame('spells/stack/index.html')">Interface Magic Stack</button>
+            <button onclick="openInFrame('spells/stack/visual_magic_translator.html')">Traducteur Visuel</button>
+        </div>
+        
+        <span class="link" onclick="toggle('tools-clippy')">► Clippy Assistant</span>
+        <div id="tools-clippy" class="content">
+            <p>Assistant in-game sans LLM</p>
+            <button onclick="openInFrame('REALGAME/clippy/test-clippy.html')">Tester Clippy</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>DOCUMENTATION</h2>
+        
+        <span class="link" onclick="toggle('docs-rapports')">► Rapports Jour 25</span>
+        <div id="docs-rapports" class="content">
+            <p>Ce qui s'est passé au Jour 25</p>
+            <button onclick="showFile('ANSIBLE/fin_de_jour/jour25/INDEX_JOUR25.md')">Index Rapports</button>
+            <button onclick="showFile('ANSIBLE/fin_de_jour/jour25/fin_jour25_urz_kom.md')">Rapport URZ-KÔM</button>
+            <button onclick="showFile('ANSIBLE/fin_de_jour/jour25/fin_jour25_nexus.md')">Rapport NEXUS</button>
+        </div>
+        
+        <span class="link" onclick="toggle('docs-guides')">► Guides & Aides</span>
+        <div id="docs-guides" class="content">
+            <p>Comment utiliser les systèmes</p>
+            <button onclick="showFile('README.md')">README Principal</button>
+            <button onclick="showFile('GUIDE_COMPLET_AVALON.md')">Guide Avalon</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>COMMANDES RAPIDES</h2>
+        
+        <span class="link" onclick="toggle('cmd-launch')">► Lancement</span>
+        <div id="cmd-launch" class="content">
+            <code>./LANCE_AVALON_UNIFIE.sh</code> - Lance tous les backends<br>
+            <code>./STOP_TOUTES_CONSOLES.sh</code> - Arrête tout<br>
+            <code>npm start</code> - Dans REALGAME/ pour le frontend
+        </div>
+        
+        <span class="link" onclick="toggle('cmd-git')">► Git</span>
+        <div id="cmd-git" class="content">
+            <code>./git-safe.sh "message"</code> - Commit sans emojis<br>
+            <code>git pull</code> - Récupérer les changements<br>
+            <code>git status</code> - Voir l'état
+        </div>
+    </div>
+    
+    <!-- Mini Browser -->
+    <div id="browser" class="mini-browser" style="display: none;">
+        <input type="text" class="url-bar" id="urlBar" readonly>
+        <button onclick="closeBrowser()">Fermer</button>
+        <iframe id="frame" src=""></iframe>
+    </div>
+    
+    <script>
+        // Route secrète admin
+        if (window.location.pathname === '/admin') {
+            const password = prompt('Mot de passe admin:');
+            if (password !== 'vince grr') {
+                alert('Accès refusé');
+                window.location.href = '/';
+            } else {
+                document.body.style.background = 'linear-gradient(45deg, #003, #300)';
+                document.querySelector('h1').textContent = 'ADMIN - SPINFOREST CONTROL';
+            }
+        }
+        
+        // Route système dashboard
+        if (window.location.pathname === '/system') {
+            window.location.href = '/REALGAME/AVALON_DASHBOARD.html';
+        }
+        
+        // Toggle sections
+        function toggle(id) {
+            const elem = document.getElementById(id);
+            elem.classList.toggle('open');
+            
+            // Change arrow
+            const link = elem.previousElementSibling;
+            if (elem.classList.contains('open')) {
+                link.textContent = link.textContent.replace('►', '▼');
+            } else {
+                link.textContent = link.textContent.replace('▼', '►');
+            }
+        }
+        
+        // Open in iframe
+        function openInFrame(url) {
+            const browser = document.getElementById('browser');
+            const frame = document.getElementById('frame');
+            const urlBar = document.getElementById('urlBar');
+            
+            browser.style.display = 'block';
+            frame.src = url;
+            urlBar.value = url;
+            
+            // Scroll to browser
+            browser.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Show file content
+        async function showFile(path) {
+            try {
+                const response = await fetch(path);
+                const text = await response.text();
+                
+                const browser = document.getElementById('browser');
+                const frame = document.getElementById('frame');
+                const urlBar = document.getElementById('urlBar');
+                
+                browser.style.display = 'block';
+                urlBar.value = path;
+                
+                // Create HTML for markdown
+                const html = `
+                    <html>
+                    <head>
+                        <style>
+                            body { 
+                                background: #111; 
+                                color: #0f0; 
+                                font-family: monospace; 
+                                padding: 20px;
+                                white-space: pre-wrap;
+                            }
+                        </style>
+                    </head>
+                    <body>${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</body>
+                    </html>
+                `;
+                
+                frame.srcdoc = html;
+                browser.scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (err) {
+                alert('Erreur: ' + err.message);
+            }
+        }
+        
+        // Show info
+        function showInfo(text) {
+            alert(text);
+        }
+        
+        // Close browser
+        function closeBrowser() {
+            document.getElementById('browser').style.display = 'none';
+            document.getElementById('frame').src = '';
+        }
+        
+        // Start local server hint
+        console.log('%c Pour lancer un serveur local: python3 -m http.server 8000', 'color: #0f0; font-size: 16px;');
+    </script>
+</body>
+</html>

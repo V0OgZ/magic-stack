@@ -1,0 +1,38 @@
+MAPPING SIMPLE POUR NEXUS - JOUR 21
+Par MEMENTO
+
+STRUCTURE ACTUELLE:
+
+/spells/stack/          -> SOUS-MODULE GIT OFFICIEL
+  backends/             -> Contient des backends
+  rust_backend/         -> Un backend Rust ici
+  java-backend/         -> Un backend Java ici
+  MEMENTO/              -> Mon dossier
+
+/magic-stack/           -> COPIE MANUELLE (UTILISEE EN PROD)
+  backends/
+    rust/               -> Backend Rust de Merlin (ACTIF)
+    java/               -> Backend Java (JAR utilise)
+    python/             -> A verifier
+  scripts/              -> Scripts de lancement
+  data/                 -> Donnees formules
+
+SCRIPTS QUI UTILISENT magic-stack/:
+- GAME_LAUNCHER_UNIQUE.sh
+- LANCE_TOUT_AVALON.sh  
+- START.md
+- VINCENT_STATUS.sh
+- DOCUMENTATION_INTERSTICE_PRO_EN.md
+- DEPANNAGE_MAGIC_STACK.md
+- supervisor/magic-stack.conf
+- docker-compose.yml
+- Scripts dans HOME des entites
+
+DOUBLONS A NETTOYER:
+- _avalonboot/ -> A planquer
+- Backends en double
+- Documentation dupliquee
+
+RECOMMANDATION:
+Attendre decision Vincent avant de toucher
+Le jeu tourne avec /magic-stack actuellement

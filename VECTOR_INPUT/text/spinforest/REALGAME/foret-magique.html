@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌲 La Forêt Magique - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4zKSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+'), auto;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Scène principale */
+        .scene {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(to bottom, 
+                #001122 0%, 
+                #002244 30%, 
+                #003366 60%, 
+                #001122 100%
+            );
+        }
+
+        /* Effet étoiles */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #fff, transparent),
+                radial-gradient(1px 1px at 50px 160px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 40px, #fff, transparent);
+            background-size: 200px 200px;
+            animation: twinkle 10s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Lune */
+        .moon {
+            position: absolute;
+            top: 50px;
+            right: 100px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ffffdd, #ffee88);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 255, 200, 0.8);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Arbres de fond */
+        .background-trees {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxMDAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwMCA2MDBMMTUwIDQwMEwyMDAgNjAwWiIgZmlsbD0iIzAwMjIzMyIvPgo8cGF0aCBkPSJNMzAwIDYwMEwzNTAgMzUwTDQwMCA2MDBaIiBmaWxsPSIjMDAzMzQ0Ii8+CjxwYXRoIGQ9Ik01MDAgNjAwTDU1MCA0MDBMOTA0MCA2MDBaIiBmaWxsPSIjMDAyMjMzIi8+CjxwYXRoIGQ9Ik03MDAgNjAwTDc1MCAzMDBMODAwIDYwMFoiIGZpbGw9IiMwMDQ0NTUiLz4KPHBhdGggZD0iTTkwMCA2MDBMOTM1MCA0NTBMOTcwIDYwMFoiIGZpbGw9IiMwMDMzNDQiLz4KPC9zdmc+') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+        /* Zones cliquables */
+        .clickable {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clickable:hover {
+            filter: brightness(1.3);
+            transform: scale(1.05);
+        }
+
+        /* Arbre mystique */
+        .mystic-tree {
+            bottom: 100px;
+            left: 200px;
+            width: 300px;
+            height: 400px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNTAgNDAwTDE1MCAyMDBMMTAwIDEwMEwxNTAgMTUwTDIwMCAxMDBMMTUwIDIwMFoiIGZpbGw9IiM0NDMzMjIiIHN0cm9rZT0iIzIyMTExMSIgc3Ryb2tlLXdpZHRoPSI0Ii8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEwMCIgcj0iODAiIGZpbGw9IiMxMTQ0MzMiIG9wYWNpdHk9IjAuOCIvPgo8Y2lyY2xlIGN4PSIxMjAiIGN5PSI4MCIgcj0iNSIgZmlsbD0iI2ZmZmYwMCIgb3BhY2l0eT0iMC44Ij4KICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuODswLjI7MC44IiBkdXI9IjNzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgLz4KPC9jaXJjbGU+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjEyMCIgcj0iNSIgZmlsbD0iI2ZmZmYwMCIgb3BhY2l0eT0iMC44Ij4KICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuODswLjI7MC44IiBkdXI9IjRzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgLz4KPC9jaXJjbGU+Cjwvc3ZnPg==') no-repeat center;
+        }
+
+        /* Caverne du druide */
+        .druid-cave {
+            bottom: 50px;
+            right: 300px;
+            width: 200px;
+            height: 150px;
+            background: radial-gradient(ellipse, #111 30%, #000 70%);
+            border-radius: 50% 50% 0 0;
+            box-shadow: inset 0 0 50px rgba(100, 50, 200, 0.3);
+        }
+
+        /* Pierre runique */
+        .rune-stone {
+            bottom: 80px;
+            left: 600px;
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(135deg, #444, #666);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+        }
+
+        .rune-stone::after {
+            content: "ᚱᚢᚾᛖ";
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #88ccff;
+            text-shadow: 0 0 10px rgba(100, 200, 255, 0.8);
+        }
+
+        /* Interface du joueur */
+        .ui {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 180px;
+            background: linear-gradient(to bottom, 
+                rgba(0, 0, 0, 0) 0%, 
+                rgba(0, 0, 0, 0.8) 20%, 
+                rgba(0, 0, 0, 0.95) 100%
+            );
+            border-top: 2px solid #333;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Zone de texte */
+        .text-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            color: #ddd;
+        }
+
+        .text-area p {
+            margin-bottom: 10px;
+        }
+
+        .text-area .narrator {
+            color: #88aaff;
+            font-style: italic;
+        }
+
+        .text-area .dialogue {
+            color: #ffcc88;
+        }
+
+        /* Inventaire */
+        .inventory {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .inventory h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #88ff88;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        .inv-slot {
+            aspect-ratio: 1;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .inv-slot:hover {
+            background: #333;
+            border-color: #666;
+        }
+
+        /* Particules magiques */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #88ff88, transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rise 8s linear infinite;
+        }
+
+        @keyframes rise {
+            from {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-600px) translateX(calc(sin(var(--x)) * 100px));
+                opacity: 0;
+            }
+        }
+
+        /* Menu d'actions */
+        .action-menu {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
+            z-index: 100;
+        }
+
+        .action-menu button {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin: 2px 0;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .action-menu button:hover {
+            background: #444;
+            border-color: #888;
+        }
+
+        /* Transitions */
+        .fade-in {
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Titre */
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        /* Boutons de navigation */
+        .nav-buttons {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #666;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .nav-button:hover {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: #888;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <!-- Fond étoilé -->
+        <div class="stars"></div>
+        
+        <!-- Lune -->
+        <div class="moon"></div>
+        
+        <!-- Arbres de fond -->
+        <div class="background-trees"></div>
+        
+        <!-- Titre -->
+        <h1 class="title">LA FORÊT MAGIQUE</h1>
+        
+        <!-- Boutons de navigation -->
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="goToTraining()">Entraînement TCG</button>
+            <button class="nav-button" onclick="goToAvalon()">Entrer dans Avalon</button>
+        </div>
+        
+        <!-- Éléments interactifs -->
+        <div class="mystic-tree clickable" onclick="interactWith('tree')" title="Arbre Mystique"></div>
+        <div class="druid-cave clickable" onclick="interactWith('cave')" title="Caverne du Druide"></div>
+        <div class="rune-stone clickable" onclick="interactWith('stone')" title="Pierre Runique"></div>
+    </div>
+    
+    <!-- Interface utilisateur -->
+    <div class="ui">
+        <div class="text-area" id="textArea">
+            <p class="narrator">Vous vous réveillez dans une forêt mystérieuse, baignée par la lumière de la lune. Des lucioles magiques dansent entre les arbres anciens.</p>
+            <p class="narrator">Trois lieux attirent votre attention : un arbre aux feuilles lumineuses, une caverne sombre d'où émane une aura mystique, et une pierre couverte de runes anciennes.</p>
+        </div>
+        
+        <div class="inventory">
+            <h3>Inventaire</h3>
+            <div class="inventory-grid" id="inventory">
+                <!-- Slots vides -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Menu d'actions contextuel -->
+    <div class="action-menu" id="actionMenu"></div>
+
+    <!-- Scripts du jeu -->
+    <script src="game-state-manager.js"></script>
+    
+    <script>
+        // État local pour cette scène
+        const localState = {
+            visitedLocations: new Set()
+        };
+
+        // Dialogues et interactions
+        const interactions = {
+            tree: {
+                first: [
+                    { type: 'narrator', text: "L'arbre mystique brille d'une douce lumière verte. Ses branches semblent murmurer des secrets anciens." },
+                    { type: 'narrator', text: "En vous approchant, vous remarquez une petite cavité dans le tronc..." }
+                ],
+                actions: [
+                    { text: "Examiner la cavité", action: () => findItem('amulet') },
+                    { text: "Écouter les murmures", action: () => listenToTree() },
+                    { text: "S'éloigner", action: () => closeMenu() }
+                ]
+            },
+            cave: {
+                first: [
+                    { type: 'narrator', text: "L'entrée de la caverne exhale une brume violette. Des symboles étranges sont gravés autour de l'ouverture." },
+                    { type: 'dialogue', text: "\"Qui ose troubler ma méditation?\"", speaker: "Voix du Druide" }
+                ],
+                actions: [
+                    { text: "Entrer dans la caverne", action: () => enterCave() },
+                    { text: "Répondre au druide", action: () => talkToDruid() },
+                    { text: "Reculer prudemment", action: () => closeMenu() }
+                ]
+            },
+            stone: {
+                first: [
+                    { type: 'narrator', text: "La pierre runique vibre d'une énergie ancienne. Les runes semblent changer de forme sous vos yeux." }
+                ],
+                actions: [
+                    { text: "Toucher les runes", action: () => activateRunes() },
+                    { text: "Déchiffrer les symboles", action: () => readRunes() },
+                    { text: "S'éloigner", action: () => closeMenu() }
+                ]
+            }
+        };
+
+        // Initialisation
+        function init() {
+            createInventorySlots();
+            createParticles();
+            
+            // Musique d'ambiance (si on avait un fichier audio)
+            // const ambiance = new Audio('forest-ambiance.mp3');
+            // ambiance.loop = true;
+            // ambiance.volume = 0.3;
+            // ambiance.play();
+        }
+
+        // Créer les slots d'inventaire
+        function createInventorySlots() {
+            const inventory = document.getElementById('inventory');
+            for (let i = 0; i < 12; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inv-slot';
+                slot.onclick = () => useItem(i);
+                inventory.appendChild(slot);
+            }
+        }
+
+        // Créer des particules magiques
+        function createParticles() {
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.bottom = '0px';
+                    particle.style.setProperty('--x', Math.random() * 2 - 1);
+                    document.querySelector('.scene').appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 8000);
+                }
+            }, 500);
+        }
+
+        // Interaction avec un élément
+        function interactWith(element) {
+            const interaction = interactions[element];
+            const textArea = document.getElementById('textArea');
+            
+            // Ajouter le lieu aux lieux visités
+            localState.visitedLocations.add(element);
+            
+            // Afficher le texte
+            textArea.innerHTML = '';
+            const texts = localState.visitedLocations.has(element + '_visited') ? 
+                          interaction.return || interaction.first : 
+                          interaction.first;
+            
+            texts.forEach(text => {
+                const p = document.createElement('p');
+                p.className = text.type;
+                p.textContent = text.text;
+                textArea.appendChild(p);
+            });
+            
+            // Marquer comme visité
+            localState.visitedLocations.add(element + '_visited');
+            
+            // Afficher le menu d'actions
+            showActionMenu(interaction.actions);
+        }
+
+        // Afficher le menu d'actions
+        function showActionMenu(actions) {
+            const menu = document.getElementById('actionMenu');
+            menu.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.textContent = action.text;
+                button.onclick = action.action;
+                menu.appendChild(button);
+            });
+            
+            // Positionner le menu
+            menu.style.display = 'block';
+            menu.style.left = '50%';
+            menu.style.top = '50%';
+            menu.style.transform = 'translate(-50%, -50%)';
+        }
+
+        // Fermer le menu
+        function closeMenu() {
+            document.getElementById('actionMenu').style.display = 'none';
+        }
+
+        // Actions spécifiques
+        function findItem(itemType) {
+            const textArea = document.getElementById('textArea');
+            
+            if (itemType === 'amulet' && !gameState.progress.hasAmulet) {
+                gameState.findAmulet();
+                updateInventory();
+                
+                addText("Vous trouvez une amulette ancienne qui pulse d'une lumière bleue !", 'narrator');
+                addText("L'amulette a été ajoutée à votre inventaire.", 'narrator');
+            } else {
+                addText("La cavité est vide.", 'narrator');
+            }
+            
+            closeMenu();
+        }
+
+        function listenToTree() {
+            const messages = [
+                "Les murmures parlent d'un ancien gardien endormi dans la caverne...",
+                "\"Le temps n'est pas ce qu'il semble être...\"",
+                "\"Trois fois tourner, et le chemin s'ouvrira...\""
+            ];
+            
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            addText(message, 'narrator');
+            closeMenu();
+        }
+
+        function enterCave() {
+            if (gameState.progress.hasAmulet) {
+                addText("L'amulette brille et la brume s'écarte pour vous laisser passer.", 'narrator');
+                addText("Vous entrez dans la caverne du druide...", 'narrator');
+                
+                setTimeout(() => {
+                    addText("\"Je vois que vous portez l'amulette de la forêt. Bienvenue, voyageur.\"", 'dialogue');
+                    gameState.meetDruid();
+                }, 1500);
+            } else {
+                addText("La brume violette vous repousse. Il vous faut une protection magique pour entrer.", 'narrator');
+            }
+            closeMenu();
+        }
+
+        function talkToDruid() {
+            if (gameState.progress.knowsDruid) {
+                addText("\"Je peux vous enseigner les arts du combat temporel. Mais d'abord, activez la pierre runique.\"", 'dialogue');
+            } else {
+                addText("\"Trouvez d'abord l'amulette de la forêt, puis revenez me voir.\"", 'dialogue');
+            }
+            closeMenu();
+        }
+
+        function activateRunes() {
+            if (gameState.progress.hasAmulet) {
+                gameState.activateRune();
+                addText("Les runes s'illuminent au contact de votre amulette !", 'narrator');
+                addText("Un portail temporel commence à se former...", 'narrator');
+                
+                // Effet visuel
+                const stone = document.querySelector('.rune-stone');
+                stone.style.animation = 'pulse 2s ease-in-out infinite';
+            } else {
+                addText("Les runes restent inertes. Il vous manque quelque chose...", 'narrator');
+            }
+            closeMenu();
+        }
+
+        function readRunes() {
+            addText("Les runes semblent dire : \"Le temps est une spirale, non une ligne.\"", 'narrator');
+            closeMenu();
+        }
+
+        // Ajouter du texte
+        function addText(text, type) {
+            const textArea = document.getElementById('textArea');
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = text;
+            textArea.appendChild(p);
+            textArea.scrollTop = textArea.scrollHeight;
+        }
+
+        // Mettre à jour l'inventaire
+        function updateInventory() {
+            const slots = document.querySelectorAll('.inv-slot');
+            gameState.state.inventory.forEach((item, index) => {
+                if (slots[index]) {
+                    slots[index].textContent = item.icon;
+                }
+            });
+        }
+
+        // Utiliser un objet
+        function useItem(index) {
+            const item = gameState.state.inventory[index];
+            if (item) {
+                addText(`Vous examinez ${item.id === 'forest_amulet' ? "l'amulette" : "l'objet"}.`, 'narrator');
+            }
+        }
+
+        // Navigation vers d'autres modes
+        function goToTraining() {
+            if (gameState.canAccess('training')) {
+                gameState.changeLocation('training');
+                showTransition('Entrée dans l\'Entraînement TCG...', () => {
+                    window.location.href = 'AVALON-TCG/training-mode.html';
+                });
+            } else {
+                addText(gameState.getBlockedMessage('training'), 'narrator');
+            }
+        }
+
+        function goToAvalon() {
+            if (gameState.canAccess('avalon')) {
+                gameState.changeLocation('avalon');
+                showTransition('Passage vers Avalon...', () => {
+                    window.location.href = 'heroes-of-time-complete.html';
+                });
+            } else {
+                addText(gameState.getBlockedMessage('avalon'), 'narrator');
+            }
+        }
+        
+        // Afficher une transition
+        function showTransition(text, callback) {
+            const transition = document.createElement('div');
+            transition.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                color: #ffd700;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.5s ease;
+            `;
+            transition.textContent = text;
+            document.body.appendChild(transition);
+            
+            setTimeout(() => transition.style.opacity = '1', 10);
+            setTimeout(() => {
+                if (callback) callback();
+            }, 1500);
+        }
+
+        // Démarrage
+        init();
+    </script>
+</body>
+</html>

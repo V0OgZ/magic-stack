@@ -1,0 +1,40 @@
+{
+  "name": "heroes-of-time",
+  "version": "1.0.0",
+  "description": "Heroes of Time - Le Jeu Temporel",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.avalon.heroesOfTime",
+    "productName": "Heroes of Time",
+    "directories": {
+      "output": "../dist"
+    },
+    "mac": {
+      "category": "public.app-category.games",
+      "icon": "icon.icns"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 440,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}

@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes III - Ultimate Beautiful Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=MedievalSharp&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'MedievalSharp', serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Canvas avec effet premium */
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            box-shadow: 
+                0 0 100px rgba(255, 215, 0, 0.3),
+                0 0 50px rgba(255, 215, 0, 0.5),
+                inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* HUD Premium */
+        .hud-panel {
+            position: absolute;
+            background: linear-gradient(135deg, 
+                rgba(20, 15, 10, 0.95) 0%, 
+                rgba(40, 30, 20, 0.95) 50%,
+                rgba(20, 15, 10, 0.95) 100%);
+            border: 3px solid transparent;
+            border-image: linear-gradient(45deg, #8B4513, #D2691E, #FFD700, #D2691E, #8B4513) 1;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #resources {
+            top: 20px;
+            left: 20px;
+            min-width: 250px;
+        }
+        
+        .resource-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .resource-value {
+            color: #FFD700;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: right;
+            margin-right: 10px;
+        }
+        
+        /* Minimap stylée */
+        #minimap-container {
+            bottom: 20px;
+            right: 20px;
+            width: 280px;
+            height: 280px;
+            overflow: hidden;
+        }
+        
+        #minimap {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            border-radius: 10px;
+        }
+        
+        /* Quick actions */
+        #quickActions {
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,215,0,0.5) 0%, transparent 70%);
+            transition: all 0.5s;
+            transform: translate(-50%, -50%);
+        }
+        
+        .action-btn:hover:before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.5);
+        }
+        
+        /* Info panel amélioré */
+        #infoPanel {
+            bottom: 20px;
+            left: 20px;
+            width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        #infoPanel h3 {
+            font-family: 'Cinzel', serif;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .tile-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Loader épique */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader-title {
+            font-family: 'Cinzel', serif;
+            font-size: 48px;
+            color: #FFD700;
+            margin-bottom: 50px;
+            text-shadow: 0 0 30px rgba(255,215,0,0.8);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 30px rgba(255,215,0,0.8); }
+            50% { text-shadow: 0 0 50px rgba(255,215,0,1); }
+        }
+        
+        .loader-bar {
+            width: 500px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .loader-progress {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #FFD700 0%, 
+                #FFA500 25%, 
+                #FF6347 50%, 
+                #FFA500 75%, 
+                #FFD700 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Notifications flottantes */
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, 
+                rgba(20, 15, 10, 0.98) 0%, 
+                rgba(60, 40, 20, 0.98) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: 0 0 100px rgba(255,215,0,0.8);
+            z-index: 10000;
+            animation: notifPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes notifPop {
+            0% { 
+                transform: translate(-50%, -50%) scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+        
+        /* Effet de particules magiques */
+        .magic-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            50% { 
+                transform: translateY(-100px) translateX(50px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader">
+        <h1 class="loader-title">✨ Heroes of SpinForest ✨</h1>
+        <div class="loader-bar">
+            <div class="loader-progress" id="loaderProgress"></div>
+        </div>
+        <p id="loaderStatus" style="margin-top: 20px; font-size: 18px;">Invocation de la magie ancienne...</p>
+    </div>
+
+    <!-- Canvas principal -->
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Resources HUD -->
+    <div id="resources" class="hud-panel">
+        <h3 style="font-family: 'Cinzel', serif; color: #FFD700; margin-bottom: 20px;">Royaume de SpinForest</h3>
+        <div class="resource-item">
+            <div class="resource-icon">💰</div>
+            <span class="resource-value" id="gold">25000</span>
+            <span>Or</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">🪵</div>
+            <span class="resource-value" id="wood">50</span>
+            <span>Bois</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">⛏️</div>
+            <span class="resource-value" id="ore">50</span>
+            <span>Minerai</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">💎</div>
+            <span class="resource-value" id="gems">25</span>
+            <span>Gemmes</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">🔮</div>
+            <span class="resource-value" id="crystal">15</span>
+            <span>Cristaux</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">⚗️</div>
+            <span class="resource-value" id="sulfur">10</span>
+            <span>Soufre</span>
+        </div>
+        <div class="resource-item">
+            <div class="resource-icon">🦅</div>
+            <span class="resource-value" id="mercury">10</span>
+            <span>Mercure</span>
+        </div>
+    </div>
+    
+    <!-- Minimap -->
+    <div id="minimap-container" class="hud-panel">
+        <canvas id="minimap"></canvas>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div id="quickActions" class="hud-panel">
+        <button class="action-btn" onclick="game.endTurn()">⏭️ Fin du Tour</button>
+        <button class="action-btn" onclick="game.toggleView()">👁️ Vue Tactique</button>
+        <button class="action-btn" onclick="game.castSpell()">🔮 Lancer Sort</button>
+        <button class="action-btn" onclick="game.showHeroes()">🦸 Héros</button>
+    </div>
+    
+    <!-- Info Panel -->
+    <div id="infoPanel" class="hud-panel">
+        <h3>Informations</h3>
+        <div id="tileDetails">
+            <p style="color: #888;">Explorez le monde pour découvrir ses secrets...</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration améliorée
+        const CONFIG = {
+            tileSize: 64,
+            mapWidth: 50,
+            mapHeight: 50,
+            viewportWidth: Math.floor(window.innerWidth * 0.7 / 64),
+            viewportHeight: Math.floor(window.innerHeight * 0.8 / 64),
+            
+            // Nouvelles ressources
+            resources: {
+                gold: 25000,
+                wood: 50,
+                ore: 50,
+                gems: 25,
+                crystal: 15,
+                sulfur: 10,
+                mercury: 10
+            }
+        };
+        
+        // Classe principale ultra-améliorée
+        class UltimateHeroesGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d', { alpha: false });
+                this.minimap = document.getElementById('minimap');
+                this.minimapCtx = this.minimap.getContext('2d');
+                
+                this.camera = { x: 0, y: 0 };
+                this.zoom = 1;
+                this.time = 0;
+                
+                this.tiles = {};
+                this.loadedAssets = {};
+                this.particles = [];
+                
+                this.setupCanvas();
+                this.loadGame();
+            }
+            
+            setupCanvas() {
+                this.canvas.width = CONFIG.viewportWidth * CONFIG.tileSize;
+                this.canvas.height = CONFIG.viewportHeight * CONFIG.tileSize;
+                
+                this.minimap.width = 280;
+                this.minimap.height = 280;
+                
+                // Events optimisés
+                this.canvas.addEventListener('click', e => this.handleClick(e));
+                this.canvas.addEventListener('mousemove', e => this.handleMouseMove(e));
+                this.canvas.addEventListener('wheel', e => this.handleZoom(e));
+                document.addEventListener('keydown', e => this.handleKeyboard(e));
+                
+                // Touch support
+                let touchStart = null;
+                this.canvas.addEventListener('touchstart', e => {
+                    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                });
+                
+                this.canvas.addEventListener('touchmove', e => {
+                    if (touchStart) {
+                        const dx = e.touches[0].clientX - touchStart.x;
+                        const dy = e.touches[0].clientY - touchStart.y;
+                        this.camera.x -= dx;
+                        this.camera.y -= dy;
+                        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    }
+                });
+            }
+            
+            async loadGame() {
+                try {
+                    // Phase 1: Assets de base
+                    this.updateLoader(10, "Chargement des textures de terrain...");
+                    await this.loadTerrainTextures();
+                    
+                    // Phase 2: Créatures et héros
+                    this.updateLoader(30, "Invocation des créatures mythiques...");
+                    await this.loadCreatures();
+                    
+                    // Phase 3: Sorts et effets
+                    this.updateLoader(50, "Préparation des sorts anciens...");
+                    await this.loadSpells();
+                    
+                    // Phase 4: Map
+                    this.updateLoader(70, "Génération du monde...");
+                    await this.generateBeautifulMap();
+                    
+                    // Phase 5: Audio
+                    this.updateLoader(85, "Accordage des mélodies épiques...");
+                    await this.loadAudio();
+                    
+                    // Phase 6: Finalisation
+                    this.updateLoader(95, "Ouverture des portails...");
+                    
+                    setTimeout(() => {
+                        this.updateLoader(100, "Bienvenue, Héros !");
+                        setTimeout(() => this.startGame(), 1000);
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error("Erreur:", error);
+                    this.updateLoader(100, "Démarrage en mode de secours...");
+                    setTimeout(() => this.startGame(), 1000);
+                }
+            }
+            
+            async loadTerrainTextures() {
+                // Simuler le chargement des vraies textures
+                const terrainTypes = [
+                    { name: 'grass', color: '#4a7c3c', pattern: 'dots' },
+                    { name: 'forest', color: '#2d5016', pattern: 'trees' },
+                    { name: 'mountain', color: '#8b7355', pattern: 'rocks' },
+                    { name: 'water', color: '#4682b4', pattern: 'waves' },
+                    { name: 'lava', color: '#ff4500', pattern: 'bubbles' },
+                    { name: 'snow', color: '#f0f8ff', pattern: 'crystals' },
+                    { name: 'desert', color: '#f4a460', pattern: 'dunes' },
+                    { name: 'swamp', color: '#556b2f', pattern: 'moss' }
+                ];
+                
+                for (const terrain of terrainTypes) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = CONFIG.tileSize;
+                    canvas.height = CONFIG.tileSize;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Base color
+                    ctx.fillStyle = terrain.color;
+                    ctx.fillRect(0, 0, CONFIG.tileSize, CONFIG.tileSize);
+                    
+                    // Patterns détaillés
+                    this.drawTerrainPattern(ctx, terrain.pattern);
+                    
+                    this.tiles[terrain.name] = canvas;
+                }
+            }
+            
+            drawTerrainPattern(ctx, pattern) {
+                ctx.globalAlpha = 0.3;
+                
+                switch(pattern) {
+                    case 'dots':
+                        // Herbe avec petits points
+                        for (let i = 0; i < 50; i++) {
+                            ctx.fillStyle = `hsl(120, 50%, ${40 + Math.random() * 20}%)`;
+                            ctx.beginPath();
+                            ctx.arc(
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * 2 + 1,
+                                0, Math.PI * 2
+                            );
+                            ctx.fill();
+                        }
+                        break;
+                        
+                    case 'trees':
+                        // Arbres simplifiés
+                        for (let i = 0; i < 8; i++) {
+                            const x = Math.random() * CONFIG.tileSize;
+                            const y = Math.random() * CONFIG.tileSize;
+                            ctx.fillStyle = '#1a3d0a';
+                            ctx.fillRect(x - 2, y, 4, 8);
+                            ctx.fillStyle = '#2d5016';
+                            ctx.beginPath();
+                            ctx.moveTo(x, y - 10);
+                            ctx.lineTo(x - 8, y);
+                            ctx.lineTo(x + 8, y);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        break;
+                        
+                    case 'waves':
+                        // Vagues animables
+                        ctx.strokeStyle = '#5a9fd4';
+                        ctx.lineWidth = 2;
+                        for (let y = 0; y < CONFIG.tileSize; y += 8) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, y);
+                            for (let x = 0; x < CONFIG.tileSize; x += 4) {
+                                ctx.lineTo(x, y + Math.sin(x * 0.2) * 3);
+                            }
+                            ctx.stroke();
+                        }
+                        break;
+                        
+                    case 'rocks':
+                        // Rochers
+                        ctx.fillStyle = '#6b5d54';
+                        for (let i = 0; i < 12; i++) {
+                            const x = Math.random() * CONFIG.tileSize;
+                            const y = Math.random() * CONFIG.tileSize;
+                            const size = Math.random() * 8 + 4;
+                            ctx.fillRect(x, y, size, size * 0.8);
+                        }
+                        break;
+                        
+                    case 'bubbles':
+                        // Bulles de lave
+                        for (let i = 0; i < 20; i++) {
+                            ctx.fillStyle = `hsla(15, 100%, ${50 + Math.random() * 30}%, 0.6)`;
+                            ctx.beginPath();
+                            ctx.arc(
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * CONFIG.tileSize,
+                                Math.random() * 4 + 2,
+                                0, Math.PI * 2
+                            );
+                            ctx.fill();
+                        }
+                        break;
+                }
+                
+                ctx.globalAlpha = 1;
+            }
+            
+            async loadCreatures() {
+                // Simuler le chargement des créatures
+                this.creatures = {
+                    goblin: { icon: '👺', strength: 1 },
+                    orc: { icon: '👹', strength: 3 },
+                    dragon: { icon: '🐉', strength: 10 },
+                    phoenix: { icon: '🦅', strength: 8 },
+                    titan: { icon: '⚡', strength: 15 }
+                };
+            }
+            
+            async loadSpells() {
+                // Simuler le chargement des sorts
+                this.spells = {
+                    fireball: { icon: '🔥', damage: 50 },
+                    lightning: { icon: '⚡', damage: 75 },
+                    heal: { icon: '💚', heal: 100 },
+                    teleport: { icon: '🌀', range: 10 }
+                };
+            }
+            
+            async loadAudio() {
+                // Préparer l'audio (simulé)
+                this.audio = {
+                    enabled: true,
+                    volume: 0.5
+                };
+            }
+            
+            async generateBeautifulMap() {
+                this.map = [];
+                this.objects = [];
+                
+                // Génération procédurale améliorée
+                const noise = this.createNoise();
+                
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    this.map[y] = [];
+                    this.objects[y] = [];
+                    
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        // Utiliser le bruit de Perlin pour des biomes naturels
+                        const elevation = noise(x * 0.05, y * 0.05);
+                        const moisture = noise(x * 0.05 + 100, y * 0.05 + 100);
+                        
+                        let terrain = 'grass';
+                        
+                        if (elevation < -0.3) {
+                            terrain = 'water';
+                        } else if (elevation > 0.6) {
+                            terrain = 'mountain';
+                        } else if (moisture > 0.5 && elevation > 0.2) {
+                            terrain = 'forest';
+                        } else if (moisture < -0.5) {
+                            terrain = 'desert';
+                        } else if (elevation < -0.1 && moisture > 0.3) {
+                            terrain = 'swamp';
+                        }
+                        
+                        // Zones spéciales
+                        const distFromCenter = Math.sqrt(
+                            Math.pow(x - 25, 2) + Math.pow(y - 25, 2)
+                        );
+                        
+                        if (distFromCenter < 3) {
+                            terrain = 'lava'; // Centre volcanique
+                        }
+                        
+                        if (y < 5 && elevation > 0.3) {
+                            terrain = 'snow'; // Nord enneigé
+                        }
+                        
+                        this.map[y][x] = terrain;
+                        this.objects[y][x] = null;
+                    }
+                }
+                
+                // Ajouter des objets
+                this.placeStrategicObjects();
+            }
+            
+            createNoise() {
+                // Bruit de Perlin simplifié
+                const permutation = [];
+                for (let i = 0; i < 256; i++) {
+                    permutation[i] = i;
+                }
+                
+                // Mélanger
+                for (let i = 255; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [permutation[i], permutation[j]] = [permutation[j], permutation[i]];
+                }
+                
+                return (x, y) => {
+                    // Implémentation simplifiée du bruit
+                    const X = Math.floor(x) & 255;
+                    const Y = Math.floor(y) & 255;
+                    
+                    const xf = x - Math.floor(x);
+                    const yf = y - Math.floor(y);
+                    
+                    const u = this.fade(xf);
+                    const v = this.fade(yf);
+                    
+                    const a = permutation[X] + Y;
+                    const aa = permutation[a & 255];
+                    const ab = permutation[(a + 1) & 255];
+                    const b = permutation[(X + 1) & 255] + Y;
+                    const ba = permutation[b & 255];
+                    const bb = permutation[(b + 1) & 255];
+                    
+                    return this.lerp(v,
+                        this.lerp(u, this.grad(permutation[aa & 255], xf, yf),
+                                    this.grad(permutation[ba & 255], xf - 1, yf)),
+                        this.lerp(u, this.grad(permutation[ab & 255], xf, yf - 1),
+                                    this.grad(permutation[bb & 255], xf - 1, yf - 1))
+                    );
+                };
+            }
+            
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
+            
+            lerp(t, a, b) {
+                return a + t * (b - a);
+            }
+            
+            grad(hash, x, y) {
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 4 ? y : h === 12 || h === 14 ? x : 0;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+            
+            placeStrategicObjects() {
+                // Châteaux aux 4 coins
+                const castles = [
+                    { x: 5, y: 5, name: "Château du Nord", player: 1 },
+                    { x: 45, y: 5, name: "Forteresse de l'Est", player: 2 },
+                    { x: 5, y: 45, name: "Citadelle de l'Ouest", player: 3 },
+                    { x: 45, y: 45, name: "Donjon du Sud", player: 4 }
+                ];
+                
+                castles.forEach(castle => {
+                    this.objects[castle.y][castle.x] = {
+                        type: 'castle',
+                        ...castle,
+                        icon: '🏰'
+                    };
+                });
+                
+                // Mines de ressources
+                const mines = [
+                    { resource: 'gold', icon: '⛏️', count: 3 },
+                    { resource: 'wood', icon: '🌲', count: 5 },
+                    { resource: 'ore', icon: '⛰️', count: 4 },
+                    { resource: 'gems', icon: '💎', count: 2 },
+                    { resource: 'crystal', icon: '🔮', count: 2 },
+                    { resource: 'sulfur', icon: '🌋', count: 1 },
+                    { resource: 'mercury', icon: '⚗️', count: 1 }
+                ];
+                
+                mines.forEach(mine => {
+                    for (let i = 0; i < mine.count; i++) {
+                        let placed = false;
+                        while (!placed) {
+                            const x = Math.floor(Math.random() * CONFIG.mapWidth);
+                            const y = Math.floor(Math.random() * CONFIG.mapHeight);
+                            
+                            if (this.map[y][x] !== 'water' && !this.objects[y][x]) {
+                                this.objects[y][x] = {
+                                    type: 'mine',
+                                    resource: mine.resource,
+                                    icon: mine.icon,
+                                    production: 1 + Math.floor(Math.random() * 3)
+                                };
+                                placed = true;
+                            }
+                        }
+                    }
+                });
+                
+                // Créatures gardiens
+                for (let i = 0; i < 20; i++) {
+                    const x = Math.floor(Math.random() * CONFIG.mapWidth);
+                    const y = Math.floor(Math.random() * CONFIG.mapHeight);
+                    
+                    if (this.map[y][x] !== 'water' && !this.objects[y][x]) {
+                        const creatureTypes = Object.keys(this.creatures);
+                        const creature = creatureTypes[Math.floor(Math.random() * creatureTypes.length)];
+                        
+                        this.objects[y][x] = {
+                            type: 'creature',
+                            name: creature,
+                            ...this.creatures[creature],
+                            count: Math.floor(Math.random() * 10) + 5
+                        };
+                    }
+                }
+            }
+            
+            updateLoader(percent, status) {
+                document.getElementById('loaderProgress').style.width = percent + '%';
+                document.getElementById('loaderStatus').textContent = status;
+            }
+            
+            startGame() {
+                // Masquer le loader
+                document.getElementById('loader').style.display = 'none';
+                
+                // Démarrer les particules
+                this.startParticles();
+                
+                // Centrer la vue
+                this.centerCamera();
+                
+                // Démarrer la boucle de jeu
+                this.gameLoop();
+                
+                // Message de bienvenue
+                this.showNotification(
+                    "⚔️ Bienvenue dans SpinForest !",
+                    "Que votre quête soit glorieuse, Héros !"
+                );
+            }
+            
+            startParticles() {
+                // Créer des particules magiques
+                setInterval(() => {
+                    if (this.particles.length < 50) {
+                        const particle = document.createElement('div');
+                        particle.className = 'magic-particle';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.top = window.innerHeight + 'px';
+                        particle.style.animationDelay = Math.random() * 3 + 's';
+                        particle.style.animationDuration = (3 + Math.random() * 2) + 's';
+                        document.body.appendChild(particle);
+                        
+                        this.particles.push(particle);
+                        
+                        setTimeout(() => {
+                            particle.remove();
+                            this.particles = this.particles.filter(p => p !== particle);
+                        }, 5000);
+                    }
+                }, 200);
+            }
+            
+            gameLoop() {
+                this.time += 0.016; // ~60 FPS
+                
+                this.update();
+                this.render();
+                this.renderMinimap();
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            update() {
+                // Animations et mises à jour
+            }
+            
+            render() {
+                // Clear avec dégradé
+                const gradient = this.ctx.createRadialGradient(
+                    this.canvas.width / 2, this.canvas.height / 2,
+                    0,
+                    this.canvas.width / 2, this.canvas.height / 2,
+                    this.canvas.width
+                );
+                gradient.addColorStop(0, '#1a1a2e');
+                gradient.addColorStop(1, '#0a0a1a');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Calculer la zone visible
+                const startX = Math.floor(this.camera.x / CONFIG.tileSize);
+                const startY = Math.floor(this.camera.y / CONFIG.tileSize);
+                const endX = Math.min(startX + CONFIG.viewportWidth + 1, CONFIG.mapWidth);
+                const endY = Math.min(startY + CONFIG.viewportHeight + 1, CONFIG.mapHeight);
+                
+                // Rendu des tiles avec effets
+                for (let y = Math.max(0, startY); y < endY; y++) {
+                    for (let x = Math.max(0, startX); x < endX; x++) {
+                        this.renderTile(x, y);
+                    }
+                }
+                
+                // Effets post-processing
+                this.applyLighting();
+            }
+            
+            renderTile(x, y) {
+                const screenX = x * CONFIG.tileSize - this.camera.x;
+                const screenY = y * CONFIG.tileSize - this.camera.y;
+                
+                const terrain = this.map[y][x];
+                const tile = this.tiles[terrain];
+                
+                if (tile) {
+                    // Dessiner la tile
+                    this.ctx.drawImage(tile, screenX, screenY);
+                    
+                    // Effets spéciaux pour certains terrains
+                    if (terrain === 'water' || terrain === 'lava') {
+                        this.ctx.globalAlpha = 0.3 + Math.sin(this.time * 2 + x + y) * 0.1;
+                        this.ctx.fillStyle = terrain === 'water' ? '#4682b4' : '#ff6600';
+                        this.ctx.fillRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                        this.ctx.globalAlpha = 1;
+                    }
+                    
+                    // Bordures subtiles
+                    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(screenX, screenY, CONFIG.tileSize, CONFIG.tileSize);
+                }
+                
+                // Objets
+                const obj = this.objects[y][x];
+                if (obj) {
+                    this.renderObject(obj, screenX, screenY);
+                }
+            }
+            
+            renderObject(obj, screenX, screenY) {
+                // Ombre
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.ellipse(
+                    screenX + CONFIG.tileSize / 2,
+                    screenY + CONFIG.tileSize * 0.8,
+                    20, 10, 0, 0, Math.PI * 2
+                );
+                this.ctx.fill();
+                
+                // Icône avec animation
+                const bounce = Math.sin(this.time * 3 + screenX + screenY) * 3;
+                
+                this.ctx.font = '36px serif';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                // Glow effect
+                this.ctx.shadowColor = '#FFD700';
+                this.ctx.shadowBlur = 10;
+                
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillText(
+                    obj.icon,
+                    screenX + CONFIG.tileSize / 2,
+                    screenY + CONFIG.tileSize / 2 - bounce
+                );
+                
+                this.ctx.shadowBlur = 0;
+            }
+            
+            applyLighting() {
+                // Effet de lumière dynamique
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                const gradient = this.ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, this.canvas.width * 0.7
+                );
+                
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
+                gradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.02)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            renderMinimap() {
+                const scale = this.minimap.width / CONFIG.mapWidth;
+                
+                // Background
+                this.minimapCtx.fillStyle = '#0a0a1a';
+                this.minimapCtx.fillRect(0, 0, this.minimap.width, this.minimap.height);
+                
+                // Rendu rapide de la map
+                for (let y = 0; y < CONFIG.mapHeight; y += 2) {
+                    for (let x = 0; x < CONFIG.mapWidth; x += 2) {
+                        const terrain = this.map[y][x];
+                        const color = this.getTerrainColor(terrain);
+                        
+                        this.minimapCtx.fillStyle = color;
+                        this.minimapCtx.fillRect(
+                            x * scale, y * scale,
+                            scale * 2, scale * 2
+                        );
+                    }
+                }
+                
+                // Objets importants
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        const obj = this.objects[y][x];
+                        if (obj && obj.type === 'castle') {
+                            this.minimapCtx.fillStyle = '#FFD700';
+                            this.minimapCtx.fillRect(
+                                x * scale - 2, y * scale - 2,
+                                4, 4
+                            );
+                        }
+                    }
+                }
+                
+                // Viewport
+                const viewX = (this.camera.x / CONFIG.tileSize) * scale;
+                const viewY = (this.camera.y / CONFIG.tileSize) * scale;
+                const viewW = CONFIG.viewportWidth * scale;
+                const viewH = CONFIG.viewportHeight * scale;
+                
+                this.minimapCtx.strokeStyle = '#FFD700';
+                this.minimapCtx.lineWidth = 2;
+                this.minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
+            }
+            
+            getTerrainColor(terrain) {
+                const colors = {
+                    grass: '#4a7c3c',
+                    forest: '#2d5016',
+                    mountain: '#8b7355',
+                    water: '#4682b4',
+                    lava: '#ff4500',
+                    snow: '#f0f8ff',
+                    desert: '#f4a460',
+                    swamp: '#556b2f'
+                };
+                return colors[terrain] || '#333';
+            }
+            
+            handleClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const tileX = Math.floor((x + this.camera.x) / CONFIG.tileSize);
+                const tileY = Math.floor((y + this.camera.y) / CONFIG.tileSize);
+                
+                if (tileX >= 0 && tileX < CONFIG.mapWidth && tileY >= 0 && tileY < CONFIG.mapHeight) {
+                    this.selectTile(tileX, tileY);
+                }
+            }
+            
+            selectTile(x, y) {
+                const terrain = this.map[y][x];
+                const obj = this.objects[y][x];
+                
+                let info = `<div class="tile-info">`;
+                info += `<h4>📍 Position (${x}, ${y})</h4>`;
+                info += `<p><strong>Terrain:</strong> ${terrain}</p>`;
+                
+                if (obj) {
+                    info += `<hr style="border-color: #FFD700; opacity: 0.3;">`;
+                    info += `<h4>${obj.icon} ${obj.name || obj.type}</h4>`;
+                    
+                    if (obj.type === 'mine') {
+                        info += `<p>Production: +${obj.production} ${obj.resource}/jour</p>`;
+                    } else if (obj.type === 'creature') {
+                        info += `<p>Quantité: ${obj.count}</p>`;
+                        info += `<p>Force: ${obj.strength}</p>`;
+                    }
+                }
+                
+                info += `</div>`;
+                
+                document.getElementById('tileDetails').innerHTML = info;
+                
+                // Effet visuel
+                this.createClickEffect(x, y);
+            }
+            
+            createClickEffect(tileX, tileY) {
+                // Créer un effet de clic stylé
+                const screenX = tileX * CONFIG.tileSize - this.camera.x + CONFIG.tileSize / 2;
+                const screenY = tileY * CONFIG.tileSize - this.camera.y + CONFIG.tileSize / 2;
+                
+                const effect = document.createElement('div');
+                effect.style.cssText = `
+                    position: absolute;
+                    left: ${screenX + this.canvas.offsetLeft}px;
+                    top: ${screenY + this.canvas.offsetTop}px;
+                    width: 0;
+                    height: 0;
+                    border: 2px solid #FFD700;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    animation: clickRipple 0.6s ease-out;
+                `;
+                
+                document.body.appendChild(effect);
+                setTimeout(() => effect.remove(), 600);
+            }
+            
+            handleMouseMove(e) {
+                // Effet de hover (optionnel)
+            }
+            
+            handleKeyboard(e) {
+                const speed = CONFIG.tileSize;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                        this.camera.y = Math.max(0, this.camera.y - speed);
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                        this.camera.y = Math.min(
+                            (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize,
+                            this.camera.y + speed
+                        );
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                        this.camera.x = Math.max(0, this.camera.x - speed);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        this.camera.x = Math.min(
+                            (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize,
+                            this.camera.x + speed
+                        );
+                        break;
+                    case ' ':
+                        this.centerCamera();
+                        break;
+                }
+            }
+            
+            handleZoom(e) {
+                e.preventDefault();
+                // Zoom (à implémenter)
+            }
+            
+            centerCamera() {
+                this.camera.x = (CONFIG.mapWidth - CONFIG.viewportWidth) * CONFIG.tileSize / 2;
+                this.camera.y = (CONFIG.mapHeight - CONFIG.viewportHeight) * CONFIG.tileSize / 2;
+            }
+            
+            endTurn() {
+                // Production des ressources
+                for (let y = 0; y < CONFIG.mapHeight; y++) {
+                    for (let x = 0; x < CONFIG.mapWidth; x++) {
+                        const obj = this.objects[y][x];
+                        if (obj && obj.type === 'mine' && obj.owner === 'player') {
+                            CONFIG.resources[obj.resource] += obj.production;
+                        }
+                    }
+                }
+                
+                // Mise à jour HUD
+                this.updateResources();
+                
+                this.showNotification(
+                    "📅 Nouveau Tour !",
+                    "Les mines ont produit des ressources."
+                );
+            }
+            
+            updateResources() {
+                Object.keys(CONFIG.resources).forEach(resource => {
+                    const element = document.getElementById(resource);
+                    if (element) {
+                        element.textContent = CONFIG.resources[resource].toLocaleString();
+                    }
+                });
+            }
+            
+            toggleView() {
+                // Changer de vue (à implémenter)
+                this.showNotification(
+                    "👁️ Vue Tactique",
+                    "Fonctionnalité en développement..."
+                );
+            }
+            
+            castSpell() {
+                // Lancer un sort (à implémenter)
+                this.showNotification(
+                    "🔮 Livre de Sorts",
+                    "Choisissez votre sort..."
+                );
+            }
+            
+            showHeroes() {
+                // Afficher les héros (à implémenter)
+                this.showNotification(
+                    "🦸 Vos Héros",
+                    "Arthur niveau 12 - Merlin niveau 15"
+                );
+            }
+            
+            showNotification(title, message) {
+                const notif = document.createElement('div');
+                notif.className = 'notification';
+                notif.innerHTML = `
+                    <h2 style="color: #FFD700; margin: 0 0 15px 0; font-size: 32px; font-family: 'Cinzel', serif;">
+                        ${title}
+                    </h2>
+                    <p style="font-size: 20px; margin: 0;">${message}</p>
+                `;
+                
+                document.body.appendChild(notif);
+                
+                setTimeout(() => {
+                    notif.style.animation = 'notifPop 0.5s reverse';
+                    setTimeout(() => notif.remove(), 500);
+                }, 2500);
+            }
+        }
+        
+        // CSS pour les animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes clickRipple {
+                0% {
+                    width: 0;
+                    height: 0;
+                    opacity: 1;
+                }
+                100% {
+                    width: 100px;
+                    height: 100px;
+                    opacity: 0;
+                    transform: translate(-50px, -50px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Démarrer le jeu
+        let game;
+        window.addEventListener('load', () => {
+            game = new UltimateHeroesGame();
+        });
+    </script>
+</body>
+</html>

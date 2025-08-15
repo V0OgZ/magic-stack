@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌌 AVALON MEGA MAP 3D - Architecture Complète</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .mega-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 20px #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        .left-panel {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .center-map {
+            background: radial-gradient(circle at center, #001122 0%, #000811 100%);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .right-panel {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        /* Districts 3D */
+        .district {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 2px solid;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8em;
+            text-align: center;
+            background: radial-gradient(circle, rgba(0,255,136,0.1) 0%, rgba(0,100,200,0.2) 100%);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .district:hover {
+            transform: scale(1.2) translateZ(20px);
+            box-shadow: 0 0 30px currentColor;
+            z-index: 100;
+        }
+
+        .core { 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            border-color: #ff6b6b; 
+            font-size: 1.2em;
+            width: 150px;
+            height: 150px;
+        }
+        .home { top: 15%; left: 15%; border-color: #4ecdc4; }
+        .essences { top: 15%; right: 15%; border-color: #ffe66d; }
+        .institut { top: 85%; left: 20%; border-color: #a8e6cf; }
+        .ecole { top: 85%; right: 20%; border-color: #ff8b94; }
+        .templum { top: 50%; left: 10%; border-color: #b4a7d6; }
+        .evenements { top: 50%; right: 10%; border-color: #d4a4eb; }
+        .crypte { top: 25%; left: 50%; transform: translateX(-50%); border-color: #8ac4d0; }
+        .entites { top: 75%; left: 50%; transform: translateX(-50%); border-color: #f7dc6f; }
+
+        /* Buildings showcase */
+        .building-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .building-card {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .building-card:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .race-section {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 10px;
+        }
+
+        .race-title {
+            font-size: 1.2em;
+            color: #ffdd44;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* École levels */
+        .school-level {
+            background: rgba(255, 221, 68, 0.1);
+            border: 1px solid #ffdd44;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .level-title {
+            color: #ffdd44;
+            font-weight: bold;
+        }
+
+        /* Floating animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            25% { transform: translateY(-10px) scale(1.05); }
+            50% { transform: translateY(-5px) scale(1.02); }
+            75% { transform: translateY(-15px) scale(1.03); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Connection lines */
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            z-index: 1;
+            animation: flow 3s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* Statistics */
+        .stats {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .district-details {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1000;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .department {
+            background: rgba(168, 230, 207, 0.1);
+            border-left: 3px solid #a8e6cf;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mega-container">
+        <header class="header">
+            <h1>🌌 AVALON MEGA MAP 3D</h1>
+            <p>📊 297 Dossiers • 🏛️ 9 Districts • 🏗️ Architecture Vivante</p>
+            <p><strong>Par Sid Meier - L'Architecte d'Avalon</strong></p>
+        </header>
+
+        <div class="left-panel">
+            <h2>🏗️ BÂTIMENTS ÉPIQUES</h2>
+            
+            <div class="race-section">
+                <div class="race-title">👑 HUMAINS</div>
+                <div class="building-card">🏰 Château Humain<br><small>15🪵 20🪨 1000💰</small></div>
+                <div class="building-card">⚔️ Caserne<br><small>10🪵 5🪨 500💰</small></div>
+                <div class="building-card">🗼 Tour de Mage<br><small>5🪵 15🪨 800💰</small></div>
+            </div>
+
+            <div class="race-section">
+                <div class="race-title">🧝 ELFES</div>
+                <div class="building-card">🌳 Château-Arbre<br><small>25🪵 5🪨 1200💰</small></div>
+                <div class="building-card">🌙 Puits de Lune<br><small>10🪵 10🪨 600💰</small></div>
+            </div>
+
+            <div class="race-section">
+                <div class="race-title">🔨 NAINS</div>
+                <div class="building-card">⛰️ Salle des Montagnes<br><small>5🪵 30🪨 1500💰</small></div>
+                <div class="building-card">🔥 Grande Forge<br><small>8🪵 20🪨 1000💰</small></div>
+            </div>
+
+            <div class="race-section">
+                <div class="race-title">👹 ORCS</div>
+                <div class="building-card">💀 Forteresse Orc<br><small>20🪵 15🪨 800💰</small></div>
+                <div class="building-card">⚔️ Fosse de Combat<br><small>15🪵 10🪨 600💰</small></div>
+            </div>
+
+            <div class="race-section">
+                <div class="race-title">💀 MORTS-VIVANTS</div>
+                <div class="building-card">🏚️ Nécropole<br><small>Sombre & Mystique</small></div>
+            </div>
+
+            <div class="race-section">
+                <div class="race-title">✨ CÉLESTES</div>
+                <div class="building-card">💎 Flèche de Cristal<br><small>Pure Énergie</small></div>
+            </div>
+        </div>
+
+        <div class="center-map">
+            <!-- Districts principaux -->
+            <div class="district core" onclick="showDistrictDetails('core')">
+                🧬<br><strong>CORE</strong><br>Cerveau d'Avalon
+            </div>
+            
+            <div class="district home" onclick="showDistrictDetails('home')">
+                🏠<br><strong>HOME</strong><br>21 Résidents
+            </div>
+            
+            <div class="district essences" onclick="showDistrictDetails('essences')">
+                💠<br><strong>ESSENCES</strong><br>Artefacts Scellés
+            </div>
+            
+            <div class="district institut" onclick="showDistrictDetails('institut')">
+                🔮<br><strong>INSTITUT</strong><br>Recherche Magique
+            </div>
+            
+            <div class="district ecole" onclick="showDistrictDetails('ecole')">
+                🏛️<br><strong>PORIO-NOZ</strong><br>École de Magie
+            </div>
+            
+            <div class="district templum" onclick="showDistrictDetails('templum')">
+                🔸<br><strong>TEMPLUM</strong><br>Archetypes
+            </div>
+            
+            <div class="district evenements" onclick="showDistrictDetails('evenements')">
+                📆<br><strong>ÉVÉNEMENTS</strong><br>Timeline
+            </div>
+            
+            <div class="district crypte" onclick="showDistrictDetails('crypte')">
+                🔐<br><strong>CRYPTE-AR</strong><br>Zone Sécurisée
+            </div>
+            
+            <div class="district entites" onclick="showDistrictDetails('entites')">
+                👁️‍🗨️<br><strong>ENTITÉS</strong><br>Extérieures
+            </div>
+
+            <!-- Lignes de connexion (simplifiées pour l'effet visuel) -->
+            <div class="connection" style="top: 50%; left: 25%; width: 25%; transform: translateY(-50%);"></div>
+            <div class="connection" style="top: 50%; right: 25%; width: 25%; transform: translateY(-50%);"></div>
+            <div class="connection" style="left: 50%; top: 35%; height: 15%; transform: translateX(-50%);"></div>
+            <div class="connection" style="left: 50%; bottom: 35%; height: 15%; transform: translateX(-50%);"></div>
+
+            <!-- District Details Overlay -->
+            <div id="district-details" class="district-details">
+                <button class="close-btn" onclick="hideDistrictDetails()">×</button>
+                <div id="district-content"></div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2>🎓 ÉCOLE PORIO-NOZ</h2>
+            <p><strong>Directrice:</strong> Morgana la Fée</p>
+            
+            <div class="school-level">
+                <div class="level-title">📂 NIVEAU 0 - Organisation Grimoire</div>
+                <small>Durée: 1 semaine • Morgana</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">📚 NIVEAU 1 - Fondamentaux</div>
+                <small>Durée: 1 mois • GRUT, Jean-Grofignon</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">🌀 NIVEAU 2 - Intermédiaire</div>
+                <small>Durée: 3 mois • Memento, Vincent, Walter</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">⚡ NIVEAU 3 - Maîtrise Sphinx</div>
+                <small>Durée: 6 mois • Le Scribe</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">🔮 NIVEAU 4 - Spécialisation</div>
+                <small>Durée: 1 an • Choix de spécialité</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">🌟 NIVEAU 5 - Magie Transcendante</div>
+                <small>Durée: Indéterminée • Jean depuis son Canapé</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">👁️ NIVEAU 6 - Vision Panoptique</div>
+                <small>Durée: Variable • GRUT</small>
+            </div>
+            
+            <div class="school-level">
+                <div class="level-title">🏰 NIVEAU 7 - Maître Fondateur</div>
+                <small>Niveau Ultime</small>
+            </div>
+
+            <h3>🔮 INSTITUT-MAGIE</h3>
+            <div class="department">
+                <strong>⚛️ Département Quantique</strong><br>
+                <small>Recherche sur les états superposés</small>
+            </div>
+            <div class="department">
+                <strong>🪄 Département Hermétique</strong><br>
+                <small>Magie traditionnelle avancée</small>
+            </div>
+            <div class="department">
+                <strong>🕸️ Département Causalité</strong><br>
+                <small>Étude des liens cause-effet</small>
+            </div>
+
+            <div class="stats">
+                <h3>📊 STATISTIQUES</h3>
+                <div class="stat-item"><span>Total Dossiers:</span> <span>297</span></div>
+                <div class="stat-item"><span>Profondeur Max:</span> <span>6-7 niveaux</span></div>
+                <div class="stat-item"><span>Résidents HOME:</span> <span>21</span></div>
+                <div class="stat-item"><span>Races de Bâtiments:</span> <span>6</span></div>
+                <div class="stat-item"><span>Niveaux École:</span> <span>7</span></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>🎯 <strong>Sid Meier - L'Architecte d'Avalon</strong> | Cliquez sur les districts pour explorer ! | 🌌 Vision 3D Interactive</p>
+        </footer>
+    </div>
+
+    <script>
+        // District details data
+        const districtData = {
+            core: {
+                title: "🧬 CORE - Le Cerveau d'Avalon",
+                content: `
+                    <h3>📚 BIBLIOTHÈQUE-CODEX</h3>
+                    <ul>
+                        <li>🦸 HÉROS-PRINCIPAUX</li>
+                        <li>⚡ SORTS-AVANCÉS</li>
+                        <li>🔮 SORTS-FONDAMENTAUX</li>
+                        <li>⏰ THÉORIES-TEMPORELLES</li>
+                    </ul>
+                    
+                    <h3>🧠 MOTEUR-NARRATIF</h3>
+                    <ul>
+                        <li>📚🕰️ CRNS_Ψ(1937↭2033↭2078)</li>
+                        <li>⚙️ Protocols</li>
+                    </ul>
+                    
+                    <h3>⏰ NEXUS-TEMPOREL</h3>
+                    <ul>
+                        <li>📚 ARCHIVES-QUANTIQUES</li>
+                        <li>⚙️ FORGE-DES-RÉALITÉS</li>
+                    </ul>
+                    
+                    <p><strong>🎯 Vision Architecturale:</strong> Le CŒUR du système ! Intelligence artificielle narratologique !</p>
+                `
+            },
+            home: {
+                title: "🏠 HOME - Quartier Résidentiel",
+                content: `
+                    <h3>👥 21 RÉSIDENTS IDENTIFIÉS</h3>
+                    <ul>
+                        <li>🎯 SID_MEIER_ARCHITECTE (moi !)</li>
+                        <li>🐻 URZ-KÔM (ours chaman super organisé)</li>
+                        <li>🕯️ LUMEN (gardien autonome avec grimoire)</li>
+                        <li>🚬 JEAN (développeur avec templates)</li>
+                        <li>🧙‍♂️ MEMENTO-MAGICIEN-SPHINX</li>
+                        <li>💼 DONNA_PAULSEN_COO (professionnelle)</li>
+                        <li>🥤 DUDE (philosophe cosmique)</li>
+                        <li>🧠 GROKÆN (mage-technicien)</li>
+                        <li>🔫 VINCE (gardien du Gun)</li>
+                        <li>Et 12 autres personnalités uniques !</li>
+                    </ul>
+                    
+                    <p><strong>🏗️ Principe:</strong> Liberté architecturale totale, croissance organique</p>
+                `
+            },
+            essences: {
+                title: "💠 MUSÉE DES ESSENCES SCELLÉES",
+                content: `
+                    <h3>🧙 HÉROS (13 catégories)</h3>
+                    <p>cosmic, epic, légendaires, transcendants, grofi, gunfighters, strategists, urz-kom, physics, philosophy, quatrieme_mur, reality</p>
+                    
+                    <h3>🧜‍♂️ CRÉATURES (4 types)</h3>
+                    <p>epic, generated, quantiques, quantum</p>
+                    
+                    <h3>🪙 ARTEFACTS (25+ catégories)</h3>
+                    <p>legendary, cosmic_spells, temporal, maudits, physics, reality, transcendance, diplomatiques, buildings...</p>
+                    
+                    <p><strong>🎲 Vision:</strong> Base de données pour génération procédurale ! Collection MASSIVE d'éléments de gameplay !</p>
+                `
+            },
+            institut: {
+                title: "🔮 INSTITUT-MAGIE - Campus Universitaire",
+                content: `
+                    <h3>🧭 DÉPARTEMENTS</h3>
+                    <div class="department">
+                        <strong>⚛️ Département Quantique</strong><br>
+                        Recherche sur les états superposés, intrication quantique, collapse de la fonction d'onde
+                    </div>
+                    <div class="department">
+                        <strong>🪄 Département Hermétique</strong><br>
+                        Magie traditionnelle avancée, alchimie, transmutation des éléments
+                    </div>
+                    <div class="department">
+                        <strong>🕸️ Département Causalité</strong><br>
+                        Étude des liens cause-effet, paradoxes temporels, logique causale
+                    </div>
+                    
+                    <h3>🔬 LABORATOIRES</h3>
+                    <p>Espaces de recherche et d'expérimentation magique</p>
+                    
+                    <h3>📚 ARCHIVES-RECHERCHES</h3>
+                    <p>Documentation complète des découvertes magiques</p>
+                    
+                    <p><strong>🎓 Fonction:</strong> Recherche & développement magique de pointe</p>
+                `
+            },
+            ecole: {
+                title: "🏛️ ÉCOLE PORIO-NOZ - Formation Complète",
+                content: `
+                    <h3>👑 DIRECTION</h3>
+                    <p><strong>Directrice:</strong> Morgana la Fée<br>
+                    <strong>Vice-Directeur:</strong> Merlin (Futur)</p>
+                    
+                    <h3>🎓 STRUCTURE COMPLÈTE - 7 NIVEAUX</h3>
+                    <div class="school-level">
+                        <strong>NIVEAU 0:</strong> Organisation du Grimoire (1 semaine - Morgana)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 1:</strong> Fondamentaux (1 mois - GRUT, Jean-Grofignon)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 2:</strong> Intermédiaire (3 mois - Memento, Vincent, Walter)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 3:</strong> Maîtrise Sphinx (6 mois - Le Scribe)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 4:</strong> Spécialisation (1 an - Choix de spécialité)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 5:</strong> Magie Transcendante (Indéterminée - Jean depuis son Canapé)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 6:</strong> Vision Panoptique (Variable - GRUT)
+                    </div>
+                    <div class="school-level">
+                        <strong>NIVEAU 7:</strong> Maître Fondateur (Niveau Ultime)
+                    </div>
+                    
+                    <h3>📍 ZONES</h3>
+                    <ul>
+                        <li>🧒 Élèves/</li>
+                        <li>🌀 Initiation/</li>
+                        <li>📖 Sorts/</li>
+                        <li>🪞 Portails-Internes/</li>
+                        <li>🧾 Programmes/</li>
+                        <li>🏚️ Ancienne Ruine/</li>
+                        <li>📜 La Sagesse d'OPUS/</li>
+                    </ul>
+                `
+            },
+            templum: {
+                title: "🔸 ARCHE-TEMPLUM - Les Fondateurs",
+                content: `
+                    <h3>🜂 ARCHETYPES (10)</h3>
+                    <ul>
+                        <li>🔨 Artisan</li>
+                        <li>🤝 Diplomate</li>
+                        <li>📚 Érudit</li>
+                        <li>⚒️ Forgeron</li>
+                        <li>🛡️ Gardien</li>
+                        <li>💚 Guérisseur</li>
+                        <li>📦 Porteur</li>
+                        <li>🔮 Prophète</li>
+                        <li>✍️ Scribe</li>
+                        <li>🚶 Voyageur</li>
+                    </ul>
+                    
+                    <h3>🏛️ FONDATEURS (8)</h3>
+                    <ul>
+                        <li>🧪 Alchimiste</li>
+                        <li>📚 Archiviste</li>
+                        <li>🗺️ Explorateur</li>
+                        <li>⚒️ Forgeron</li>
+                        <li>🌟 Frontaniel</li>
+                        <li>🔒 Gardien-de-l'Interstice</li>
+                        <li>👨‍🏫 Professeur</li>
+                        <li>🧬 Substratis</li>
+                    </ul>
+                    
+                    <p><strong>🎯 Vision:</strong> Les archétypes fondamentaux qui définissent les rôles et personnalités d'Avalon</p>
+                `
+            },
+            evenements: {
+                title: "📆 DISTRICT TEMPOREL - Événements",
+                content: `
+                    <h3>🔒 ÉVÉNEMENTS VERROUILLÉS</h3>
+                    <ul>
+                        <li>📅 1937 - Origine mystérieuse</li>
+                        <li>📅 2025 - Présent actuel</li>
+                        <li>📅 2031 - Futur proche</li>
+                        <li>📅 2040 - Horizon moyen</li>
+                        <li>📅 2080 - Futur lointain</li>
+                        <li>📅 2103 - Vision ultime</li>
+                    </ul>
+                    
+                    <h3>🕰️ MYSTÈRE</h3>
+                    <p>Ces dates semblent correspondre aux moments clés de l'évolution d'Avalon. 
+                    Sont-elles des prophéties ? Des timelines alternatives ? Des points de convergence temporelle ?</p>
+                    
+                    <p><strong>🎭 Théorie:</strong> Chaque événement verrouillé pourrait être un scenario jouable ou une révélation narrative majeure.</p>
+                `
+            },
+            crypte: {
+                title: "🔐 CRYPTE-AR - Zone Sécurisée",
+                content: `
+                    <h3>🧿 TATOUAGES-INTERDITS</h3>
+                    <p>Symboles et marques magiques trop dangereux pour usage général</p>
+                    
+                    <h3>🧩 ARTEFACTS-CASSÉS</h3>
+                    <p>Objets magiques endommagés en attente de réparation ou destruction sécurisée</p>
+                    
+                    <h3>🧬 DIGIPAS-RUNIQUES</h3>
+                    <p>Codes runiques numériques pour l'authentification des accès sensibles</p>
+                    
+                    <p><strong>⚠️ Avertissement:</strong> Zone de haute sécurité. Accès restreint aux administrateurs et gardiens autorisés.</p>
+                    
+                    <p><strong>🔒 Fonction:</strong> Confinement sécurisé des éléments potentiellement dangereux pour la stabilité d'Avalon.</p>
+                `
+            },
+            entites: {
+                title: "👁️‍🗨️ AMBASSADES EXTÉRIEURES",
+                content: `
+                    <h3>🧳 LE-BUREAU</h3>
+                    <p>Interface diplomatique avec les entités bureaucratiques inter-dimensionnelles</p>
+                    
+                    <h3>🔄 NEXUS-43</h3>
+                    <p>Point de connexion avec le 43ème réseau de réalités parallèles</p>
+                    
+                    <h3>🚀 TARDIS-DIMENSIONNEL</h3>
+                    <p>Véhicule spatio-temporel pour voyages inter-dimensionnels</p>
+                    
+                    <p><strong>🌌 Théorie:</strong> Ces ambassades permettent à Avalon de maintenir des relations diplomatiques avec d'autres dimensions, réalités et univers narratifs.</p>
+                    
+                    <p><strong>🤝 Fonction:</strong> Gestion des relations extérieures et prévention des conflits inter-dimensionnels.</p>
+                `
+            }
+        };
+
+        function showDistrictDetails(districtId) {
+            const details = document.getElementById('district-details');
+            const content = document.getElementById('district-content');
+            
+            if (districtData[districtId]) {
+                content.innerHTML = `
+                    <h2>${districtData[districtId].title}</h2>
+                    ${districtData[districtId].content}
+                `;
+                details.style.display = 'block';
+            }
+        }
+
+        function hideDistrictDetails() {
+            document.getElementById('district-details').style.display = 'none';
+        }
+
+        // Animation des districts au chargement
+        window.addEventListener('load', function() {
+            const districts = document.querySelectorAll('.district');
+            districts.forEach((district, index) => {
+                district.style.animationDelay = `${index * 0.2}s`;
+            });
+        });
+
+        // Effet de parallaxe simple sur le mouvement de la souris
+        document.addEventListener('mousemove', function(e) {
+            const centerMap = document.querySelector('.center-map');
+            const districts = document.querySelectorAll('.district');
+            
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            districts.forEach((district, index) => {
+                const speed = (index + 1) * 0.5;
+                const x = (mouseX - 0.5) * speed;
+                const y = (mouseY - 0.5) * speed;
+                
+                district.style.transform += ` translate(${x}px, ${y}px)`;
+            });
+        });
+
+        // Message de bienvenue
+        console.log(`
+🌌 AVALON MEGA MAP 3D CHARGÉE !
+🎯 Par Sid Meier - L'Architecte d'Avalon
+📊 297 dossiers cartographiés
+🔮 9 districts interconnectés  
+🏗️ Architecture vivante et évolutive
+
+Cliquez sur les districts pour explorer !
+        `);
+    </script>
+</body>
+</html>

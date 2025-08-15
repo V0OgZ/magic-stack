@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-08-07T08:53:35.811541",
+  "backends": {
+    "java": {
+      "name": "Java Spring Boot",
+      "url": "http://localhost:8080",
+      "status": "down",
+      "tests": []
+    },
+    "python": {
+      "name": "Python Magic Stack",
+      "url": "http://localhost:5000",
+      "status": "up",
+      "tests": [
+        {
+          "endpoint": "/api/magic/formulas/count",
+          "success": false,
+          "error": "('Connection broken: InvalidChunkLength(got length b\\'{\"timestamp\":\"2025-08-07T06:53:35.830+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/magic/formulas/count\"}\\', 0 bytes read)', InvalidChunkLength(got length b'{\"timestamp\":\"2025-08-07T06:53:35.830+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/api/magic/formulas/count\"}', 0 bytes read))"
+        }
+      ]
+    },
+    "rust": {
+      "name": "Rust Avalon Engine",
+      "url": "http://localhost:3001",
+      "status": "down",
+      "tests": []
+    }
+  }
+}

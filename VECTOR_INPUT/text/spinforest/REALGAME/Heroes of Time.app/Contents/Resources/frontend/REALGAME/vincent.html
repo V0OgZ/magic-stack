@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VINCENT HUB – Arbre de navigation</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0b0b12;color:#ddd}
+    header{position:sticky;top:0;background:#0f0f18;padding:12px 18px;border-bottom:1px solid #2a2a3a}
+    h1{margin:0;font-size:18px;letter-spacing:.08em;color:#c9a961}
+    .wrap{padding:16px;max-width:1100px;margin:0 auto}
+    details{background:#111424;border:1px solid #2a2a3a;border-radius:8px;margin:10px 0}
+    summary{cursor:pointer;padding:10px 14px;color:#c9a961}
+    ul{list-style:none;margin:0 0 10px 0;padding:0 14px 14px 24px}
+    li{margin:6px 0}
+    a{color:#9ac7ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .pill{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid #3a3a5a;border-radius:999px;font-size:11px;color:#aaa}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{background:#0f1324;border:1px solid #2a2a3a;border-radius:8px;padding:12px}
+    .hint{font-size:12px;color:#aaa}
+  </style>
+  <script>
+    function openAll(sel){ document.querySelectorAll(sel).forEach(s=>s.open=true) }
+    function closeAll(sel){ document.querySelectorAll(sel).forEach(s=>s.open=false) }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>VINCENT HUB – Arbre de navigation</h1>
+    <div class="hint">Clique sur les sections pour déployer. Tous les liens sont cliquables.</div>
+  </header>
+  <div class="wrap">
+    <p>
+      Raccourcis: 
+      <a href="/REALGAME/BOOT_CONSOLE.html" target="_blank">Console</a> ·
+      <a href="/REALGAME/index.html" target="_blank">Index</a> ·
+      <a href="/REALGAME/DARK_HOLOGRAPHIC_CARDS.html" target="_blank">Cartes holographiques</a> ·
+      <a href="/REALGAME/multiverse-visual.html" target="_blank">Multiverse</a>
+    </p>
+
+    <p class="hint">Astuce: ./h console ouvre la console via HTTP. ./h crawl génère un rapport et des captures.</p>
+
+    <button onclick="openAll('details')">Tout ouvrir</button>
+    <button onclick="closeAll('details')">Tout fermer</button>
+
+    <details open>
+      <summary>Portails principaux</summary>
+      <ul>
+        <li><a href="/REALGAME/BOOT_CONSOLE.html" target="_blank">BOOT_CONSOLE</a><span class="pill">status</span></li>
+        <li><a href="/REALGAME/index.html" target="_blank">index.html</a><span class="pill">hub</span></li>
+        <li><a href="/REALGAME/ULTIMATE_LAUNCHER.html" target="_blank">ULTIMATE_LAUNCHER</a></li>
+        <li><a href="/REALGAME/MASTER_INDEX.html" target="_blank">MASTER_INDEX</a><span class="pill">redirect</span></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Cartes et combats</summary>
+      <ul>
+        <li><a href="/REALGAME/DARK_HOLOGRAPHIC_CARDS.html" target="_blank">Cartes holographiques</a></li>
+        <li><a href="/REALGAME/TCG_UNIFIED_VISION.html" target="_blank">TCG Unified Vision</a></li>
+        <li><a href="/REALGAME/mini-tcg-demo.html" target="_blank">Mini TCG Demo</a></li>
+        <li><a href="/REALGAME/epic-battle-mode.html" target="_blank">Epic battle mode</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Mode carte / mondes</summary>
+      <ul>
+        <li><a href="/REALGAME/HEROES_OF_TIME_COMPLETE.html" target="_blank">Heroes of Time – complet</a></li>
+        <li><a href="/REALGAME/HEROES_TIME_MAP_2D.html" target="_blank">Map 2D isométrique</a></li>
+        <li><a href="/REALGAME/maps/CHASSE_TEMPORELLE_HEROES.html" target="_blank">La Chasse Temporelle</a></li>
+        <li><a href="/REALGAME/multiverse-visual.html" target="_blank">Multiverse visual</a></li>
+        <li><a href="/REALGAME/AVALON_BUBBLE_UNIVERSE.html" target="_blank">Avalon Bubble (redirect)</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>VS Modes (expérimental)</summary>
+      <ul>
+        <li>Player vs AI (PVE): Ouvre La Chasse puis appuie sur F (follow on), Z (zoom max). Les agents se déclenchent si 3001 est up.</li>
+        <li>AI vs AI (PVP_SIM): (à venir) un bouton basculera l’AgentSystem en mode simulation spectateur.</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Admin / debug</summary>
+      <ul>
+        <li><a href="/REALGAME/ADMIN_PORTAL.html" target="_blank">Admin Portal</a></li>
+        <li><a href="/REALGAME/assets/quantum-dashboard-ours.html" target="_blank">Panopticon 6D</a></li>
+        <li><a href="/REALGAME/pwa-realgame.html" target="_blank">PWA</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Docs utiles</summary>
+      <ul>
+        <li><a href="/REALGAME/docs/regles-tcg.md" target="_blank">Règles TCG (placeholder)</a></li>
+        <li><a href="/REALGAME/DOCUMENTATION_COMPLETE_ARCHITECTURE_TCG_6D.md" target="_blank">Arch TCG 6D</a></li>
+        <li><a href="/REALGAME/CONCEPT_COMPLET_HEROES_OF_TIME.md" target="_blank">Concept complet</a></li>
+        <li><a href="/REALGAME/docs/AGENTS_API_DOC.html" target="_blank">Agents API (Rust 3001)</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Héros</summary>
+      <ul>
+        <li><a href="/REALGAME/heroes-selector.html" target="_blank">Sélecteur de héros</a></li>
+        <li><a href="/REALGAME/CLAUDE_HERO_CARD.html" target="_blank">Carte héros – Claude</a></li>
+      </ul>
+    </details>
+
+    <p class="hint">Si un lien 404 apparaît, dis-le: je redirige ou remplace par l’équivalent.</p>
+  </div>
+</body>
+</html>
+
+

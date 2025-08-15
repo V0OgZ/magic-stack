@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>La Caverne des Évadés - Point & Click Adventure</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='), auto;
+        }
+        
+        #background {
+            width: 100%;
+            height: 100%;
+            background-image: url('../assets/HD/3-5.png');
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+        }
+        
+        .clickable {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clickable:hover {
+            filter: brightness(1.3) drop-shadow(0 0 10px #fff);
+            transform: scale(1.05);
+        }
+        
+        #cave-entrance {
+            width: 200px;
+            height: 150px;
+            bottom: 20%;
+            left: 40%;
+            background: radial-gradient(ellipse, rgba(100,50,0,0.8), transparent);
+            border-radius: 50%;
+        }
+        
+        #hourglass-portal {
+            width: 100px;
+            height: 120px;
+            top: 30%;
+            right: 20%;
+            background: url('../../AVALON/💠 Essences scellées/🖼️ Ymagerie/Interstice/Holographic Hourglass in Cosmic Space.png');
+            background-size: contain;
+        }
+        
+        #dialogue-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 20px;
+            display: none;
+            color: #0f0;
+        }
+        
+        #speaker {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        #text {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        #vision-level {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+        
+        #inventory {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid rgba(255,215,0,0.5);
+            border-radius: 10px;
+            padding: 15px;
+            color: #ffd700;
+            min-width: 150px;
+        }
+        
+        .inventory-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .inventory-item:hover {
+            background: rgba(255,215,0,0.3);
+            transform: translateX(5px);
+        }
+        
+        #torch {
+            width: 30px;
+            height: 60px;
+            position: absolute;
+            bottom: 30%;
+            left: 20%;
+            background: linear-gradient(to top, brown, orange);
+            cursor: pointer;
+            display: none;
+        }
+        
+        #crystal {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 40%;
+            left: 60%;
+            background: radial-gradient(circle, cyan, blue);
+            transform: rotate(45deg);
+            cursor: pointer;
+            display: none;
+            animation: crystalGlow 2s infinite;
+        }
+        
+        @keyframes crystalGlow {
+            0%, 100% { box-shadow: 0 0 20px cyan; }
+            50% { box-shadow: 0 0 40px cyan; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="background"></div>
+        <div id="cave-entrance" class="clickable" onclick="enterCave()"></div>
+        <div id="hourglass-portal" class="clickable" onclick="inspectPortal()"></div>
+        <div id="torch" class="clickable" onclick="pickupTorch()"></div>
+        <div id="crystal" class="clickable" onclick="pickupCrystal()"></div>
+        
+        <div id="vision-level">VISION: 1D (Ombres seulement)</div>
+        
+        <div id="inventory">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px;">Inventaire</h3>
+            <div id="inventory-list">
+                <div style="color: #888; font-size: 14px;">Vide</div>
+            </div>
+        </div>
+        
+        <div id="dialogue-box">
+            <div id="speaker">L'Évadé de la Caverne</div>
+            <div id="text">Tu ne vois que des ombres... mais quelque chose t'appelle vers la lumière.</div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script>
+        let visionLevel = 1;
+        let gameState = {
+            hasEnteredCave: false,
+            hasInspectedPortal: false,
+            currentDimension: '1D',
+            hasTorch: false,
+            hasCrystal: false,
+            torchLit: false,
+            inventory: []
+        };
+        
+        // Système de son
+        const sounds = {
+            ambient: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT' +
+                'AkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQ=='),
+            pickup: new Audio('data:audio/wav;base64,UklGRl9uBABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQUvgs/w2IcyBRxquvTilEoHDVSo5+m1YhYELILO8diJOAcZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8d+RQAoUXrTp66hVFApGnt/yvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWTAkPVqzq67JlGQ==')
+        };
+        
+        // Jouer son ambient en boucle
+        sounds.ambient.loop = true;
+        sounds.ambient.volume = 0.3;
+
+        function showDialogue(speaker, text) {
+            document.getElementById('speaker').textContent = speaker;
+            document.getElementById('text').textContent = text;
+            document.getElementById('dialogue-box').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('dialogue-box').style.display = 'none';
+            }, 4000);
+        }
+
+        function enterCave() {
+            if (!gameState.hasEnteredCave) {
+                if (!gameState.hasTorch) {
+                    showDialogue("L'Évadé de la Caverne", "Il fait trop sombre... J'ai besoin de lumière pour entrer.");
+                    // Faire apparaître la torche
+                    document.getElementById('torch').style.display = 'block';
+                    return;
+                }
+                
+                gameState.hasEnteredCave = true;
+                showDialogue("L'Évadé de la Caverne", "Tu approches de l'entrée... Les ombres dansent. Tu commences à distinguer des formes. Ta vision s'éveille...");
+                upgradeVision();
+                
+                // Faire apparaître le cristal
+                setTimeout(() => {
+                    document.getElementById('crystal').style.display = 'block';
+                }, 2000);
+            } else {
+                if (!gameState.hasCrystal) {
+                    showDialogue("Voix Mystérieuse", "Le cristal de vision t'aidera à voir plus loin...");
+                    return;
+                }
+                
+                showDialogue("Voix Mystérieuse", "Plus profond... il faut aller plus profond dans la caverne pour comprendre.");
+                // Sauvegarder l'état avant transition
+                localStorage.setItem('visionLevel', visionLevel);
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                
+                // Transition vers la caverne profonde
+                setTimeout(() => window.location.href = 'caverne-profonde.html', 2000);
+            }
+        }
+
+        function inspectPortal() {
+            if (visionLevel < 2) {
+                showDialogue("L'Évadé de la Caverne", "Tu perçois une étrange lueur... mais tes yeux ne peuvent pas encore la comprendre.");
+            } else {
+                showDialogue("L'Évadé de la Caverne", "Ah ! Tu vois maintenant le Sablier Holographique ! C'est un portail vers l'Interstice 6D !");
+                gameState.hasInspectedPortal = true;
+            }
+        }
+
+        function upgradeVision() {
+            if (visionLevel < 5) {
+                visionLevel++;
+                let visionNames = ['', '1D (Ombres)', '2D (Formes)', '3D (Profondeur)', '4D (Temps)', '5D (Causalité)', '6D (Interstice)'];
+                document.getElementById('vision-level').textContent = `VISION: ${visionNames[visionLevel]}`;
+                
+                // Améliorer visuellement l'environnement
+                document.getElementById('background').style.filter = `brightness(${1 + visionLevel * 0.2}) contrast(${1 + visionLevel * 0.1})`;
+            }
+        }
+
+        // Nouvelles fonctions pour les objets
+        function pickupTorch() {
+            if (!gameState.hasTorch) {
+                gameState.hasTorch = true;
+                gameState.torchLit = true;
+                gameState.inventory.push('Torche allumée');
+                updateInventory();
+                document.getElementById('torch').style.display = 'none';
+                showDialogue("Torche", "La lumière chasse les ténèbres. Tu peux maintenant voir dans l'obscurité.");
+                sounds.pickup.play();
+                
+                // Éclaircir légèrement le fond
+                document.getElementById('background').style.filter = 'brightness(1.2)';
+            }
+        }
+        
+        function pickupCrystal() {
+            if (!gameState.hasCrystal) {
+                gameState.hasCrystal = true;
+                gameState.inventory.push('Cristal de Vision');
+                updateInventory();
+                document.getElementById('crystal').style.display = 'none';
+                showDialogue("Cristal de Vision", "Ce cristal amplifie ta perception. Les dimensions cachées se révèlent à toi.");
+                sounds.pickup.play();
+                upgradeVision();
+            }
+        }
+        
+        function updateInventory() {
+            const inventoryList = document.getElementById('inventory-list');
+            if (gameState.inventory.length === 0) {
+                inventoryList.innerHTML = '<div style="color: #888; font-size: 14px;">Vide</div>';
+            } else {
+                inventoryList.innerHTML = gameState.inventory.map(item => 
+                    `<div class="inventory-item" onclick="useItem('${item}')">${item}</div>`
+                ).join('');
+            }
+        }
+        
+        function useItem(item) {
+            switch(item) {
+                case 'Torche allumée':
+                    showDialogue("Torche", "La flamme danse et projette des ombres mouvantes...");
+                    break;
+                case 'Cristal de Vision':
+                    showDialogue("Cristal", "Le cristal pulse d'une énergie mystique...");
+                    // Effet visuel temporaire
+                    document.body.style.filter = 'hue-rotate(30deg)';
+                    setTimeout(() => {
+                        document.body.style.filter = '';
+                    }, 1000);
+                    break;
+            }
+        }
+        
+        // Charger l'état sauvegardé si on revient
+        function loadGameState() {
+            const savedVision = localStorage.getItem('visionLevel');
+            const savedState = localStorage.getItem('gameState');
+            
+            if (savedVision) {
+                visionLevel = parseInt(savedVision);
+                document.getElementById('vision-level').textContent = `VISION: ${['', '1D (Ombres)', '2D (Formes)', '3D (Profondeur)', '4D (Temps)', '5D (Causalité)', '6D (Interstice)'][visionLevel]}`;
+            }
+            
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+                updateInventory();
+                
+                if (gameState.torchLit) {
+                    document.getElementById('background').style.filter = 'brightness(1.2)';
+                }
+            }
+        }
+        
+        // Démarrage avec dialogue d'introduction
+        setTimeout(() => {
+            showDialogue("L'Évadé de la Caverne", "Bienvenue, nouveau prisonnier. Je fus comme toi... enchaîné, ne voyant que des ombres. Clique pour explorer ton éveil perceptuel.");
+            loadGameState();
+            
+            // Démarrer l'ambiance sonore après interaction utilisateur
+            document.addEventListener('click', () => {
+                sounds.ambient.play().catch(e => console.log('Audio autoplay blocked'));
+            }, { once: true });
+        }, 1000);
+
+        // Integration avec Magic Stack
+        async function castTemporalSpell(formula) {
+            try {
+                const javaBase = (window.ConfigUtils ? ConfigUtils.getBackends().javaBackend : 'http://localhost:8082');
+                const response = await fetch(javaBase + '/api/magic/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: formula,
+                        caster: 'evade_cave_player',
+                        context: { visionLevel, gameState }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showDialogue("Effet Magique", result.narrative || "La magie opère...");
+                }
+            } catch (error) {
+                console.log('Magic Stack offline - mode standalone');
+            }
+        }
+
+        // Easter eggs et raccourcis
+        let konamiCode = [];
+        const konami = [38,38,40,40,37,39,37,39,66,65];
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konami.length) konamiCode.shift();
+            if (konamiCode.join('') === konami.join('')) {
+                visionLevel = 6;
+                document.getElementById('vision-level').textContent = 'VISION: 6D (GRUT MODE ACTIVATED!)';
+                showDialogue("GRUT", "Tu as atteint la vision 6D ! Bienvenue dans l'Interstice, architecte des mondes !");
+                
+                // Débloquer tout
+                gameState.hasTorch = true;
+                gameState.hasCrystal = true;
+                gameState.hasEnteredCave = true;
+                gameState.hasInspectedPortal = true;
+                gameState.inventory = ['Torche allumée', 'Cristal de Vision', 'Clé de l\'Interstice'];
+                updateInventory();
+            }
+            
+            // Autres raccourcis
+            if (e.key === 'Escape') {
+                window.location.href = '../index.html';
+            }
+        });
+    </script>
+</body>
+</html>

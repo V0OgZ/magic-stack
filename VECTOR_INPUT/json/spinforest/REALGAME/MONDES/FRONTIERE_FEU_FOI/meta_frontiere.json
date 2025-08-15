@@ -1,0 +1,121 @@
+{
+  "id": "world_church_sword_vortex_01",
+  "nom": "Frontière de Feu et Foi",
+  "type": "Plaine semi-élevée",
+  "vue": "Isométrique 3/4",
+  "niveau_abstraction": "1.5D",
+  "classe_temporelle": "Monde figé avec ancrage causal",
+  
+  "elements_fixes": {
+    "eglise": {
+      "symbole": "⛪",
+      "description": "Bâtiment romanique, 1 étage + clocher conique",
+      "position": "haut-gauche",
+      "taille_grille": "3x3",
+      "fonction": "Centre de foi/savoir, peut contenir grimoire ou artefact",
+      "interactif": true
+    },
+    "arbre": {
+      "symbole": "🌳",
+      "description": "Arbre massif proche de l'église",
+      "fonction": "Ancrage naturel, réagit aux changements magiques"
+    },
+    "chemin": {
+      "symbole": "🧱",
+      "description": "Dalles de pierre depuis église vers centre",
+      "fonction": "Guide visuel, rail narratif potentiel"
+    }
+  },
+  
+  "elements_dynamiques": {
+    "epee_feu": {
+      "symbole": "⚔️",
+      "description": "Épée orange lumineuse dans faille",
+      "taille_grille": "1x1",
+      "zone_effet": "croix",
+      "fonction": "Artefact verrouillé, déclenche scénario vortex",
+      "etat": "verrouille"
+    },
+    "faille_lave": {
+      "symbole": "🌋",
+      "description": "Craquelures rouges incandescentes",
+      "fonction": "Zone dangereuse, peut s'étendre ou s'effondrer",
+      "danger": true
+    },
+    "vortex": {
+      "symbole": "🌀",
+      "description": "Spirale ardente orange",
+      "position": "haut-droite",
+      "taille_grille": "2x2",
+      "fonction": "Portail intermonde verrouillé",
+      "etat": "inactif",
+      "activation": "apres_epee"
+    }
+  },
+  
+  "personnage": {
+    "symbole": "🧍",
+    "description": "Cape, épée courte, dos tourné",
+    "position_initiale": "bas",
+    "taille_grille": "1x1"
+  },
+  
+  "declencheurs": [
+    {
+      "nom": "prendre_epee",
+      "conditions": ["adjacent_epee", "action_confirmee"],
+      "effets": [
+        "activer_vortex",
+        "secouer_ecran",
+        "dialogue_choix_combat_fuite"
+      ]
+    },
+    {
+      "nom": "entrer_eglise",
+      "conditions": ["adjacent_eglise"],
+      "blocage": "si_epee_non_prise",
+      "effets": [
+        "lire_grimoire",
+        "dialogue_entite",
+        "ouvrir_sous_scenario"
+      ]
+    },
+    {
+      "nom": "approcher_vortex",
+      "conditions": ["vortex_actif", "distance_2_cases"],
+      "effets": [
+        "choix_2_portails",
+        "transition_monde_fracture"
+      ]
+    }
+  ],
+  
+  "layers": {
+    "0_decor_statique": {
+      "visible": true,
+      "contenu": "terrain, herbe, pavés"
+    },
+    "1_elements_interactifs": {
+      "visible": true,
+      "contenu": "épée, vortex, personnage"
+    },
+    "2_transparence_temporelle": {
+      "visible": "conditionnel",
+      "contenu": "futur brûlé potentiel"
+    },
+    "3_narration_flottante": {
+      "visible": "sur_declencheur",
+      "contenu": "dialogues, monologues"
+    },
+    "4_ia_backlog": {
+      "visible": false,
+      "contenu": "tracking décisions joueur"
+    }
+  },
+  
+  "zones_interaction": {
+    "prioritaire": "epee",
+    "secondaire": "eglise",
+    "dangereuse": ["faille", "vortex"]
+  }
+}

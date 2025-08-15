@@ -1,0 +1,344 @@
+{
+  "minigames": {
+    "panoramix_potions": {
+      "id": "panoramix_potions",
+      "title": "Atelier de Panoramix",
+      "description": "Créez des potions magiques avec l'Archidruide Temporel",
+      "url": "../../ARCADE/panoramix-cauldron-ui.html",
+      "icon": "🧙‍♂️",
+      "category": "alchemy",
+      "biome_gates": ["forest", "ancient_ruins", "magic_groves"],
+      "time_windows": [
+        {"start": 18, "end": 23, "description": "Heures magiques du crépuscule"}
+      ],
+      "rewards": {
+        "items": ["health_potion_super", "temporal_elixir", "dragon_blood_potion"],
+        "resources": {"herbs": [3, 8], "temporal_essence": [1, 3]},
+        "xp": {"alchemy": 50, "herbalism": 25},
+        "unlock_runes": ["ᚨᚲᚢᚨ_ᚢᛁᛏᚨᛖ", "ᛏᛖᛗᛈᛟᚱᚨᛚᛖ_ᛖᛚᛁᚲᛋᛁᚱ"]
+      },
+      "requirements": {
+        "min_level": 1,
+        "items_needed": ["herbs", "water"],
+        "quest_flags": []
+      },
+      "theme": {
+        "colors": ["#4B0082", "#9370DB", "#DDA0DD"],
+        "effects": ["druidic_particles", "cauldron_steam"],
+        "sounds": ["bubbling", "magical_chimes"]
+      }
+    },
+    
+    "senku_chemistry": {
+      "id": "senku_chemistry",
+      "title": "Laboratoire de Senku",
+      "description": "10 milliards % de science ! Créez des composés chimiques",
+      "url": "../../AVALON-TCG/senku-chemistry-demo.html",
+      "icon": "🧪",
+      "category": "science",
+      "biome_gates": ["laboratory", "science_district", "modern_ruins"],
+      "time_windows": [
+        {"start": 6, "end": 18, "description": "Heures de laboratoire"}
+      ],
+      "rewards": {
+        "items": ["gunpowder", "soap_revival", "aqua_regia_vial"],
+        "resources": {"sulfur": [2, 5], "carbon": [3, 7], "potassium_nitrate": [1, 3]},
+        "xp": {"chemistry": 75, "science": 50},
+        "unlock_formulas": ["HNO₃ + 3HCl", "75% KNO₃ + 15% C + 10% S"]
+      },
+      "requirements": {
+        "min_level": 3,
+        "items_needed": ["sulfur", "carbon"],
+        "quest_flags": ["met_senku"]
+      },
+      "theme": {
+        "colors": ["#00FF00", "#00FFFF", "#FFFF00"],
+        "effects": ["laboratory_bubbles", "chemical_reactions"],
+        "sounds": ["beaker_clinks", "bubbling_acid"]
+      }
+    },
+    
+    "runic_forge": {
+      "id": "runic_forge",
+      "title": "Forge Runique",
+      "description": "Forgez armes et artefacts avec des runes temporelles",
+      "url": "../../ARCADE/forge-runique-ultime.html",
+      "icon": "⚒️",
+      "category": "crafting",
+      "biome_gates": ["forge", "dwarven_halls", "volcanic_caverns"],
+      "time_windows": [
+        {"start": 0, "end": 6, "description": "Heures de forge nocturne"},
+        {"start": 12, "end": 14, "description": "Forge du midi"}
+      ],
+      "rewards": {
+        "artifacts": ["temporal_blade", "wiener_eye_fragment", "runic_hammer"],
+        "resources": {"steel_ingot": [1, 3], "runic_crystal": [1, 2]},
+        "xp": {"forging": 100, "runecraft": 75},
+        "unlock_runes": ["ᛏᛖᛗᛈᚢᛋ", "ᛁᚲᛏᚢᛋ", "ᚠᛟᚱᚷ"]
+      },
+      "requirements": {
+        "min_level": 5,
+        "items_needed": ["steel_ingot", "temporal_essence"],
+        "quest_flags": ["forge_master_met"]
+      },
+      "theme": {
+        "colors": ["#FF4500", "#FFD700", "#8B4513"],
+        "effects": ["forge_sparks", "hammer_strikes"],
+        "sounds": ["hammer_anvil", "forge_fire"]
+      }
+    },
+    
+    "herb_collection": {
+      "id": "herb_collection",
+      "title": "Collecte d'Herbes",
+      "description": "Récoltez herbes, fleurs et ressources naturelles rares",
+      "url": "../../ARCADE/herb-gathering-minigame.html",
+      "icon": "🌿",
+      "category": "gathering",
+      "biome_gates": ["any"],
+      "time_windows": [
+        {"start": 5, "end": 9, "description": "Rosée matinale"},
+        {"start": 17, "end": 21, "description": "Lumière dorée"}
+      ],
+      "rewards": {
+        "items": ["healing_herbs", "temporal_flowers", "crystal_moss", "void_mushrooms"],
+        "resources": {"herbs": [5, 15], "rare_herbs": [1, 3]},
+        "xp": {"herbalism": 30, "survival": 20},
+        "special_drops": ["golden_herb", "time_flower_seed"]
+      },
+      "requirements": {
+        "min_level": 1,
+        "items_needed": [],
+        "quest_flags": []
+      },
+      "theme": {
+        "colors": ["#228B22", "#32CD32", "#98FB98"],
+        "effects": ["nature_sparkles", "wind_rustling"],
+        "sounds": ["forest_ambiance", "birds_chirping"]
+      }
+    },
+    
+    "runic_console": {
+      "id": "runic_console",
+      "title": "Console Runique",
+      "description": "Apprenez à écrire des sorts en runes temporelles",
+      "url": "../../ARCADE/runic-learning-console.html",
+      "icon": "📜",
+      "category": "learning",
+      "biome_gates": ["library", "runic_sanctum", "ancient_temple"],
+      "time_windows": [
+        {"start": 22, "end": 2, "description": "Heures de méditation nocturne"}
+      ],
+      "rewards": {
+        "spells": ["runic_light", "runic_heal", "time_manipulation"],
+        "resources": {"runic_knowledge": [10, 25], "ancient_scrolls": [1, 2]},
+        "xp": {"runecraft": 100, "magic": 50},
+        "unlock_runes": ["ᚨ", "ᛒ", "ᚲ", "ᛞ", "ᛖ", "ᚠ", "ᚷ", "ᚺ", "ᛁ"]
+      },
+      "requirements": {
+        "min_level": 2,
+        "items_needed": ["ancient_scroll"],
+        "quest_flags": ["runestone_discovered"]
+      },
+      "theme": {
+        "colors": ["#4B0082", "#8A2BE2", "#9932CC"],
+        "effects": ["runic_glow", "floating_symbols"],
+        "sounds": ["mystical_hum", "page_turning"]
+      }
+    },
+
+    "mini_tcg": {
+      "id": "mini_tcg",
+      "title": "Arena TCG Rapide",
+      "description": "Combat de sorts rapides en arène",
+      "url": "../../mini-tcg-demo.html",
+      "icon": "🎯",
+      "category": "combat",
+      "biome_gates": ["arena", "coliseum", "battle_grounds"],
+      "time_windows": [
+        {"start": 10, "end": 22, "description": "Heures d'arène"}
+      ],
+      "rewards": {
+        "cards": ["swift_strike", "temporal_dodge", "mana_burst"],
+        "resources": {"battle_tokens": [5, 15], "arena_coins": [10, 30]},
+        "xp": {"combat": 40, "tactics": 25},
+        "titles": ["Arena Novice", "Swift Combatant"]
+      },
+      "requirements": {
+        "min_level": 2,
+        "items_needed": ["basic_deck"],
+        "quest_flags": ["arena_access"]
+      },
+      "theme": {
+        "colors": ["#DC143C", "#FF6347", "#FFD700"],
+        "effects": ["arena_lights", "combat_sparks"],
+        "sounds": ["crowd_cheering", "spell_impacts"]
+      }
+    },
+
+    "non_euclidean_space": {
+      "id": "non_euclidean_space",
+      "title": "Labyrinthe Non-Euclidien",
+      "description": "Déformez l'espace-temps pour résoudre des énigmes",
+      "url": "../../non-euclidean-demo.html",
+      "icon": "🌀",
+      "category": "puzzle",
+      "biome_gates": ["void_zones", "quantum_rifts", "distorted_reality"],
+      "time_windows": [
+        {"start": 0, "end": 4, "description": "Heures de distorsion maximale"}
+      ],
+      "rewards": {
+        "items": ["space_shard", "quantum_key", "reality_anchor"],
+        "resources": {"quantum_essence": [2, 5], "void_fragments": [1, 3]},
+        "xp": {"spatial_magic": 80, "puzzle_solving": 40},
+        "unlock_topologies": ["torus", "mobius", "klein"]
+      },
+      "requirements": {
+        "min_level": 7,
+        "items_needed": ["quantum_compass"],
+        "quest_flags": ["reality_breach_witnessed"]
+      },
+      "theme": {
+        "colors": ["#800080", "#FF00FF", "#00FFFF"],
+        "effects": ["space_distortion", "quantum_particles"],
+        "sounds": ["reality_warping", "dimensional_hum"]
+      }
+    },
+
+    "SAVE_JORDI": {
+      "id": "SAVE_JORDI",
+      "title": "Save Jordi - Réseau Spatial",
+      "description": "🚗 TEMPORAL DRIFT: Connectez Jordi à la sortie en réparant le réseau spatial",
+      "url": "../../ARCADE/save-jordi-spatial.html",
+      "icon": "🚗",
+      "category": "temporal_drift",
+      "biome_gates": ["temporal_drift_zone"],
+      "regulator": true,
+      "auto_trigger": {
+        "condition": "temporal_rpm >= 0.8",
+        "cooldown": 180000
+      },
+      "time_windows": [
+        {"start": 0, "end": 23, "description": "Urgence temporelle - disponible 24h/24"}
+      ],
+      "rewards": {
+        "items": [],
+        "resources": {"essence": [2, 2]},
+        "xp": {"temporal_stability": 50},
+        "special": ["temporal_drift_purge"]
+      },
+      "requirements": {
+        "min_level": 1,
+        "items_needed": [],
+        "quest_flags": [],
+        "triggered_by": "temporal_drift_system"
+      },
+      "theme": {
+        "colors": ["#FF4757", "#2ED573", "#3742FA"],
+        "effects": ["spatial_nodes", "connection_sparks"],
+        "sounds": ["network_hum", "connection_success"]
+      }
+    },
+
+    "BROKEN_WATCH": {
+      "id": "BROKEN_WATCH",
+      "title": "Broken Watch - Réparation Temporelle",
+      "description": "🚗 TEMPORAL DRIFT: Réparez l'horloge temporelle en alignant les engrenages",
+      "url": "../../ARCADE/broken-watch-gears.html",
+      "icon": "⏰",
+      "category": "temporal_drift",
+      "biome_gates": ["temporal_drift_zone"],
+      "regulator": true,
+      "auto_trigger": {
+        "condition": "temporal_rpm >= 0.8",
+        "cooldown": 180000
+      },
+      "time_windows": [
+        {"start": 0, "end": 23, "description": "Urgence temporelle - disponible 24h/24"}
+      ],
+      "rewards": {
+        "items": [],
+        "resources": {"gold": [25, 25]},
+        "xp": {"temporal_stability": 75},
+        "special": ["temporal_drift_purge"]
+      },
+      "requirements": {
+        "min_level": 1,
+        "items_needed": [],
+        "quest_flags": [],
+        "triggered_by": "temporal_drift_system"
+      },
+      "theme": {
+        "colors": ["#B8860B", "#FFD700", "#DAA520"],
+        "effects": ["gear_rotation", "clockwork_sparks"],
+        "sounds": ["gear_clicking", "clock_ticking"]
+      }
+    },
+
+    "CAUSAL_PATCH": {
+      "id": "CAUSAL_PATCH",
+      "title": "Causal Patch - Réparation Liens Causaux",
+      "description": "🚗 TEMPORAL DRIFT: Réparez les liens causaux brisés par la vitesse excessive",
+      "url": "../../ARCADE/causal-patch-routing.html",
+      "icon": "🔗",
+      "category": "temporal_drift",
+      "biome_gates": ["temporal_drift_zone"],
+      "regulator": true,
+      "auto_trigger": {
+        "condition": "temporal_rpm >= 0.8",
+        "cooldown": 180000
+      },
+      "time_windows": [
+        {"start": 0, "end": 23, "description": "Urgence temporelle - disponible 24h/24"}
+      ],
+      "rewards": {
+        "items": [],
+        "resources": {"time_crystals": [1, 1]},
+        "xp": {"temporal_stability": 60},
+        "special": ["temporal_drift_purge", "causal_stability_boost"]
+      },
+      "requirements": {
+        "min_level": 1,
+        "items_needed": [],
+        "quest_flags": [],
+        "triggered_by": "temporal_drift_system"
+      },
+      "theme": {
+        "colors": ["#8A2BE2", "#FF1493", "#3742FA"],
+        "effects": ["causal_links", "quantum_particles"],
+        "sounds": ["causal_hum", "link_repair"]
+      }
+    }
+  },
+
+  "metadata": {
+    "version": "1.1.0",
+    "total_minigames": 10,
+    "categories": ["alchemy", "science", "crafting", "gathering", "learning", "combat", "puzzle", "temporal_drift"],
+    "integration_type": "iframe_modal",
+    "reward_validation": "backend",
+    "last_updated": "2024-12-28",
+    "temporal_drift_enabled": true
+  },
+
+  "integration_config": {
+    "modal_style": {
+      "dark_theme": true,
+      "border_radius": "15px",
+      "backdrop_blur": true,
+      "close_button": true,
+      "fullscreen_option": true
+    },
+    "postmessage_events": {
+      "minigame_complete": "MINIGAME_COMPLETE",
+      "reward_earned": "REWARD_EARNED",
+      "minigame_close": "MINIGAME_CLOSE",
+      "resource_spent": "RESOURCE_SPENT"
+    },
+    "backend_validation": {
+      "endpoint": "/api/economy/arcade-result",
+      "timeout": 5000,
+      "retry_attempts": 3
+    }
+  }
+}

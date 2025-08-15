@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 REALGAME - Sélection des Héros</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e, #16213e);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(45deg, rgba(255,215,0,0.1), rgba(138,43,226,0.1));
+            border-bottom: 3px solid #ffdd00;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            text-shadow: 0 0 30px #ffdd00;
+            animation: epic-glow 3s infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes epic-glow {
+            0%, 100% { text-shadow: 0 0 30px #ffdd00, 0 0 60px #ff69b4; }
+            50% { text-shadow: 0 0 40px #ffdd00, 0 0 80px #ff69b4, 0 0 100px #8a2be2; }
+        }
+
+        .heroes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(138,43,226,0.2));
+            border: 3px solid #8a2be2;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(138,43,226,0.5);
+            border-color: #ff69b4;
+        }
+
+        .hero-card.selected {
+            border-color: #ffdd00;
+            box-shadow: 0 0 50px rgba(255,215,0,0.6);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.3s;
+        }
+
+        .hero-card:hover .hero-image {
+            transform: scale(1.1);
+        }
+
+        .hero-info {
+            padding: 20px;
+        }
+
+        .hero-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffdd00;
+            margin-bottom: 5px;
+        }
+
+        .hero-title {
+            font-size: 1rem;
+            color: #ff69b4;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .hero-class {
+            display: inline-block;
+            background: rgba(138,43,226,0.3);
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 1px solid #8a2be2;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .stat-icon {
+            font-size: 1.2rem;
+        }
+
+        .stat-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a8b3);
+            transition: width 0.3s;
+        }
+
+        .abilities {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ability {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .ability:hover {
+            background: rgba(255,215,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .ability-name {
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 3px;
+        }
+
+        .ability-cost {
+            color: #ff69b4;
+            font-size: 0.8rem;
+            float: right;
+        }
+
+        .ability-desc {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #ffdd00;
+            border-radius: 20px;
+            padding: 20px 40px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .selected-heroes {
+            display: flex;
+            gap: 15px;
+            margin-right: 20px;
+        }
+
+        .selected-hero-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #ffdd00;
+            object-fit: cover;
+            animation: hero-bounce 2s infinite;
+        }
+
+        @keyframes hero-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #32cd32, #228b22);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(50,205,50,0.5);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .error-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .lore-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #ffdd00;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            display: none;
+            z-index: 2000;
+        }
+
+        .lore-popup.show {
+            display: block;
+        }
+
+        .close-lore {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">⏳</div>
+
+    <div class="header">
+        <h1>🎮 REALGAME</h1>
+        <p style="font-size: 1.2rem; opacity: 0.8;">Sélectionnez vos héros pour l'aventure ultime</p>
+    </div>
+
+    <div class="heroes-grid" id="heroes-grid">
+        <!-- Les cartes de héros seront générées ici -->
+    </div>
+
+    <div class="controls">
+        <div class="selected-heroes" id="selected-heroes">
+            <!-- Les héros sélectionnés apparaîtront ici -->
+        </div>
+        <button class="start-btn" id="start-btn" disabled onclick="startGame()">
+            🚀 COMMENCER L'AVENTURE
+        </button>
+    </div>
+
+    <div class="error-message" id="error-message"></div>
+
+    <div class="lore-popup" id="lore-popup">
+        <button class="close-lore" onclick="closeLore()">✖</button>
+        <h2 id="lore-hero-name"></h2>
+        <p id="lore-hero-text"></p>
+    </div>
+
+    <script>
+        let heroesData = [];
+        let selectedHeroes = [];
+        const maxHeroes = 3;
+
+        // Charger les données des héros
+        async function loadHeroes() {
+            try {
+                const response = await fetch('heroes/heroes-data.json');
+                const data = await response.json();
+                heroesData = data.heroes;
+                displayHeroes();
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Erreur chargement héros:', error);
+                // Fallback avec données en dur si le fichier n'est pas accessible
+                heroesData = getFallbackHeroes();
+                displayHeroes();
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Afficher les héros
+        function displayHeroes() {
+            const grid = document.getElementById('heroes-grid');
+            grid.innerHTML = '';
+
+            heroesData.forEach(hero => {
+                const card = document.createElement('div');
+                card.className = 'hero-card';
+                card.dataset.heroId = hero.id;
+                
+                card.innerHTML = `
+                    <img src="${hero.image}" alt="${hero.name}" class="hero-image" 
+                         onerror="this.src='${hero.alternateImage || 'assets/default-hero.png'}'">
+                    <div class="hero-info">
+                        <div class="hero-name">${hero.name}</div>
+                        <div class="hero-title">${hero.title}</div>
+                        <div class="hero-class">${hero.class}</div>
+                        
+                        <div class="hero-stats">
+                            <div class="stat">
+                                <span class="stat-icon">❤️</span>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${hero.stats.health}%"></div>
+                                </div>
+                                <span>${hero.stats.health}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-icon">💎</span>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${hero.stats.mana/2}%"></div>
+                                </div>
+                                <span>${hero.stats.mana}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-icon">⚔️</span>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${hero.stats.attack}%"></div>
+                                </div>
+                                <span>${hero.stats.attack}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-icon">🛡️</span>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${hero.stats.defense}%"></div>
+                                </div>
+                                <span>${hero.stats.defense}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="abilities">
+                            ${hero.abilities.map(ability => `
+                                <div class="ability">
+                                    <div class="ability-name">
+                                        ${ability.name}
+                                        <span class="ability-cost">💎 ${ability.cost}</span>
+                                    </div>
+                                    <div class="ability-desc">${ability.description}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                card.onclick = () => selectHero(hero);
+                card.ondblclick = () => showLore(hero);
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Sélectionner un héros
+        function selectHero(hero) {
+            const heroIndex = selectedHeroes.findIndex(h => h.id === hero.id);
+            
+            if (heroIndex > -1) {
+                // Désélectionner
+                selectedHeroes.splice(heroIndex, 1);
+                document.querySelector(`[data-hero-id="${hero.id}"]`).classList.remove('selected');
+            } else if (selectedHeroes.length < maxHeroes) {
+                // Sélectionner
+                selectedHeroes.push(hero);
+                document.querySelector(`[data-hero-id="${hero.id}"]`).classList.add('selected');
+            } else {
+                showError(`Maximum ${maxHeroes} héros !`);
+                return;
+            }
+
+            updateSelectedDisplay();
+        }
+
+        // Mettre à jour l'affichage des héros sélectionnés
+        function updateSelectedDisplay() {
+            const container = document.getElementById('selected-heroes');
+            container.innerHTML = selectedHeroes.map(hero => `
+                <img src="${hero.image}" alt="${hero.name}" class="selected-hero-icon" 
+                     onerror="this.src='${hero.alternateImage || 'assets/default-hero.png'}'">
+            `).join('');
+
+            document.getElementById('start-btn').disabled = selectedHeroes.length === 0;
+        }
+
+        // Afficher le lore
+        function showLore(hero) {
+            document.getElementById('lore-hero-name').textContent = hero.name;
+            document.getElementById('lore-hero-text').textContent = hero.lore;
+            document.getElementById('lore-popup').classList.add('show');
+        }
+
+        function closeLore() {
+            document.getElementById('lore-popup').classList.remove('show');
+        }
+
+        // Commencer le jeu
+        function startGame() {
+            if (selectedHeroes.length === 0) return;
+
+            // Sauvegarder la sélection
+            localStorage.setItem('selectedHeroes', JSON.stringify(selectedHeroes));
+
+            // Rediriger vers le jeu principal REALGAME
+            window.location.href = 'index.html?mode=game&heroes=' + encodeURIComponent(JSON.stringify(selectedHeroes.map(h => h.id)));
+        }
+
+        // Afficher erreur
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Données de fallback
+        function getFallbackHeroes() {
+            return [
+                {
+                    id: "sid_meier",
+                    name: "Sid Meier",
+                    title: "L'Architecte Paresseux",
+                    image: "../assets/SidMeilleur.png",
+                    class: "Stratège",
+                    stats: { health: 100, mana: 150, attack: 40, defense: 60, speed: 30 },
+                    abilities: [
+                        { name: "Blueprint Reality", cost: 30, description: "Redessine la carte" },
+                        { name: "Hexagon Power", cost: 20, description: "Grille tactique" }
+                    ],
+                    lore: "Transforme tout en jeu de stratégie"
+                },
+                {
+                    id: "jean_grofignon",
+                    name: "Jean Grofignon",
+                    title: "Le Troll Intemporel",
+                    image: "../UPLOAD/undefined-3.png",
+                    class: "Mage Temporel",
+                    stats: { health: 80, mana: 200, attack: 60, defense: 40, speed: 50 },
+                    abilities: [
+                        { name: "Causalité Brisée", cost: 40, description: "Annule la dernière action" },
+                        { name: "Joint Mystique", cost: 25, description: "Ralentit le temps" }
+                    ],
+                    lore: "Maître du code et du temps"
+                }
+            ];
+        }
+
+        // Initialisation
+        loadHeroes();
+    </script>
+</body>
+</html>

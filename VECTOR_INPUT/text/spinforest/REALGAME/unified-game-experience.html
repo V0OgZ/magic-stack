@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROES OF TIME - Unified Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Container principal avec 3 zones */
+        .game-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        /* ZONE 1: Hero Stats & Progression */
+        .hero-panel {
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .hero-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .hero-name {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .hero-level {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #70a1ff;
+        }
+
+        .stat {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-bar {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .hp-fill { background: linear-gradient(90deg, #ff4757, #ff6348); }
+        .mana-fill { background: linear-gradient(90deg, #3742fa, #5f27cd); }
+        .xp-fill { background: linear-gradient(90deg, #ffd700, #ffb700); }
+
+        .skills {
+            margin-top: 30px;
+        }
+
+        .skill {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .skill.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ZONE 2: Main Game View */
+        .main-view {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mode Exploration (HoMM3 style) */
+        .exploration-mode {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: relative;
+        }
+
+        .hex-grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .hex {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: absolute;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hex:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .hex.current {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        .hex.enemy {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+
+        .hex.treasure {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+
+        /* Mode Combat (TCG style) */
+        .combat-mode {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 20px;
+        }
+
+        .combat-field {
+            display: grid;
+            grid-template-rows: 1fr 150px;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .battlefield {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .combat-zone {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fighter {
+            width: 150px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 3px solid #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .hand {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .card {
+            width: 100px;
+            height: 140px;
+            background: linear-gradient(135deg, #3742fa, #5f27cd);
+            border-radius: 10px;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .card:hover {
+            transform: translateY(-20px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* ZONE 3: World State & Inventory */
+        .world-panel {
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .world-state {
+            margin-bottom: 30px;
+        }
+
+        .state-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .inventory {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .inv-slot {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 30px;
+        }
+
+        .inv-slot:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+        }
+
+        /* Buttons de contrôle */
+        .control-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        /* Log système */
+        .game-log {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            opacity: 0.8;
+        }
+
+        .log-entry.combat { color: #ff4757; }
+        .log-entry.loot { color: #ffd700; }
+        .log-entry.xp { color: #70a1ff; }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- ZONE 1: Hero Panel -->
+        <div class="hero-panel">
+            <div class="hero-avatar" id="hero-avatar">⚔️</div>
+            <div class="hero-name" id="hero-name">Sir Arthur</div>
+            <div class="hero-level" id="hero-level">Level 1</div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <span>HP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill hp-fill" id="hp-bar" style="width: 100%"></div>
+                    </div>
+                    <span id="hp-text">100/100</span>
+                </div>
+                
+                <div class="stat">
+                    <span>MP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill mana-fill" id="mana-bar" style="width: 100%"></div>
+                    </div>
+                    <span id="mana-text">50/50</span>
+                </div>
+                
+                <div class="stat">
+                    <span>XP</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill xp-fill" id="xp-bar" style="width: 0%"></div>
+                    </div>
+                    <span id="xp-text">0/100</span>
+                </div>
+            </div>
+            
+            <div class="skills">
+                <h3>Skills</h3>
+                <div class="skill" onclick="useSkill('attack')">⚔️ Attack (Lv.1)</div>
+                <div class="skill" onclick="useSkill('defense')">🛡️ Defense (Lv.1)</div>
+                <div class="skill locked" onclick="useSkill('magic')">🔮 Magic (Locked Lv.5)</div>
+                <div class="skill locked" onclick="useSkill('temporal')">⏰ Temporal (Locked Lv.10)</div>
+            </div>
+        </div>
+        
+        <!-- ZONE 2: Main View -->
+        <div class="main-view">
+            <!-- Exploration Mode -->
+            <div class="exploration-mode" id="exploration" style="display: block;">
+                <div class="hex-grid" id="hex-grid"></div>
+            </div>
+            
+            <!-- Combat Mode -->
+            <div class="combat-mode" id="combat">
+                <div class="combat-field">
+                    <div class="battlefield">
+                        <div class="combat-zone">
+                            <div class="fighter player">⚔️</div>
+                            <div>Hero HP: <span id="combat-hero-hp">100</span></div>
+                        </div>
+                        <div class="combat-zone">
+                            <div class="fighter enemy">👹</div>
+                            <div>Enemy HP: <span id="combat-enemy-hp">50</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="hand" id="card-hand">
+                        <div class="card" onclick="playCard(0)">
+                            <div>⚔️</div>
+                            <div>Strike</div>
+                            <div>10 DMG</div>
+                        </div>
+                        <div class="card" onclick="playCard(1)">
+                            <div>🔥</div>
+                            <div>Fireball</div>
+                            <div>15 DMG</div>
+                        </div>
+                        <div class="card" onclick="playCard(2)">
+                            <div>🛡️</div>
+                            <div>Shield</div>
+                            <div>+5 DEF</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="btn" onclick="toggleMode()">Switch Mode</button>
+                <button class="btn" onclick="endTurn()">End Turn</button>
+                <button class="btn" onclick="saveGame()">Save to API</button>
+            </div>
+            
+            <div class="game-log" id="game-log">
+                <div class="log-entry">🎮 Game started!</div>
+                <div class="log-entry">📍 You are at position (0,0)</div>
+            </div>
+        </div>
+        
+        <!-- ZONE 3: World State -->
+        <div class="world-panel">
+            <h3>World State</h3>
+            <div class="world-state" id="world-state">
+                <div class="state-item">📍 Position: (0, 0)</div>
+                <div class="state-item">🕐 Turn: 1</div>
+                <div class="state-item">🌍 Dimension: MAIN</div>
+                <div class="state-item">💰 Gold: 100</div>
+                <div class="state-item">💎 Crystals: 0</div>
+            </div>
+            
+            <h3>Inventory</h3>
+            <div class="inventory" id="inventory">
+                <div class="inv-slot">⚔️</div>
+                <div class="inv-slot">🛡️</div>
+                <div class="inv-slot">🍖</div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+                <div class="inv-slot"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-config.js"></script>
+    <script src="config.js"></script>
+    <script>
+        // État global du jeu
+        let gameState = {
+            mode: 'exploration', // 'exploration' ou 'combat'
+            hero: {
+                name: 'Sir Arthur',
+                level: 1,
+                xp: 0,
+                xpToNext: 100,
+                hp: 100,
+                maxHp: 100,
+                mana: 50,
+                maxMana: 50,
+                position: { x: 0, y: 0 },
+                skills: {
+                    attack: 1,
+                    defense: 1,
+                    magic: 0,
+                    temporal: 0
+                }
+            },
+            world: {
+                turn: 1,
+                dimension: 'MAIN',
+                gold: 100,
+                crystals: 0
+            },
+            inventory: ['sword', 'shield', 'potion'],
+            combatState: null
+        };
+
+        // Génération de la grille hexagonale
+        function generateHexGrid() {
+            const grid = document.getElementById('hex-grid');
+            grid.innerHTML = '';
+            
+            const size = 5;
+            const hexSize = 60;
+            
+            for (let q = -size; q <= size; q++) {
+                for (let r = -size; r <= size; r++) {
+                    if (Math.abs(q + r) <= size) {
+                        const hex = document.createElement('div');
+                        hex.className = 'hex';
+                        
+                        // Position
+                        const x = hexSize * 1.5 * q;
+                        const y = hexSize * Math.sqrt(3) * (r + q/2);
+                        hex.style.left = x + 'px';
+                        hex.style.top = y + 'px';
+                        
+                        // Type de case
+                        if (q === 0 && r === 0) {
+                            hex.classList.add('current');
+                            hex.textContent = '⚔️';
+                        } else if (Math.random() < 0.1) {
+                            hex.classList.add('enemy');
+                            hex.textContent = '👹';
+                        } else if (Math.random() < 0.05) {
+                            hex.classList.add('treasure');
+                            hex.textContent = '💰';
+                        }
+                        
+                        hex.onclick = () => moveHero(q, r);
+                        grid.appendChild(hex);
+                    }
+                }
+            }
+        }
+
+        // Déplacement du héros
+        function moveHero(q, r) {
+            // Check si adjacent
+            const dx = Math.abs(q - gameState.hero.position.x);
+            const dy = Math.abs(r - gameState.hero.position.y);
+            
+            if (dx + dy <= 2) {
+                // Update position
+                gameState.hero.position = { x: q, y: r };
+                updateWorldState();
+                
+                // Check for encounter
+                const hexes = document.querySelectorAll('.hex');
+                hexes.forEach(hex => {
+                    if (hex.classList.contains('enemy') && hex.style.left === (60 * 1.5 * q) + 'px') {
+                        startCombat();
+                    } else if (hex.classList.contains('treasure') && hex.style.left === (60 * 1.5 * q) + 'px') {
+                        collectTreasure();
+                    }
+                });
+                
+                generateHexGrid();
+                addLog(`📍 Moved to (${q}, ${r})`);
+            }
+        }
+
+        // Début du combat
+        function startCombat() {
+            gameState.mode = 'combat';
+            gameState.combatState = {
+                enemyHp: 50,
+                enemyMaxHp: 50
+            };
+            
+            document.getElementById('exploration').style.display = 'none';
+            document.getElementById('combat').style.display = 'block';
+            
+            addLog('⚔️ Combat started!', 'combat');
+        }
+
+        // Jouer une carte
+        function playCard(index) {
+            if (gameState.mode !== 'combat') return;
+            
+            const cards = [
+                { name: 'Strike', damage: 10 },
+                { name: 'Fireball', damage: 15, manaCost: 10 },
+                { name: 'Shield', defense: 5 }
+            ];
+            
+            const card = cards[index];
+            
+            if (card.damage) {
+                gameState.combatState.enemyHp -= card.damage;
+                document.getElementById('combat-enemy-hp').textContent = gameState.combatState.enemyHp;
+                addLog(`🎴 Played ${card.name} for ${card.damage} damage!`, 'combat');
+                
+                if (gameState.combatState.enemyHp <= 0) {
+                    endCombat(true);
+                }
+            }
+        }
+
+        // Fin du combat
+        function endCombat(victory) {
+            if (victory) {
+                const xpGain = 25;
+                gameState.hero.xp += xpGain;
+                addLog(`✨ Victory! Gained ${xpGain} XP`, 'xp');
+                
+                // Level up check
+                if (gameState.hero.xp >= gameState.hero.xpToNext) {
+                    levelUp();
+                }
+            }
+            
+            gameState.mode = 'exploration';
+            document.getElementById('exploration').style.display = 'block';
+            document.getElementById('combat').style.display = 'none';
+            
+            updateHeroStats();
+        }
+
+        // Level up
+        function levelUp() {
+            gameState.hero.level++;
+            gameState.hero.xp -= gameState.hero.xpToNext;
+            gameState.hero.xpToNext = gameState.hero.level * 100;
+            gameState.hero.maxHp += 20;
+            gameState.hero.hp = gameState.hero.maxHp;
+            gameState.hero.maxMana += 10;
+            gameState.hero.mana = gameState.hero.maxMana;
+            
+            addLog(`🎉 LEVEL UP! Now level ${gameState.hero.level}!`, 'xp');
+            
+            // Unlock skills
+            if (gameState.hero.level >= 5) {
+                document.querySelector('.skill.locked').classList.remove('locked');
+            }
+        }
+
+        // Collecter trésor
+        function collectTreasure() {
+            const gold = Math.floor(Math.random() * 50) + 25;
+            gameState.world.gold += gold;
+            addLog(`💰 Found ${gold} gold!`, 'loot');
+            updateWorldState();
+        }
+
+        // Toggle mode (debug)
+        function toggleMode() {
+            if (gameState.mode === 'exploration') {
+                startCombat();
+            } else {
+                endCombat(false);
+            }
+        }
+
+        // End turn
+        function endTurn() {
+            gameState.world.turn++;
+            updateWorldState();
+            addLog(`⏭️ Turn ${gameState.world.turn}`);
+        }
+
+        // Save to API
+        async function saveGame() {
+            addLog('💾 Saving to Magic API...');
+            
+            // Appel API via config centralisee
+            try {
+                const back = (window.ConfigUtils ? ConfigUtils.getBackends() : {javaBackend:'http://localhost:8082'});
+                const response = await fetch(back.javaBackend + '/api/game/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(gameState)
+                });
+                
+                if (response.ok) {
+                    addLog('✅ Game saved!');
+                } else {
+                    addLog('❌ Save failed (API offline)');
+                }
+            } catch (error) {
+                addLog('❌ Save failed (API offline)');
+            }
+        }
+
+        // Update UI functions
+        function updateHeroStats() {
+            document.getElementById('hero-level').textContent = `Level ${gameState.hero.level}`;
+            document.getElementById('hp-text').textContent = `${gameState.hero.hp}/${gameState.hero.maxHp}`;
+            document.getElementById('hp-bar').style.width = (gameState.hero.hp / gameState.hero.maxHp * 100) + '%';
+            document.getElementById('mana-text').textContent = `${gameState.hero.mana}/${gameState.hero.maxMana}`;
+            document.getElementById('mana-bar').style.width = (gameState.hero.mana / gameState.hero.maxMana * 100) + '%';
+            document.getElementById('xp-text').textContent = `${gameState.hero.xp}/${gameState.hero.xpToNext}`;
+            document.getElementById('xp-bar').style.width = (gameState.hero.xp / gameState.hero.xpToNext * 100) + '%';
+        }
+
+        function updateWorldState() {
+            const stateDiv = document.getElementById('world-state');
+            stateDiv.innerHTML = `
+                <div class="state-item">📍 Position: (${gameState.hero.position.x}, ${gameState.hero.position.y})</div>
+                <div class="state-item">🕐 Turn: ${gameState.world.turn}</div>
+                <div class="state-item">🌍 Dimension: ${gameState.world.dimension}</div>
+                <div class="state-item">💰 Gold: ${gameState.world.gold}</div>
+                <div class="state-item">💎 Crystals: ${gameState.world.crystals}</div>
+            `;
+        }
+
+        function addLog(message, type = '') {
+            const log = document.getElementById('game-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function useSkill(skill) {
+            if (gameState.hero.skills[skill] > 0) {
+                addLog(`Used ${skill} skill!`);
+            }
+        }
+
+        // Initialisation
+        generateHexGrid();
+        updateHeroStats();
+        updateWorldState();
+    </script>
+</body>
+</html>

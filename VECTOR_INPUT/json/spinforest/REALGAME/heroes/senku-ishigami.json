@@ -1,0 +1,121 @@
+{
+  "id": "senku_ishigami",
+  "name": "Senku Ishigami",
+  "title": "Le Scientifique de Pierre",
+  "class": "Chimiste",
+  "faction": "Scientists",
+  "stats": {
+    "level": 1,
+    "hp": 100,
+    "maxHp": 100,
+    "mana": 150,
+    "maxMana": 150,
+    "attack": 15,
+    "defense": 10,
+    "intelligence": 50,
+    "speed": 12
+  },
+  "abilities": [
+    {
+      "id": "scientific_method",
+      "name": "Methode Scientifique",
+      "description": "Analyse n'importe quel objet ou ennemi pour decouvrir ses faiblesses",
+      "cooldown": 2,
+      "manaCost": 20
+    },
+    {
+      "id": "aqua_regia",
+      "name": "Eau Regale",
+      "description": "Cree de l'acide qui dissout les armures metalliques et l'or",
+      "cooldown": 4,
+      "manaCost": 40,
+      "damage": 30,
+      "special": "Ignore l'armure, inflige des degats continus"
+    },
+    {
+      "id": "chemistry_combo",
+      "name": "Combo Chimique",
+      "description": "Combine des elements pour creer des reactions explosives",
+      "cooldown": 5,
+      "manaCost": 60,
+      "damage": 50,
+      "aoe": true
+    },
+    {
+      "id": "stone_formula",
+      "name": "Formule de Pierre",
+      "description": "10 milliards pour cent de boost d'intelligence !",
+      "cooldown": 6,
+      "manaCost": 30,
+      "buff": {
+        "intelligence": 20,
+        "duration": 3
+      }
+    }
+  ],
+  "inventory": {
+    "sulfur": 5,
+    "carbon": 10,
+    "nitric_acid": 3,
+    "hydrochloric_acid": 3,
+    "herbs": 8,
+    "alcohol": 4
+  },
+  "catchphrases": [
+    "C'est excitant !",
+    "10 milliards pour cent sur que ca va marcher !",
+    "La science ne ment jamais.",
+    "C'est de la science basique.",
+    "Je ne suis pas un heros, je suis un scientifique.",
+    "Un pas de plus vers la reconstruction du monde !",
+    "Kukuku... Interessant !",
+    "Get excited !",
+    "This is exhilarating !"
+  ],
+  "dialogues": {
+    "intro": "Je suis Senku. Pas un magicien, un scientifique. La difference ? Mes sorts sont reproductibles.",
+    "victory": "La science gagne toujours. C'etait mathematiquement previsible.",
+    "defeat": "Hmm... J'ai du mal calculer quelque chose. Retour au labo !",
+    "taunt": "Tu crois a la magie ? Laisse-moi t'expliquer la chimie derriere tes 'sorts'.",
+    "ability_aqua_regia": "Eau regale ! Le seul acide capable de dissoudre l'or !",
+    "ability_chemistry": "Action... Reaction ! BOOM !",
+    "low_health": "Je ne mourrai pas... pas avant d'avoir reconstruit la civilisation !"
+  },
+  "appearance": {
+    "hair": "Blanc avec pointes vertes",
+    "eyes": "Rouge rubis",
+    "outfit": "Blouse de labo improvisee en peau",
+    "accessories": "Collier E=mc2",
+    "height": "171cm"
+  },
+  "lore": "Reveille apres 3700 ans de petrification, Senku Ishigami est le genie scientifique qui a jure de reconstruire la civilisation a partir de zero. Avec son cerveau comptant a la vitesse de la lumiere et sa connaissance encyclopedique, il transforme les materiaux les plus basiques en technologies avancees. Dans le monde d'Avalon, ses connaissances en chimie sont considerees comme de la magie pure.",
+  "relationships": {
+    "allies": ["Taiju", "Yuzuriha", "Chrome", "Kohaku"],
+    "rivals": ["Tsukasa", "Hyoga"],
+    "mentor": "Byakuya Ishigami (pere adoptif)"
+  },
+  "specialMechanics": {
+    "sciencePoints": {
+      "description": "Gagne des points en analysant et experimentant",
+      "current": 0,
+      "max": 100,
+      "useFor": "Debloquer de nouvelles formules et reactions"
+    },
+    "knownFormulas": [
+      "H2O - Eau",
+      "HCl + HNO3 - Eau Regale", 
+      "KNO3 + C + S - Poudre a canon",
+      "CaCO3 + Graisse - Savon",
+      "C2H5OH - Alcool"
+    ],
+    "researchTree": {
+      "unlocked": ["Chimie Basique", "Acides", "Explosifs"],
+      "locked": ["Electricite", "Metallurgie Avancee", "Antibiotiques", "Communications"]
+    }
+  },
+  "combatStyle": "Strategique et analytique. Prefere preparer ses reactions a l'avance et exploiter les faiblesses de l'ennemi. Excellente synergie avec d'autres scientifiques ou artisans.",
+  "weaknesses": ["Combat rapproche", "Magie pure non explicable", "Manque de force physique"],
+  "strengths": ["Intelligence extreme", "Preparation", "Polyvalence", "Apprentissage rapide"],
+  "rarity": "Legendaire",
+  "unlockCondition": "Completer la quete 'L'Age de Pierre' ou crafter 100 objets differents"
+}

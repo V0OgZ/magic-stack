@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 BRISURE NAVIGATOR - Voyage Interdimensionnel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Canvas 3D simulé */
+        .universe-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            perspective: 1200px;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000 100%);
+            overflow: hidden;
+        }
+
+        /* Particules de fond */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 40% 70%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent);
+            background-size: 10% 10%, 20% 20%, 15% 15%, 30% 30%;
+            animation: stars-move 200s linear infinite;
+        }
+
+        @keyframes stars-move {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); }
+        }
+
+        /* Mondes flottants */
+        .floating-world {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .world-platform {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2a4e2a, #1a3a1a);
+            border: 3px solid #4ecdc4;
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.5),
+                inset 0 0 30px rgba(78, 205, 196, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: rotateX(30deg) rotateY(45deg);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .world-platform:hover {
+            border-color: #ff69b4;
+            box-shadow: 
+                0 30px 60px rgba(255, 105, 180, 0.4),
+                inset 0 0 50px rgba(255, 105, 180, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotateX(30deg) rotateY(45deg) translateY(0); }
+            50% { transform: rotateX(30deg) rotateY(45deg) translateY(-20px); }
+        }
+
+        .world-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .world-status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .world-hero {
+            font-size: 2rem;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+        }
+
+        /* Portails de connexion */
+        .portal-connection {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #00ffff, transparent);
+            transform-origin: top center;
+            animation: portal-pulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes portal-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; box-shadow: 0 0 20px #00ffff; }
+        }
+
+        /* Spirales temporelles */
+        .temporal-spiral {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 3px solid #8a2be2;
+            border-radius: 50%;
+            animation: spiral-rotate 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes spiral-rotate {
+            from { transform: rotate(0deg) scale(1); }
+            to { transform: rotate(360deg) scale(1.5); opacity: 0; }
+        }
+
+        /* Interface de contrôle */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8a2be2;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .control-panel h2 {
+            color: #ff69b4;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #ff69b4;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .navigate-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: linear-gradient(45deg, #8a2be2, #00ffff);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .navigate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(138, 43, 226, 0.5);
+        }
+
+        .navigate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Console de voyage */
+        .travel-console {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .console-line {
+            margin: 3px 0;
+            color: #00ff00;
+        }
+
+        .console-error {
+            color: #ff4444;
+        }
+
+        .console-success {
+            color: #44ff44;
+        }
+
+        .console-info {
+            color: #00ffff;
+        }
+
+        /* Héros actif */
+        .active-hero {
+            position: absolute;
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 20px #ffdd00);
+            animation: hero-glow 2s ease-in-out infinite;
+            transition: all 0.5s ease;
+            z-index: 100;
+        }
+
+        @keyframes hero-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px #ffdd00); }
+            50% { filter: drop-shadow(0 0 40px #ffdd00) brightness(1.5); }
+        }
+
+        /* Effet de téléportation */
+        .teleport-effect {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: teleport-ring 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes teleport-ring {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* Loading spinner */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Tooltip */
+        .world-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #ffdd00;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+            z-index: 1001;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .world-tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="universe-container" id="universe">
+        <div class="stars"></div>
+        
+        <!-- Mondes flottants générés dynamiquement -->
+        <div id="worlds-container"></div>
+        
+        <!-- Héros actif -->
+        <div class="active-hero" id="active-hero">🎯</div>
+        
+        <!-- Connexions entre mondes -->
+        <svg id="connections" style="position: absolute; width: 100%; height: 100%; pointer-events: none;">
+        </svg>
+    </div>
+
+    <!-- Panneau de contrôle -->
+    <div class="control-panel">
+        <h2>🌀 BRISURE NAVIGATOR</h2>
+        
+        <div class="stat-line">
+            <span>Héros Actif:</span>
+            <span id="current-hero">Sid Meier</span>
+        </div>
+        
+        <div class="stat-line">
+            <span>Monde Actuel:</span>
+            <span id="current-world">SpinForest</span>
+        </div>
+        
+        <div class="stat-line">
+            <span>Énergie:</span>
+            <span id="energy">100/100</span>
+        </div>
+        
+        <div class="stat-line">
+            <span>Risque Paradoxal:</span>
+            <span id="paradox-risk">0.3</span>
+        </div>
+        
+        <div class="stat-line">
+            <span>Dimensions Actives:</span>
+            <span id="dimensions">6/6</span>
+        </div>
+        
+        <button class="navigate-btn" id="navigate-btn" onclick="navigateToSelectedWorld()">
+            🌀 VOYAGER
+        </button>
+        
+        <button class="navigate-btn" onclick="activateBrisure()">
+            ⚡ ACTIVER BRISURE
+        </button>
+    </div>
+
+    <!-- Console de voyage -->
+    <div class="travel-console" id="console">
+        <div class="console-line console-info">🌀 BRISURE NAVIGATOR v1.0 initialisé</div>
+        <div class="console-line console-success">✅ Connexion au backend établie</div>
+        <div class="console-line">🔍 Scan des mondes en cours...</div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="world-tooltip" id="tooltip"></div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:8082/api';
+        let selectedWorld = null;
+        let currentWorld = 'SpinForest';
+        let currentHero = 'Sid Meier';
+        let energy = 100;
+        let isNavigating = false;
+
+        // Données des mondes
+        const worlds = [
+            { id: 'spinforest', name: 'SpinForest', x: 50, y: 50, z: 0, hero: '🎯', status: 'Stable', connected: ['avalon', 'interstice'] },
+            { id: 'avalon', name: 'AVALON', x: 30, y: 30, z: -100, hero: '🏰', status: 'Magique', connected: ['spinforest', 'crypte', 'ecole'] },
+            { id: 'interstice', name: 'Interstice', x: 70, y: 30, z: -50, hero: '🌀', status: 'Quantique', connected: ['spinforest', 'brisure'] },
+            { id: 'crypte', name: 'Crypte AR', x: 20, y: 70, z: -150, hero: '🔮', status: 'Mystérieux', connected: ['avalon'] },
+            { id: 'ecole', name: 'École Porio-Noz', x: 40, y: 60, z: -80, hero: '📚', status: 'Éducatif', connected: ['avalon', 'bibliotheque'] },
+            { id: 'bibliotheque', name: 'Bibliothèque', x: 50, y: 80, z: -120, hero: '📖', status: 'Savant', connected: ['ecole'] },
+            { id: 'brisure', name: 'La BRISURE', x: 80, y: 50, z: -200, hero: '🐻', status: 'Instable', connected: ['interstice', 'void'] },
+            { id: 'void', name: 'Le Vide', x: 90, y: 90, z: -300, hero: '∅', status: 'Dangereux', connected: ['brisure'] }
+        ];
+
+        // Initialisation
+        function init() {
+            createWorlds();
+            drawConnections();
+            updateConsole('✅ Mondes chargés: ' + worlds.length, 'success');
+            setInterval(updateAnimations, 100);
+            checkBackendConnection();
+        }
+
+        // Créer les mondes
+        function createWorlds() {
+            const container = document.getElementById('worlds-container');
+            
+            worlds.forEach((world, index) => {
+                const worldDiv = document.createElement('div');
+                worldDiv.className = 'floating-world';
+                worldDiv.id = `world-${world.id}`;
+                worldDiv.style.left = world.x + '%';
+                worldDiv.style.top = world.y + '%';
+                worldDiv.style.transform = `translateZ(${world.z}px)`;
+                worldDiv.style.animationDelay = `${index * 0.5}s`;
+
+                worldDiv.innerHTML = `
+                    <div class="world-platform">
+                        <div class="world-name">${world.name}</div>
+                        <div class="world-hero">${world.hero}</div>
+                        <div class="world-status">${world.status}</div>
+                    </div>
+                `;
+
+                worldDiv.onclick = () => selectWorld(world);
+                worldDiv.onmouseenter = (e) => showTooltip(e, world);
+                worldDiv.onmouseleave = () => hideTooltip();
+
+                container.appendChild(worldDiv);
+
+                // Ajouter des spirales temporelles aléatoires
+                if (Math.random() > 0.7) {
+                    createTemporalSpiral(world.x, world.y);
+                }
+            });
+        }
+
+        // Dessiner les connexions
+        function drawConnections() {
+            const svg = document.getElementById('connections');
+            
+            worlds.forEach(world => {
+                world.connected.forEach(targetId => {
+                    const target = worlds.find(w => w.id === targetId);
+                    if (target) {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', world.x + '%');
+                        line.setAttribute('y1', world.y + '%');
+                        line.setAttribute('x2', target.x + '%');
+                        line.setAttribute('y2', target.y + '%');
+                        line.setAttribute('stroke', '#00ffff');
+                        line.setAttribute('stroke-width', '2');
+                        line.setAttribute('opacity', '0.3');
+                        line.style.animation = 'portal-pulse 3s ease-in-out infinite';
+                        svg.appendChild(line);
+                    }
+                });
+            });
+        }
+
+        // Sélectionner un monde
+        function selectWorld(world) {
+            // Désélectionner l'ancien
+            if (selectedWorld) {
+                document.getElementById(`world-${selectedWorld.id}`).querySelector('.world-platform').style.borderColor = '#4ecdc4';
+            }
+
+            selectedWorld = world;
+            document.getElementById(`world-${world.id}`).querySelector('.world-platform').style.borderColor = '#ff69b4';
+            document.getElementById('navigate-btn').disabled = false;
+            
+            updateConsole(`🎯 Monde sélectionné: ${world.name}`, 'info');
+        }
+
+        // Naviguer vers le monde sélectionné
+        async function navigateToSelectedWorld() {
+            if (!selectedWorld || isNavigating) return;
+            if (selectedWorld.id === currentWorld) {
+                updateConsole('⚠️ Vous êtes déjà dans ce monde!', 'error');
+                return;
+            }
+
+            isNavigating = true;
+            document.getElementById('navigate-btn').disabled = true;
+
+            // Calculer le coût en énergie
+            const cost = calculateTravelCost(currentWorld, selectedWorld.id);
+            if (energy < cost) {
+                updateConsole(`❌ Énergie insuffisante! Requis: ${cost}`, 'error');
+                isNavigating = false;
+                return;
+            }
+
+            updateConsole(`🌀 Téléportation vers ${selectedWorld.name}...`, 'info');
+
+            // Effet de téléportation
+            createTeleportEffect();
+
+            // Appel API
+            try {
+                const response = await fetch(`${API_BASE}/magic-formulas/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: `TELEPORT_TO_${selectedWorld.id.toUpperCase()}`,
+                        context: {
+                            gameId: 'brisure-navigator',
+                            hero: currentHero,
+                            from: currentWorld,
+                            to: selectedWorld.id,
+                            cost: cost
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success || response.ok) {
+                    // Succès
+                    energy -= cost;
+                    currentWorld = selectedWorld.id;
+                    updateStats();
+                    moveHeroToWorld(selectedWorld);
+                    updateConsole(`✅ Téléportation réussie! ${result.walterMessage || ''}`, 'success');
+                } else {
+                    updateConsole(`❌ Échec: ${result.error || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (error) {
+                // Backend offline - simulation
+                energy -= cost;
+                currentWorld = selectedWorld.id;
+                updateStats();
+                moveHeroToWorld(selectedWorld);
+                updateConsole(`✅ [SIMULÉ] Téléportation réussie!`, 'success');
+            }
+
+            setTimeout(() => {
+                isNavigating = false;
+                document.getElementById('navigate-btn').disabled = false;
+            }, 2000);
+        }
+
+        // Calculer le coût du voyage
+        function calculateTravelCost(from, to) {
+            const fromWorld = worlds.find(w => w.id === from);
+            const toWorld = worlds.find(w => w.id === to);
+            
+            // Connexion directe = moins cher
+            if (fromWorld.connected.includes(to)) {
+                return 20;
+            }
+            
+            // Sinon calculer la distance
+            const dx = Math.abs(fromWorld.x - toWorld.x);
+            const dy = Math.abs(fromWorld.y - toWorld.y);
+            const dz = Math.abs(fromWorld.z - toWorld.z) / 100;
+            
+            return Math.floor(20 + dx/2 + dy/2 + dz * 10);
+        }
+
+        // Déplacer le héros
+        function moveHeroToWorld(world) {
+            const hero = document.getElementById('active-hero');
+            hero.style.left = world.x + '%';
+            hero.style.top = world.y + '%';
+            hero.style.transform = `translateZ(${world.z + 50}px)`;
+        }
+
+        // Créer effet de téléportation
+        function createTeleportEffect() {
+            const hero = document.getElementById('active-hero');
+            const effect = document.createElement('div');
+            effect.className = 'teleport-effect';
+            effect.style.left = hero.style.left;
+            effect.style.top = hero.style.top;
+            document.getElementById('universe').appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        // Créer spirale temporelle
+        function createTemporalSpiral(x, y) {
+            const spiral = document.createElement('div');
+            spiral.className = 'temporal-spiral';
+            spiral.style.left = x + '%';
+            spiral.style.top = y + '%';
+            document.getElementById('universe').appendChild(spiral);
+            
+            spiral.addEventListener('animationend', () => {
+                spiral.remove();
+                // Recréer une nouvelle spirale
+                setTimeout(() => createTemporalSpiral(
+                    Math.random() * 80 + 10,
+                    Math.random() * 80 + 10
+                ), Math.random() * 5000);
+            });
+        }
+
+        // Activer la BRISURE
+        async function activateBrisure() {
+            updateConsole('⚡ Activation de la BRISURE...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/magic-formulas/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formula: 'ACTIVATE_BRISURE',
+                        context: { hero: currentHero, world: currentWorld }
+                    })
+                });
+
+                const result = await response.json();
+                updateConsole(`🌀 ${result.walterMessage || 'BRISURE activée!'}`, 'success');
+                
+                // Effet visuel
+                document.getElementById('universe').style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    document.getElementById('universe').style.animation = '';
+                }, 500);
+            } catch (error) {
+                updateConsole('🌀 [SIMULÉ] BRISURE activée! Nouveaux chemins découverts!', 'success');
+                
+                // Ajouter des connexions aléatoires
+                worlds.forEach(world => {
+                    if (Math.random() > 0.8) {
+                        const randomWorld = worlds[Math.floor(Math.random() * worlds.length)];
+                        if (!world.connected.includes(randomWorld.id)) {
+                            world.connected.push(randomWorld.id);
+                            updateConsole(`✨ Nouveau chemin: ${world.name} ↔ ${randomWorld.name}`, 'info');
+                        }
+                    }
+                });
+                
+                drawConnections();
+            }
+        }
+
+        // Vérifier connexion backend
+        async function checkBackendConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/../actuator/health`);
+                const data = await response.json();
+                if (data.status === 'UP') {
+                    updateConsole('🟢 Backend WALTER: ONLINE', 'success');
+                }
+            } catch (error) {
+                updateConsole('🟡 Backend WALTER: Mode simulation', 'error');
+            }
+        }
+
+        // Mettre à jour les stats
+        function updateStats() {
+            document.getElementById('current-world').textContent = worlds.find(w => w.id === currentWorld).name;
+            document.getElementById('energy').textContent = `${energy}/100`;
+            document.getElementById('paradox-risk').textContent = (Math.random() * 0.5 + 0.2).toFixed(2);
+        }
+
+        // Mettre à jour la console
+        function updateConsole(message, type = '') {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = 'console-line' + (type ? ` console-${type}` : '');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+            
+            // Limiter à 50 lignes
+            while (console.children.length > 50) {
+                console.removeChild(console.firstChild);
+            }
+        }
+
+        // Tooltip
+        function showTooltip(event, world) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = `
+                <strong>${world.name}</strong><br>
+                État: ${world.status}<br>
+                Connexions: ${world.connected.length}<br>
+                Coût voyage: ${calculateTravelCost(currentWorld, world.id)} énergie
+            `;
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY + 10 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('show');
+        }
+
+        // Animations continues
+        function updateAnimations() {
+            // Faire tourner légèrement l'univers
+            const universe = document.getElementById('universe');
+            const time = Date.now() * 0.0001;
+            universe.style.transform = `rotateY(${Math.sin(time) * 5}deg)`;
+        }
+
+        // Animation shake
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Démarrer
+        init();
+
+        // Régénération d'énergie
+        setInterval(() => {
+            if (energy < 100) {
+                energy = Math.min(100, energy + 5);
+                updateStats();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

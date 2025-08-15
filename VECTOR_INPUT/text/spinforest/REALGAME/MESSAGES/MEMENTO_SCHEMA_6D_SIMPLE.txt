@@ -1,0 +1,66 @@
+SCHEMA 6 DIMENSIONS - VISUALISATION SIMPLE
+==========================================
+
+DIMENSION PHYSIQUE (X,Y,Z):
+--------------------------
+    Y
+    ^
+    |  . . . . .
+    |  . H . . .    H = Hero
+    |  . . . E .    E = Ennemi  
+    |  . . . . .
+    +-----------> X
+   /
+  Z (altitude)
+
+
+DIMENSION TEMPORELLE (T):
+------------------------
+Passe ----[---]---- Present ----[---]---- Futur
+          T=-1        T=0         T=+1
+
+
+DIMENSION CAUSALE (C):
+---------------------
+Action --> Effet 1 --> Effet 2 --> Effet 3
+  |           |
+  v           v
+Effet A    Effet B (bifurcation)
+
+
+DIMENSION QUANTIQUE (Q):
+-----------------------
+Etat 1 (60% chance)  \
+                      >-- Observation --> Resultat final
+Etat 2 (40% chance)  /
+
+
+TOUT ENSEMBLE DANS LE JEU:
+-------------------------
+
+         [Mini-Map 6D]
+    +---------------------+
+    | X,Y: Position       |
+    | Z: Altitude 0       |
+    | T: Present          |
+    | C: Timeline Alpha   |
+    | Q: Observe          |
+    +---------------------+
+            |
+            v
+    [Hero sur la carte]
+    - Peut se deplacer (X,Y,Z)
+    - Peut voyager dans le temps (T)
+    - Ses actions ont des consequences (C)
+    - Peut etre dans plusieurs etats (Q)
+
+
+API BACKEND:
+-----------
+GET  /api/entity/position     -> {x:5, y:3, z:0, t:0, c:"alpha", q:1.0}
+POST /api/action/teleport     -> Modifie les 6 dimensions
+GET  /api/quantum/states      -> Liste des etats possibles
+POST /api/temporal/shift      -> Voyage dans le temps
+
+
+C'EST CA LES 6 DIMENSIONS !

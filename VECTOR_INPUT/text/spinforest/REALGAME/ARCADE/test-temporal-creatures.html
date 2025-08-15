@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌀 Test Créatures Temporelles - REALGAME</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            color: white;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a2e;
+        }
+        
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #9400D3;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 300px;
+        }
+        
+        .temporal-powers {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #666;
+        }
+        
+        .power-button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .power-button.active {
+            border-color: #9400D3;
+            background: rgba(148, 0, 211, 0.3);
+            box-shadow: 0 0 10px #9400D3;
+        }
+        
+        .creatures-list {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #666;
+        }
+        
+        .creature-item {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            opacity: 0.5;
+        }
+        
+        .creature-item.revealed {
+            opacity: 1;
+            border: 1px solid #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        #notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+        
+        #notification h2 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 1px solid #666;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="hud">
+        <h2>🌀 Créatures Temporelles</h2>
+        <p>Position: <span id="playerPos">0, 0</span></p>
+        
+        <div class="temporal-powers">
+            <h3>Pouvoirs Temporels:</h3>
+            <button class="power-button" data-power="Mémoire de Memento">Mémoire de Memento</button>
+            <button class="power-button" data-power="L'Œil de Wigner">L'Œil de Wigner</button>
+            <button class="power-button" data-power="L'Accord temporel">L'Accord temporel</button>
+            <button class="power-button" data-power="Vision Renaissance">Vision Renaissance</button>
+            <button class="power-button" data-power="Maîtrise Absolue">Maîtrise Absolue</button>
+        </div>
+        
+        <div class="creatures-list">
+            <h3>Créatures Cachées:</h3>
+            <div class="creature-item" data-creature="luciole">🦋 Luciole des Souvenirs</div>
+            <div class="creature-item" data-creature="whiskers">🐱 Whiskers l'Intemporel</div>
+            <div class="creature-item" data-creature="galahad">⚔️ Sir Galahad l'Éternel</div>
+            <div class="creature-item" data-creature="ignis">🔥 Ignis le Prophétique</div>
+            <div class="creature-item" data-creature="cosmos">👑 Cosmos l'Architecte</div>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <p>Utilisez les flèches pour déplacer le héros</p>
+        <p>Activez un pouvoir temporel</p>
+        <p>Approchez-vous des zones scintillantes</p>
+    </div>
+    
+    <div id="notification">
+        <h2>Créature Révélée!</h2>
+        <p id="creatureName"></p>
+        <p id="creatureDesc"></p>
+    </div>
+    
+    <script type="module">
+        // Import des modules nécessaires
+        import { MapLayerController } from './maps/MapLayerController.js';
+        import { TemporalCreatureRevealer } from './maps/temporal_creature_revealer.js';
+        
+        // Configuration du canvas
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Joueur simulé
+        const player = {
+            x: 25,
+            y: 25,
+            temporalPowers: [],
+            speed: 0.5
+        };
+        
+        // Mock Magic Stack
+        const mockMagicStack = {
+            executeSpell: (spell) => console.log('Spell executed:', spell)
+        };
+        
+        // Initialisation du contrôleur de carte
+        const mapController = new MapLayerController(canvas, mockMagicStack);
+        
+        // Gestion des pouvoirs temporels
+        document.querySelectorAll('.power-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const power = button.dataset.power;
+                
+                // Toggle power
+                if (player.temporalPowers.includes(power)) {
+                    player.temporalPowers = player.temporalPowers.filter(p => p !== power);
+                    button.classList.remove('active');
+                } else {
+                    player.temporalPowers.push(power);
+                    button.classList.add('active');
+                }
+                
+                console.log('Active powers:', player.temporalPowers);
+            });
+        });
+        
+        // Contrôles clavier
+        const keys = {};
+        window.addEventListener('keydown', (e) => keys[e.key] = true);
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Déplacement du joueur
+            if (keys['ArrowUp']) player.y -= player.speed;
+            if (keys['ArrowDown']) player.y += player.speed;
+            if (keys['ArrowLeft']) player.x -= player.speed;
+            if (keys['ArrowRight']) player.x += player.speed;
+            
+            // Limites de la carte
+            player.x = Math.max(0, Math.min(49, player.x));
+            player.y = Math.max(0, Math.min(49, player.y));
+            
+            // Mise à jour position affichée
+            document.getElementById('playerPos').textContent = `${Math.floor(player.x)}, ${Math.floor(player.y)}`;
+            
+            // Mise à jour des créatures temporelles
+            mapController.updateTemporalCreatures(player);
+            
+            // Rendu
+            mapController.render();
+            
+            // Dessiner le joueur
+            const playerScreen = mapController.mapToScreen(player.x, player.y);
+            ctx.save();
+            ctx.fillStyle = '#4ecdc4';
+            ctx.beginPath();
+            ctx.arc(playerScreen.x, playerScreen.y, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🧙', playerScreen.x, playerScreen.y + 7);
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Écouter les événements de révélation
+        window.addEventListener('creatureRevealed', (event) => {
+            const creature = event.detail;
+            
+            // Mettre à jour l'interface
+            const creatureItem = document.querySelector(`[data-creature="${creature.id}"]`);
+            if (creatureItem) {
+                creatureItem.classList.add('revealed');
+            }
+            
+            // Afficher notification
+            const notification = document.getElementById('notification');
+            document.getElementById('creatureName').textContent = creature.name;
+            document.getElementById('creatureDesc').textContent = creature.description || 'Une créature mystérieuse du temps...';
+            
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        });
+        
+        // Démarrer le jeu
+        console.log('🎮 Test Créatures Temporelles démarré!');
+        gameLoop();
+    </script>
+</body>
+</html>

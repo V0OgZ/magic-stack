@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔥⚡ Frontière de Feu et Foi - VERSION ÉPIQUE</title>
+    <link rel="stylesheet" href="../../styles/vincent-theme.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: none;
+        }
+        
+        #effectCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        /* Curseur custom épique */
+        .custom-cursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        
+        .cursor-inner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #FFD700, transparent);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: cursor-pulse 1s infinite;
+        }
+        
+        .cursor-outer {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #FF6600;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            animation: cursor-rotate 2s linear infinite;
+        }
+        
+        @keyframes cursor-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+        }
+        
+        @keyframes cursor-rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* HUD épique */
+        .epic-hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, 
+                rgba(20,10,5,0.9) 0%, 
+                rgba(20,10,5,0.6) 70%, 
+                transparent 100%
+            );
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 20px;
+            pointer-events: none;
+        }
+        
+        .hud-section {
+            background: rgba(0,0,0,0.8);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 15px 25px;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+        }
+        
+        .resource-bar {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .resource-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+        
+        .resource-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Dialogue épique */
+        .epic-dialogue {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stone" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><rect fill="%23342016" width="20" height="20"/><rect fill="%238B4513" x="2" y="2" width="6" height="6" opacity="0.3"/><rect fill="%23654321" x="12" y="12" width="6" height="6" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23stone)"/></svg>');
+            border-top: 5px solid #D2691E;
+            transform: translateY(100%);
+            transition: transform 0.5s ease-out;
+            display: flex;
+            align-items: center;
+            padding: 0 50px;
+        }
+        
+        .epic-dialogue.active {
+            transform: translateY(0);
+        }
+        
+        .dialogue-portrait {
+            width: 150px;
+            height: 150px;
+            border: 4px solid #FFD700;
+            border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            margin-right: 30px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+        }
+        
+        .dialogue-content {
+            flex: 1;
+            color: #FFD700;
+        }
+        
+        .dialogue-speaker {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        }
+        
+        .dialogue-text {
+            font-size: 20px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Effets spéciaux */
+        @keyframes fire-wave {
+            0% { transform: translateY(0) scaleY(1); opacity: 0.8; }
+            50% { transform: translateY(-20px) scaleY(1.2); opacity: 1; }
+            100% { transform: translateY(-40px) scaleY(0.8); opacity: 0; }
+        }
+        
+        @keyframes quantum-distortion {
+            0% { filter: hue-rotate(0deg) brightness(1); }
+            50% { filter: hue-rotate(180deg) brightness(1.5); }
+            100% { filter: hue-rotate(360deg) brightness(1); }
+        }
+        
+        .fire-particle {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background: linear-gradient(to top, #FF0000, #FF6600, #FFFF00);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: fire-wave 2s ease-out forwards;
+        }
+        
+        /* Menu de combat épique */
+        .combat-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: radial-gradient(ellipse at center, 
+                rgba(139,69,19,0.95) 0%, 
+                rgba(20,10,5,0.95) 100%
+            );
+            border: 5px solid #FFD700;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.9),
+                inset 0 0 100px rgba(255,102,0,0.3);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .combat-menu.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .combat-option {
+            display: inline-block;
+            margin: 10px;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, #8B4513, #D2691E);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .combat-option::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, #FFD700, transparent);
+            transition: all 0.5s;
+            transform: translate(-50%, -50%);
+        }
+        
+        .combat-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #FF6600;
+        }
+        
+        .combat-option:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+        
+        /* Effet de dégâts */
+        .damage-number {
+            position: absolute;
+            font-size: 48px;
+            font-weight: bold;
+            color: #FF0000;
+            text-shadow: 
+                2px 2px 0 #000,
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                0 0 20px #FF0000;
+            animation: damage-float 2s ease-out forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        @keyframes damage-float {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(-20px) scale(1.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        /* Loading screen épique */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 1s;
+        }
+        
+        .loading-title {
+            font-size: 48px;
+            color: #FFD700;
+            text-shadow: 0 0 30px #FF6600;
+            margin-bottom: 50px;
+            animation: loading-pulse 2s infinite;
+        }
+        
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .loading-bar {
+            width: 500px;
+            height: 30px;
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(20,10,5,0.8);
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #FF0000, #FF6600, #FFD700);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 20px #FF6600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas principal et effets -->
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="effectCanvas"></canvas>
+    
+    <!-- Curseur custom -->
+    <div class="custom-cursor" id="customCursor">
+        <div class="cursor-inner"></div>
+        <div class="cursor-outer"></div>
+    </div>
+    
+    <!-- HUD épique -->
+    <div class="epic-hud">
+        <div class="hud-section">
+            <h3 style="margin: 0 0 10px 0; color: #FFD700;">⚔️ Frontière de Feu et Foi</h3>
+            <div>Position: <span id="playerPos" style="color: #00FF00;">10, 14</span></div>
+        </div>
+        
+        <div class="hud-section resource-bar">
+            <div class="resource">
+                <span class="resource-icon" style="color: #FF0000;">❤️</span>
+                <span class="resource-value" id="healthValue">100</span>
+            </div>
+            <div class="resource">
+                <span class="resource-icon" style="color: #00D9FF;">💧</span>
+                <span class="resource-value" id="manaValue">50</span>
+            </div>
+            <div class="resource">
+                <span class="resource-icon" style="color: #FFD700;">⭐</span>
+                <span class="resource-value" id="expValue">0</span>
+            </div>
+        </div>
+        
+        <div class="hud-section">
+            <div style="color: #8A2BE2;">Phase: <span id="phaseValue">1.0</span></div>
+            <div style="color: #FF6600;">Danger: <span id="dangerLevel">🔥🔥🔥</span></div>
+        </div>
+    </div>
+    
+    <!-- Dialogue épique -->
+    <div class="epic-dialogue" id="epicDialogue">
+        <div class="dialogue-portrait" id="dialoguePortrait"></div>
+        <div class="dialogue-content">
+            <div class="dialogue-speaker" id="dialogueSpeaker">???</div>
+            <div class="dialogue-text" id="dialogueText">...</div>
+        </div>
+    </div>
+    
+    <!-- Menu de combat -->
+    <div class="combat-menu" id="combatMenu">
+        <h2 style="text-align: center; color: #FFD700; margin-bottom: 30px;">⚔️ COMBAT !</h2>
+        <div style="text-align: center;">
+            <button class="combat-option" onclick="combatAction('attack')">🗡️ Attaquer</button>
+            <button class="combat-option" onclick="combatAction('magic')">🔮 Magie</button>
+            <button class="combat-option" onclick="combatAction('defend')">🛡️ Défendre</button>
+            <button class="combat-option" onclick="combatAction('flee')">🏃 Fuir</button>
+        </div>
+    </div>
+    
+    <!-- Écran de chargement -->
+    <div class="loading-screen" id="loadingScreen">
+        <h1 class="loading-title">🔥 Frontière de Feu et Foi 🔥</h1>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+        <p style="color: #FFD700; margin-top: 20px;">Chargement de la magie quantique...</p>
+    </div>
+    
+    <script type="module">
+        // 🔥⚡ FRONTIÈRE DE FEU ET FOI - VERSION ÉPIQUE AVEC URZ-KÔM
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const effectCanvas = document.getElementById('effectCanvas');
+        const effectCtx = effectCanvas.getContext('2d');
+        
+        // Configuration
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        effectCanvas.width = window.innerWidth;
+        effectCanvas.height = window.innerHeight;
+        
+        // Import de la configuration du monde
+        const worldMeta = await fetch('meta_frontiere.json').then(r => r.json());
+        
+        // État du jeu ÉPIQUE
+        const epicGameState = {
+            // Grille hexagonale améliorée
+            grid: {
+                width: worldMeta.visual_structure.grid.width,
+                height: worldMeta.visual_structure.grid.height,
+                hexSize: 45,
+                offsetX: canvas.width / 2 - 400,
+                offsetY: 100
+            },
+            
+            // Joueur avec stats complètes
+            player: {
+                x: worldMeta.player_spawn.position.x,
+                y: worldMeta.player_spawn.position.y,
+                z: 0,
+                sprite: '🦸',
+                stats: {
+                    health: 100,
+                    maxHealth: 100,
+                    mana: 50,
+                    maxMana: 50,
+                    experience: 0,
+                    level: 1,
+                    attack: 15,
+                    defense: 10,
+                    speed: 5
+                },
+                moving: false,
+                path: [],
+                animation: {
+                    frame: 0,
+                    time: 0
+                },
+                aura: {
+                    active: false,
+                    color: '#FFD700',
+                    radius: 0
+                }
+            },
+            
+            // États améliorés
+            elements: {
+                swordTaken: false,
+                vortexActive: false,
+                churchLocked: true,
+                bossAwakened: false
+            },
+            
+            // Système de particules avancé
+            particles: [],
+            fireParticles: [],
+            quantumParticles: [],
+            
+            // Effets visuels
+            effects: {
+                screenShake: {
+                    active: false,
+                    intensity: 0,
+                    duration: 0
+                },
+                timeDistortion: {
+                    active: false,
+                    value: 1
+                },
+                lightningStrikes: []
+            },
+            
+            // Combat
+            combat: {
+                active: false,
+                enemy: null,
+                turn: 'player'
+            },
+            
+            // Caméra cinématique
+            camera: {
+                x: 0,
+                y: 0,
+                zoom: 1,
+                targetZoom: 1,
+                tracking: true,
+                cinematicMode: false
+            },
+            
+            // Phase temporelle
+            phase: 0,
+            danger: 0,
+            
+            // Sons (simulés)
+            sounds: {
+                fire: { playing: false },
+                combat: { playing: false },
+                portal: { playing: false }
+            }
+        };
+        
+        // 🎮 Système de particules quantiques by URZ-KÔM
+        class QuantumParticle {
+            constructor(x, y, type = 'fire') {
+                this.x = x;
+                this.y = y;
+                this.z = 0;
+                this.type = type;
+                
+                switch(type) {
+                    case 'fire':
+                        this.vx = (Math.random() - 0.5) * 4;
+                        this.vy = -Math.random() * 6 - 2;
+                        this.vz = Math.random() * 2;
+                        this.life = 60 + Math.random() * 30;
+                        this.maxLife = this.life;
+                        this.color = `hsl(${Math.random() * 60}, 100%, 50%)`;
+                        this.size = Math.random() * 8 + 4;
+                        break;
+                        
+                    case 'quantum':
+                        const angle = Math.random() * Math.PI * 2;
+                        this.vx = Math.cos(angle) * 3;
+                        this.vy = Math.sin(angle) * 3;
+                        this.vz = 0;
+                        this.life = 120;
+                        this.maxLife = this.life;
+                        this.color = `hsl(${280 + Math.random() * 60}, 100%, 50%)`;
+                        this.size = Math.random() * 6 + 2;
+                        this.phase = Math.random() * Math.PI * 2;
+                        break;
+                        
+                    case 'lightning':
+                        this.vx = (Math.random() - 0.5) * 10;
+                        this.vy = (Math.random() - 0.5) * 10;
+                        this.vz = 0;
+                        this.life = 20;
+                        this.maxLife = this.life;
+                        this.color = '#00D9FF';
+                        this.size = Math.random() * 4 + 2;
+                        this.trail = [];
+                        break;
+                }
+            }
+            
+            update() {
+                // Physique avancée
+                this.x += this.vx * epicGameState.effects.timeDistortion.value;
+                this.y += this.vy * epicGameState.effects.timeDistortion.value;
+                this.z += this.vz;
+                
+                // Gravité pour le feu
+                if (this.type === 'fire') {
+                    this.vy += 0.2;
+                    this.vx *= 0.98;
+                }
+                
+                // Mouvement quantique
+                if (this.type === 'quantum') {
+                    this.phase += 0.1;
+                    this.x += Math.sin(this.phase) * 2;
+                    this.y += Math.cos(this.phase) * 2;
+                }
+                
+                // Traînée pour l'éclair
+                if (this.type === 'lightning') {
+                    this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+                    if (this.trail.length > 10) this.trail.shift();
+                    this.trail.forEach(t => t.alpha *= 0.9);
+                }
+                
+                this.life--;
+                return this.life > 0;
+            }
+            
+            render(ctx) {
+                ctx.save();
+                
+                const lifeRatio = this.life / this.maxLife;
+                ctx.globalAlpha = lifeRatio;
+                
+                if (this.type === 'lightning' && this.trail.length > 0) {
+                    // Dessiner la traînée
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = this.size;
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    this.trail.forEach(t => {
+                        ctx.globalAlpha = t.alpha * lifeRatio;
+                        ctx.lineTo(t.x, t.y);
+                    });
+                    ctx.stroke();
+                }
+                
+                // Effet de lueur
+                const glowSize = this.size * (1 + (1 - lifeRatio) * 2);
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y - this.z, 0,
+                    this.x, this.y - this.z, glowSize
+                );
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(0.5, this.color + '88');
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    this.x - glowSize,
+                    this.y - this.z - glowSize,
+                    glowSize * 2,
+                    glowSize * 2
+                );
+                
+                // Particule centrale
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - this.z, this.size * lifeRatio, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        // 🎨 Rendu principal ÉPIQUE
+        function renderEpic() {
+            // Effacer les canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+            
+            // Appliquer les effets de caméra
+            ctx.save();
+            if (epicGameState.effects.screenShake.active) {
+                const shake = epicGameState.effects.screenShake.intensity;
+                ctx.translate(
+                    (Math.random() - 0.5) * shake,
+                    (Math.random() - 0.5) * shake
+                );
+            }
+            
+            ctx.scale(epicGameState.camera.zoom, epicGameState.camera.zoom);
+            ctx.translate(-epicGameState.camera.x, -epicGameState.camera.y);
+            
+            // Fond dramatique
+            renderDramaticBackground();
+            
+            // Grille hexagonale avec effets
+            renderEnhancedHexGrid();
+            
+            // Éléments du monde
+            renderWorldElements();
+            
+            // Particules de fond
+            renderBackgroundParticles();
+            
+            // Joueur avec aura
+            renderEpicPlayer();
+            
+            // Particules de premier plan
+            renderForegroundParticles();
+            
+            ctx.restore();
+            
+            // Effets post-processing sur le canvas d'effets
+            renderPostProcessing();
+            
+            // UI updates
+            updateEpicUI();
+        }
+        
+        // 🌌 Fond dramatique
+        function renderDramaticBackground() {
+            // Gradient de base avec variation temporelle
+            const time = epicGameState.phase;
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width
+            );
+            
+            const redIntensity = 0.1 + Math.sin(time * 0.5) * 0.05;
+            gradient.addColorStop(0, `rgba(42, 24, 16, 1)`);
+            gradient.addColorStop(0.5, `rgba(26, 15, 10, 1)`);
+            gradient.addColorStop(1, `rgba(10, 5, 5, 1)`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width * 2, canvas.height * 2);
+            
+            // Brume de feu animée
+            ctx.save();
+            ctx.globalAlpha = 0.3 + Math.sin(time) * 0.1;
+            const fireGradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+            fireGradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
+            fireGradient.addColorStop(0.5, 'rgba(255, 102, 0, 0.2)');
+            fireGradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = fireGradient;
+            ctx.fillRect(0, 0, canvas.width * 2, canvas.height * 2);
+            ctx.restore();
+        }
+        
+        // 🔷 Grille hexagonale améliorée
+        function renderEnhancedHexGrid() {
+            for (let y = 0; y < epicGameState.grid.height; y++) {
+                for (let x = 0; x < epicGameState.grid.width; x++) {
+                    const pos = hexToPixel(x, y);
+                    
+                    // Déterminer l'état de la case
+                    const distance = Math.abs(x - epicGameState.player.x) + Math.abs(y - epicGameState.player.y);
+                    const nearLava = isNearLava(x, y);
+                    const nearPortal = isNearPortal(x, y);
+                    
+                    // Style selon l'état
+                    if (distance <= 3) {
+                        // Zone visible
+                        ctx.strokeStyle = nearLava ? 'rgba(255,100,0,0.6)' : 
+                                         nearPortal ? 'rgba(138,43,226,0.6)' :
+                                         'rgba(139,69,19,0.4)';
+                        ctx.lineWidth = nearLava ? 2 : 1;
+                        
+                        if (nearLava) {
+                            // Effet de chaleur
+                            ctx.fillStyle = 'rgba(255,50,0,0.1)';
+                            drawHex(pos.x, pos.y, epicGameState.grid.hexSize);
+                            ctx.fill();
+                        }
+                    } else {
+                        // Zone dans le brouillard
+                        ctx.strokeStyle = 'rgba(100,50,25,0.2)';
+                        ctx.lineWidth = 0.5;
+                    }
+                    
+                    drawHex(pos.x, pos.y, epicGameState.grid.hexSize);
+                }
+            }
+        }
+        
+        // 🏰 Éléments du monde avec effets épiques
+        function renderWorldElements() {
+            // Église avec aura sacrée
+            renderEpicChurch();
+            
+            // Arbre ancien avec particules mystiques
+            renderMysticTree();
+            
+            // Chemin de pierre luminescent
+            renderGlowingPath();
+            
+            // Faille de lave intense
+            renderIntenseLavaRift();
+            
+            // Épée de feu légendaire
+            if (!epicGameState.elements.swordTaken) {
+                renderLegendarySword();
+            }
+            
+            // Vortex dimensionnel
+            renderDimensionalVortex();
+        }
+        
+        // ⛪ Église épique avec effets
+        function renderEpicChurch() {
+            const church = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'church');
+            const pos = hexToPixel(church.position.x, church.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Aura sacrée si déverrouillée
+            if (!epicGameState.elements.churchLocked) {
+                const auraGradient = ctx.createRadialGradient(0, -50, 0, 0, -50, 150);
+                auraGradient.addColorStop(0, 'rgba(255,215,0,0.3)');
+                auraGradient.addColorStop(0.5, 'rgba(255,215,0,0.1)');
+                auraGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = auraGradient;
+                ctx.fillRect(-150, -200, 300, 300);
+            }
+            
+            // Structure principale avec ombres
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetX = 10;
+            ctx.shadowOffsetY = 10;
+            
+            // Corps
+            const churchGradient = ctx.createLinearGradient(-60, -80, 60, 20);
+            churchGradient.addColorStop(0, '#A0826D');
+            churchGradient.addColorStop(0.5, '#8B7355');
+            churchGradient.addColorStop(1, '#654321');
+            ctx.fillStyle = churchGradient;
+            ctx.fillRect(-60, -80, 120, 100);
+            
+            // Détails architecturaux
+            ctx.strokeStyle = '#4B3621';
+            ctx.lineWidth = 2;
+            for (let i = -40; i <= 40; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, -80);
+                ctx.lineTo(i, 20);
+                ctx.stroke();
+            }
+            
+            // Toit avec tuiles
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.moveTo(-70, -80);
+            ctx.lineTo(0, -130);
+            ctx.lineTo(70, -80);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Clocher élaboré
+            ctx.fillStyle = churchGradient;
+            ctx.fillRect(-20, -130, 40, 50);
+            
+            // Cloche
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(0, -100, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Croix lumineuse
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 30;
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, -140);
+            ctx.lineTo(0, -155);
+            ctx.moveTo(-7, -147);
+            ctx.lineTo(7, -147);
+            ctx.stroke();
+            
+            // Porte mystique
+            const doorGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
+            if (epicGameState.elements.churchLocked) {
+                doorGradient.addColorStop(0, '#2F1F10');
+                doorGradient.addColorStop(1, '#1A0F08');
+            } else {
+                doorGradient.addColorStop(0, '#FFD700');
+                doorGradient.addColorStop(0.5, '#D2691E');
+                doorGradient.addColorStop(1, '#8B4513');
+            }
+            ctx.fillStyle = doorGradient;
+            ctx.fillRect(-25, -25, 50, 45);
+            
+            // Symboles mystiques sur la porte
+            if (!epicGameState.elements.churchLocked) {
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '20px serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('✟', 0, 5);
+            }
+            
+            // Vitraux illuminés
+            for (let side of [-30, 30]) {
+                const glassGradient = ctx.createRadialGradient(side, -50, 0, side, -50, 15);
+                glassGradient.addColorStop(0, 'rgba(255,215,0,0.8)');
+                glassGradient.addColorStop(0.5, 'rgba(138,43,226,0.6)');
+                glassGradient.addColorStop(1, 'rgba(255,0,0,0.4)');
+                ctx.fillStyle = glassGradient;
+                ctx.beginPath();
+                ctx.arc(side, -50, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Reflets
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.arc(side - 3, -53, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🌳 Arbre mystique avec particules
+        function renderMysticTree() {
+            const tree = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'ancient_tree');
+            const pos = hexToPixel(tree.position.x, tree.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Racines lumineuses
+            if (epicGameState.elements.swordTaken) {
+                ctx.strokeStyle = 'rgba(255,102,0,0.3)';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 5; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 50);
+                    ctx.lineTo(
+                        Math.cos(angle) * 80,
+                        50 + Math.sin(angle) * 30
+                    );
+                    ctx.stroke();
+                }
+            }
+            
+            // Tronc avec texture
+            const trunkGradient = ctx.createLinearGradient(-25, -10, 25, 60);
+            trunkGradient.addColorStop(0, '#8B6914');
+            trunkGradient.addColorStop(0.5, '#654321');
+            trunkGradient.addColorStop(1, '#4B3621');
+            ctx.fillStyle = trunkGradient;
+            ctx.fillRect(-25, -10, 50, 70);
+            
+            // Écorce
+            ctx.strokeStyle = '#3B2821';
+            ctx.lineWidth = 1;
+            for (let y = -5; y < 55; y += 10) {
+                ctx.beginPath();
+                ctx.moveTo(-25, y);
+                ctx.bezierCurveTo(
+                    -15, y + 5,
+                    15, y + 5,
+                    25, y
+                );
+                ctx.stroke();
+            }
+            
+            // Feuillage en couches avec effet de vent
+            const windOffset = Math.sin(epicGameState.phase * 2) * 5;
+            for (let layer = 0; layer < 4; layer++) {
+                ctx.save();
+                ctx.translate(windOffset * (1 - layer * 0.2), 0);
+                
+                const leafGradient = ctx.createRadialGradient(
+                    0, -60 - layer * 25, 0,
+                    0, -60 - layer * 25, 50 - layer * 5
+                );
+                
+                if (epicGameState.elements.swordTaken) {
+                    // Feuillage corrompu
+                    leafGradient.addColorStop(0, `rgba(139,69,19,${0.8 - layer * 0.1})`);
+                    leafGradient.addColorStop(0.7, `rgba(100,50,25,${0.6 - layer * 0.1})`);
+                    leafGradient.addColorStop(1, 'transparent');
+                } else {
+                    // Feuillage normal
+                    leafGradient.addColorStop(0, `rgba(34,139,34,${0.8 - layer * 0.1})`);
+                    leafGradient.addColorStop(0.7, `rgba(0,100,0,${0.6 - layer * 0.1})`);
+                    leafGradient.addColorStop(1, 'transparent');
+                }
+                
+                ctx.fillStyle = leafGradient;
+                ctx.beginPath();
+                ctx.arc(0, -60 - layer * 25, 50 - layer * 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            // Particules mystiques
+            if (Math.random() < 0.1) {
+                const leafParticle = new QuantumParticle(
+                    pos.x + (Math.random() - 0.5) * 100,
+                    pos.y - 80 - Math.random() * 60,
+                    'quantum'
+                );
+                leafParticle.color = epicGameState.elements.swordTaken ? '#8B4513' : '#00FF00';
+                leafParticle.vy = Math.random() * 2 + 1;
+                epicGameState.particles.push(leafParticle);
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🛤️ Chemin luminescent
+        function renderGlowingPath() {
+            const path = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'stone_path');
+            
+            ctx.save();
+            
+            // Effet de lueur
+            ctx.shadowColor = '#D2691E';
+            ctx.shadowBlur = 10;
+            
+            // Chemin principal
+            ctx.strokeStyle = '#8B7355';
+            ctx.lineWidth = 25;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            path.path.forEach((point, i) => {
+                const pos = hexToPixel(point.x, point.y);
+                if (i === 0) ctx.moveTo(pos.x, pos.y);
+                else ctx.lineTo(pos.x, pos.y);
+            });
+            ctx.stroke();
+            
+            // Pierres individuelles
+            ctx.fillStyle = '#A0826D';
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            
+            path.path.forEach((point, i) => {
+                const pos = hexToPixel(point.x, point.y);
+                
+                // Plusieurs pierres par point
+                for (let j = 0; j < 3; j++) {
+                    const offset = (j - 1) * 15;
+                    const stoneX = pos.x + offset + (Math.random() - 0.5) * 10;
+                    const stoneY = pos.y + (Math.random() - 0.5) * 10;
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(stoneX, stoneY, 12, 8, Math.random() * Math.PI, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Mousses lumineuses
+                    if (Math.random() < 0.3) {
+                        ctx.fillStyle = epicGameState.elements.swordTaken ? 
+                            'rgba(255,100,0,0.3)' : 'rgba(0,255,0,0.3)';
+                        ctx.beginPath();
+                        ctx.arc(stoneX - 3, stoneY - 3, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#A0826D';
+                    }
+                }
+            });
+            
+            ctx.restore();
+        }
+        
+        // 🌋 Faille de lave intense
+        function renderIntenseLavaRift() {
+            const rift = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'lava_rift');
+            
+            ctx.save();
+            
+            // Lueur de base intense
+            const lavaGlow = ctx.createRadialGradient(
+                hexToPixel(12, 10).x,
+                hexToPixel(12, 10).y,
+                0, 
+                hexToPixel(12, 10).x,
+                hexToPixel(12, 10).y,
+                100
+            );
+            lavaGlow.addColorStop(0, 'rgba(255,0,0,0.4)');
+            lavaGlow.addColorStop(0.5, 'rgba(255,50,0,0.2)');
+            lavaGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = lavaGlow;
+            ctx.fillRect(0, 0, canvas.width * 2, canvas.height * 2);
+            
+            // Fissures dynamiques
+            rift.positions.forEach((pos, index) => {
+                const pixelPos = hexToPixel(pos.x, pos.y);
+                const time = epicGameState.phase + index;
+                
+                // Fissure principale
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 5 + Math.sin(time * 3) * 2;
+                ctx.shadowColor = '#FF0000';
+                ctx.shadowBlur = 20;
+                
+                ctx.beginPath();
+                ctx.moveTo(pixelPos.x - 30, pixelPos.y);
+                
+                // Créer un chemin de fissure irrégulier
+                for (let i = 0; i < 5; i++) {
+                    const x = pixelPos.x - 30 + (i * 15);
+                    const y = pixelPos.y + Math.sin(time + i) * 10;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(pixelPos.x + 30, pixelPos.y);
+                ctx.stroke();
+                
+                // Fissures secondaires
+                ctx.strokeStyle = '#FF6600';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    const startX = pixelPos.x + (Math.random() - 0.5) * 40;
+                    const startY = pixelPos.y + (Math.random() - 0.5) * 20;
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(
+                        startX + (Math.random() - 0.5) * 30,
+                        startY + (Math.random() - 0.5) * 30
+                    );
+                    ctx.stroke();
+                }
+                
+                // Lave bouillonnante
+                for (let i = 0; i < 8; i++) {
+                    const bubbleTime = time * 2 + i * 0.5;
+                    const bubbleX = pixelPos.x + Math.sin(bubbleTime) * 20;
+                    const bubbleY = pixelPos.y + Math.cos(bubbleTime * 0.7) * 10;
+                    const bubbleSize = 5 + Math.sin(bubbleTime * 3) * 3;
+                    
+                    const bubbleGradient = ctx.createRadialGradient(
+                        bubbleX, bubbleY, 0,
+                        bubbleX, bubbleY, bubbleSize
+                    );
+                    bubbleGradient.addColorStop(0, '#FFFF00');
+                    bubbleGradient.addColorStop(0.3, '#FF6600');
+                    bubbleGradient.addColorStop(0.7, '#FF0000');
+                    bubbleGradient.addColorStop(1, 'rgba(255,0,0,0)');
+                    
+                    ctx.fillStyle = bubbleGradient;
+                    ctx.beginPath();
+                    ctx.arc(bubbleX, bubbleY, bubbleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Génération continue de particules de feu
+                if (Math.random() < 0.3) {
+                    for (let i = 0; i < 3; i++) {
+                        epicGameState.particles.push(new QuantumParticle(
+                            pixelPos.x + (Math.random() - 0.5) * 40,
+                            pixelPos.y + (Math.random() - 0.5) * 20,
+                            'fire'
+                        ));
+                    }
+                }
+            });
+            
+            ctx.restore();
+        }
+        
+        // ⚔️ Épée légendaire de feu
+        function renderLegendarySword() {
+            const sword = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'fire_sword');
+            const pos = hexToPixel(sword.position.x, sword.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Rotation légère
+            const wobble = Math.sin(epicGameState.phase * 2) * 0.05;
+            ctx.rotate(wobble);
+            
+            // Aura de puissance
+            const time = epicGameState.phase;
+            for (let i = 3; i > 0; i--) {
+                const auraSize = 80 + i * 20 + Math.sin(time * 3) * 10;
+                const auraGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, auraSize);
+                auraGradient.addColorStop(0, `rgba(255,100,0,${0.4 / i})`);
+                auraGradient.addColorStop(0.5, `rgba(255,50,0,${0.2 / i})`);
+                auraGradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = auraGradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Flammes tourbillonnantes
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 / 8) * i + time;
+                const flameX = Math.cos(angle) * 40;
+                const flameY = Math.sin(angle) * 40;
+                
+                const flameGradient = ctx.createRadialGradient(
+                    flameX, flameY, 0,
+                    flameX, flameY, 30
+                );
+                flameGradient.addColorStop(0, 'rgba(255,255,0,0.8)');
+                flameGradient.addColorStop(0.5, 'rgba(255,100,0,0.4)');
+                flameGradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = flameGradient;
+                ctx.fillRect(flameX - 30, flameY - 30, 60, 60);
+            }
+            
+            // Épée elle-même avec effets métalliques
+            ctx.shadowColor = '#FF6600';
+            ctx.shadowBlur = 30;
+            
+            // Lame avec dégradé de feu
+            const bladeGradient = ctx.createLinearGradient(0, -50, 0, 30);
+            bladeGradient.addColorStop(0, '#FFFFFF');
+            bladeGradient.addColorStop(0.3, '#FFD700');
+            bladeGradient.addColorStop(0.6, '#FF6600');
+            bladeGradient.addColorStop(1, '#FF0000');
+            
+            ctx.fillStyle = bladeGradient;
+            ctx.beginPath();
+            ctx.moveTo(0, -50);
+            ctx.lineTo(-8, 25);
+            ctx.lineTo(-3, 30);
+            ctx.lineTo(0, 35);
+            ctx.lineTo(3, 30);
+            ctx.lineTo(8, 25);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Reflet sur la lame
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.fillRect(-2, -45, 1, 60);
+            
+            // Garde ornementée
+            const guardGradient = ctx.createLinearGradient(-20, 25, 20, 25);
+            guardGradient.addColorStop(0, '#8B6914');
+            guardGradient.addColorStop(0.5, '#DAA520');
+            guardGradient.addColorStop(1, '#8B6914');
+            ctx.fillStyle = guardGradient;
+            ctx.fillRect(-20, 25, 40, 8);
+            
+            // Détails de la garde
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(-20, 29, 5, 0, Math.PI * 2);
+            ctx.arc(20, 29, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pommeau avec gemme
+            const pommelGradient = ctx.createRadialGradient(0, 40, 0, 0, 40, 10);
+            pommelGradient.addColorStop(0, '#FFD700');
+            pommelGradient.addColorStop(0.5, '#FF6600');
+            pommelGradient.addColorStop(1, '#8B4513');
+            ctx.fillStyle = pommelGradient;
+            ctx.beginPath();
+            ctx.arc(0, 40, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Gemme centrale
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(0, 40, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Étincelles
+            ctx.fillStyle = '#FFFF00';
+            for (let i = 0; i < 5; i++) {
+                const sparkAngle = Math.random() * Math.PI * 2;
+                const sparkDist = 50 + Math.random() * 30;
+                const sparkX = Math.cos(sparkAngle) * sparkDist;
+                const sparkY = Math.sin(sparkAngle) * sparkDist;
+                
+                ctx.beginPath();
+                ctx.arc(sparkX, sparkY, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Génération de particules de feu autour
+            if (Math.random() < 0.5) {
+                for (let i = 0; i < 2; i++) {
+                    const particle = new QuantumParticle(
+                        pos.x + (Math.random() - 0.5) * 60,
+                        pos.y + (Math.random() - 0.5) * 60,
+                        'fire'
+                    );
+                    particle.vz = Math.random() * 3;
+                    epicGameState.particles.push(particle);
+                }
+            }
+            
+            // Éclair occasionnel
+            if (Math.random() < 0.02) {
+                epicGameState.particles.push(new QuantumParticle(pos.x, pos.y, 'lightning'));
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🌀 Vortex dimensionnel épique
+        function renderDimensionalVortex() {
+            const vortex = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'orange_vortex');
+            const pos = hexToPixel(vortex.position.x, vortex.position.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            if (epicGameState.elements.vortexActive) {
+                const time = epicGameState.phase * 2;
+                
+                // Distorsion de l'espace
+                ctx.globalCompositeOperation = 'screen';
+                
+                // Anneaux concentriques
+                for (let ring = 5; ring > 0; ring--) {
+                    ctx.save();
+                    ctx.rotate(time * (ring % 2 === 0 ? 1 : -1) * 0.5);
+                    
+                    const ringRadius = ring * 20 + Math.sin(time + ring) * 10;
+                    const ringGradient = ctx.createRadialGradient(0, 0, ringRadius - 10, 0, 0, ringRadius + 10);
+                    
+                    const hue = 30 + ring * 10;
+                    ringGradient.addColorStop(0, 'transparent');
+                    ringGradient.addColorStop(0.5, `hsla(${hue}, 100%, 50%, 0.6)`);
+                    ringGradient.addColorStop(1, 'transparent');
+                    
+                    ctx.strokeStyle = ringGradient;
+                    ctx.lineWidth = 15;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+                
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // Spirale de particules
+                for (let i = 0; i < 30; i++) {
+                    const spiralAngle = time * 3 + (i / 30) * Math.PI * 2;
+                    const spiralRadius = i * 2 + Math.sin(time + i * 0.5) * 5;
+                    const particleX = Math.cos(spiralAngle) * spiralRadius;
+                    const particleY = Math.sin(spiralAngle) * spiralRadius;
+                    
+                    const particleGradient = ctx.createRadialGradient(
+                        particleX, particleY, 0,
+                        particleX, particleY, 10
+                    );
+                    particleGradient.addColorStop(0, `hsla(${30 + i * 3}, 100%, 50%, 0.8)`);
+                    particleGradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = particleGradient;
+                    ctx.fillRect(particleX - 10, particleY - 10, 20, 20);
+                }
+                
+                // Centre noir déformé
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+                    const radius = 15 + Math.sin(time * 5 + angle * 3) * 5;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    if (angle === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Éclairs dimensionnels
+                if (Math.random() < 0.1) {
+                    const lightning = new QuantumParticle(pos.x, pos.y, 'lightning');
+                    lightning.color = '#FF6600';
+                    lightning.vx = (Math.random() - 0.5) * 20;
+                    lightning.vy = (Math.random() - 0.5) * 20;
+                    epicGameState.particles.push(lightning);
+                }
+                
+                // Particules quantiques aspirées
+                if (Math.random() < 0.3) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 100 + Math.random() * 50;
+                    const particle = new QuantumParticle(
+                        pos.x + Math.cos(angle) * distance,
+                        pos.y + Math.sin(angle) * distance,
+                        'quantum'
+                    );
+                    particle.vx = -Math.cos(angle) * 5;
+                    particle.vy = -Math.sin(angle) * 5;
+                    epicGameState.particles.push(particle);
+                }
+            } else {
+                // Vortex inactif mais mystérieux
+                ctx.strokeStyle = 'rgba(255,102,0,0.2)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 5]);
+                
+                for (let i = 0; i < 3; i++) {
+                    ctx.globalAlpha = 0.3 - i * 0.1;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 40 + i * 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+                
+                // Runes mystérieuses
+                ctx.fillStyle = 'rgba(255,102,0,0.4)';
+                ctx.font = '16px serif';
+                ctx.textAlign = 'center';
+                const runes = ['ᛟ', 'ᚦ', 'ᚱ', 'ᚲ'];
+                for (let i = 0; i < 4; i++) {
+                    const angle = (Math.PI / 2) * i;
+                    const x = Math.cos(angle) * 50;
+                    const y = Math.sin(angle) * 50;
+                    ctx.fillText(runes[i], x, y);
+                }
+            }
+            
+            ctx.restore();
+        }
+        
+        // 🦸 Joueur épique avec aura
+        function renderEpicPlayer() {
+            const pos = hexToPixel(epicGameState.player.x, epicGameState.player.y);
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y - epicGameState.player.z);
+            
+            // Aura de puissance si l'épée est prise
+            if (epicGameState.elements.swordTaken) {
+                epicGameState.player.aura.active = true;
+                epicGameState.player.aura.radius = 40 + Math.sin(epicGameState.phase * 3) * 10;
+                
+                const auraGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, epicGameState.player.aura.radius);
+                auraGradient.addColorStop(0, 'rgba(255,215,0,0.4)');
+                auraGradient.addColorStop(0.5, 'rgba(255,100,0,0.2)');
+                auraGradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = auraGradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, epicGameState.player.aura.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Ombre dynamique
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.beginPath();
+            ctx.ellipse(0, 25, 25, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Corps du personnage avec animation
+            const bounce = Math.sin(epicGameState.phase * 5) * 2;
+            ctx.translate(0, bounce);
+            
+            // Sprite amélioré
+            ctx.font = 'bold 45px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Effet de brillance
+            ctx.shadowColor = epicGameState.elements.swordTaken ? '#FF6600' : '#FFD700';
+            ctx.shadowBlur = 20;
+            ctx.fillText(epicGameState.player.sprite, 0, 0);
+            
+            // Cape flottante animée
+            ctx.strokeStyle = epicGameState.elements.swordTaken ? '#FF0000' : '#8B0000';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(-10 + i * 3, 5);
+                ctx.quadraticCurveTo(
+                    -20 + i * 5 + Math.sin(epicGameState.phase * 3 + i) * 5,
+                    15 + Math.cos(epicGameState.phase * 2 + i) * 3,
+                    -15 + i * 4 + Math.sin(epicGameState.phase * 4 + i) * 8,
+                    25
+                );
+                ctx.stroke();
+            }
+            
+            // Épée équipée si prise
+            if (epicGameState.elements.swordTaken) {
+                ctx.save();
+                ctx.rotate(Math.PI / 4);
+                ctx.translate(20, -20);
+                
+                // Mini épée de feu
+                const swordGradient = ctx.createLinearGradient(0, -20, 0, 10);
+                swordGradient.addColorStop(0, '#FFFFFF');
+                swordGradient.addColorStop(0.5, '#FF6600');
+                swordGradient.addColorStop(1, '#FF0000');
+                
+                ctx.fillStyle = swordGradient;
+                ctx.fillRect(-2, -20, 4, 30);
+                ctx.fillRect(-6, 8, 12, 3);
+                
+                // Lueur de l'épée
+                ctx.shadowColor = '#FF6600';
+                ctx.shadowBlur = 15;
+                ctx.strokeStyle = '#FF6600';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-2, -20, 4, 30);
+                
+                ctx.restore();
+            }
+            
+            // Particules autour du joueur en mouvement
+            if (epicGameState.player.moving && Math.random() < 0.3) {
+                const particle = new QuantumParticle(
+                    pos.x + (Math.random() - 0.5) * 30,
+                    pos.y + 20,
+                    'quantum'
+                );
+                particle.color = '#FFD700';
+                particle.size = 3;
+                particle.life = 30;
+                epicGameState.particles.push(particle);
+            }
+            
+            ctx.restore();
+        }
+        
+        // ✨ Particules d'arrière-plan
+        function renderBackgroundParticles() {
+            // Cendres flottantes
+            if (Math.random() < 0.05) {
+                epicGameState.particles.push({
+                    x: Math.random() * canvas.width * 2,
+                    y: -20,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: Math.random() * 2 + 1,
+                    size: Math.random() * 3 + 1,
+                    color: `rgba(100,100,100,${Math.random() * 0.5 + 0.3})`,
+                    life: 200,
+                    type: 'ash'
+                });
+            }
+        }
+        
+        // ✨ Particules de premier plan
+        function renderForegroundParticles() {
+            epicGameState.particles = epicGameState.particles.filter(particle => {
+                if (particle instanceof QuantumParticle) {
+                    particle.render(ctx);
+                    return particle.update();
+                } else {
+                    // Particules simples
+                    ctx.save();
+                    ctx.globalAlpha = particle.life / 200;
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    
+                    return particle.life > 0;
+                }
+            });
+        }
+        
+        // 🎨 Post-processing effects
+        function renderPostProcessing() {
+            // Effet de distorsion temporelle
+            if (epicGameState.effects.timeDistortion.active) {
+                effectCtx.save();
+                effectCtx.globalAlpha = 0.1;
+                effectCtx.filter = `hue-rotate(${epicGameState.phase * 50}deg)`;
+                effectCtx.drawImage(canvas, 0, 0);
+                effectCtx.restore();
+            }
+            
+            // Éclairs occasionnels
+            if (epicGameState.elements.vortexActive && Math.random() < 0.02) {
+                renderLightningStrike();
+            }
+            
+            // Vignette dramatique
+            const vignette = effectCtx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, canvas.width * 0.3,
+                canvas.width / 2, canvas.height / 2, canvas.width * 0.8
+            );
+            vignette.addColorStop(0, 'transparent');
+            vignette.addColorStop(0.7, 'transparent');
+            vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+            effectCtx.fillStyle = vignette;
+            effectCtx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // ⚡ Effet d'éclair
+        function renderLightningStrike() {
+            effectCtx.save();
+            effectCtx.strokeStyle = '#FFFFFF';
+            effectCtx.lineWidth = 3;
+            effectCtx.shadowColor = '#00D9FF';
+            effectCtx.shadowBlur = 20;
+            
+            const startX = Math.random() * canvas.width;
+            const startY = 0;
+            const endX = startX + (Math.random() - 0.5) * 200;
+            const endY = canvas.height;
+            
+            effectCtx.beginPath();
+            effectCtx.moveTo(startX, startY);
+            
+            let currentX = startX;
+            let currentY = startY;
+            
+            while (currentY < endY) {
+                currentY += Math.random() * 50 + 20;
+                currentX += (Math.random() - 0.5) * 100;
+                effectCtx.lineTo(currentX, currentY);
+            }
+            
+            effectCtx.stroke();
+            
+            // Flash
+            effectCtx.fillStyle = 'rgba(255,255,255,0.3)';
+            effectCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            effectCtx.restore();
+            
+            // Son simulé
+            epicGameState.sounds.lightning = { playing: true };
+        }
+        
+        // 📊 UI épique mise à jour
+        function updateEpicUI() {
+            // Stats du joueur
+            document.getElementById('healthValue').textContent = 
+                Math.floor(epicGameState.player.stats.health);
+            document.getElementById('manaValue').textContent = 
+                Math.floor(epicGameState.player.stats.mana);
+            document.getElementById('expValue').textContent = 
+                epicGameState.player.stats.experience;
+            
+            // Phase et danger
+            document.getElementById('phaseValue').textContent = 
+                epicGameState.phase.toFixed(1);
+            
+            const dangerLevel = epicGameState.elements.swordTaken ? 
+                (epicGameState.elements.vortexActive ? '🔥🔥🔥🔥🔥' : '🔥🔥🔥') : 
+                '🔥';
+            document.getElementById('dangerLevel').textContent = dangerLevel;
+            
+            // Position
+            document.getElementById('playerPos').textContent = 
+                `${epicGameState.player.x}, ${epicGameState.player.y}`;
+        }
+        
+        // 💬 Système de dialogue épique
+        function showEpicDialogue(speaker, text, portrait = null) {
+            const dialogueEl = document.getElementById('epicDialogue');
+            const speakerEl = document.getElementById('dialogueSpeaker');
+            const textEl = document.getElementById('dialogueText');
+            const portraitEl = document.getElementById('dialoguePortrait');
+            
+            speakerEl.textContent = speaker;
+            textEl.textContent = '';
+            
+            if (portrait) {
+                portraitEl.style.backgroundImage = `url(${portrait})`;
+                portraitEl.style.display = 'block';
+            } else {
+                portraitEl.style.display = 'none';
+            }
+            
+            dialogueEl.classList.add('active');
+            
+            // Effet machine à écrire
+            let charIndex = 0;
+            const typeInterval = setInterval(() => {
+                if (charIndex < text.length) {
+                    textEl.textContent += text[charIndex];
+                    charIndex++;
+                } else {
+                    clearInterval(typeInterval);
+                }
+            }, 30);
+            
+            // Masquer après un délai
+            setTimeout(() => {
+                dialogueEl.classList.remove('active');
+            }, 5000);
+        }
+        
+        // ⚔️ Système de combat
+        function initiateCombat(enemyType) {
+            epicGameState.combat.active = true;
+            epicGameState.combat.enemy = {
+                type: enemyType,
+                health: 50,
+                maxHealth: 50,
+                attack: 10
+            };
+            
+            document.getElementById('combatMenu').classList.add('active');
+            
+            // Effet de transition au combat
+            epicGameState.effects.timeDistortion.active = true;
+            epicGameState.effects.timeDistortion.value = 0.5;
+            
+            showEpicDialogue('⚔️ Combat !', `Un ${enemyType} vous attaque !`);
+        }
+        
+        function combatAction(action) {
+            if (!epicGameState.combat.active) return;
+            
+            const player = epicGameState.player.stats;
+            const enemy = epicGameState.combat.enemy;
+            
+            switch (action) {
+                case 'attack':
+                    const damage = player.attack + Math.floor(Math.random() * 10);
+                    enemy.health -= damage;
+                    showDamageNumber(canvas.width / 2 + 100, canvas.height / 2, damage);
+                    
+                    if (enemy.health <= 0) {
+                        endCombat(true);
+                    } else {
+                        enemyTurn();
+                    }
+                    break;
+                    
+                case 'magic':
+                    if (player.mana >= 10) {
+                        player.mana -= 10;
+                        const magicDamage = 25 + Math.floor(Math.random() * 15);
+                        enemy.health -= magicDamage;
+                        showDamageNumber(canvas.width / 2 + 100, canvas.height / 2, magicDamage, '#00D9FF');
+                        
+                        // Effet visuel de magie
+                        for (let i = 0; i < 20; i++) {
+                            epicGameState.particles.push(new QuantumParticle(
+                                canvas.width / 2 + 100 + (Math.random() - 0.5) * 100,
+                                canvas.height / 2 + (Math.random() - 0.5) * 100,
+                                'quantum'
+                            ));
+                        }
+                        
+                        if (enemy.health <= 0) {
+                            endCombat(true);
+                        } else {
+                            enemyTurn();
+                        }
+                    }
+                    break;
+                    
+                case 'defend':
+                    player.defense *= 2;
+                    enemyTurn();
+                    player.defense /= 2;
+                    break;
+                    
+                case 'flee':
+                    if (Math.random() < 0.5) {
+                        endCombat(false);
+                        showEpicDialogue('Fuite', 'Vous avez réussi à fuir !');
+                    } else {
+                        showEpicDialogue('Échec', 'Impossible de fuir !');
+                        enemyTurn();
+                    }
+                    break;
+            }
+        }
+        
+        function enemyTurn() {
+            const enemy = epicGameState.combat.enemy;
+            const player = epicGameState.player.stats;
+            
+            const damage = Math.max(1, enemy.attack - player.defense + Math.floor(Math.random() * 5));
+            player.health -= damage;
+            
+            showDamageNumber(canvas.width / 2 - 100, canvas.height / 2, damage);
+            
+            if (player.health <= 0) {
+                endCombat(false);
+                showEpicDialogue('Défaite', 'Vous avez été vaincu...');
+            }
+        }
+        
+        function endCombat(victory) {
+            epicGameState.combat.active = false;
+            document.getElementById('combatMenu').classList.remove('active');
+            
+            epicGameState.effects.timeDistortion.active = false;
+            epicGameState.effects.timeDistortion.value = 1;
+            
+            if (victory) {
+                epicGameState.player.stats.experience += 50;
+                showEpicDialogue('Victoire !', 'Vous avez gagné 50 points d\'expérience !');
+            }
+        }
+        
+        function showDamageNumber(x, y, damage, color = '#FF0000') {
+            const damageEl = document.createElement('div');
+            damageEl.className = 'damage-number';
+            damageEl.style.color = color;
+            damageEl.style.left = x + 'px';
+            damageEl.style.top = y + 'px';
+            damageEl.textContent = damage;
+            
+            document.body.appendChild(damageEl);
+            
+            setTimeout(() => {
+                damageEl.remove();
+            }, 2000);
+        }
+        
+        // 🧮 Conversions hexagonales
+        function hexToPixel(hexX, hexY) {
+            const size = epicGameState.grid.hexSize;
+            const x = size * 3/2 * hexX + epicGameState.grid.offsetX;
+            const y = size * Math.sqrt(3) * (hexY + 0.5 * (hexX & 1)) + epicGameState.grid.offsetY;
+            return { x, y };
+        }
+        
+        function pixelToHex(pixelX, pixelY) {
+            const size = epicGameState.grid.hexSize;
+            const x = (pixelX - epicGameState.grid.offsetX) * 2/3 / size;
+            const y = (pixelY - epicGameState.grid.offsetY - (x & 1) * size * Math.sqrt(3)/2) / (size * Math.sqrt(3));
+            
+            const rx = Math.round(x);
+            const ry = Math.round(y);
+            
+            return { x: rx, y: ry };
+        }
+        
+        function drawHex(centerX, centerY, size, fillStyle = null) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + Math.PI / 6;
+                const x = centerX + size * Math.cos(angle);
+                const y = centerY + size * Math.sin(angle);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            ctx.stroke();
+        }
+        
+        // 🔍 Vérifications de proximité
+        function isNearLava(x, y) {
+            const rift = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'lava_rift');
+            return rift.positions.some(pos => 
+                Math.abs(pos.x - x) <= 2 && Math.abs(pos.y - y) <= 2
+            );
+        }
+        
+        function isNearPortal(x, y) {
+            const vortex = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'orange_vortex');
+            return Math.abs(vortex.position.x - x) <= 3 && Math.abs(vortex.position.y - y) <= 3;
+        }
+        
+        // 🎮 Gestionnaire d'événements épiques
+        
+        // Curseur custom
+        const cursor = document.getElementById('customCursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        
+        // Clic pour déplacement et interaction
+        canvas.addEventListener('click', (e) => {
+            if (epicGameState.combat.active) return;
+            
+            const hex = pixelToHex(
+                e.clientX + epicGameState.camera.x,
+                e.clientY + epicGameState.camera.y
+            );
+            
+            // Vérifier les interactions
+            checkEpicInteractions(hex);
+            
+            // Déplacer le joueur avec pathfinding
+            movePlayerTo(hex);
+        });
+        
+        // Zoom avec molette
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
+            epicGameState.camera.targetZoom = Math.max(0.5, Math.min(2, epicGameState.camera.targetZoom * zoomDelta));
+        });
+        
+        // 🔍 Interactions épiques
+        function checkEpicInteractions(hex) {
+            // Épée de feu
+            const sword = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'fire_sword');
+            if (!epicGameState.elements.swordTaken && 
+                Math.abs(hex.x - sword.position.x) <= 1 && 
+                Math.abs(hex.y - sword.position.y) <= 1) {
+                takeLegendarySword();
+            }
+            
+            // Église
+            const church = worldMeta.visual_structure.fixed_elements.find(e => e.id === 'church');
+            if (Math.abs(hex.x - church.position.x) <= 1 && 
+                Math.abs(hex.y - church.position.y) <= 1) {
+                enterSacredChurch();
+            }
+            
+            // Vortex
+            const vortex = worldMeta.visual_structure.dynamic_elements.find(e => e.id === 'orange_vortex');
+            if (epicGameState.elements.vortexActive &&
+                Math.abs(hex.x - vortex.position.x) <= 2 && 
+                Math.abs(hex.y - vortex.position.y) <= 2) {
+                approachDimensionalVortex();
+            }
+        }
+        
+        // ⚔️ Prendre l'épée légendaire
+        function takeLegendarySword() {
+            showEpicDialogue(
+                'Épée de Feu',
+                'Vous saisissez l\'Épée de Feu Légendaire ! Le sol tremble sous vos pieds...'
+            );
+            
+            epicGameState.elements.swordTaken = true;
+            epicGameState.elements.vortexActive = true;
+            epicGameState.elements.churchLocked = false;
+            
+            // Effet de secousse épique
+            epicGameState.effects.screenShake.active = true;
+            epicGameState.effects.screenShake.intensity = 20;
+            epicGameState.effects.screenShake.duration = 2000;
+            
+            setTimeout(() => {
+                epicGameState.effects.screenShake.active = false;
+            }, 2000);
+            
+            // Augmentation des stats
+            epicGameState.player.stats.attack += 10;
+            
+            // Explosion de particules
+            for (let i = 0; i < 100; i++) {
+                const angle = (Math.PI * 2 / 100) * i;
+                const particle = new QuantumParticle(
+                    hexToPixel(sword.position.x, sword.position.y).x,
+                    hexToPixel(sword.position.x, sword.position.y).y,
+                    'fire'
+                );
+                particle.vx = Math.cos(angle) * 10;
+                particle.vy = Math.sin(angle) * 10;
+                particle.vz = Math.random() * 5;
+                epicGameState.particles.push(particle);
+            }
+            
+            // Déclencher un combat
+            setTimeout(() => {
+                initiateCombat('Gardien de Flammes');
+            }, 3000);
+        }
+        
+        // ⛪ Entrer dans l'église sacrée
+        function enterSacredChurch() {
+            if (epicGameState.elements.churchLocked) {
+                showEpicDialogue(
+                    'Porte Scellée',
+                    'Une force mystérieuse empêche l\'ouverture de la porte...'
+                );
+            } else {
+                showEpicDialogue(
+                    'Église Ancienne',
+                    'Vous entrez dans l\'église. Un grimoire ancien brille sur l\'autel...'
+                );
+                
+                // Restaurer la santé et la mana
+                epicGameState.player.stats.health = epicGameState.player.stats.maxHealth;
+                epicGameState.player.stats.mana = epicGameState.player.stats.maxMana;
+                
+                // Particules de guérison
+                for (let i = 0; i < 30; i++) {
+                    const particle = new QuantumParticle(
+                        hexToPixel(epicGameState.player.x, epicGameState.player.y).x,
+                        hexToPixel(epicGameState.player.x, epicGameState.player.y).y,
+                        'quantum'
+                    );
+                    particle.color = '#00FF00';
+                    particle.vy = -Math.random() * 3 - 1;
+                    epicGameState.particles.push(particle);
+                }
+            }
+        }
+        
+        // 🌀 Approcher le vortex dimensionnel
+        function approachDimensionalVortex() {
+            showEpicDialogue(
+                'Vortex Dimensionnel',
+                'Le vortex tourbillonne avec une énergie intense. Êtes-vous prêt à plonger dans l\'inconnu ?'
+            );
+            
+            // Activer la distorsion temporelle
+            epicGameState.effects.timeDistortion.active = true;
+            epicGameState.effects.timeDistortion.value = 0.3;
+            
+            // Effet de zoom cinématique
+            epicGameState.camera.cinematicMode = true;
+            epicGameState.camera.targetZoom = 1.5;
+            
+            setTimeout(() => {
+                if (confirm('Entrer dans le vortex dimensionnel ?')) {
+                    // Transition épique vers un nouveau monde
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    loadingScreen.style.opacity = '1';
+                    
+                    // Animation de chargement
+                    let progress = 0;
+                    const loadingInterval = setInterval(() => {
+                        progress += 5;
+                        document.getElementById('loadingProgress').style.width = progress + '%';
+                        
+                        if (progress >= 100) {
+                            clearInterval(loadingInterval);
+                            // Redirection vers un nouveau monde
+                            console.log('Transition vers le monde fracturé...');
+                        }
+                    }, 50);
+                } else {
+                    epicGameState.effects.timeDistortion.active = false;
+                    epicGameState.camera.cinematicMode = false;
+                    epicGameState.camera.targetZoom = 1;
+                }
+            }, 2000);
+        }
+        
+        // 🚶 Déplacement du joueur avec animation
+        function movePlayerTo(targetHex) {
+            // Simple déplacement pour l'instant
+            epicGameState.player.moving = true;
+            epicGameState.player.x = targetHex.x;
+            epicGameState.player.y = targetHex.y;
+            
+            setTimeout(() => {
+                epicGameState.player.moving = false;
+            }, 300);
+            
+            // Mise à jour de la caméra
+            if (epicGameState.camera.tracking) {
+                const targetPos = hexToPixel(targetHex.x, targetHex.y);
+                epicGameState.camera.x = targetPos.x - canvas.width / 2;
+                epicGameState.camera.y = targetPos.y - canvas.height / 2;
+            }
+        }
+        
+        // 🎮 Boucle de jeu épique
+        function epicGameLoop() {
+            // Mise à jour de la phase
+            epicGameState.phase += 0.01;
+            
+            // Mise à jour du zoom fluide
+            const zoomDiff = epicGameState.camera.targetZoom - epicGameState.camera.zoom;
+            epicGameState.camera.zoom += zoomDiff * 0.1;
+            
+            // Rendu épique
+            renderEpic();
+            
+            requestAnimationFrame(epicGameLoop);
+        }
+        
+        // 🚀 Initialisation épique
+        function initEpicGame() {
+            // Masquer l'écran de chargement
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 1000);
+            }, 2000);
+            
+            // Message de bienvenue
+            setTimeout(() => {
+                showEpicDialogue(
+                    'Narrateur',
+                    'Bienvenue à la Frontière de Feu et Foi. Un ancien mal s\'éveille...'
+                );
+            }, 3000);
+            
+            // Démarrer la boucle de jeu
+            epicGameLoop();
+        }
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            effectCanvas.width = window.innerWidth;
+            effectCanvas.height = window.innerHeight;
+        });
+        
+        // Démarrage avec barre de chargement
+        let loadProgress = 0;
+        const loadInterval = setInterval(() => {
+            loadProgress += 10;
+            document.getElementById('loadingProgress').style.width = loadProgress + '%';
+            
+            if (loadProgress >= 100) {
+                clearInterval(loadInterval);
+                initEpicGame();
+            }
+        }, 100);
+    </script>
+</body>
+</html>

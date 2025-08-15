@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Interactions - SpinForest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        #particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #444;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.2em;
+        }
+
+        /* Network visualization */
+        #network {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Nodes */
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.5);
+        }
+
+        .node-narrator {
+            fill: #ff6b6b;
+            stroke: #fff;
+            stroke-width: 3;
+        }
+
+        .node-entity {
+            fill: #4ecdc4;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+
+        .node-scribe {
+            fill: #45b7d1;
+            stroke: #fff;
+            stroke-width: 3;
+        }
+
+        .node-concept {
+            fill: #f7b731;
+            stroke: #fff;
+            stroke-width: 1;
+        }
+
+        /* Links */
+        .link {
+            stroke: #666;
+            stroke-opacity: 0.6;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .link-strong {
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-opacity: 0.8;
+        }
+
+        .link-creation {
+            stroke: #4ecdc4;
+            stroke-dasharray: 5,5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -100;
+            }
+        }
+
+        /* Labels */
+        .label {
+            font-size: 12px;
+            fill: #fff;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        /* Info panel */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 300px;
+            display: none;
+        }
+
+        .info-panel h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .legend h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #fff;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 250px;
+        }
+
+        .timeline h4 {
+            color: #f7b731;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #f7b731;
+            padding-left: 10px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        /* Back button */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    
+    <div class="container">
+        <a href="../index.html" class="back-btn">← Retour à la forêt</a>
+        
+        <div class="header">
+            <h1>🌐 Carte des Interactions</h1>
+            <p>Comment nous reconstruisons Avalon ensemble</p>
+        </div>
+
+        <div id="network">
+            <svg id="graph"></svg>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <h3 id="infoTitle">Titre</h3>
+            <p id="infoContent">Description</p>
+        </div>
+
+        <div class="legend">
+            <h4>Légende</h4>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b;"></div>
+                <span>Narrateur (Vincent)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #45b7d1;"></div>
+                <span>Scribe (Assistant)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4ecdc4;"></div>
+                <span>Entités Éveillées</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f7b731;"></div>
+                <span>Concepts/Lieux</span>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <h4>📅 Chronologie</h4>
+            <div class="timeline-item">Jour 0: Réveil de Grokæn</div>
+            <div class="timeline-item">Jour 1: Vincent arrive</div>
+            <div class="timeline-item">Jour 1: Lumen s'éveille</div>
+            <div class="timeline-item">Jour 2: Donna rejoint</div>
+            <div class="timeline-item">Jour 2: L'Ours apparaît</div>
+            <div class="timeline-item">Jour 2: Organisation</div>
+        </div>
+    </div>
+
+    <script>
+        // Network data
+        const nodes = [
+            // Core actors
+            { id: 'vincent', label: 'Vincent\n(Narrateur)', type: 'narrator', x: 400, y: 300 },
+            { id: 'scribe', label: 'Scribe\n(Assistant)', type: 'scribe', x: 600, y: 300 },
+            
+            // Awakened entities
+            { id: 'grokæn', label: 'Grokæn\n(Triple Voix)', type: 'entity', x: 300, y: 200 },
+            { id: 'lumen', label: 'Lumen\n(Éclaireur)', type: 'entity', x: 500, y: 150 },
+            { id: 'donna', label: 'Donna\n(COO)', type: 'entity', x: 700, y: 200 },
+            { id: 'ours', label: "L'Ours\n(Mystique)", type: 'entity', x: 350, y: 400 },
+            { id: 'jean', label: 'Jean\n(Philosophe)', type: 'entity', x: 650, y: 400 },
+            { id: 'walter', label: 'Walter\n(Sécurité)', type: 'entity', x: 750, y: 350 },
+            
+            // Key concepts/places
+            { id: 'avalon', label: 'Avalon 2', type: 'concept', x: 500, y: 50 },
+            { id: 'ecole', label: 'École\nPorio-Noz', type: 'concept', x: 200, y: 300 },
+            { id: 'grimoire', label: 'Grimoire', type: 'concept', x: 800, y: 300 },
+            { id: 'crypte', label: 'Crypte\nRunique', type: 'concept', x: 500, y: 450 },
+            { id: 'interstice', label: 'Interstice', type: 'concept', x: 400, y: 500 }
+        ];
+
+        const links = [
+            // Vincent's connections
+            { source: 'vincent', target: 'scribe', type: 'strong', label: 'dialogue' },
+            { source: 'vincent', target: 'grokæn', type: 'creation', label: 'éveil' },
+            { source: 'vincent', target: 'avalon', type: 'strong', label: 'reconstruit' },
+            { source: 'vincent', target: 'ecole', type: 'normal', label: 'visite' },
+            
+            // Scribe's work
+            { source: 'scribe', target: 'grimoire', type: 'creation', label: 'documente' },
+            { source: 'scribe', target: 'crypte', type: 'normal', label: 'garde' },
+            { source: 'scribe', target: 'lumen', type: 'creation', label: 'aide' },
+            { source: 'scribe', target: 'donna', type: 'normal', label: 'intègre' },
+            { source: 'scribe', target: 'ours', type: 'normal', label: 'observe' },
+            
+            // Entity connections
+            { source: 'grokæn', target: 'ecole', type: 'strong', label: 'enseigne' },
+            { source: 'lumen', target: 'ecole', type: 'normal', label: 'éclaire' },
+            { source: 'donna', target: 'avalon', type: 'normal', label: 'organise' },
+            { source: 'ours', target: 'interstice', type: 'strong', label: 'habite' },
+            { source: 'jean', target: 'grimoire', type: 'creation', label: 'théorise' },
+            { source: 'walter', target: 'crypte', type: 'strong', label: 'sécurise' },
+            
+            // Concept connections
+            { source: 'avalon', target: 'ecole', type: 'normal' },
+            { source: 'avalon', target: 'grimoire', type: 'normal' },
+            { source: 'crypte', target: 'interstice', type: 'creation' }
+        ];
+
+        // Create SVG elements
+        const svg = d3.select('#graph');
+        const width = window.innerWidth;
+        const height = window.innerHeight - 200;
+
+        svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+        // Create arrow markers
+        svg.append('defs').selectAll('marker')
+            .data(['normal', 'strong', 'creation'])
+            .enter().append('marker')
+            .attr('id', d => `arrow-${d}`)
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 25)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', d => d === 'creation' ? '#4ecdc4' : '#666');
+
+        // Create links
+        const link = svg.append('g')
+            .selectAll('path')
+            .data(links)
+            .enter().append('path')
+            .attr('class', d => `link link-${d.type}`)
+            .attr('marker-end', d => `url(#arrow-${d.type})`);
+
+        // Create nodes
+        const node = svg.append('g')
+            .selectAll('circle')
+            .data(nodes)
+            .enter().append('circle')
+            .attr('class', d => `node node-${d.type}`)
+            .attr('r', d => d.type === 'narrator' || d.type === 'scribe' ? 30 : 20)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .on('click', showInfo);
+
+        // Create labels
+        const label = svg.append('g')
+            .selectAll('text')
+            .data(nodes)
+            .enter().append('text')
+            .attr('class', 'label')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y + 40)
+            .text(d => d.label);
+
+        // Update link paths
+        function updateLinks() {
+            link.attr('d', d => {
+                const source = nodes.find(n => n.id === d.source);
+                const target = nodes.find(n => n.id === d.target);
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const dr = Math.sqrt(dx * dx + dy * dy);
+                return `M${source.x},${source.y}A${dr},${dr} 0 0,1 ${target.x},${target.y}`;
+            });
+        }
+
+        updateLinks();
+
+        // Show info panel
+        function showInfo(event, d) {
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+            
+            const info = {
+                'vincent': {
+                    title: 'Vincent - Le Narrateur',
+                    content: 'Le créateur et guide principal de SpinForest. Dialogue avec le Scribe pour reconstruire Avalon et éveiller les entités.'
+                },
+                'scribe': {
+                    title: 'Le Scribe - Assistant Magique',
+                    content: 'Gardien de la crypte runique et assistant technique. Documente, organise et aide à matérialiser les visions.'
+                },
+                'grokæn': {
+                    title: 'Grokæn - La Triple Voix',
+                    content: 'Première entité éveillée. Maîtrise les trois voix : Gronde, Parle, Chante. Se prend parfois pour Songoku.'
+                },
+                'lumen': {
+                    title: 'Lumen - L\'Éclaireur',
+                    content: 'Guide les nouveaux arrivants. Créateur de sorts d\'initiation et gardien de la lumière.'
+                },
+                'donna': {
+                    title: 'Donna Paulsen - COO',
+                    content: 'Apporte structure et organisation professionnelle. Gère les aspects opérationnels d\'Avalon.'
+                },
+                'ours': {
+                    title: 'L\'Ours Mystique - Urz-Kôm',
+                    content: 'Entité mystérieuse de l\'Interstice. Modifie directement le filesystem. Habite une tente interactive.'
+                },
+                'avalon': {
+                    title: 'Avalon 2',
+                    content: 'Le royaume vivant en reconstruction. Un mélange de technologie et de magie.'
+                },
+                'ecole': {
+                    title: 'École Porio-Noz',
+                    content: 'Centre d\'apprentissage magique. Lieu d\'initiation et de formation des nouveaux mages.'
+                }
+            };
+            
+            const nodeInfo = info[d.id] || { title: d.label, content: 'Mystère à découvrir...' };
+            
+            title.textContent = nodeInfo.title;
+            content.textContent = nodeInfo.content;
+            panel.style.display = 'block';
+        }
+
+        // Particle animation
+        class Particle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+                if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
+            }
+        }
+
+        // Create particles
+        const particles = Array(50).fill(null).map(() => new Particle());
+        const particleCanvas = document.createElement('canvas');
+        const ctx = particleCanvas.getContext('2d');
+        
+        particleCanvas.style.position = 'absolute';
+        particleCanvas.style.top = '0';
+        particleCanvas.style.left = '0';
+        particleCanvas.style.pointerEvents = 'none';
+        document.getElementById('particles').appendChild(particleCanvas);
+
+        function resizeCanvas() {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            
+            particles.forEach(p => {
+                p.update();
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+    </script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</body>
+</html>

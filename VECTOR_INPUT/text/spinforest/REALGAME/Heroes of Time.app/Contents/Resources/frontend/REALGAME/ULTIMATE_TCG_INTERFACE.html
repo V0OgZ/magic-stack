@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Ultimate TCG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #2a0a3a 100%);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* PARTICULES MAGIQUES */
+        .magic-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* HEADER MINIMALISTE */
+        .game-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* ZONE DE JEU PRINCIPALE */
+        .game-container {
+            padding-top: 80px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ZONE ENNEMIE */
+        .enemy-zone {
+            height: 250px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* ZONE DE COMBAT */
+        .battlefield {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .battlefield-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .field-slot {
+            width: 140px;
+            height: 200px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .field-slot:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        /* ZONE JOUEUR */
+        .player-zone {
+            height: 250px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* CARTES */
+        .card {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-20px) scale(1.1);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            z-index: 50;
+        }
+
+        .card-icon {
+            font-size: 60px;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 10px currentColor);
+            animation: iconPulse 2s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px currentColor);
+            }
+            50% {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 20px currentColor);
+            }
+        }
+
+        .card-name {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card-stats {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .card-attack {
+            color: #ff6b6b;
+        }
+
+        .card-defense {
+            color: #4ecdc4;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #4169e1, #00bfff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+
+        /* MAIN DU JOUEUR */
+        .player-hand {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: -30px;
+            padding: 20px;
+            z-index: 200;
+        }
+
+        .hand-card {
+            width: 100px;
+            height: 140px;
+            transition: all 0.3s;
+            transform-origin: bottom center;
+        }
+
+        .hand-card:hover {
+            transform: translateY(-30px) scale(1.2);
+            z-index: 201;
+        }
+
+        /* BOUTONS D'ACTION MINIMALISTES */
+        .action-bar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 150;
+        }
+
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 24px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        /* EFFET DE SORT */
+        .spell-effect {
+            position: fixed;
+            pointer-events: none;
+            z-index: 500;
+            animation: spellCast 1s ease-out forwards;
+        }
+
+        @keyframes spellCast {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* NOTIFICATION FLOTTANTE */
+        .notification {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: 2px solid #ffd700;
+            font-size: 16px;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* HERO PORTRAIT */
+        .hero-portrait {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.2), transparent);
+            border: 3px solid #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            z-index: 100;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .hero-portrait:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .hero-hp-bar {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff4444);
+            transition: width 0.5s;
+        }
+
+        /* EFFET DE TRADUCTION DES SORTS */
+        .spell-translation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 600;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .translation-runic {
+            color: #00ff88;
+            text-shadow: 0 0 30px #00ff88;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 10px;
+        }
+
+        .translation-iconic {
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+        }
+
+        .translation-literary {
+            color: #ffd700;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: 24px;
+            max-width: 600px;
+            white-space: normal;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules magiques -->
+    <div class="magic-particles" id="particles"></div>
+
+    <!-- Header -->
+    <div class="game-header">
+        <div class="logo">HEROES OF TIME</div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-icon">⚡</span>
+                <span class="stat-value" id="playerLevel">LV.12</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">💎</span>
+                <span class="stat-value" id="playerMana">6/10</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🏆</span>
+                <span class="stat-value" id="playerScore">2,450</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="game-container">
+        <!-- Zone ennemie -->
+        <div class="enemy-zone" id="enemyZone"></div>
+
+        <!-- Champ de bataille -->
+        <div class="battlefield">
+            <div class="battlefield-grid" id="battlefield"></div>
+        </div>
+
+        <!-- Zone joueur -->
+        <div class="player-zone" id="playerZone"></div>
+    </div>
+
+    <!-- Main du joueur -->
+    <div class="player-hand" id="playerHand"></div>
+
+    <!-- Portrait du héros -->
+    <div class="hero-portrait" id="heroPortrait">
+        <span id="heroIcon">⚡</span>
+        <div class="hero-hp-bar">
+            <div class="hp-fill" id="hpFill" style="width: 75%;"></div>
+        </div>
+    </div>
+
+    <!-- Barre d'actions minimaliste -->
+    <div class="action-bar">
+        <div class="action-btn" onclick="drawCard()" title="Piocher">🎴</div>
+        <div class="action-btn" onclick="castSpell()" title="Sort">✨</div>
+        <div class="action-btn" onclick="endTurn()" title="Fin de tour">⏭️</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api-config.js"></script>
+    <script src="js/spell-visual-effects.js"></script>
+    <script src="js/game-progression.js"></script>
+    <script src="js/combat-engine.js"></script>
+
+    <script>
+        // État du jeu
+        const gameState = {
+            currentHero: { name: 'Vince Vega', class: 'Négociateur Temporel', icon: '⚡', hp: 75, maxHp: 100 },
+            playerMana: 6,
+            maxMana: 10,
+            turn: 1,
+            hand: [],
+            field: [],
+            enemyField: []
+        };
+
+        // Base de données de cartes avec emojis HD
+        const cardDatabase = [
+            { id: 1, name: 'Loup Temporel', icon: '🐺', cost: 3, attack: 4, defense: 3, type: 'creature' },
+            { id: 2, name: 'Ours Quantique', icon: '🐻', cost: 5, attack: 5, defense: 7, type: 'creature' },
+            { id: 3, name: 'Dragon', icon: '🐉', cost: 8, attack: 8, defense: 8, type: 'creature' },
+            { id: 4, name: 'Phénix', icon: '🦅', cost: 6, attack: 6, defense: 4, type: 'creature' },
+            { id: 5, name: 'Boule de Feu', icon: '🔥', cost: 3, damage: 5, type: 'spell' },
+            { id: 6, name: 'Éclair', icon: '⚡', cost: 4, damage: 7, type: 'spell' },
+            { id: 7, name: 'Soin', icon: '💚', cost: 2, heal: 5, type: 'spell' },
+            { id: 8, name: 'Bouclier', icon: '🛡️', cost: 1, block: 3, type: 'spell' },
+            { id: 9, name: 'Épée Magique', icon: '⚔️', cost: 4, attack: 3, type: 'artifact' },
+            { id: 10, name: 'Cristal', icon: '💎', cost: 0, mana: 1, type: 'artifact' },
+            { id: 11, name: 'Licorne', icon: '🦄', cost: 7, attack: 5, defense: 5, type: 'creature' },
+            { id: 12, name: 'Golem', icon: '🗿', cost: 6, attack: 4, defense: 8, type: 'creature' }
+        ];
+
+        // Créer les particules
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Créer une carte
+        function createCard(cardData, isEnemy = false) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            if (cardData.cost !== undefined) {
+                const cost = document.createElement('div');
+                cost.className = 'card-cost';
+                cost.textContent = cardData.cost;
+                card.appendChild(cost);
+            }
+            
+            const icon = document.createElement('div');
+            icon.className = 'card-icon';
+            icon.textContent = cardData.icon;
+            card.appendChild(icon);
+            
+            const name = document.createElement('div');
+            name.className = 'card-name';
+            name.textContent = cardData.name;
+            card.appendChild(name);
+            
+            if (cardData.type === 'creature') {
+                const stats = document.createElement('div');
+                stats.className = 'card-stats';
+                stats.innerHTML = `
+                    <span class="card-attack">${cardData.attack}</span>
+                    <span class="card-defense">${cardData.defense}</span>
+                `;
+                card.appendChild(stats);
+            }
+            
+            // Click pour jouer
+            if (!isEnemy) {
+                card.onclick = () => playCard(cardData);
+            }
+            
+            return card;
+        }
+
+        // Jouer une carte
+        async function playCard(cardData) {
+            if (cardData.cost > gameState.playerMana) {
+                showNotification('Pas assez de mana!');
+                return;
+            }
+            
+            gameState.playerMana -= cardData.cost;
+            updateStats();
+            
+            // Effet visuel selon la classe
+            if (typeof spellVisuals !== 'undefined') {
+                await spellVisuals.castSpellWithVisuals(
+                    cardData,
+                    gameState.currentHero.class
+                );
+            }
+            
+            // Ajouter au champ si créature
+            if (cardData.type === 'creature' && gameState.field.length < 5) {
+                gameState.field.push(cardData);
+                updateBattlefield();
+            }
+            
+            // Effets directs
+            if (cardData.damage) {
+                showSpellEffect('💥', 'enemy');
+            }
+            if (cardData.heal) {
+                gameState.currentHero.hp = Math.min(gameState.currentHero.maxHp, gameState.currentHero.hp + cardData.heal);
+                updateHeroHP();
+                showSpellEffect('💚', 'player');
+            }
+            
+            showNotification(`${cardData.name} joué!`);
+        }
+
+        // Piocher une carte
+        function drawCard() {
+            if (gameState.hand.length >= 10) {
+                showNotification('Main pleine!');
+                return;
+            }
+            
+            const randomCard = cardDatabase[Math.floor(Math.random() * cardDatabase.length)];
+            gameState.hand.push({...randomCard});
+            updateHand();
+            
+            showSpellEffect('🎴', 'player');
+        }
+
+        // Lancer un sort
+        async function castSpell() {
+            const spellCard = {
+                name: 'Sort Temporel',
+                formula: 'TEMPORAL_ECHO',
+                power: 50,
+                icon: '⏰'
+            };
+            
+            if (typeof spellVisuals !== 'undefined') {
+                await spellVisuals.castSpellWithVisuals(
+                    spellCard,
+                    gameState.currentHero.class
+                );
+            }
+            
+            showNotification('Sort lancé!');
+        }
+
+        // Fin de tour
+        function endTurn() {
+            gameState.turn++;
+            gameState.playerMana = Math.min(gameState.maxMana, gameState.turn);
+            updateStats();
+            
+            showNotification(`Tour ${gameState.turn}`);
+            
+            // Tour ennemi simple
+            setTimeout(() => {
+                enemyTurn();
+            }, 1000);
+        }
+
+        // Tour ennemi
+        function enemyTurn() {
+            // Ajouter une créature ennemie
+            if (gameState.enemyField.length < 5 && Math.random() > 0.5) {
+                const enemyCard = cardDatabase[Math.floor(Math.random() * 4)];
+                gameState.enemyField.push({...enemyCard});
+                updateEnemyField();
+            }
+            
+            showNotification('Tour ennemi terminé');
+        }
+
+        // Montrer un effet de sort
+        function showSpellEffect(icon, target) {
+            const effect = document.createElement('div');
+            effect.className = 'spell-effect';
+            effect.style.fontSize = '72px';
+            effect.textContent = icon;
+            
+            if (target === 'enemy') {
+                effect.style.top = '200px';
+            } else {
+                effect.style.bottom = '200px';
+            }
+            effect.style.left = '50%';
+            
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        // Afficher une notification
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.style.opacity = '0';
+                setTimeout(() => notif.remove(), 500);
+            }, 2000);
+        }
+
+        // Mettre à jour l'affichage
+        function updateStats() {
+            document.getElementById('playerMana').textContent = `${gameState.playerMana}/${gameState.maxMana}`;
+        }
+
+        function updateHeroHP() {
+            const percent = (gameState.currentHero.hp / gameState.currentHero.maxHp) * 100;
+            document.getElementById('hpFill').style.width = percent + '%';
+        }
+
+        function updateHand() {
+            const handDiv = document.getElementById('playerHand');
+            handDiv.innerHTML = '';
+            gameState.hand.forEach(card => {
+                const cardEl = createCard(card);
+                cardEl.className += ' hand-card';
+                handDiv.appendChild(cardEl);
+            });
+        }
+
+        function updateBattlefield() {
+            const battleDiv = document.getElementById('battlefield');
+            battleDiv.innerHTML = '';
+            
+            // Créer les slots
+            for (let i = 0; i < 5; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'field-slot';
+                
+                if (gameState.field[i]) {
+                    slot.appendChild(createCard(gameState.field[i]));
+                }
+                
+                battleDiv.appendChild(slot);
+            }
+        }
+
+        function updateEnemyField() {
+            const enemyDiv = document.getElementById('enemyZone');
+            enemyDiv.innerHTML = '';
+            gameState.enemyField.forEach(card => {
+                enemyDiv.appendChild(createCard(card, true));
+            });
+        }
+
+        // Initialisation
+        function init() {
+            createParticles();
+            
+            // Charger le héros
+            const savedHero = localStorage.getItem('selectedHero');
+            if (savedHero) {
+                const hero = JSON.parse(savedHero);
+                gameState.currentHero = {
+                    name: hero.name,
+                    class: hero.class,
+                    icon: hero.icon,
+                    hp: 100,
+                    maxHp: 100
+                };
+                document.getElementById('heroIcon').textContent = hero.icon;
+            }
+            
+            // Initialiser la main
+            for (let i = 0; i < 4; i++) {
+                drawCard();
+            }
+            
+            updateStats();
+            updateBattlefield();
+            
+            console.log('Ultimate TCG Interface Loaded');
+            console.log('Hero:', gameState.currentHero.name);
+        }
+
+        // Lancer le jeu
+        init();
+    </script>
+</body>
+</html>

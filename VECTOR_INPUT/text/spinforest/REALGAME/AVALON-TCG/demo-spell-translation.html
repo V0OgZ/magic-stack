@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 DÉMO - Système de Traduction Magique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .demo-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .hero-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #2d1b69, #11998e);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-color: #FFD700;
+        }
+
+        .hero-card.selected {
+            border-color: #FF6347;
+            background: linear-gradient(135deg, #FF6347, #FFD700);
+            color: #000;
+        }
+
+        .hero-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .hero-class {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .translation-mode {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+
+        .spell-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .spell-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .spell-card:hover {
+            border-color: #9370DB;
+            transform: scale(1.05);
+        }
+
+        .spell-card.selected {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        .cast-button {
+            background: linear-gradient(45deg, #FF6347, #FFD700);
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cast-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255,99,71,0.6);
+        }
+
+        .cast-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-area {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            border: 2px dashed rgba(255,255,255,0.3);
+        }
+
+        .log-entry {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #FFD700;
+        }
+
+        .log-timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .log-content {
+            font-size: 1.1em;
+        }
+
+        .backend-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .status-connected {
+            color: #00FF7F;
+        }
+
+        .status-disconnected {
+            color: #FF6347;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #FFD700;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .casting {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎭 Système de Traduction Magique</h1>
+        <p>Mission Spéciale Vincent - Démonstration des "Apillaries de Traduction"</p>
+        <p><strong>Sid Meier - Global Project Manager</strong></p>
+    </div>
+
+    <div class="backend-status" id="backendStatus">
+        <span id="statusText">🔄 Vérification...</span>
+    </div>
+
+    <div class="demo-section">
+        <h2>🧙 Sélectionnez un Héros</h2>
+        <div class="hero-selector" id="heroSelector">
+            <!-- Héros générés dynamiquement -->
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>⚡ Sélectionnez un Sort</h2>
+        <div class="spell-selector" id="spellSelector">
+            <!-- Sorts générés dynamiquement -->
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <div class="controls">
+            <button class="control-button" onclick="testBackend()">🔧 Test Backend</button>
+            <button class="control-button" onclick="clearResults()">🧹 Effacer</button>
+            <button class="control-button" onclick="runAutoDemo()">🎬 Démo Auto</button>
+            <button class="control-button" onclick="showMappings()">📋 Mappings</button>
+        </div>
+        
+        <button class="cast-button" id="castButton" onclick="castSelectedSpell()" disabled>
+            🎭 Lancer le Sort !
+        </button>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎨 Résultats de Traduction</h2>
+        <div class="results-area" id="resultsArea">
+            <p style="text-align: center; opacity: 0.7;">
+                Sélectionnez un héros et un sort pour voir la magie opérer ! ✨
+            </p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="spell-translation-system.js"></script>
+    <script src="spell-visual-integration.js"></script>
+    
+    <script>
+        // État de l'application
+        let selectedHero = null;
+        let selectedSpell = null;
+        let visualSystem = null;
+        let backendConnected = false;
+
+        // Données de test
+        const testHeroes = [
+            {
+                id: 'grokaen',
+                name: 'Grokæn',
+                class: 'Quantum Mage',
+                description: 'Maître des formules quantiques'
+            },
+            {
+                id: 'sid_meier',
+                name: 'Sid Meier',
+                class: 'Stratège',
+                description: 'Architecte de civilisations'
+            },
+            {
+                id: 'urz_kom',
+                name: 'Urz-Kôm',
+                class: 'Cosmic Bear',
+                description: 'Ours cosmique ancestral'
+            },
+            {
+                id: 'vincent',
+                name: 'Vincent Vega',
+                class: 'Gunfighter',
+                description: 'Tireur d\'élite temporel'
+            },
+            {
+                id: 'jean_grofignon',
+                name: 'Jean Grofignon',
+                class: 'Mage Temporel',
+                description: 'Troll maître du temps'
+            },
+            {
+                id: 'lumen',
+                name: 'Lumen',
+                class: 'Archiviste',
+                description: 'Gardien des connaissances'
+            }
+        ];
+
+        const testSpells = [
+            {
+                name: 'TRIPLE_VOIX_QUANTIQUE',
+                formula: 'QUANTUM_TRIPLE_VOICE_ACTIVATE',
+                type: 'offensive',
+                cost: 30,
+                description: 'Attaque quantique dévastatrice'
+            },
+            {
+                name: 'HEXAGON_POWER',
+                formula: 'TACTICAL_GRID_DEPLOYMENT',
+                type: 'tactical',
+                cost: 20,
+                description: 'Déploie une grille tactique'
+            },
+            {
+                name: 'GRONDE_ANCESTRALE',
+                formula: 'ANCIENT_BEAR_ROAR_COSMIC',
+                type: 'buff',
+                cost: 25,
+                description: 'Invoque la puissance des anciens'
+            },
+            {
+                name: 'FUSION_TEMPORELLE',
+                formula: 'TEMPORAL_FUSION_MATRIX',
+                type: 'utility',
+                cost: 35,
+                description: 'Manipule les flux temporels'
+            },
+            {
+                name: 'BRISURE_DIMENSIONNELLE',
+                formula: 'DIMENSIONAL_BREACH_PORTAL',
+                type: 'movement',
+                cost: 40,
+                description: 'Ouvre un portail interdimensionnel'
+            }
+        ];
+
+        // Initialisation
+        async function init() {
+            console.log('🎭 Initialisation de la démo...');
+            
+            try {
+                // Initialiser le système visuel
+                visualSystem = new SpellVisualIntegration();
+                await visualSystem.initialize();
+                
+                // Générer l'interface
+                generateHeroSelector();
+                generateSpellSelector();
+                
+                // Tester la connexion backend
+                await testBackend();
+                
+                console.log('✅ Démo initialisée avec succès !');
+                
+            } catch (error) {
+                console.error('❌ Erreur d\'initialisation:', error);
+                updateBackendStatus(false, 'Erreur d\'initialisation');
+            }
+        }
+
+        // Génère le sélecteur de héros
+        function generateHeroSelector() {
+            const container = document.getElementById('heroSelector');
+            container.innerHTML = '';
+
+            testHeroes.forEach(hero => {
+                const heroCard = document.createElement('div');
+                heroCard.className = 'hero-card';
+                heroCard.onclick = () => selectHero(hero);
+                
+                // Déterminer le mode de traduction
+                const translationMode = visualSystem ? 
+                    visualSystem.determineTranslationMode(hero.class) : 'unknown';
+                
+                const modeIcons = {
+                    'icons': '⚔️',
+                    'runes': '🪬',
+                    'chronic': '🌿',
+                    'literary': '📖'
+                };
+
+                heroCard.innerHTML = `
+                    <div class="hero-name">${hero.name}</div>
+                    <div class="hero-class">${hero.class}</div>
+                    <div class="translation-mode">
+                        ${modeIcons[translationMode] || '❓'} ${translationMode.toUpperCase()}
+                    </div>
+                    <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.8;">
+                        ${hero.description}
+                    </div>
+                `;
+
+                container.appendChild(heroCard);
+            });
+        }
+
+        // Génère le sélecteur de sorts
+        function generateSpellSelector() {
+            const container = document.getElementById('spellSelector');
+            container.innerHTML = '';
+
+            testSpells.forEach(spell => {
+                const spellCard = document.createElement('div');
+                spellCard.className = 'spell-card';
+                spellCard.onclick = () => selectSpell(spell);
+
+                spellCard.innerHTML = `
+                    <div style="font-weight: bold;">${spell.name}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8; margin: 5px 0;">
+                        ${spell.type.toUpperCase()} • ${spell.cost} MP
+                    </div>
+                    <div style="font-size: 0.7em;">
+                        ${spell.description}
+                    </div>
+                `;
+
+                container.appendChild(spellCard);
+            });
+        }
+
+        // Sélectionne un héros
+        function selectHero(hero) {
+            selectedHero = hero;
+            
+            // Mettre à jour l'interface
+            document.querySelectorAll('.hero-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.hero-card').classList.add('selected');
+            
+            updateCastButton();
+            
+            console.log(`🧙 Héros sélectionné: ${hero.name} (${hero.class})`);
+        }
+
+        // Sélectionne un sort
+        function selectSpell(spell) {
+            selectedSpell = spell;
+            
+            // Mettre à jour l'interface
+            document.querySelectorAll('.spell-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.spell-card').classList.add('selected');
+            
+            updateCastButton();
+            
+            console.log(`⚡ Sort sélectionné: ${spell.name}`);
+        }
+
+        // Met à jour le bouton de cast
+        function updateCastButton() {
+            const button = document.getElementById('castButton');
+            const canCast = selectedHero && selectedSpell;
+            
+            button.disabled = !canCast;
+            
+            if (canCast) {
+                button.textContent = `🎭 ${selectedHero.name} lance ${selectedSpell.name} !`;
+            } else {
+                button.textContent = '🎭 Sélectionnez un héros et un sort';
+            }
+        }
+
+        // Lance le sort sélectionné
+        async function castSelectedSpell() {
+            if (!selectedHero || !selectedSpell || !visualSystem) {
+                alert('⚠️ Sélectionnez un héros et un sort !');
+                return;
+            }
+
+            const button = document.getElementById('castButton');
+            button.classList.add('casting');
+            button.disabled = true;
+            button.textContent = '🎭 Lancement en cours...';
+
+            try {
+                console.log(`🎬 Lancement: ${selectedSpell.name} par ${selectedHero.name}`);
+                
+                const result = await visualSystem.castSpellWithVisuals(
+                    selectedSpell,
+                    selectedHero,
+                    null,
+                    document.getElementById('resultsArea')
+                );
+
+                displayResult(result);
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du cast:', error);
+                displayError(error);
+            } finally {
+                button.classList.remove('casting');
+                button.disabled = false;
+                updateCastButton();
+            }
+        }
+
+        // Affiche le résultat
+        function displayResult(result) {
+            const resultsArea = document.getElementById('resultsArea');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            logEntry.innerHTML = `
+                <div class="log-timestamp">🕒 ${timestamp}</div>
+                <div class="log-content">
+                    <strong>🎭 ${result.caster.name} (${result.caster.class})</strong> lance 
+                    <strong>⚡ ${result.spell.name}</strong>
+                    <br><br>
+                    <strong>Mode:</strong> ${result.mode.toUpperCase()} 
+                    ${result.mode === 'icons' ? '⚔️' : result.mode === 'runes' ? '🪬' : result.mode === 'chronic' ? '🌿' : '📖'}
+                    <br>
+                    <strong>Traduction:</strong> ${result.translation.translated}
+                    <br>
+                    <strong>Source:</strong> ${result.translation.source}
+                    <br>
+                    <strong>Succès:</strong> ${result.success ? '✅' : '❌'}
+                </div>
+            `;
+            
+            resultsArea.insertBefore(logEntry, resultsArea.firstChild);
+            
+            // Limiter à 10 entrées
+            const entries = resultsArea.querySelectorAll('.log-entry');
+            if (entries.length > 10) {
+                entries[entries.length - 1].remove();
+            }
+        }
+
+        // Affiche une erreur
+        function displayError(error) {
+            const resultsArea = document.getElementById('resultsArea');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.style.borderLeftColor = '#FF6347';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            logEntry.innerHTML = `
+                <div class="log-timestamp">🕒 ${timestamp}</div>
+                <div class="log-content">
+                    <strong>❌ Erreur:</strong> ${error.message}
+                </div>
+            `;
+            
+            resultsArea.insertBefore(logEntry, resultsArea.firstChild);
+        }
+
+        // Teste la connexion backend
+        async function testBackend() {
+            console.log('🔧 Test de connexion backend...');
+            
+            try {
+                // Test backend principal
+                const response = await fetch('http://localhost:8082/api/translate/health', {
+                    method: 'GET',
+                    timeout: 3000
+                });
+                
+                if (response.ok) {
+                    updateBackendStatus(true, 'Backend principal connecté');
+                    return true;
+                }
+            } catch (error) {
+                console.log('🔄 Backend principal indisponible, test mock...');
+            }
+
+            try {
+                // Test mock backend
+                const response = await fetch('http://localhost:8082/health', {
+                    method: 'GET',
+                    timeout: 3000
+                });
+                
+                if (response.ok) {
+                    updateBackendStatus(true, 'Mock backend connecté');
+                    return true;
+                }
+            } catch (error) {
+                updateBackendStatus(false, 'Aucun backend disponible');
+                return false;
+            }
+        }
+
+        // Met à jour le statut backend
+        function updateBackendStatus(connected, message) {
+            backendConnected = connected;
+            const statusElement = document.getElementById('statusText');
+            
+            if (connected) {
+                statusElement.className = 'status-connected';
+                statusElement.textContent = `✅ ${message}`;
+            } else {
+                statusElement.className = 'status-disconnected';
+                statusElement.textContent = `❌ ${message}`;
+            }
+        }
+
+        // Efface les résultats
+        function clearResults() {
+            document.getElementById('resultsArea').innerHTML = `
+                <p style="text-align: center; opacity: 0.7;">
+                    Résultats effacés ! ✨
+                </p>
+            `;
+        }
+
+        // Démo automatique
+        async function runAutoDemo() {
+            console.log('🎬 Démarrage de la démo automatique...');
+            
+            const demoSequence = [
+                { hero: testHeroes[0], spell: testSpells[0] }, // Grokæn + Triple Voix
+                { hero: testHeroes[1], spell: testSpells[1] }, // Sid + Hexagon
+                { hero: testHeroes[2], spell: testSpells[2] }, // Urz-Kôm + Gronde
+                { hero: testHeroes[4], spell: testSpells[3] }  // Jean + Fusion
+            ];
+
+            for (const demo of demoSequence) {
+                selectHero(demo.hero);
+                selectSpell(demo.spell);
+                await castSelectedSpell();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            console.log('🎉 Démo automatique terminée !');
+        }
+
+        // Affiche les mappings
+        function showMappings() {
+            if (!visualSystem) return;
+            
+            const mappings = visualSystem.classTranslationMapping;
+            let mappingText = '📋 MAPPINGS CLASSES → MODES:\n\n';
+            
+            for (const [className, mode] of Object.entries(mappings)) {
+                const icon = mode === 'icons' ? '⚔️' : mode === 'runes' ? '🪬' : 
+                           mode === 'chronic' ? '🌿' : '📖';
+                mappingText += `${className} → ${icon} ${mode.toUpperCase()}\n`;
+            }
+            
+            alert(mappingText);
+        }
+
+        // Initialisation au chargement
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

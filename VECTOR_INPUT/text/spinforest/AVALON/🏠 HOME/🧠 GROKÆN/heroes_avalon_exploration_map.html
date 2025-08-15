@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ Heroes of AVALON - Exploration & Combat</title>
+    <style>
+        body {
+            margin: 0;
+            background: #1a1a2e;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: white;
+        }
+        
+        canvas {
+            display: block;
+            cursor: pointer;
+            image-rendering: pixelated;
+        }
+        
+        .ui-panel {
+            position: fixed;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            color: #FFF;
+        }
+        
+        .hero-info {
+            top: 20px;
+            left: 20px;
+            min-width: 250px;
+        }
+        
+        .map-info {
+            top: 20px;
+            right: 20px;
+            text-align: right;
+        }
+        
+        .inventory {
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .item-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #666;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .item-slot:hover {
+            border-color: #FFD700;
+        }
+        
+        .combat-log {
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .minimap {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            border: 2px solid #FFD700;
+            background: rgba(0,0,0,0.8);
+        }
+        
+        .health-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF0000, #FFD700);
+            transition: width 0.3s;
+        }
+        
+        .mana-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            margin: 5px 0;
+        }
+        
+        .mana-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066FF, #00FFFF);
+            transition: width 0.3s;
+        }
+        
+        /* Mode combat */
+        .combat-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .combat-arena {
+            width: 800px;
+            height: 600px;
+            background: #2a2a3e;
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- UI Panels -->
+    <div class="ui-panel hero-info">
+        <h3>🦸 <span id="heroName">GROEKEN</span></h3>
+        <div>Niveau: <span id="heroLevel">5</span></div>
+        <div>XP: <span id="heroXP">1250</span>/2000</div>
+        <div class="health-bar">
+            <div class="health-fill" id="heroHealth" style="width: 100%"></div>
+        </div>
+        <div>PV: <span id="heroHP">100</span>/100</div>
+        <div class="mana-bar">
+            <div class="mana-fill" id="heroMana" style="width: 80%"></div>
+        </div>
+        <div>Mana: <span id="heroMP">80</span>/100</div>
+        <div style="margin-top: 10px;">
+            <div>⚔️ Attaque: <span id="heroAttack">25</span></div>
+            <div>🛡️ Défense: <span id="heroDefense">15</span></div>
+            <div>✨ Magie: <span id="heroMagic">30</span></div>
+            <div>🏃 Vitesse: <span id="heroSpeed">5</span></div>
+        </div>
+    </div>
+    
+    <div class="ui-panel map-info">
+        <h3>📍 Zone Actuelle</h3>
+        <div id="zoneName">Plaines Centrales</div>
+        <div id="zoneLevel">Niveau 1-5</div>
+        <div style="margin-top: 10px;">
+            <div>🗓️ Jour: <span id="gameDay">1</span></div>
+            <div>💰 Or: <span id="gold">500</span></div>
+            <div>💎 Cristaux: <span id="crystals">10</span></div>
+        </div>
+    </div>
+    
+    <div class="ui-panel inventory">
+        <div class="item-slot" title="Épée de Lumière">⚔️</div>
+        <div class="item-slot" title="Bouclier Runique">🛡️</div>
+        <div class="item-slot" title="Potion de Vie">🧪</div>
+        <div class="item-slot" title="Parchemin de Téléportation">📜</div>
+        <div class="item-slot" title="Vide"></div>
+    </div>
+    
+    <div class="ui-panel combat-log" id="combatLog">
+        <div style="color: #FFD700;">⚔️ Heroes of AVALON - Début de l'aventure !</div>
+    </div>
+    
+    <canvas class="minimap" id="minimap"></canvas>
+    
+    <!-- Combat Mode -->
+    <div class="combat-mode" id="combatMode">
+        <div class="combat-arena" id="combatArena">
+            <canvas id="combatCanvas" width="800" height="600"></canvas>
+        </div>
+    </div>
+    
+    <!-- Main Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+    
+    <script>
+        // Configuration
+        const TILE_SIZE = 64;
+        const MAP_WIDTH = 50;
+        const MAP_HEIGHT = 50;
+        
+        // Canvas principal
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Minimap
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        
+        // État du jeu
+        const game = {
+            camera: { x: 0, y: 0 },
+            day: 1,
+            gold: 500,
+            crystals: 10,
+            inCombat: false,
+            selectedUnit: null,
+            hoveredTile: null
+        };
+        
+        // Types de terrain
+        const TERRAIN = {
+            GRASS: { symbol: '🌿', color: '#228B22', walkable: true },
+            FOREST: { symbol: '🌲', color: '#0F4F0F', walkable: true, slow: true },
+            MOUNTAIN: { symbol: '⛰️', color: '#8B7355', walkable: false },
+            WATER: { symbol: '🌊', color: '#4682B4', walkable: false },
+            ROAD: { symbol: '🛤️', color: '#D2691E', walkable: true, fast: true },
+            CASTLE: { symbol: '🏰', color: '#FFD700', walkable: true, special: true },
+            DUNGEON: { symbol: '🕳️', color: '#4B0082', walkable: true, special: true }
+        };
+        
+        // Classe Map
+        class WorldMap {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.tiles = [];
+                this.objects = [];
+                this.creatures = [];
+                this.generateMap();
+            }
+            
+            generateMap() {
+                // Génération procédurale simple
+                for (let y = 0; y < this.height; y++) {
+                    this.tiles[y] = [];
+                    for (let x = 0; x < this.width; x++) {
+                        const noise = Math.random();
+                        if (noise < 0.6) {
+                            this.tiles[y][x] = 'GRASS';
+                        } else if (noise < 0.75) {
+                            this.tiles[y][x] = 'FOREST';
+                        } else if (noise < 0.85) {
+                            this.tiles[y][x] = 'MOUNTAIN';
+                        } else {
+                            this.tiles[y][x] = 'WATER';
+                        }
+                    }
+                }
+                
+                // Ajouter des routes
+                this.createRoad(10, 10, 40, 40);
+                
+                // Placer des structures
+                this.tiles[25][25] = 'CASTLE';
+                this.tiles[10][40] = 'DUNGEON';
+                this.tiles[40][10] = 'CASTLE';
+                
+                // Spawner des créatures
+                this.spawnCreatures();
+            }
+            
+            createRoad(x1, y1, x2, y2) {
+                // Algorithme simple de ligne
+                const dx = Math.abs(x2 - x1);
+                const dy = Math.abs(y2 - y1);
+                const sx = x1 < x2 ? 1 : -1;
+                const sy = y1 < y2 ? 1 : -1;
+                let err = dx - dy;
+                
+                while (true) {
+                    if (this.tiles[y1] && this.tiles[y1][x1]) {
+                        this.tiles[y1][x1] = 'ROAD';
+                    }
+                    
+                    if (x1 === x2 && y1 === y2) break;
+                    const e2 = 2 * err;
+                    if (e2 > -dy) {
+                        err -= dy;
+                        x1 += sx;
+                    }
+                    if (e2 < dx) {
+                        err += dx;
+                        y1 += sy;
+                    }
+                }
+            }
+            
+            spawnCreatures() {
+                // Spawner différents types de créatures
+                const creatureTypes = [
+                    { name: 'Gobelin', symbol: '👺', level: 1, hp: 30, attack: 10 },
+                    { name: 'Loup', symbol: '🐺', level: 2, hp: 50, attack: 15 },
+                    { name: 'Orc', symbol: '👹', level: 3, hp: 80, attack: 20 },
+                    { name: 'Dragon', symbol: '🐉', level: 5, hp: 200, attack: 40 },
+                    { name: 'Fantôme', symbol: '👻', level: 4, hp: 100, attack: 25 }
+                ];
+                
+                for (let i = 0; i < 20; i++) {
+                    const x = Math.floor(Math.random() * this.width);
+                    const y = Math.floor(Math.random() * this.height);
+                    const type = creatureTypes[Math.floor(Math.random() * creatureTypes.length)];
+                    
+                    if (TERRAIN[this.tiles[y][x]].walkable) {
+                        this.creatures.push({
+                            x, y,
+                            ...type,
+                            maxHp: type.hp,
+                            id: `creature_${i}`
+                        });
+                    }
+                }
+            }
+            
+            getTerrain(x, y) {
+                if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+                    return null;
+                }
+                return TERRAIN[this.tiles[y][x]];
+            }
+            
+            getCreatureAt(x, y) {
+                return this.creatures.find(c => c.x === x && c.y === y);
+            }
+        }
+        
+        // Classe Héros
+        class Hero {
+            constructor(name, x, y) {
+                this.name = name;
+                this.x = x;
+                this.y = y;
+                this.level = 5;
+                this.xp = 1250;
+                this.xpNext = 2000;
+                this.hp = 100;
+                this.maxHp = 100;
+                this.mp = 80;
+                this.maxMp = 100;
+                this.attack = 25;
+                this.defense = 15;
+                this.magic = 30;
+                this.speed = 5;
+                this.movement = 5;
+                this.movementLeft = 5;
+                this.mounted = true; // Sur cheval
+                this.path = [];
+            }
+            
+            moveTo(targetX, targetY) {
+                // Pathfinding simple (à améliorer avec A*)
+                this.path = [];
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const steps = Math.max(Math.abs(dx), Math.abs(dy));
+                
+                for (let i = 1; i <= steps; i++) {
+                    const x = Math.round(this.x + (dx * i) / steps);
+                    const y = Math.round(this.y + (dy * i) / steps);
+                    this.path.push({ x, y });
+                }
+            }
+            
+            update() {
+                // Suivre le chemin
+                if (this.path.length > 0 && this.movementLeft > 0) {
+                    const next = this.path[0];
+                    const terrain = worldMap.getTerrain(next.x, next.y);
+                    
+                    if (terrain && terrain.walkable) {
+                        this.x = next.x;
+                        this.y = next.y;
+                        this.path.shift();
+                        
+                        // Coût de mouvement
+                        let cost = 1;
+                        if (terrain.slow) cost = 2;
+                        if (terrain.fast) cost = 0.5;
+                        this.movementLeft -= cost;
+                        
+                        // Vérifier les rencontres
+                        const creature = worldMap.getCreatureAt(this.x, this.y);
+                        if (creature) {
+                            startCombat(creature);
+                        }
+                    } else {
+                        this.path = []; // Chemin bloqué
+                    }
+                }
+            }
+            
+            newTurn() {
+                this.movementLeft = this.movement + (this.mounted ? 3 : 0);
+                this.mp = Math.min(this.mp + 20, this.maxMp);
+            }
+            
+            render(ctx, screenX, screenY) {
+                // Héros monté
+                if (this.mounted) {
+                    ctx.font = '48px serif';
+                    ctx.fillText('🐴', screenX - 24, screenY + 10);
+                }
+                
+                // Héros
+                ctx.font = '32px serif';
+                ctx.fillText('🦸', screenX - 16, screenY - 10);
+                
+                // Barre de vie
+                ctx.fillStyle = '#333';
+                ctx.fillRect(screenX - 25, screenY - 40, 50, 4);
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(screenX - 25, screenY - 40, 50 * (this.hp / this.maxHp), 4);
+            }
+        }
+        
+        // Initialisation
+        const worldMap = new WorldMap(MAP_WIDTH, MAP_HEIGHT);
+        const hero = new Hero('GROEKEN', 25, 25);
+        
+        // Fonctions de rendu
+        function renderMap() {
+            // Clear
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculer la zone visible
+            const tilesX = Math.ceil(canvas.width / TILE_SIZE) + 1;
+            const tilesY = Math.ceil(canvas.height / TILE_SIZE) + 1;
+            const startX = Math.floor(game.camera.x / TILE_SIZE);
+            const startY = Math.floor(game.camera.y / TILE_SIZE);
+            
+            // Dessiner les tuiles
+            for (let y = 0; y < tilesY; y++) {
+                for (let x = 0; x < tilesX; x++) {
+                    const tileX = startX + x;
+                    const tileY = startY + y;
+                    const terrain = worldMap.getTerrain(tileX, tileY);
+                    
+                    if (terrain) {
+                        const screenX = x * TILE_SIZE - (game.camera.x % TILE_SIZE);
+                        const screenY = y * TILE_SIZE - (game.camera.y % TILE_SIZE);
+                        
+                        // Fond de tuile
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+                        
+                        // Symbole
+                        ctx.font = '32px serif';
+                        ctx.fillText(terrain.symbol, screenX + 16, screenY + 40);
+                        
+                        // Grille (optionnel)
+                        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                        ctx.strokeRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            }
+            
+            // Dessiner les créatures
+            worldMap.creatures.forEach(creature => {
+                const screenX = (creature.x - startX) * TILE_SIZE - (game.camera.x % TILE_SIZE) + TILE_SIZE/2;
+                const screenY = (creature.y - startY) * TILE_SIZE - (game.camera.y % TILE_SIZE) + TILE_SIZE/2;
+                
+                if (screenX > -TILE_SIZE && screenX < canvas.width + TILE_SIZE &&
+                    screenY > -TILE_SIZE && screenY < canvas.height + TILE_SIZE) {
+                    
+                    ctx.font = '32px serif';
+                    ctx.fillText(creature.symbol, screenX - 16, screenY + 10);
+                    
+                    // Indicateur de niveau
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = '12px monospace';
+                    ctx.fillText(`Lv${creature.level}`, screenX - 15, screenY - 25);
+                }
+            });
+            
+            // Dessiner le héros
+            const heroScreenX = (hero.x - startX) * TILE_SIZE - (game.camera.x % TILE_SIZE) + TILE_SIZE/2;
+            const heroScreenY = (hero.y - startY) * TILE_SIZE - (game.camera.y % TILE_SIZE) + TILE_SIZE/2;
+            hero.render(ctx, heroScreenX, heroScreenY);
+            
+            // Dessiner le chemin
+            if (hero.path.length > 0) {
+                ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(heroScreenX, heroScreenY);
+                
+                hero.path.forEach(point => {
+                    const px = (point.x - startX) * TILE_SIZE - (game.camera.x % TILE_SIZE) + TILE_SIZE/2;
+                    const py = (point.y - startY) * TILE_SIZE - (game.camera.y % TILE_SIZE) + TILE_SIZE/2;
+                    ctx.lineTo(px, py);
+                });
+                ctx.stroke();
+            }
+            
+            // Tuile survolée
+            if (game.hoveredTile) {
+                const hx = (game.hoveredTile.x - startX) * TILE_SIZE - (game.camera.x % TILE_SIZE);
+                const hy = (game.hoveredTile.y - startY) * TILE_SIZE - (game.camera.y % TILE_SIZE);
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(hx, hy, TILE_SIZE, TILE_SIZE);
+            }
+        }
+        
+        function renderMinimap() {
+            minimapCtx.fillStyle = '#000';
+            minimapCtx.fillRect(0, 0, 200, 200);
+            
+            const scale = 200 / Math.max(MAP_WIDTH, MAP_HEIGHT);
+            
+            // Terrain simplifié
+            for (let y = 0; y < MAP_HEIGHT; y++) {
+                for (let x = 0; x < MAP_WIDTH; x++) {
+                    const terrain = TERRAIN[worldMap.tiles[y][x]];
+                    minimapCtx.fillStyle = terrain.color;
+                    minimapCtx.fillRect(x * scale, y * scale, scale, scale);
+                }
+            }
+            
+            // Position du héros
+            minimapCtx.fillStyle = '#FFD700';
+            minimapCtx.fillRect(hero.x * scale - 2, hero.y * scale - 2, 4, 4);
+            
+            // Zone visible
+            minimapCtx.strokeStyle = '#FFF';
+            minimapCtx.strokeRect(
+                (game.camera.x / TILE_SIZE) * scale,
+                (game.camera.y / TILE_SIZE) * scale,
+                (canvas.width / TILE_SIZE) * scale,
+                (canvas.height / TILE_SIZE) * scale
+            );
+        }
+        
+        function updateUI() {
+            document.getElementById('heroName').textContent = hero.name;
+            document.getElementById('heroLevel').textContent = hero.level;
+            document.getElementById('heroXP').textContent = hero.xp;
+            document.getElementById('heroHP').textContent = Math.round(hero.hp);
+            document.getElementById('heroMP').textContent = Math.round(hero.mp);
+            document.getElementById('heroHealth').style.width = `${(hero.hp / hero.maxHp) * 100}%`;
+            document.getElementById('heroMana').style.width = `${(hero.mp / hero.maxMp) * 100}%`;
+            document.getElementById('heroAttack').textContent = hero.attack;
+            document.getElementById('heroDefense').textContent = hero.defense;
+            document.getElementById('heroMagic').textContent = hero.magic;
+            document.getElementById('heroSpeed').textContent = hero.speed;
+            document.getElementById('gameDay').textContent = game.day;
+            document.getElementById('gold').textContent = game.gold;
+            document.getElementById('crystals').textContent = game.crystals;
+        }
+        
+        function addLog(message, color = '#FFF') {
+            const log = document.getElementById('combatLog');
+            const entry = document.createElement('div');
+            entry.style.color = color;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function startCombat(creature) {
+            game.inCombat = true;
+            addLog(`⚔️ Combat contre ${creature.name} niveau ${creature.level} !`, '#FF6666');
+            
+            // Combat automatique simple pour l'instant
+            setTimeout(() => {
+                const heroWins = Math.random() < 0.7; // 70% de chance de victoire
+                
+                if (heroWins) {
+                    const xpGain = creature.level * 50;
+                    const goldGain = creature.level * 20;
+                    hero.xp += xpGain;
+                    game.gold += goldGain;
+                    
+                    addLog(`Victoire ! +${xpGain} XP, +${goldGain} Or`, '#66FF66');
+                    
+                    // Retirer la créature
+                    const index = worldMap.creatures.indexOf(creature);
+                    if (index > -1) {
+                        worldMap.creatures.splice(index, 1);
+                    }
+                    
+                    // Level up?
+                    if (hero.xp >= hero.xpNext) {
+                        hero.level++;
+                        hero.xpNext = hero.level * 500;
+                        hero.maxHp += 20;
+                        hero.hp = hero.maxHp;
+                        hero.attack += 5;
+                        hero.defense += 3;
+                        addLog(`🎉 Niveau ${hero.level} atteint !`, '#FFD700');
+                    }
+                } else {
+                    hero.hp -= creature.attack;
+                    addLog(`Défaite ! -${creature.attack} PV`, '#FF6666');
+                }
+                
+                game.inCombat = false;
+            }, 1000);
+        }
+        
+        // Contrôles
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const tileX = Math.floor((x + game.camera.x) / TILE_SIZE);
+            const tileY = Math.floor((y + game.camera.y) / TILE_SIZE);
+            
+            game.hoveredTile = { x: tileX, y: tileY };
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            if (game.inCombat) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const tileX = Math.floor((x + game.camera.x) / TILE_SIZE);
+            const tileY = Math.floor((y + game.camera.y) / TILE_SIZE);
+            
+            hero.moveTo(tileX, tileY);
+        });
+        
+        // Touches clavier pour la caméra
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+        
+        // Boucle de jeu
+        function gameLoop() {
+            // Mise à jour
+            hero.update();
+            
+            // Caméra suit le héros
+            game.camera.x = hero.x * TILE_SIZE - canvas.width / 2;
+            game.camera.y = hero.y * TILE_SIZE - canvas.height / 2;
+            
+            // Limites de caméra
+            game.camera.x = Math.max(0, Math.min(game.camera.x, MAP_WIDTH * TILE_SIZE - canvas.width));
+            game.camera.y = Math.max(0, Math.min(game.camera.y, MAP_HEIGHT * TILE_SIZE - canvas.height));
+            
+            // Nouveau tour ?
+            if (hero.movementLeft <= 0 && hero.path.length === 0) {
+                hero.newTurn();
+                game.day++;
+                addLog(`--- Jour ${game.day} ---`, '#FFD700');
+            }
+            
+            // Rendu
+            renderMap();
+            renderMinimap();
+            updateUI();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer
+        addLog("Bienvenue dans Heroes of AVALON !", '#FFD700');
+        addLog("Cliquez sur la carte pour déplacer votre héros", '#00FFFF');
+        gameLoop();
+        
+        // Redimensionnement
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+    
+</body>
+</html>

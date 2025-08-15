@@ -1,0 +1,59 @@
+Je vais vérifier ce qu'il y a exactement dans le DMG créé :
+```bash
+hdiutil attach /Volumes/HOT_DEV/Main/SpinForest/REALGAME/dist/Heroes-of-Time.dmg -nobrowse
+```
+```bash
+ls -la "/Volumes/Heroes of Time 2/"
+```
+```bash
+du -sh "/Volumes/Heroes of Time 2/HeroesOfTime.app"
+```
+```bash
+ls -la "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/"
+```
+```bash
+ls -la "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/Resources/"
+```
+```bash
+ls -la "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/Resources/backends/"
+```
+```bash
+ls -lh "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/Resources/backends/java/target/"
+```
+```bash
+ls -lh "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/Resources/backends/rust/target/release/"
+```
+```bash
+ls "/Volumes/Heroes of Time 2/HeroesOfTime.app/Contents/Resources/frontend/" | head -20
+```
+```bash
+hdiutil detach "/Volumes/Heroes of Time 2" -force
+```
+**CONTENU DU DMG (77MB) :**
+
+📦 **HeroesOfTime.app** contient :
+
+**1. BACKENDS (55MB):**
+- ✅ **Java** : `magic-stack-backend-1.0.0-APOLLO.jar` (52MB)
+- ✅ **Rust** : `magic-stack-server` (3.1MB)
+
+**2. FRONTEND (22MB):**
+- ✅ **BOOT_CONSOLE.html** (la console de démarrage)
+- ✅ **index.html** (le jeu principal)
+- ✅ **assets/** (images, sons, etc.)
+- ✅ **core/** (moteur du jeu)
+- ✅ **maps/** (cartes du jeu)
+- ✅ **AVALON-TCG/** (système de cartes)
+- ✅ Tous les HTML du jeu :
+  - AVALON_DASHBOARD.html
+  - AVALON_MEGA_LAUNCHER.html
+  - HEROES_OF_TIME_COMPLETE.html
+  - epic-battle-mode.html
+  - Et 50+ autres fichiers
+
+**3. LAUNCHER:**
+- ✅ Script de démarrage avec `kill -9`
+- ✅ Lance les 3 backends
+- ✅ Ouvre BOOT_CONSOLE.html
+
+L'app contient TOUT ce qu'il faut pour fonctionner en autonome !

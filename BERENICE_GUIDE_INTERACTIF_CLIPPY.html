@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bérénice - Guide Interactif avec Clippy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+        }
+
+        .guide-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .guide-content {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Clippy Container */
+        .clippy-container {
+            width: 300px;
+            background: #fffacd;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .clippy-avatar {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .clippy-message {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #333;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .clippy-message:before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #333;
+        }
+
+        .clippy-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .clippy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .clippy-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .clippy-btn.danger {
+            background: #f44336;
+        }
+
+        .clippy-btn.info {
+            background: #2196F3;
+        }
+
+        /* Sections du guide */
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .section h3 {
+            color: #333;
+            margin: 15px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        /* Navigation tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* ASCII art */
+        .ascii-art {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.2;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        /* Cards display */
+        .cards-display {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .card-item {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .card-cost {
+            background: #ffd700;
+            color: #333;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        /* Tips */
+        .tip {
+            background: #fffacd;
+            border-left: 5px solid #ffd700;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .tip strong {
+            color: #f39c12;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .guide-wrapper {
+                flex-direction: column;
+            }
+            
+            .clippy-container {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        /* Game launcher */
+        .game-launcher {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .launch-btn {
+            background: white;
+            color: #333;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 BÉRÉNICE - GUIDE INTERACTIF AVEC CLIPPY 📎</h1>
+        
+        <div class="guide-wrapper">
+            <!-- Guide principal -->
+            <div class="guide-content">
+                <!-- Tabs de navigation -->
+                <div class="tabs">
+                    <button class="tab active" onclick="showSection('intro')">📖 Introduction</button>
+                    <button class="tab" onclick="showSection('niveau0')">📟 Niveau 0</button>
+                    <button class="tab" onclick="showSection('niveau1')">🌻 Niveau 1</button>
+                    <button class="tab" onclick="showSection('niveau2')">💻 Niveau 2</button>
+                    <button class="tab" onclick="showSection('niveau3')">⚔️ Niveau 3</button>
+                    <button class="tab" onclick="showSection('niveau4')">🌀 Niveau 4</button>
+                    <button class="tab" onclick="showSection('cards')">🃏 Cartes</button>
+                    <button class="tab" onclick="showSection('tips')">💡 Astuces</button>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress">0% Complété</div>
+                </div>
+
+                <!-- Section Introduction -->
+                <div class="section active" id="intro">
+                    <h2>📖 Introduction - L'Histoire de Bérénice</h2>
+                    
+                    <h3>Qui es-tu ?</h3>
+                    <p><strong>Bérénice "BruhNice"</strong>, 10 ans, génie de l'informatique.</p>
+                    <p>En hackant un vieux serveur quantique, tu t'es retrouvée coincée dans <strong>l'Interstice</strong> - l'espace entre les mondes où le temps n'est que du code mal protégé.</p>
+                    
+                    <div class="tip">
+                        <strong>💡 Discord:</strong> BruhNice<br>
+                        <strong>💡 Famille:</strong> Des contacts utiles connaissent les passages secrets...
+                    </div>
+
+                    <h3>Ta Mission</h3>
+                    <p>Traverser <strong>5 niveaux</strong> pour rentrer chez toi en utilisant tes compétences de hack !</p>
+
+                    <div class="game-launcher">
+                        <h3 style="color: white;">🚀 Prêt(e) à jouer ?</h3>
+                        <button class="launch-btn" onclick="window.open('/apps/berenice/index.html', '_blank')">
+                            JOUER EN LIGNE
+                        </button>
+                        <button class="launch-btn" onclick="alert('Lance ./LANCE_BRUHNNICE.sh dans ton terminal!')">
+                            JOUER EN LOCAL
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section Niveau 0 -->
+                <div class="section" id="niveau0">
+                    <h2>📟 Niveau 0 - Terminal Hack</h2>
+                    
+                    <h3>Objectif</h3>
+                    <p>Apprendre les commandes de base et lancer le hack temporel.</p>
+
+                    <div class="ascii-art">
+berenice@interstice:~$ help
+Commandes disponibles:
+- help    : Affiche cette aide
+- ls      : Liste les fichiers
+- cat     : Lit un fichier
+- whoami  : Qui suis-je?
+- ./hack.sh : Lance le hack!
+                    </div>
+
+                    <h3>Solution Rapide</h3>
+                    <ol>
+                        <li>Tape <code>help</code> pour voir les commandes</li>
+                        <li>Tape <code>ls</code> pour voir les fichiers</li>
+                        <li>Tape <code>cat readme.txt</code> pour lire les instructions</li>
+                        <li>Tape <code>./hack.sh</code> pour passer au niveau 1!</li>
+                    </ol>
+
+                    <div class="tip">
+                        <strong>💡 Astuce:</strong> C'est un vrai terminal! Tu peux taper <code>clear</code> pour effacer.
+                    </div>
+                </div>
+
+                <!-- Section Niveau 1 -->
+                <div class="section" id="niveau1">
+                    <h2>🌻 Niveau 1 - La Prairie Bugguée</h2>
+                    
+                    <h3>Objectif</h3>
+                    <p>Collecter <strong>3 cristaux 💎</strong> et atteindre la <strong>sortie 🚪</strong></p>
+
+                    <div class="ascii-art">
+🌳 🌳 🌳 🌳 🌳 🌳 🌳
+🌳 ⭐ · · · · 🐰 🌳  ⭐ = Objectif
+🌳 · · 🌺 · · · 🌳  👧 = Toi (ber0.png)
+🌳 · 👧 · · 💎 · 🌳  💎 = Cristal
+🌳 · · · 🍄 · · 🌳  🚪 = Sortie
+🌳 🌳 🌳 🚪 🌳 🌳 🌳
+                    </div>
+
+                    <h3>Contrôles</h3>
+                    <ul>
+                        <li><strong>Clavier:</strong> Flèches ou WASD</li>
+                        <li><strong>Mobile:</strong> Swipe dans la direction</li>
+                        <li><strong>Cartes:</strong> Clic pour jouer</li>
+                    </ul>
+
+                    <h3>Boss: Virus Lapin 🐰</h3>
+                    <p>HP: 10 | Stratégie: Utilise <strong>Firewall</strong> puis spam <strong>Ping</strong>!</p>
+
+                    <div class="tip">
+                        <strong>Bérénice dit:</strong> "SÉRIEUX?! Un avatar cartoon?! Je DÉTESTE!"
+                    </div>
+                </div>
+
+                <!-- Section Niveau 2 -->
+                <div class="section" id="niveau2">
+                    <h2>💻 Niveau 2 - Serveur Quantique</h2>
+                    
+                    <h3>Objectif</h3>
+                    <p>Activer <strong>3 serveurs quantiques 🖥️</strong></p>
+
+                    <h3>Nouvelle Mécanique: Clones Quantiques</h3>
+                    <p>Utilise <strong>Fork Process</strong> pour créer des clones!</p>
+                    <div class="tip">
+                        Clone1 (0.3) + Clone2 (0.3) + Toi (0.318) = 0.918<br>
+                        Si Ψ atteint 1.0 → Super pouvoir!
+                    </div>
+
+                    <h3>Boss: Admin Corrompu</h3>
+                    <p>HP: 20 | Stratégie: Fork pour clones, puis <strong>Stack Overflow</strong>!</p>
+
+                    <div class="tip">
+                        <strong>Bérénice dit:</strong> "Enfin! Mode hacker activé!"
+                    </div>
+                </div>
+
+                <!-- Section Niveau 3 -->
+                <div class="section" id="niveau3">
+                    <h2>⚔️ Niveau 3 - Combat dans l'Interstice</h2>
+                    
+                    <h3>3 Boss Légendaires</h3>
+                    
+                    <div class="cards-display">
+                        <div class="card-item">
+                            <h4>GROEKEN 💀</h4>
+                            <p>HP: 40</p>
+                            <p>"GIT REKT NOOB!"</p>
+                        </div>
+                        <div class="card-item">
+                            <h4>Dragon 🐉</h4>
+                            <p>HP: 50</p>
+                            <p>Traumatisé par Excalibur</p>
+                        </div>
+                        <div class="card-item">
+                            <h4>Arthur ⚔️</h4>
+                            <p>HP: 35</p>
+                            <p>A l'épée admin</p>
+                        </div>
+                    </div>
+
+                    <h3>Stratégies</h3>
+                    <ul>
+                        <li>GROEKEN → <strong>Kernel Panic</strong></li>
+                        <li>Dragon → <strong>Time.sleep(∞)</strong></li>
+                        <li>Arthur → <strong>Sudo Privilege</strong></li>
+                    </ul>
+                </div>
+
+                <!-- Section Niveau 4 -->
+                <div class="section" id="niveau4">
+                    <h2>🌀 Niveau 4 - Échapper au Collapse</h2>
+                    
+                    <h3>⏰ TIMER: 60 SECONDES!</h3>
+                    
+                    <div class="ascii-art" style="color: #ff0000;">
+▓▒░█▓▒░ REALITY ░▒▓█░▒▓
+▓ COLLAPSING IN 60s  ▓
+░ 👧 → → → → → → 🌀 ░
+▓▒░█▓▒░█▓▒░█▓▒░█▓▒░█▓
+                    </div>
+
+                    <h3>Boss Final: Toi du Futur!</h3>
+                    <p>C'est un <strong>Bootstrap Paradox</strong>!</p>
+                    <p>Pour gagner, tu dois... perdre?!</p>
+                </div>
+
+                <!-- Section Cartes -->
+                <div class="section" id="cards">
+                    <h2>🃏 Toutes les Cartes</h2>
+                    
+                    <h3>Niveau 1 - Basiques</h3>
+                    <div class="cards-display">
+                        <div class="card-item">
+                            <strong>Ping</strong> <span class="card-cost">1</span>
+                            <p>1 dégât</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Firewall</strong> <span class="card-cost">2</span>
+                            <p>Shield 3</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Debug</strong> <span class="card-cost">1</span>
+                            <p>Pioche 2</p>
+                        </div>
+                    </div>
+
+                    <h3>Niveau 2 - Quantiques</h3>
+                    <div class="cards-display">
+                        <div class="card-item">
+                            <strong>Fork</strong> <span class="card-cost">3</span>
+                            <p>Clone!</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Ctrl+Z</strong> <span class="card-cost">2</span>
+                            <p>Annule</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Stack Overflow</strong> <span class="card-cost">4</span>
+                            <p>X dégâts</p>
+                        </div>
+                    </div>
+
+                    <h3>Niveau 3 - Ultimes</h3>
+                    <div class="cards-display">
+                        <div class="card-item">
+                            <strong>Sudo</strong> <span class="card-cost">6</span>
+                            <p>Contrôle</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Kernel Panic</strong> <span class="card-cost">7</span>
+                            <p>Détruit tout</p>
+                        </div>
+                        <div class="card-item">
+                            <strong>Time.sleep()</strong> <span class="card-cost">8</span>
+                            <p>Freeze 2 tours</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Tips -->
+                <div class="section" id="tips">
+                    <h2>💡 Astuces Pro</h2>
+                    
+                    <h3>Gestion du Mana</h3>
+                    <ul>
+                        <li>Tu commences avec 3 mana</li>
+                        <li>+1 mana max par niveau (jusqu'à 10)</li>
+                        <li>Régénération: 0.01 mana/tick</li>
+                    </ul>
+
+                    <h3>Combos Ultimes</h3>
+                    <div class="tip">
+                        <strong>Débutant:</strong> Firewall → Ping → Ping → Ping<br>
+                        <strong>Intermédiaire:</strong> Fork → Fork → Stack Overflow<br>
+                        <strong>Pro:</strong> Time.sleep() → Kernel Panic → Sudo
+                    </div>
+
+                    <h3>Easter Eggs</h3>
+                    <ul>
+                        <li>Tape "konami code" dans le terminal</li>
+                        <li>Trouve les 3 serveurs cachés</li>
+                        <li>Dis "Hello World" au Dragon</li>
+                    </ul>
+
+                    <h3>Cheat Codes (Console F12)</h3>
+                    <div class="ascii-art">
+gameState.player.mana = 999    // Mana infini
+gameState.player.hp = 999      // Vie infinie
+gameState.currentLevel = 3     // Skip au niveau 3
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clippy Assistant -->
+            <div class="clippy-container">
+                <div class="clippy-avatar">📎</div>
+                <div class="clippy-message" id="clippy-text">
+                    Salut! Je suis Clippy!<br><br>
+                    Je vois que tu veux jouer à Bérénice! Veux-tu de l'aide?
+                </div>
+                
+                <div class="clippy-buttons">
+                    <button class="clippy-btn" onclick="clippyHelp('start')">
+                        🚀 Comment commencer?
+                    </button>
+                    <button class="clippy-btn info" onclick="clippyHelp('stuck')">
+                        😕 Je suis bloqué(e)!
+                    </button>
+                    <button class="clippy-btn" onclick="clippyHelp('cards')">
+                        🃏 Explique les cartes
+                    </button>
+                    <button class="clippy-btn" onclick="clippyHelp('boss')">
+                        👹 Stratégies de boss
+                    </button>
+                    <button class="clippy-btn danger" onclick="clippyHelp('cheat')">
+                        😈 Codes de triche
+                    </button>
+                    <button class="clippy-btn info" onclick="clippyHelp('story')">
+                        📖 Raconte l'histoire
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion des sections
+        function showSection(sectionId) {
+            // Cache toutes les sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            // Montre la section demandée
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update progress
+            updateProgress(sectionId);
+            
+            // Update Clippy
+            updateClippy(sectionId);
+        }
+
+        // Progress bar
+        function updateProgress(section) {
+            const progress = document.getElementById('progress');
+            const percentages = {
+                'intro': 0,
+                'niveau0': 20,
+                'niveau1': 40,
+                'niveau2': 60,
+                'niveau3': 80,
+                'niveau4': 100,
+                'cards': 100,
+                'tips': 100
+            };
+            
+            const percent = percentages[section] || 0;
+            progress.style.width = percent + '%';
+            progress.textContent = percent + '% Complété';
+        }
+
+        // Clippy responses
+        const clippyResponses = {
+            'start': "Super! Pour commencer:<br><br>1. Va dans l'onglet 'Niveau 0'<br>2. Tape <code>./hack.sh</code> dans le terminal<br>3. C'est parti!<br><br>N'oublie pas: les flèches pour bouger!",
+            
+            'stuck': "Pas de panique!<br><br>Où es-tu bloqué(e)?<br>• <strong>Terminal:</strong> Tape 'help'<br>• <strong>Prairie:</strong> Cherche les 💎<br>• <strong>Combat:</strong> Garde du mana!<br>• <strong>Timer:</strong> COURS!",
+            
+            'cards': "Les cartes, c'est simple!<br><br>• Le <strong>chiffre</strong> = coût en mana<br>• <strong>Clic</strong> pour jouer<br>• <strong>Cooldown</strong> = attendre<br><br>Commence avec Ping et Firewall!",
+            
+            'boss': "Stratégies de boss:<br><br>• <strong>Virus:</strong> Firewall + Ping<br>• <strong>Admin:</strong> Fork + Stack<br>• <strong>GROEKEN:</strong> Kernel Panic<br>• <strong>Dragon:</strong> Time.sleep()<br>• <strong>Arthur:</strong> Sudo!",
+            
+            'cheat': "Chuuut! 🤫<br><br>Ouvre la console (F12):<br><code>gameState.player.mana = 999</code><br><code>gameState.player.hp = 999</code><br><br>Mais c'est plus fun sans tricher! 😉",
+            
+            'story': "Bérénice est une hackeuse de 10 ans!<br><br>Elle a hacké un serveur quantique et s'est retrouvée dans l'Interstice.<br><br>Pour rentrer, elle doit traverser 5 niveaux en utilisant ses skills de code!<br><br>Son Discord: BruhNice 😎"
+        };
+
+        function clippyHelp(topic) {
+            const clippyText = document.getElementById('clippy-text');
+            clippyText.innerHTML = clippyResponses[topic] || "Hmm, je ne sais pas ça...";
+            
+            // Animation
+            clippyText.style.animation = 'none';
+            setTimeout(() => {
+                clippyText.style.animation = 'bounce 0.5s';
+            }, 10);
+        }
+
+        // Update Clippy selon la section
+        function updateClippy(section) {
+            const clippyText = document.getElementById('clippy-text');
+            const messages = {
+                'intro': "Bienvenue! Bérénice est une hackeuse coincée dans l'Interstice. Clique sur les onglets pour explorer!",
+                'niveau0': "Le terminal! Tape <code>./hack.sh</code> pour commencer l'aventure!",
+                'niveau1': "La prairie! Collecte 3 cristaux 💎 et évite le virus lapin!",
+                'niveau2': "Les serveurs quantiques! Utilise Fork pour créer des clones!",
+                'niveau3': "Les boss légendaires! Kernel Panic est ton ami!",
+                'niveau4': "Le niveau final! Tu as 60 secondes! COURS!",
+                'cards': "Toutes les cartes du jeu! Le coût en mana est dans le cercle jaune.",
+                'tips': "Mes meilleures astuces! N'hésite pas à tricher un peu 😈"
+            };
+            
+            clippyText.innerHTML = messages[section] || "Explore le guide!";
+        }
+
+        // Animation d'entrée
+        window.onload = function() {
+            setTimeout(() => {
+                clippyHelp('story');
+            }, 1000);
+        };
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '4') {
+                const sections = ['intro', 'niveau0', 'niveau1', 'niveau2', 'niveau3', 'niveau4'];
+                const tabs = document.querySelectorAll('.tab');
+                if (tabs[e.key]) {
+                    tabs[e.key].click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

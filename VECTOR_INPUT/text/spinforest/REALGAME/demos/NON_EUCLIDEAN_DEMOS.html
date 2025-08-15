@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heroes of Time • Démos Non Euclidiennes</title>
+  <style>
+    body{margin:0;background:#0b0b12;color:#e8e6ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    header{padding:16px 20px;border-bottom:1px solid #2b2a3a;position:sticky;top:0;background:#0b0b12;z-index:10}
+    h1{margin:0;font-size:18px;letter-spacing:.4px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;max-width:1400px;margin:0 auto;padding:16px}
+    .card{background:#141424;border:1px solid #2b2a3a;border-radius:12px;padding:12px}
+    .card h2{font-size:14px;margin:0 0 8px 0;color:#ffd700}
+    canvas{width:100%;height:260px;background:#0f0f1f;border:1px solid #2b2a3a;border-radius:8px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+    input[type=range]{width:140px}
+    .btn{background:#23233a;color:#fff;border:1px solid #3a3953;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
+    .btn:hover{background:#2b2a46}
+    small{color:#a5a2bf}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>HEROES OF TIME • Démos Non Euclidiennes (JS)</h1>
+  </header>
+  <div class="grid">
+    <section class="card">
+      <h2>Déformation hyperbolique (grille 2D)</h2>
+      <div class="row">
+        <small>Rayon</small><input id="h_radius" type="range" min="40" max="200" value="120">
+        <small>Force</small><input id="h_force" type="range" min="1" max="400" value="200">
+        <button class="btn" id="h_reset">Reset</button>
+      </div>
+      <canvas id="hyper"></canvas>
+      <small>Approximation de la transformation hyperbolique de Poincaré appliquée à une grille plane (demo JS).</small>
+    </section>
+
+    <section class="card">
+      <h2>Projection d'un Tesseract (hypercube 4D)</h2>
+      <div class="row">
+        <small>Vitesse</small><input id="t_speed" type="range" min="1" max="50" value="15">
+        <button class="btn" id="t_toggle">Pause/Play</button>
+      </div>
+      <canvas id="tesseract"></canvas>
+      <small>Projection 4D→3D→2D des arêtes du tesseract, rotation animée.</small>
+    </section>
+
+    <section class="card">
+      <h2>Ruban de Möbius (projection simple)</h2>
+      <div class="row">
+        <small>Torsions</small><input id="m_twist" type="range" min="1" max="6" value="2">
+        <small>Rayon</small><input id="m_radius" type="range" min="40" max="160" value="100">
+        <button class="btn" id="m_redraw">Redessiner</button>
+      </div>
+      <canvas id="mobius"></canvas>
+      <small>Paramétrisation simple et projection perspective 3D→2D.</small>
+    </section>
+  </div>
+
+  <script>
+    // Utilitaires
+    function makeCanvas(id){ const c=document.getElementById(id); const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||1; const w=c.clientWidth, h=c.clientHeight; c.width=w*dpr; c.height=h*dpr; ctx.scale(dpr,dpr); return {c,ctx,w,h}; }
+    function lerp(a,b,t){ return a+(b-a)*t; }
+
+    // 1) Hyperbolic-like warp on a grid
+    (function(){
+      const {c,ctx,w,h}=makeCanvas('hyper');
+      let radius=+document.getElementById('h_radius').value;
+      let force=+document.getElementById('h_force').value; // analog tanh factor scale
+      const center={x:w/2,y:h/2};
+      function warp(pt){
+        const dx=pt.x-center.x, dy=pt.y-center.y; const dist=Math.hypot(dx,dy);
+        if(dist<radius){ const factor=Math.tanh(dist/radius*2); const scale=factor/(dist+0.001)*(force/200);
+          return {x:center.x+dx*scale, y:center.y+dy*scale};
+        } else return pt;
+      }
+      function draw(){ ctx.clearRect(0,0,w,h); ctx.strokeStyle='#334';
+        for(let i=0;i<=12;i++){ const t=i/12; // vertical lines
+          let pts=[]; for(let y=20;y<h-20;y+=8){ pts.push(warp({x:lerp(30,w-30,t),y})); }
+          ctx.beginPath(); pts.forEach((p,j)=> j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
+        }
+        for(let j=0;j<=8;j++){ const t=j/8; // horizontal lines
+          let pts=[]; for(let x=20;x<w-20;x+=10){ pts.push(warp({x,y:lerp(30,h-30,t)})); }
+          ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
+        }
+        // center & radius
+        ctx.strokeStyle='#556'; ctx.beginPath(); ctx.arc(center.x,center.y,radius,0,Math.PI*2); ctx.stroke();
+      }
+      draw();
+      document.getElementById('h_radius').addEventListener('input',e=>{radius=+e.target.value; draw();});
+      document.getElementById('h_force').addEventListener('input',e=>{force=+e.target.value; draw();});
+      document.getElementById('h_reset').addEventListener('click',()=>{ radius=120; force=200; document.getElementById('h_radius').value=radius; document.getElementById('h_force').value=force; draw();});
+    })();
+
+    // 2) Tesseract edges, rotating in 4D then projected
+    (function(){
+      const {c,ctx,w,h}=makeCanvas('tesseract');
+      const size=60; let angle=0; let running=true; let speed=+document.getElementById('t_speed').value/500;
+      const verts4=[]; for(let i=0;i<16;i++){ const x=(i&1)?1:-1, y=(i&2)?1:-1, z=(i&4)?1:-1, ww=(i&8)?1:-1; verts4.push([x,y,z,ww]); }
+      const edges=[]; for(let i=0;i<16;i++){ for(let j=i+1;j<16;j++){ if(((i^j)&(i^j)-1)===0) edges.push([i,j]); }}
+      function rot4(v,a){ // rotate in XW & YZ planes
+        const [x,y,z,w]=v; const s=Math.sin(a), c=Math.cos(a);
+        const x2=c*x - s*w, w2=s*x + c*w; const y2=c*y - s*z, z2=s*y + c*z; return [x2,y2,z2,w2];
+      }
+      function project(v4){ const wproj=2; const f=1/(wproj - v4[3]); return [v4[0]*f, v4[1]*f, v4[2]*f]; }
+      function draw(){ ctx.clearRect(0,0,w,h); ctx.translate(w/2,h/2); ctx.strokeStyle='#9ad'; ctx.lineWidth=1;
+        const pts3=verts4.map(v=>{ const r=rot4(v,angle); const p=project(r); const d=220/(220 - p[2]*60); return [p[0]*size*d, p[1]*size*d]; });
+        edges.forEach(([a,b])=>{ ctx.beginPath(); ctx.moveTo(pts3[a][0], pts3[a][1]); ctx.lineTo(pts3[b][0], pts3[b][1]); ctx.stroke(); });
+        ctx.setTransform(1,0,0,1,0,0);
+      }
+      function tick(){ if(running){ angle+=speed; draw(); } requestAnimationFrame(tick); }
+      tick();
+      document.getElementById('t_speed').addEventListener('input',e=>{ speed=+e.target.value/500; });
+      document.getElementById('t_toggle').addEventListener('click',()=>{ running=!running; });
+    })();
+
+    // 3) Möbius strip param + projection
+    (function(){
+      const {c,ctx,w,h}=makeCanvas('mobius');
+      let twists=+document.getElementById('m_twist').value; let radius=+document.getElementById('m_radius').value; const width=40;
+      function proj([x,y,z]){ const d=300/(300 - z); return [x*d + w/2, y*d + h/2]; }
+      function draw(){ ctx.clearRect(0,0,w,h); ctx.strokeStyle='#adf'; ctx.lineWidth=.6;
+        const uSteps=140, vSteps=20; for(let i=0;i<uSteps;i++){ const u=i/uSteps*Math.PI*2; for(let j=0;j<vSteps;j++){
+          const v=(j/vSteps - .5)*width; const angle=u*twists/2; const x=(radius + v*Math.cos(angle))*Math.cos(u); const y=(radius + v*Math.cos(angle))*Math.sin(u); const z=v*Math.sin(angle);
+          const nx=(radius + v*Math.cos(angle))*Math.cos(u+0.02), ny=(radius + v*Math.cos(angle))*Math.sin(u+0.02), nz=v*Math.sin(angle);
+          const a=proj([x,y,z]), b=proj([nx,ny,nz]); ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+        }}
+      }
+      draw();
+      document.getElementById('m_redraw').addEventListener('click',()=>{ twists=+document.getElementById('m_twist').value; radius=+document.getElementById('m_radius').value; draw(); });
+      document.getElementById('m_twist').addEventListener('input',e=>{ twists=+e.target.value; draw(); });
+      document.getElementById('m_radius').addEventListener('input',e=>{ radius=+e.target.value; draw(); });
+    })();
+  </script>
+</body>
+</html>
+

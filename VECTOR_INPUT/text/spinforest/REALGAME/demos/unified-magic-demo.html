@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔮✨ Demo Magie Unifiée - LOUMEN + TECHNOMANCIEN</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a0033, #330066);
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Header épique */
+        .epic-header {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0,0,0,0.5);
+            border-bottom: 3px solid #FFD700;
+        }
+        
+        .epic-title {
+            font-size: 48px;
+            margin: 0;
+            text-shadow: 0 0 30px #FF6600, 0 0 60px #FF0000;
+            animation: flame-text 2s infinite;
+        }
+        
+        @keyframes flame-text {
+            0%, 100% { text-shadow: 0 0 30px #FF6600, 0 0 60px #FF0000; }
+            50% { text-shadow: 0 0 40px #FFD700, 0 0 80px #FF6600; }
+        }
+        
+        /* Container principal */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Panneau de contrôle */
+        .control-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #8A2BE2;
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .control-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-align: center;
+        }
+        
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(138,43,226,0.3);
+            border: 2px solid #8A2BE2;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 10px;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(138,43,226,0.5);
+            transform: scale(1.05);
+        }
+        
+        .mode-btn.active {
+            background: #8A2BE2;
+            box-shadow: 0 0 20px #8A2BE2;
+        }
+        
+        /* Zone de cast */
+        .cast-area {
+            background: rgba(0,0,0,0.6);
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .formula-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00D9FF;
+            color: #00D9FF;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .cast-btn {
+            display: block;
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #FF6600, #FFD700);
+            border: none;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cast-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px #FF6600;
+        }
+        
+        .cast-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Canvas pour effets */
+        #effectCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* Résultats */
+        .results-area {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00FF00;
+            border-radius: 15px;
+            padding: 20px;
+            height: 600px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            background: rgba(0,255,0,0.1);
+            border: 1px solid #00FF00;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            animation: result-appear 0.5s ease-out;
+        }
+        
+        @keyframes result-appear {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .result-time {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .result-mode {
+            font-weight: bold;
+        }
+        
+        .mode-backend { color: #00D9FF; }
+        .mode-local { color: #FFD700; }
+        .mode-hybrid { color: #FF6600; }
+        
+        /* Stats */
+        .stats-panel {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 5px;
+        }
+        
+        .backend-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-connected {
+            background: rgba(0,255,0,0.2);
+            border: 2px solid #00FF00;
+        }
+        
+        .status-disconnected {
+            background: rgba(255,0,0,0.2);
+            border: 2px solid #FF0000;
+        }
+        
+        /* Formules prédéfinies */
+        .preset-formulas {
+            margin-top: 20px;
+        }
+        
+        .preset-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(255,215,0,0.4);
+            transform: scale(1.1);
+        }
+        
+        /* Particules de fond */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: float-up 10s linear infinite;
+        }
+        
+        @keyframes float-up {
+            from {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            to {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="epic-header">
+        <h1 class="epic-title">🔮 MAGIE UNIFIÉE AVALON 🔮</h1>
+        <p style="font-size: 20px; color: #AAA;">LOUMEN + TECHNOMANCIEN = 🔥</p>
+    </div>
+    
+    <!-- Container principal -->
+    <div class="main-container">
+        <!-- Panneau de contrôle gauche -->
+        <div class="control-panel">
+            <h2 class="control-title">⚙️ Configuration</h2>
+            
+            <!-- Status backend -->
+            <div class="backend-status" id="backendStatus">
+                <div>🔌 Backend: Vérification...</div>
+            </div>
+            
+            <!-- Sélecteur de mode -->
+            <div class="mode-selector">
+                <button class="mode-btn" onclick="setMode('OFFLINE')">
+                    💻 Mode OFFLINE
+                    <br><small>Exécution locale uniquement</small>
+                </button>
+                <button class="mode-btn active" onclick="setMode('HYBRID')">
+                    🔄 Mode HYBRID
+                    <br><small>Backend + Fallback local</small>
+                </button>
+                <button class="mode-btn" onclick="setMode('ONLINE')">
+                    🌐 Mode ONLINE
+                    <br><small>Backend uniquement</small>
+                </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-panel">
+                <h3 style="margin: 0 0 10px 0; text-align: center;">📊 Statistiques</h3>
+                <div class="stat-row">
+                    <span>Total Casts:</span>
+                    <span id="statTotal">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Backend:</span>
+                    <span id="statBackend">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Local:</span>
+                    <span id="statLocal">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Latence moy:</span>
+                    <span id="statLatency">0ms</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zone de cast centrale -->
+        <div class="cast-area">
+            <canvas id="effectCanvas"></canvas>
+            
+            <h2 style="text-align: center; margin-bottom: 30px;">✨ Lancez vos Sorts !</h2>
+            
+            <!-- Input formule -->
+            <input type="text" 
+                   class="formula-input" 
+                   id="formulaInput"
+                   placeholder="Entrez une formule magique..."
+                   value="ψ(PORTAL) ⊙ CREATE_PORTAL(BRISURE, @100,200)">
+            
+            <!-- Bouton cast -->
+            <button class="cast-btn" onclick="castSpell()">
+                🔮 LANCER LE SORT
+            </button>
+            
+            <!-- Formules prédéfinies -->
+            <div class="preset-formulas">
+                <h3 style="text-align: center;">📚 Formules Rapides</h3>
+                <div style="text-align: center;">
+                    <button class="preset-btn" onclick="setFormula('ψ(HEAL) → †(player.health += 50)')">
+                        ❤️ Soin
+                    </button>
+                    <button class="preset-btn" onclick="setFormula('CREATE_PORTAL(BRISURE, @300,400)')">
+                        🌀 Portail
+                    </button>
+                    <button class="preset-btn" onclick="setFormula('GROFI.cast(FIREBALL, target.nearest)')">
+                        🔥 Boule de Feu
+                    </button>
+                    <button class="preset-btn" onclick="setFormula('Δt(REWIND, -5s)')">
+                        ⏰ Rembobinage
+                    </button>
+                    <button class="preset-btn" onclick="setFormula('ψ(QUANTUM) ⊙ †(reality.split())')">
+                        🌌 Quantique
+                    </button>
+                    <button class="preset-btn" onclick="setFormula('GRUT.invoke(PROTECTION_AURA)')">
+                        🛡️ Protection
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Résultats droite -->
+        <div>
+            <h2 style="text-align: center; margin-bottom: 20px;">📜 Résultats</h2>
+            <div class="results-area" id="resultsArea">
+                <div style="text-align: center; color: #666; padding: 50px;">
+                    Lancez un sort pour voir les résultats...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="../core/narrative/magic-integration-epic.js"></script>
+    <script>
+        // Configuration
+        const effectCanvas = document.getElementById('effectCanvas');
+        const effectCtx = effectCanvas.getContext('2d');
+        
+        // Ajuster le canvas
+        function resizeCanvas() {
+            effectCanvas.width = effectCanvas.offsetWidth;
+            effectCanvas.height = effectCanvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // État de la démo
+        let currentMode = 'HYBRID';
+        let particles = [];
+        let lastCastTime = 0;
+        
+        // Particules de fond
+        function createBackgroundParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.fontSize = Math.random() * 20 + 10 + 'px';
+            particle.innerHTML = ['✨', '🌟', '⭐', '💫'][Math.floor(Math.random() * 4)];
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 10000);
+        }
+        
+        // Créer des particules régulièrement
+        setInterval(createBackgroundParticle, 500);
+        
+        // Mettre à jour le status backend
+        function updateBackendStatus() {
+            const status = window.MagicSystem.backendStatus;
+            const statusEl = document.getElementById('backendStatus');
+            
+            if (status.connected) {
+                statusEl.className = 'backend-status status-connected';
+                statusEl.innerHTML = `
+                    <div>✅ Backend Connecté</div>
+                    <small>Latence: ${status.latency || '?'}ms | ${status.formulasAvailable} formules</small>
+                `;
+            } else {
+                statusEl.className = 'backend-status status-disconnected';
+                statusEl.innerHTML = `
+                    <div>❌ Backend Déconnecté</div>
+                    <small>Mode local activé</small>
+                `;
+            }
+            
+            updateStats();
+        }
+        
+        // Mettre à jour les stats
+        function updateStats() {
+            const stats = window.MagicSystem.getStats();
+            document.getElementById('statTotal').textContent = stats.totalCasts;
+            document.getElementById('statBackend').textContent = stats.backendCasts;
+            document.getElementById('statLocal').textContent = stats.localCasts;
+            document.getElementById('statLatency').textContent = Math.round(stats.avgLatency) + 'ms';
+        }
+        
+        // Changer de mode
+        function setMode(mode) {
+            currentMode = mode;
+            window.MagicSystem.setMode(mode);
+            
+            // Mettre à jour l'UI
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            addResult({
+                type: 'MODE_CHANGE',
+                message: `Mode changé : ${mode}`,
+                mode: mode
+            });
+        }
+        
+        // Définir une formule
+        function setFormula(formula) {
+            document.getElementById('formulaInput').value = formula;
+            
+            // Effet visuel
+            const input = document.getElementById('formulaInput');
+            input.style.animation = 'none';
+            setTimeout(() => {
+                input.style.animation = 'glow-pulse 0.5s';
+            }, 10);
+        }
+        
+        // Lancer un sort
+        async function castSpell() {
+            const formula = document.getElementById('formulaInput').value;
+            if (!formula) return;
+            
+            // Effet visuel du bouton
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '⚡ INCANTATION...';
+            
+            // Créer un effet de cast
+            createCastEffect();
+            
+            try {
+                // Créer un "caster" simulé
+                const caster = {
+                    id: 'player_demo',
+                    x: effectCanvas.width / 2,
+                    y: effectCanvas.height / 2,
+                    mana: 100,
+                    health: 100
+                };
+                
+                // Lancer le sort via le système unifié
+                const startTime = Date.now();
+                const result = await window.MagicSystem.castSpell(formula, caster, {
+                    world: 'demo_world',
+                    sessionId: 'demo_session_' + Date.now()
+                });
+                const castTime = Date.now() - startTime;
+                
+                // Afficher le résultat
+                addResult({
+                    ...result,
+                    castTime: castTime,
+                    formula: formula
+                });
+                
+                // Effet visuel selon le résultat
+                if (result.success) {
+                    createSuccessEffect();
+                } else {
+                    createFailureEffect();
+                }
+                
+            } catch (error) {
+                addResult({
+                    success: false,
+                    error: error.message,
+                    formula: formula,
+                    executionMode: 'ERROR'
+                });
+                createFailureEffect();
+            }
+            
+            // Réactiver le bouton
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '🔮 LANCER LE SORT';
+            }, 1000);
+            
+            updateStats();
+        }
+        
+        // Ajouter un résultat
+        function addResult(result) {
+            const resultsArea = document.getElementById('resultsArea');
+            
+            // Créer l'élément résultat
+            const resultEl = document.createElement('div');
+            resultEl.className = 'result-item';
+            
+            const time = new Date().toLocaleTimeString();
+            const modeClass = `mode-${(result.executionMode || 'local').toLowerCase()}`;
+            
+            resultEl.innerHTML = `
+                <div class="result-header">
+                    <span class="result-time">${time}</span>
+                    <span class="result-mode ${modeClass}">${result.executionMode || 'LOCAL'}</span>
+                </div>
+                <div style="font-family: monospace; margin: 10px 0;">
+                    ${result.formula || result.message || ''}
+                </div>
+                ${result.success ? 
+                    `<div style="color: #00FF00;">✅ Succès${result.castTime ? ` (${result.castTime}ms)` : ''}</div>` : 
+                    `<div style="color: #FF0000;">❌ Échec: ${result.error || 'Erreur inconnue'}</div>`
+                }
+                ${result.effects && result.effects.length > 0 ? 
+                    `<div style="margin-top: 10px; font-size: 12px;">
+                        Effets: ${result.effects.map(e => e.type).join(', ')}
+                    </div>` : ''
+                }
+            `;
+            
+            // Insérer en haut
+            if (resultsArea.firstChild.classList && resultsArea.firstChild.classList.contains('result-item')) {
+                resultsArea.insertBefore(resultEl, resultsArea.firstChild);
+            } else {
+                resultsArea.innerHTML = '';
+                resultsArea.appendChild(resultEl);
+            }
+            
+            // Limiter à 20 résultats
+            while (resultsArea.children.length > 20) {
+                resultsArea.removeChild(resultsArea.lastChild);
+            }
+        }
+        
+        // Effet de cast
+        function createCastEffect() {
+            // Onde circulaire
+            const centerX = effectCanvas.width / 2;
+            const centerY = effectCanvas.height / 2;
+            let radius = 0;
+            
+            const animate = () => {
+                effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+                
+                effectCtx.strokeStyle = `rgba(138, 43, 226, ${1 - radius / 200})`;
+                effectCtx.lineWidth = 3;
+                effectCtx.beginPath();
+                effectCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                effectCtx.stroke();
+                
+                radius += 5;
+                
+                if (radius < 200) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            
+            animate();
+        }
+        
+        // Effet de succès
+        function createSuccessEffect() {
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: effectCanvas.width / 2,
+                    y: effectCanvas.height / 2,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 60,
+                    color: `hsl(${Math.random() * 60 + 30}, 100%, 50%)`
+                });
+            }
+        }
+        
+        // Effet d'échec
+        function createFailureEffect() {
+            const centerX = effectCanvas.width / 2;
+            const centerY = effectCanvas.height / 2;
+            
+            effectCtx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            effectCtx.fillRect(0, 0, effectCanvas.width, effectCanvas.height);
+            
+            // Croix rouge
+            effectCtx.strokeStyle = '#FF0000';
+            effectCtx.lineWidth = 5;
+            effectCtx.beginPath();
+            effectCtx.moveTo(centerX - 50, centerY - 50);
+            effectCtx.lineTo(centerX + 50, centerY + 50);
+            effectCtx.moveTo(centerX + 50, centerY - 50);
+            effectCtx.lineTo(centerX - 50, centerY + 50);
+            effectCtx.stroke();
+        }
+        
+        // Animation des particules
+        function animateParticles() {
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+            
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.3; // Gravité
+                p.life--;
+                
+                effectCtx.fillStyle = p.color;
+                effectCtx.globalAlpha = p.life / 60;
+                effectCtx.beginPath();
+                effectCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                effectCtx.fill();
+                
+                return p.life > 0;
+            });
+            
+            effectCtx.globalAlpha = 1;
+            requestAnimationFrame(animateParticles);
+        }
+        
+        // Initialisation
+        updateBackendStatus();
+        setInterval(updateBackendStatus, 5000);
+        animateParticles();
+        
+        // Test automatique au démarrage
+        setTimeout(() => {
+            console.log('🔮 Système de Magie Unifié prêt !');
+            console.log('Backend status:', window.MagicSystem.backendStatus);
+        }, 1000);
+    </script>
+</body>
+</html>

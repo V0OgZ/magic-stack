@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 L'Arrivée de Sid Meier - Portail de Morgana</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a2e 0%, #16213e 50%, #1a1a3a 100%);
+            color: #fff;
+            font-family: 'Georgia', serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .portal-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .portal-ring {
+            width: 300px;
+            height: 300px;
+            border: 4px solid #ffd700;
+            border-radius: 50%;
+            position: absolute;
+            animation: portal-spin 15s linear infinite;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
+        }
+
+        .portal-ring:nth-child(2) {
+            width: 250px;
+            height: 250px;
+            animation: portal-spin 12s linear infinite reverse;
+            border-color: #ff8c00;
+        }
+
+        .portal-ring:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            animation: portal-spin 8s linear infinite;
+            border-color: #ffa500;
+        }
+
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .sid-portrait {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            z-index: 10;
+            animation: sid-glow 3s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+
+        @keyframes sid-glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 140, 0, 0.6); }
+        }
+
+        .story-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #ffd700;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .story-title {
+            font-size: 2em;
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        .story-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 15px;
+            animation: text-fade-in 2s ease-in;
+        }
+
+        @keyframes text-fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .abilities-grid {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .ability-card {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .ability-card:hover {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .ability-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .ability-title {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .navigation-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+
+        .hexagon-bg {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 215, 0, 0.1);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .hexagon-1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .hexagon-2 { top: 20%; right: 15%; animation-delay: 2s; }
+        .hexagon-3 { bottom: 30%; left: 20%; animation-delay: 4s; }
+        .hexagon-4 { bottom: 10%; right: 10%; animation-delay: 1s; }
+    </style>
+</head>
+<body>
+    <!-- Hexagones flottants -->
+    <div class="hexagon-bg hexagon-1"></div>
+    <div class="hexagon-bg hexagon-2"></div>
+    <div class="hexagon-bg hexagon-3"></div>
+    <div class="hexagon-bg hexagon-4"></div>
+
+    <!-- Histoire principale -->
+    <div class="story-panel">
+        <h1 class="story-title">🌀 L'Ouverture du Portail de Morgana</h1>
+        <div class="story-text">
+            Dans la nuit mystique d'Avalon, <strong>URZ-KÔM l'ours chaman</strong> a accompli l'impossible...
+        </div>
+        <div class="story-text">
+            Un rituel ancien, des runes oubliées, et soudain - une <span style="color: #ffd700;">lumière dorée</span> a jailli !
+        </div>
+        <div class="story-text">
+            De cette brèche dimensionnelle est apparu <strong style="color: #ffd700;">SID MEIER</strong>, l'Architecte Paresseux, 
+            portant dans ses mains les plans d'une civilisation parfaite...
+        </div>
+    </div>
+
+    <!-- Portail central -->
+    <div class="portal-container">
+        <div class="portal-ring"></div>
+        <div class="portal-ring"></div>
+        <div class="portal-ring"></div>
+        <img src="SidMeilleur.png" alt="Sid Meier" class="sid-portrait">
+    </div>
+
+    <!-- Capacités de Sid -->
+    <div class="abilities-grid">
+        <div class="ability-card">
+            <div class="ability-icon">🏗️</div>
+            <div class="ability-title">Création de Civilisations</div>
+            <div>À partir de rien, avec un clic</div>
+        </div>
+        <div class="ability-card">
+            <div class="ability-icon">🎯</div>
+            <div class="ability-title">Œil Probabiliste</div>
+            <div>Calcule tous les futurs possibles</div>
+        </div>
+        <div class="ability-card">
+            <div class="ability-icon">⬡</div>
+            <div class="ability-title">Maître des Hexagones</div>
+            <div>Manipulation des formes fondamentales</div>
+        </div>
+        <div class="ability-card">
+            <div class="ability-icon">⚔️</div>
+            <div class="ability-title">Invocation Historique</div>
+            <div>Coût en mana nostalgique</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation-buttons">
+        <a href="../index.html" class="nav-button">🌲 Retour à la Forêt</a>
+        <a href="../AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/📐 ATELIER_CARTOGRAPHIE/CARTE_VIVANTE_AVALON.html" class="nav-button">🗺️ Voir sa Carte</a>
+        <a href="../AVALON/🏠 HOME/🎯 SID_MEIER_ARCHITECTE/README.md" class="nav-button">🏠 Visiter sa Maison</a>
+    </div>
+
+    <script>
+        // Animation d'entrée
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.querySelector('.story-panel').style.animation = 'text-fade-in 2s ease-in';
+            }, 500);
+        });
+
+        // Effets sonores simulés (console)
+        document.addEventListener('click', function() {
+            console.log('🎯 *Bruit de placement d\'hexagone*');
+        });
+    </script>
+</body>
+</html>

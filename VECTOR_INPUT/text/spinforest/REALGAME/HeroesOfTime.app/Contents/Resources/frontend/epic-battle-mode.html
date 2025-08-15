@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ EPIC BATTLE MODE - REALGAME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        /* Canvas principal */
+        #gameCanvas {
+            border: 3px solid #ff00ff;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(255,0,255,0.5);
+        }
+        
+        /* HUD épique */
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+        }
+        
+        .character-select {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        .character-select h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700;
+        }
+        
+        .characters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .char-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .char-card:hover {
+            border-color: #ff00ff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,0,255,0.5);
+        }
+        
+        .char-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        
+        .char-card h3 {
+            color: #4ecdc4;
+            margin-bottom: 5px;
+        }
+        
+        .char-stats {
+            font-size: 0.9em;
+            color: #888;
+        }
+        
+        /* Effets spéciaux */
+        .special-attack {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        @keyframes ultimate-blast {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(5) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .victory-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            text-align: center;
+            padding-top: 200px;
+        }
+        
+        .victory-screen h1 {
+            font-size: 4em;
+            color: #ffd700;
+            text-shadow: 0 0 40px #ffd700;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Contrôles */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sélection de personnage -->
+    <div class="character-select" id="charSelect">
+        <h2>⚔️ CHOISIS TON GUERRIER ⚔️</h2>
+        <div class="characters">
+            <div class="char-card" onclick="selectCharacter('warrior')">
+                <img src="../assets/HEROHDPORTAIT/Ancient Warrior of Fiery Runes.png" alt="Guerrier">
+                <h3>Guerrier Ancestral</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐⭐⭐<br>
+                    DEF: ⭐⭐⭐⭐<br>
+                    SPD: ⭐⭐⭐
+                </div>
+            </div>
+            <div class="char-card" onclick="selectCharacter('bear')">
+                <img src="../UPLOAD/ours_pixel.webp" alt="Ours">
+                <h3>URZ-KÔM</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐⭐<br>
+                    DEF: ⭐⭐⭐⭐⭐<br>
+                    SPD: ⭐⭐
+                </div>
+            </div>
+            <div class="char-card" onclick="selectCharacter('vince')">
+                <img src="../UPLOAD/Jean_grofignon_pixel_hero.webp" alt="Vince">
+                <h3>Vince Vega</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐⭐⭐<br>
+                    DEF: ⭐⭐<br>
+                    SPD: ⭐⭐⭐⭐⭐
+                </div>
+            </div>
+            <div class="char-card" onclick="selectCharacter('sid')">
+                <img src="../UPLOAD/sid_meier_pixel_heros.webp" alt="Sid">
+                <h3>Sid Meier</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐<br>
+                    DEF: ⭐⭐⭐<br>
+                    SPD: ⭐⭐⭐⭐
+                </div>
+            </div>
+            <div class="char-card" onclick="selectCharacter('mage')">
+                <img src="../Ymagirie/WizardHat.webp" alt="Mage">
+                <h3>Archimage</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐⭐⭐<br>
+                    DEF: ⭐<br>
+                    SPD: ⭐⭐⭐
+                </div>
+            </div>
+            <div class="char-card" onclick="selectCharacter('lumen')">
+                <img src="../Ymagirie/FairyDust.webp" alt="Lumen">
+                <h3>Lumen</h3>
+                <div class="char-stats">
+                    ATK: ⭐⭐⭐⭐<br>
+                    DEF: ⭐⭐⭐<br>
+                    SPD: ⭐⭐⭐⭐
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Canvas de jeu -->
+    <canvas id="gameCanvas" width="1200" height="700"></canvas>
+    
+    <!-- HUD -->
+    <div class="hud" id="hud">
+        <h3 id="playerName">Joueur</h3>
+        <div>❤️ Vie: <span id="health">100</span></div>
+        <div>⚡ Énergie: <span id="energy">100</span></div>
+        <div>🏆 Score: <span id="score">0</span></div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls">
+        <strong>Contrôles:</strong> 
+        ↑↓←→ Déplacer | 
+        ESPACE Attaque | 
+        Q Attaque Spéciale | 
+        R Ultimate
+    </div>
+    
+    <!-- Écran de victoire -->
+    <div class="victory-screen" id="victoryScreen">
+        <h1>🏆 VICTOIRE ! 🏆</h1>
+        <p style="font-size: 2em; margin-top: 20px;">Tu as vaincu tous les ennemis !</p>
+        <button onclick="location.reload()" style="margin-top: 30px; padding: 20px 40px; font-size: 1.5em;">Rejouer</button>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // État du jeu
+        let gameState = {
+            player: null,
+            enemies: [],
+            projectiles: [],
+            effects: [],
+            score: 0,
+            level: 1,
+            paused: false
+        };
+        
+        // Classes de personnages
+        const characters = {
+            warrior: {
+                name: 'Guerrier Ancestral',
+                sprite: '⚔️',
+                health: 150,
+                attack: 25,
+                defense: 20,
+                speed: 3,
+                special: 'Frappe Tourbillon',
+                ultimate: 'Excalibur Temporel'
+            },
+            bear: {
+                name: 'URZ-KÔM',
+                sprite: '🐻',
+                health: 200,
+                attack: 20,
+                defense: 30,
+                speed: 2,
+                special: 'GRONDE',
+                ultimate: 'Triple Voix'
+            },
+            vince: {
+                name: 'Vince Vega',
+                sprite: '🔫',
+                health: 100,
+                attack: 30,
+                defense: 10,
+                speed: 5,
+                special: 'Gun de Vince',
+                ultimate: 'Portail Quantique'
+            },
+            sid: {
+                name: 'Sid Meier',
+                sprite: '🎮',
+                health: 120,
+                attack: 15,
+                defense: 15,
+                speed: 4,
+                special: 'Debug Mode',
+                ultimate: 'BRISURE'
+            },
+            mage: {
+                name: 'Archimage',
+                sprite: '🧙',
+                health: 80,
+                attack: 35,
+                defense: 5,
+                speed: 3,
+                special: 'Boule de Feu',
+                ultimate: 'Météore'
+            },
+            lumen: {
+                name: 'Lumen',
+                sprite: '✨',
+                health: 110,
+                attack: 20,
+                defense: 15,
+                speed: 4,
+                special: 'Lumière Sacrée',
+                ultimate: 'Nova Stellaire'
+            }
+        };
+        
+        // Classe Joueur
+        class Player {
+            constructor(character) {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 100;
+                this.width = 50;
+                this.height = 50;
+                this.character = character;
+                this.health = character.health;
+                this.maxHealth = character.health;
+                this.energy = 100;
+                this.maxEnergy = 100;
+                this.speed = character.speed;
+                this.cooldown = 0;
+                this.ultimateReady = false;
+            }
+            
+            update() {
+                // Mouvement
+                if (keys.ArrowLeft) this.x -= this.speed;
+                if (keys.ArrowRight) this.x += this.speed;
+                if (keys.ArrowUp) this.y -= this.speed;
+                if (keys.ArrowDown) this.y += this.speed;
+                
+                // Limites
+                this.x = Math.max(0, Math.min(canvas.width - this.width, this.x));
+                this.y = Math.max(0, Math.min(canvas.height - this.height, this.y));
+                
+                // Cooldowns
+                if (this.cooldown > 0) this.cooldown--;
+                
+                // Régénération énergie
+                if (this.energy < this.maxEnergy) this.energy += 0.1;
+                if (this.energy >= 100) this.ultimateReady = true;
+            }
+            
+            draw() {
+                ctx.font = '40px Arial';
+                ctx.fillText(this.character.sprite, this.x, this.y + 40);
+                
+                // Barre de vie
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y - 20, 50, 5);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(this.x, this.y - 20, 50 * (this.health / this.maxHealth), 5);
+            }
+            
+            attack() {
+                if (this.cooldown > 0) return;
+                
+                gameState.projectiles.push(new Projectile(
+                    this.x + 25,
+                    this.y,
+                    0,
+                    -10,
+                    this.character.attack,
+                    '⚡'
+                ));
+                this.cooldown = 20;
+            }
+            
+            special() {
+                if (this.energy < 30) return;
+                
+                this.energy -= 30;
+                // Attaque spéciale selon le personnage
+                createSpecialEffect(this.x + 25, this.y + 25, this.character.special);
+                
+                // Dégâts de zone
+                gameState.enemies.forEach(enemy => {
+                    const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+                    if (dist < 150) {
+                        enemy.health -= this.character.attack * 2;
+                    }
+                });
+            }
+            
+            ultimate() {
+                if (!this.ultimateReady) return;
+                
+                this.energy = 0;
+                this.ultimateReady = false;
+                
+                // Ultimate épique !
+                document.body.style.animation = 'shake 1s';
+                createUltimateEffect(this.character.ultimate);
+                
+                // Dégâts massifs
+                gameState.enemies.forEach(enemy => {
+                    enemy.health -= this.character.attack * 5;
+                });
+            }
+        }
+        
+        // Classe Ennemi
+        class Enemy {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 40;
+                this.type = type;
+                this.health = 50 + (type * 20);
+                this.maxHealth = this.health;
+                this.speed = 1 + (type * 0.5);
+                this.sprite = ['👹', '👺', '🐉', '💀', '👻'][type % 5];
+                this.attackCooldown = 0;
+            }
+            
+            update() {
+                // IA simple : poursuivre le joueur
+                const dx = gameState.player.x - this.x;
+                const dy = gameState.player.y - this.y;
+                const dist = Math.hypot(dx, dy);
+                
+                if (dist > 50) {
+                    this.x += (dx / dist) * this.speed;
+                    this.y += (dy / dist) * this.speed;
+                }
+                
+                // Attaque
+                if (dist < 60 && this.attackCooldown <= 0) {
+                    gameState.player.health -= 5;
+                    this.attackCooldown = 60;
+                    createEffect(this.x, this.y, '💥', 20);
+                }
+                
+                if (this.attackCooldown > 0) this.attackCooldown--;
+            }
+            
+            draw() {
+                ctx.font = '35px Arial';
+                ctx.fillText(this.sprite, this.x, this.y + 35);
+                
+                // Barre de vie
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y - 15, 40, 3);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(this.x, this.y - 15, 40 * (this.health / this.maxHealth), 3);
+            }
+        }
+        
+        // Classe Projectile
+        class Projectile {
+            constructor(x, y, vx, vy, damage, sprite) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.damage = damage;
+                this.sprite = sprite;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+            
+            draw() {
+                ctx.font = '20px Arial';
+                ctx.fillText(this.sprite, this.x, this.y);
+            }
+        }
+        
+        // Effets visuels
+        function createEffect(x, y, sprite, duration) {
+            gameState.effects.push({
+                x, y, sprite, duration,
+                update() {
+                    this.duration--;
+                    return this.duration > 0;
+                },
+                draw() {
+                    ctx.font = '30px Arial';
+                    ctx.globalAlpha = this.duration / 20;
+                    ctx.fillText(this.sprite, this.x, this.y);
+                    ctx.globalAlpha = 1;
+                }
+            });
+        }
+        
+        function createSpecialEffect(x, y, name) {
+            const effect = document.createElement('div');
+            effect.className = 'special-attack';
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            effect.style.fontSize = '60px';
+            effect.innerHTML = '💫';
+            effect.style.animation = 'ultimate-blast 1s';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 1000);
+        }
+        
+        function createUltimateEffect(name) {
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '50%';
+            overlay.style.left = '50%';
+            overlay.style.transform = 'translate(-50%, -50%)';
+            overlay.style.fontSize = '100px';
+            overlay.style.color = '#ffd700';
+            overlay.style.textShadow = '0 0 50px #ffd700';
+            overlay.style.zIndex = '300';
+            overlay.textContent = name;
+            overlay.style.animation = 'pulse 2s';
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.remove(), 2000);
+        }
+        
+        // Contrôles
+        const keys = {};
+        window.addEventListener('keydown', e => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ') gameState.player?.attack();
+            if (e.key === 'q' || e.key === 'Q') gameState.player?.special();
+            if (e.key === 'r' || e.key === 'R') gameState.player?.ultimate();
+        });
+        
+        window.addEventListener('keyup', e => {
+            keys[e.key] = false;
+        });
+        
+        // Sélection personnage
+        function selectCharacter(charKey) {
+            const char = characters[charKey];
+            gameState.player = new Player(char);
+            document.getElementById('charSelect').style.display = 'none';
+            document.getElementById('playerName').textContent = char.name;
+            startGame();
+        }
+        
+        // Spawn ennemis
+        function spawnEnemies() {
+            const count = 3 + gameState.level;
+            for (let i = 0; i < count; i++) {
+                gameState.enemies.push(new Enemy(
+                    Math.random() * canvas.width,
+                    Math.random() * 200,
+                    Math.floor(gameState.level / 2)
+                ));
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (gameState.paused) return;
+            
+            // Clear
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update player
+            if (gameState.player) {
+                gameState.player.update();
+                gameState.player.draw();
+            }
+            
+            // Update enemies
+            gameState.enemies = gameState.enemies.filter(enemy => {
+                enemy.update();
+                enemy.draw();
+                
+                if (enemy.health <= 0) {
+                    createEffect(enemy.x, enemy.y, '💀', 30);
+                    gameState.score += 100;
+                    return false;
+                }
+                return true;
+            });
+            
+            // Update projectiles
+            gameState.projectiles = gameState.projectiles.filter(proj => {
+                proj.update();
+                proj.draw();
+                
+                // Collision avec ennemis
+                for (let enemy of gameState.enemies) {
+                    const dist = Math.hypot(enemy.x - proj.x, enemy.y - proj.y);
+                    if (dist < 30) {
+                        enemy.health -= proj.damage;
+                        createEffect(proj.x, proj.y, '💥', 10);
+                        return false;
+                    }
+                }
+                
+                return proj.y > 0 && proj.y < canvas.height;
+            });
+            
+            // Update effects
+            gameState.effects = gameState.effects.filter(effect => {
+                const alive = effect.update();
+                if (alive) effect.draw();
+                return alive;
+            });
+            
+            // Update HUD
+            document.getElementById('health').textContent = Math.floor(gameState.player?.health || 0);
+            document.getElementById('energy').textContent = Math.floor(gameState.player?.energy || 0);
+            document.getElementById('score').textContent = gameState.score;
+            
+            // Check victoire
+            if (gameState.enemies.length === 0 && gameState.level < 5) {
+                gameState.level++;
+                spawnEnemies();
+                createEffect(canvas.width/2, 100, `NIVEAU ${gameState.level}`, 60);
+            } else if (gameState.enemies.length === 0 && gameState.level >= 5) {
+                document.getElementById('victoryScreen').style.display = 'block';
+                return;
+            }
+            
+            // Check défaite
+            if (gameState.player?.health <= 0) {
+                alert('GAME OVER ! Score: ' + gameState.score);
+                location.reload();
+                return;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer le jeu
+        function startGame() {
+            spawnEnemies();
+            
+            // Background épique
+            const bgImages = [
+                '../assets/FIGHT/Convergence of Cosmic Forces.png',
+                '../assets/FIGHT/Warrior Through Time and Light.png',
+                '../assets/FIGHT/Cosmic Shaman and Temporal Reflection.png'
+            ];
+            canvas.style.backgroundImage = `url('${bgImages[Math.floor(Math.random() * bgImages.length)]}')`;
+            canvas.style.backgroundSize = 'cover';
+            canvas.style.backgroundPosition = 'center';
+            
+            gameLoop();
+        }
+        
+        // Animation CSS
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(shakeStyle);
+    </script>
+</body>
+</html>

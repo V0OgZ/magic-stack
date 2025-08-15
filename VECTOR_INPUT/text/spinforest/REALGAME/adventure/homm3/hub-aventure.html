@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heroes of Time — Hub Aventure</title>
+  <style>
+    body{margin:0;background:#0a0a1a;color:#e8d5b7;font-family:Courier,monospace}
+    #top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid #8A2BE2;background:#111831}
+    a{color:#FFD700;text-decoration:none}
+    .container{max-width:980px;margin:20px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .card{background:#121826;border:1px solid #2b3350;border-radius:8px;padding:12px}
+    .card h3{margin:0 0 6px 0;color:#FFD700;font-size:16px}
+    .meta{font-size:12px;color:#9aa4c4;margin:6px 0}
+    .actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+    .btn{display:inline-block;padding:6px 10px;border:1px solid #8A2BE2;border-radius:6px}
+    .section{margin:18px 0 10px;font-weight:bold;color:#cdb48a}
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div>Heroes of Time — Hub Aventure</div>
+    <div>
+      <label style="font-size:12px;color:#9aa4c4;margin-right:6px;">heroId</label>
+      <input id="heroIdInput" style="width:140px;background:#0a0a1a;color:#e8d5b7;border:1px solid #2b3350;border-radius:4px;padding:2px 6px;"/>
+      <button id="heroIdSave" class="btn" style="margin-right:10px;">Save</button>
+      <a href="../index.html">Admin Demo (Map)</a>
+      <a class="btn" href="./story-runner.html">Story Runner</a>
+      <select id="indexMode" style="background:#0a0a1a;color:#e8d5b7;border:1px solid #2b3350;border-radius:4px;padding:2px 6px;margin-right:6px;">
+        <option value="story">story</option>
+        <option value="dev">dev</option>
+      </select>
+      <button id="indexBtn" class="btn" title="Lance /api/archives/build">Indexer</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="section">Chemin doré</div>
+    <div class="grid">
+      <div class="card">
+        <h3>Story Mode (Evadé de la Cave)</h3>
+        <div class="meta">Prologue narratif court</div>
+        <div class="actions">
+          <a class="btn" href="./narrative-eva.html">Jouer</a>
+          <a class="btn" href="../../evades-caverne/LA_CAVERNE_DES_EVADES.html">Caverne (HTML)</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Labo Schrödinger</h3>
+        <div class="meta">Exercices quantiques (observation/collapse)</div>
+        <div class="actions">
+          <a class="btn" href="../../ARCADE/experimental-lab.html">Ouvrir</a>
+          <a class="btn" href="../../AVALON-TCG/senku-chemistry-demo.html">Chemistry (Senku)</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Labyrinthe Non‑Euclidien</h3>
+        <div class="meta">Transitions et topologies</div>
+        <div class="actions">
+          <a class="btn" href="../../non-euclidean-demo.html">Ouvrir</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Temporal Nexus</h3>
+        <div class="meta">Palier central</div>
+        <div class="actions">
+          <a class="btn" href="../../maps/worlds/temporal-nexus.html">Ouvrir</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Memory Realm</h3>
+        <div class="meta">Lore, souvenirs et choix</div>
+        <div class="actions">
+          <a class="btn" href="../../maps/worlds/memory-realm.html">Ouvrir</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">Quêtes annexes utiles</div>
+    <div class="grid">
+      <div class="card">
+        <h3>Causal Patch</h3>
+        <div class="meta">Réparer les liens causaux</div>
+        <div class="actions"><a class="btn" href="../../ARCADE/causal-patch-routing.html">Ouvrir</a></div>
+      </div>
+      <div class="card">
+        <h3>Broken Watch</h3>
+        <div class="meta">Horloge temporelle</div>
+        <div class="actions"><a class="btn" href="../../ARCADE/broken-watch-gears.html">Ouvrir</a></div>
+      </div>
+      <div class="card">
+        <h3>Galerie TCG Marchands</h3>
+        <div class="meta">Cartes et styles</div>
+        <div class="actions"><a class="btn" href="../../DARK_HOLOGRAPHIC_CARDS.html">Ouvrir</a></div>
+      </div>
+      <div class="card">
+        <h3>Alchimie (Panoramix)</h3>
+        <div class="meta">Potions et ressources</div>
+        <div class="actions"><a class="btn" href="../../ARCADE/panoramix-cauldron-ui.html">Ouvrir</a></div>
+      </div>
+    </div>
+
+    <div class="section">Inventaire (JSON)</div>
+    <div id="jsonMissions" class="grid"></div>
+
+    <div class="section">Chasse Temporelle</div>
+    <div class="grid">
+      <div class="card">
+        <h3>Chasse Temporelle (Prototype)</h3>
+        <div class="meta">Poursuite et capture dans le graphe CD</div>
+        <div class="actions"><a class="btn" href="../../maps/CHASSE_TEMPORELLE.html">Ouvrir</a></div>
+      </div>
+      <div class="card">
+        <h3>Chasse Temporelle (Héros)</h3>
+        <div class="meta">Variante centrée héros</div>
+        <div class="actions"><a class="btn" href="../../maps/CHASSE_TEMPORELLE_HEROES.html">Ouvrir</a></div>
+      </div>
+    </div>
+
+    <div class="section">Protos HoMM3 (option)</div>
+    <div class="grid">
+      <div class="card">
+        <h3>HOMM3 6D Demo</h3>
+        <div class="meta">Exploration avancée (démo)</div>
+        <div class="actions"><a class="btn" href="./HOMM3_6D_DEMO.html">Ouvrir</a></div>
+      </div>
+      <div class="card">
+        <h3>Test Intégration</h3>
+        <div class="meta">Tests front/back</div>
+        <div class="actions"><a class="btn" href="./TEST_INTEGRATION.html">Ouvrir</a></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Indexer (VectorDB) — optionnel si backend prêt
+    (function(){
+      var btn = document.getElementById('indexBtn');
+      var sel = document.getElementById('indexMode');
+      if (!btn || !sel) return;
+      btn.addEventListener('click', async function(){
+        btn.disabled = true; btn.textContent = 'Indexing...';
+        try {
+          const base = 'http://localhost:3001';
+          const mode = sel.value || 'story';
+          const r = await fetch(base + '/api/archives/build', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode })
+          });
+          btn.textContent = r.ok ? 'Index OK' : 'Index Err';
+        } catch(_){ btn.textContent = 'Index Err'; }
+        setTimeout(function(){ btn.textContent = 'Indexer'; btn.disabled = false; }, 2000);
+      });
+    })();
+    // heroId setter
+    (function(){
+      var input = document.getElementById('heroIdInput');
+      var save = document.getElementById('heroIdSave');
+      if (input && save) {
+        try { input.value = (window.sessionStorage && sessionStorage.getItem('heroId')) || 'hero:alice'; } catch(_){ input.value = 'hero:alice'; }
+        save.addEventListener('click', function(){
+          try { if (window.sessionStorage) sessionStorage.setItem('heroId', input.value || 'hero:alice'); } catch(_){ }
+        });
+      }
+    })();
+
+    (function(){
+      const grid = document.getElementById('jsonMissions');
+      if (!grid) return;
+      fetch('./hub-aventure-missions.json')
+        .then(r => r.ok ? r.json() : [])
+        .then(list => {
+          if (!Array.isArray(list)) return;
+          list.forEach(entry => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const title = document.createElement('h3');
+            title.textContent = entry.title || entry.id || 'Mission';
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.textContent = (entry.tags || []).join(', ');
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+            const btn = document.createElement('a');
+            btn.className = 'btn';
+            btn.href = entry.html || '#';
+            btn.textContent = 'Ouvrir';
+            actions.appendChild(btn);
+            card.appendChild(title);
+            card.appendChild(meta);
+            card.appendChild(actions);
+            grid.appendChild(card);
+          });
+        })
+        .catch(function(){ /* silent */ });
+    })();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎨 Demo Intégration Tiles - LOUMEN</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            text-align: center;
+            z-index: 100;
+            border-bottom: 3px solid #FFD700;
+        }
+        
+        h1 {
+            margin: 0;
+            color: #FFD700;
+            text-shadow: 0 0 20px #FF6600;
+        }
+        
+        .info {
+            margin-top: 10px;
+            color: #AAA;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin-top: 100px;
+            cursor: crosshair;
+        }
+        
+        .tile-selector {
+            position: fixed;
+            right: 20px;
+            top: 120px;
+            bottom: 20px;
+            width: 300px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00D9FF;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .tile-category {
+            margin: 20px 0;
+        }
+        
+        .tile-category h3 {
+            color: #00D9FF;
+            margin-bottom: 10px;
+        }
+        
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .tile-item {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            cursor: pointer;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s;
+        }
+        
+        .tile-item:hover {
+            border-color: #FFD700;
+            transform: scale(1.1);
+        }
+        
+        .tile-item.selected {
+            border-color: #00FF00;
+            box-shadow: 0 0 20px #00FF00;
+        }
+        
+        .controls {
+            position: fixed;
+            left: 20px;
+            top: 120px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        button {
+            display: block;
+            width: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #8B4513;
+            border: 2px solid #FFD700;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #A0522D;
+        }
+        
+        .layer-info {
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Intégration des Nouvelles Tiles</h1>
+        <div class="info">Cliquez pour placer des tiles • Molette pour zoomer • Glisser pour déplacer</div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="controls">
+        <h3>🎮 Contrôles</h3>
+        <button onclick="clearMap()">🗑️ Effacer la carte</button>
+        <button onclick="toggleGrid()">📐 Afficher/Masquer grille</button>
+        <button onclick="saveMap()">💾 Sauvegarder la carte</button>
+        <button onclick="loadPreset()">🎲 Charger exemple</button>
+        
+        <div class="layer-info">
+            <div>Layer actuel: <span id="currentLayer">Terrain</span></div>
+            <button onclick="setLayer('terrain')">🌍 Terrain</button>
+            <button onclick="setLayer('objects')">🏰 Objets</button>
+            <button onclick="setLayer('creatures')">👾 Créatures</button>
+        </div>
+    </div>
+    
+    <div class="tile-selector">
+        <h2 style="text-align: center; color: #00D9FF;">📦 Tiles Disponibles</h2>
+        
+        <div class="tile-category">
+            <h3>🌍 Terrain</h3>
+            <div class="tile-grid" id="terrainTiles"></div>
+        </div>
+        
+        <div class="tile-category">
+            <h3>🏰 Structures</h3>
+            <div class="tile-grid" id="structureTiles"></div>
+        </div>
+        
+        <div class="tile-category">
+            <h3>👾 Créatures</h3>
+            <div class="tile-grid" id="creatureTiles"></div>
+        </div>
+        
+        <div class="tile-category">
+            <h3>✨ Effets</h3>
+            <div class="tile-grid" id="effectTiles"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const config = {
+            tileSize: 64,
+            gridWidth: 30,
+            gridHeight: 20,
+            currentTile: null,
+            currentLayer: 'terrain',
+            showGrid: true,
+            camera: { x: 0, y: 0, zoom: 1 },
+            map: {
+                terrain: {},
+                objects: {},
+                creatures: {}
+            }
+        };
+        
+        // Canvas
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 100;
+        
+        // Tiles disponibles (simulées pour la démo)
+        const tileCategories = {
+            terrain: [
+                { id: 'grass', name: 'Herbe', color: '#228B22' },
+                { id: 'stone', name: 'Pierre', color: '#696969' },
+                { id: 'water', name: 'Eau', color: '#4682B4' },
+                { id: 'lava', name: 'Lave', color: '#FF4500' },
+                { id: 'sand', name: 'Sable', color: '#F4A460' },
+                { id: 'dirt', name: 'Terre', color: '#8B4513' }
+            ],
+            structures: [
+                { id: 'castle', name: 'Château', color: '#8B7D6B', symbol: '🏰' },
+                { id: 'church', name: 'Église', color: '#D2691E', symbol: '⛪' },
+                { id: 'tower', name: 'Tour', color: '#4682B4', symbol: '🏛️' },
+                { id: 'house', name: 'Maison', color: '#8B4513', symbol: '🏠' }
+            ],
+            creatures: [
+                { id: 'hero', name: 'Héros', symbol: '🦸' },
+                { id: 'dragon', name: 'Dragon', symbol: '🐉' },
+                { id: 'goblin', name: 'Gobelin', symbol: '👺' },
+                { id: 'wizard', name: 'Mage', symbol: '🧙' }
+            ],
+            effects: [
+                { id: 'fire', name: 'Feu', symbol: '🔥' },
+                { id: 'portal', name: 'Portail', symbol: '🌀' },
+                { id: 'magic', name: 'Magie', symbol: '✨' },
+                { id: 'sword', name: 'Épée', symbol: '⚔️' }
+            ]
+        };
+        
+        // Charger les images réelles (quand disponibles)
+        const tileImages = {};
+        const tilePaths = {
+            // Mapper les vraies images ici
+            'hero': '../assets/TILES/Heroes of the Realm.png',
+            'creatures': '../assets/TILES/Fantasy Creature Icons in Pixel Art.png',
+            'spells': '../assets/TILES/Pixel Art Magic Spells Collection.png',
+            'assets': '../assets/TILES/Fantasy Game Assets Compilation.png'
+        };
+        
+        // Initialiser les sélecteurs de tiles
+        function initTileSelectors() {
+            createTileGrid('terrainTiles', tileCategories.terrain);
+            createTileGrid('structureTiles', tileCategories.structures);
+            createTileGrid('creatureTiles', tileCategories.creatures);
+            createTileGrid('effectTiles', tileCategories.effects);
+        }
+        
+        function createTileGrid(containerId, tiles) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            tiles.forEach(tile => {
+                const div = document.createElement('div');
+                div.className = 'tile-item';
+                div.dataset.tileId = tile.id;
+                
+                // Style temporaire (remplacer par vraies images)
+                if (tile.color) {
+                    div.style.backgroundColor = tile.color;
+                }
+                if (tile.symbol) {
+                    div.innerHTML = `<div style="font-size: 40px; text-align: center; line-height: 80px;">${tile.symbol}</div>`;
+                }
+                
+                div.addEventListener('click', () => selectTile(tile));
+                container.appendChild(div);
+            });
+        }
+        
+        // Sélectionner une tile
+        function selectTile(tile) {
+            // Retirer la sélection précédente
+            document.querySelectorAll('.tile-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Sélectionner la nouvelle
+            const tileEl = document.querySelector(`[data-tile-id="${tile.id}"]`);
+            if (tileEl) {
+                tileEl.classList.add('selected');
+            }
+            
+            config.currentTile = tile;
+        }
+        
+        // Dessiner la carte
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Appliquer la caméra
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.scale(config.camera.zoom, config.camera.zoom);
+            ctx.translate(-config.camera.x, -config.camera.y);
+            
+            // Dessiner la grille
+            if (config.showGrid) {
+                drawGrid();
+            }
+            
+            // Dessiner les layers
+            drawLayer(config.map.terrain, 0);
+            drawLayer(config.map.objects, 1);
+            drawLayer(config.map.creatures, 2);
+            
+            ctx.restore();
+            
+            requestAnimationFrame(render);
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x <= config.gridWidth; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * config.tileSize, 0);
+                ctx.lineTo(x * config.tileSize, config.gridHeight * config.tileSize);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y <= config.gridHeight; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * config.tileSize);
+                ctx.lineTo(config.gridWidth * config.tileSize, y * config.tileSize);
+                ctx.stroke();
+            }
+        }
+        
+        function drawLayer(layer, zIndex) {
+            Object.entries(layer).forEach(([key, tile]) => {
+                const [x, y] = key.split(',').map(Number);
+                drawTile(tile, x, y);
+            });
+        }
+        
+        function drawTile(tile, x, y) {
+            const pixelX = x * config.tileSize;
+            const pixelY = y * config.tileSize;
+            
+            if (tile.color) {
+                ctx.fillStyle = tile.color;
+                ctx.fillRect(pixelX, pixelY, config.tileSize, config.tileSize);
+            }
+            
+            if (tile.symbol) {
+                ctx.font = '40px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    tile.symbol,
+                    pixelX + config.tileSize / 2,
+                    pixelY + config.tileSize / 2
+                );
+            }
+        }
+        
+        // Interactions
+        canvas.addEventListener('click', (e) => {
+            if (!config.currentTile) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - canvas.width / 2) / config.camera.zoom + config.camera.x;
+            const mouseY = (e.clientY - rect.top - canvas.height / 2) / config.camera.zoom + config.camera.y;
+            
+            const tileX = Math.floor(mouseX / config.tileSize);
+            const tileY = Math.floor(mouseY / config.tileSize);
+            
+            if (tileX >= 0 && tileX < config.gridWidth && tileY >= 0 && tileY < config.gridHeight) {
+                const key = `${tileX},${tileY}`;
+                config.map[config.currentLayer][key] = { ...config.currentTile };
+            }
+        });
+        
+        // Zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            config.camera.zoom = Math.max(0.5, Math.min(2, config.camera.zoom * delta));
+        });
+        
+        // Glisser
+        let isDragging = false;
+        let lastMouseX, lastMouseY;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 1 || e.shiftKey) { // Molette ou Shift+clic
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                
+                config.camera.x -= dx / config.camera.zoom;
+                config.camera.y -= dy / config.camera.zoom;
+                
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Fonctions utilitaires
+        function clearMap() {
+            if (confirm('Effacer toute la carte ?')) {
+                config.map = {
+                    terrain: {},
+                    objects: {},
+                    creatures: {}
+                };
+            }
+        }
+        
+        function toggleGrid() {
+            config.showGrid = !config.showGrid;
+        }
+        
+        function setLayer(layer) {
+            config.currentLayer = layer;
+            document.getElementById('currentLayer').textContent = 
+                layer.charAt(0).toUpperCase() + layer.slice(1);
+        }
+        
+        function saveMap() {
+            const data = JSON.stringify(config.map, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'map.json';
+            a.click();
+        }
+        
+        function loadPreset() {
+            // Exemple de carte
+            config.map.terrain = {
+                '5,5': { id: 'grass', color: '#228B22' },
+                '6,5': { id: 'grass', color: '#228B22' },
+                '7,5': { id: 'stone', color: '#696969' },
+                '8,5': { id: 'stone', color: '#696969' },
+                '9,5': { id: 'stone', color: '#696969' },
+                '10,5': { id: 'grass', color: '#228B22' },
+                '5,6': { id: 'grass', color: '#228B22' },
+                '6,6': { id: 'water', color: '#4682B4' },
+                '7,6': { id: 'water', color: '#4682B4' },
+                '8,6': { id: 'water', color: '#4682B4' },
+                '9,6': { id: 'lava', color: '#FF4500' },
+                '10,6': { id: 'lava', color: '#FF4500' }
+            };
+            
+            config.map.objects = {
+                '5,5': { id: 'church', symbol: '⛪' },
+                '10,5': { id: 'tower', symbol: '🏛️' }
+            };
+            
+            config.map.creatures = {
+                '7,5': { id: 'hero', symbol: '🦸' },
+                '9,6': { id: 'dragon', symbol: '🐉' }
+            };
+        }
+        
+        // Message pour les vraies images
+        console.log('🎨 Pour utiliser les vraies images :');
+        console.log('1. Découper les sprites avec tile-cutter.html');
+        console.log('2. Placer les tiles dans assets/tiles/');
+        console.log('3. Mapper dans tilePaths{}');
+        
+        // Initialisation
+        initTileSelectors();
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVALON TCG - Battle Interface</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Particules temporelles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff00ff;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) translateX(50px); }
+        }
+
+        /* Layout principal */
+        .game-container {
+            display: grid;
+            grid-template-rows: 150px 1fr 200px;
+            height: 100vh;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Zone adversaire */
+        .opponent-area {
+            background: rgba(255, 0, 0, 0.1);
+            border-bottom: 2px solid #ff0066;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        /* Zone de jeu */
+        .battlefield {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            background: radial-gradient(circle at center, rgba(138, 43, 226, 0.1), transparent);
+        }
+
+        .board-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            min-height: 150px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        /* Zone joueur */
+        .player-area {
+            background: rgba(0, 255, 0, 0.1);
+            border-top: 2px solid #00ff66;
+            padding: 20px;
+        }
+
+        /* Main du joueur */
+        .hand {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            min-height: 120px;
+        }
+
+        /* Cartes */
+        .card {
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border: 2px solid #6a5acd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            font-size: 10px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
+            z-index: 10;
+        }
+
+        .card.selected {
+            border-color: #ffff00;
+            box-shadow: 0 0 20px #ffff00;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: #0066ff;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .card-name {
+            margin-top: 25px;
+            font-size: 9px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .card-image {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            margin: 5px 0;
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .card-power {
+            color: #ff6666;
+        }
+
+        .card-health {
+            color: #66ff66;
+        }
+
+        /* Créatures sur le board */
+        .creature {
+            width: 100px;
+            height: 140px;
+            animation: summon 0.5s ease-out;
+        }
+
+        @keyframes summon {
+            from {
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        /* Infos joueurs */
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .health {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6666;
+        }
+
+        .mana {
+            font-size: 18px;
+            color: #6666ff;
+        }
+
+        /* Boutons */
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6a5acd, #4a3aad);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(106, 90, 205, 0.5);
+        }
+
+        /* Log de combat */
+        .combat-log {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 250px;
+            max-height: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #6a5acd;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #6a5acd;
+            padding-left: 10px;
+            font-size: 12px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Effet Bootstrap Paradox */
+        .bootstrap-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #ffff00;
+            text-shadow: 0 0 30px #ffff00;
+            animation: bootstrap 2s ease-out;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes bootstrap {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.5) rotate(180deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules temporelles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Container principal -->
+    <div class="game-container">
+        <!-- Zone adversaire -->
+        <div class="opponent-area">
+            <div class="player-info">
+                <div class="health">❤️ <span id="opponent-health">30</span></div>
+                <div class="mana">💎 <span id="opponent-mana">1</span>/1</div>
+            </div>
+            <div>
+                <h2>Adversaire Temporel</h2>
+            </div>
+        </div>
+
+        <!-- Champ de bataille -->
+        <div class="battlefield">
+            <div class="board-section" id="opponent-board">
+                <!-- Créatures adverses -->
+            </div>
+            <div class="board-section" id="player-board">
+                <!-- Créatures du joueur -->
+            </div>
+        </div>
+
+        <!-- Zone joueur -->
+        <div class="player-area">
+            <div class="player-info">
+                <div class="health">❤️ <span id="player-health">30</span></div>
+                <div class="mana">💎 <span id="player-mana">1</span>/<span id="player-max-mana">1</span></div>
+                <button class="btn" onclick="endTurn()">Fin du tour</button>
+            </div>
+            <div class="hand" id="player-hand">
+                <!-- Main du joueur -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Log de combat -->
+    <div class="combat-log" id="combat-log">
+        <h3>Journal de Combat</h3>
+        <div id="log-content"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="offline-card-engine.js"></script>
+    <script>
+        // Initialisation
+        let engine;
+        let selectedCard = null;
+
+        // Créer les particules
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Ajouter au log
+        function addLog(message) {
+            const log = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[Tour ${engine.gameState.turn}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        // Afficher une carte
+        function renderCard(cardData, container, isInHand = true) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (!isInHand) card.className += ' creature';
+            
+            card.innerHTML = `
+                <div class="card-cost">${cardData.cost || 0}</div>
+                <div class="card-name">${cardData.name}</div>
+                ${cardData.visual ? `<div class="card-image" style="background-image: url('${cardData.visual}')"></div>` : ''}
+                ${cardData.power !== undefined ? `
+                    <div class="card-stats">
+                        <span class="card-power">⚔️ ${cardData.power}</span>
+                        <span class="card-health">🛡️ ${cardData.currentHealth || cardData.health}</span>
+                    </div>
+                ` : ''}
+            `;
+            
+            if (isInHand) {
+                card.onclick = () => selectCard(cardData);
+            }
+            
+            container.appendChild(card);
+            return card;
+        }
+
+        // Sélectionner une carte
+        function selectCard(cardData) {
+            // Désélectionner l'ancienne
+            document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+            
+            selectedCard = cardData;
+            event.target.closest('.card').classList.add('selected');
+            
+            // Jouer la carte si on a assez de mana
+            if (cardData.cost <= engine.gameState.player.mana) {
+                playSelectedCard();
+            }
+        }
+
+        // Jouer la carte sélectionnée
+        function playSelectedCard() {
+            if (!selectedCard) return;
+            
+            const result = engine.playCard(selectedCard.id, 'opponent');
+            
+            if (result.success) {
+                addLog(result.message);
+                
+                // Effet spécial Bootstrap
+                if (selectedCard.id === 'primus_bootstrap') {
+                    showBootstrapEffect();
+                }
+                
+                updateDisplay();
+            } else {
+                addLog(`❌ ${result.message}`);
+            }
+            
+            selectedCard = null;
+        }
+
+        // Effet Bootstrap Paradox
+        function showBootstrapEffect() {
+            const effect = document.createElement('div');
+            effect.className = 'bootstrap-effect';
+            effect.textContent = '∞';
+            document.body.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 2000);
+        }
+
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            const state = engine.getGameState();
+            
+            // Stats joueurs
+            document.getElementById('player-health').textContent = state.player.health;
+            document.getElementById('player-mana').textContent = state.player.mana;
+            document.getElementById('player-max-mana').textContent = state.player.maxMana;
+            document.getElementById('opponent-health').textContent = state.opponent.health;
+            
+            // Main du joueur
+            const handContainer = document.getElementById('player-hand');
+            handContainer.innerHTML = '';
+            state.player.hand.forEach(card => {
+                renderCard(card, handContainer);
+            });
+            
+            // Créatures sur le board
+            const playerBoard = document.getElementById('player-board');
+            playerBoard.innerHTML = '';
+            state.player.board.forEach(creature => {
+                renderCard(creature, playerBoard, false);
+            });
+            
+            // Vérifier victoire/défaite
+            if (state.opponent.health <= 0) {
+                addLog('🎉 VICTOIRE ! Le Bootstrap Paradox triomphe !');
+                setTimeout(() => alert('VICTOIRE ! 🎉'), 100);
+            } else if (state.player.health <= 0) {
+                addLog('💀 DÉFAITE... Le paradoxe s'effondre.');
+            }
+        }
+
+        // Fin du tour
+        function endTurn() {
+            engine.nextTurn();
+            addLog('🔄 Nouveau tour !');
+            updateDisplay();
+        }
+
+        // Initialisation au chargement
+        window.onload = async () => {
+            createParticles();
+            
+            engine = new OfflineCardEngine();
+            
+            // Attendre que les cartes soient chargées
+            setTimeout(() => {
+                engine.reset();
+                addLog('🌀 Bootstrap Paradox activé !');
+                addLog('🎮 Début de la partie !');
+                updateDisplay();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

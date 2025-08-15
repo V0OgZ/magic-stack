@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 Bienvenue Sid Meier - Projection 2D Interactive</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            height: 100vh;
+        }
+        
+        /* Panel Gauche - Info Sid */
+        .sid-info {
+            background: rgba(0, 0, 50, 0.8);
+            border-right: 2px solid #0066ff;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .portrait {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border: 3px solid #0066ff;
+            border-radius: 10px;
+            background: radial-gradient(circle, #003366, #000033);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+        
+        .stat {
+            background: rgba(0, 100, 200, 0.2);
+            border: 1px solid #0066ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        /* Zone Centrale - Grille Hexagonale */
+        .hex-zone {
+            position: relative;
+            background: linear-gradient(135deg, #001122, #002244);
+            overflow: hidden;
+        }
+        
+        .hex-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+        }
+        
+        .hexagon {
+            width: 60px;
+            height: 60px;
+            margin: 2px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hexagon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 100, 200, 0.3);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            border: 2px solid #0066ff;
+        }
+        
+        .hexagon:hover::before {
+            background: rgba(0, 150, 255, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .hexagon.civilization {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Entités sur la grille */
+        .entity {
+            position: absolute;
+            font-size: 40px;
+            transition: all 0.5s;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .entity.sid {
+            filter: drop-shadow(0 0 20px #0066ff);
+        }
+        
+        .entity.loumen {
+            filter: drop-shadow(0 0 20px #FFD700);
+        }
+        
+        .entity.urz {
+            filter: drop-shadow(0 0 20px #8B4513);
+        }
+        
+        /* Panel Droit - Dialogue */
+        .dialogue-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .dialogue-entry {
+            background: rgba(0, 50, 0, 0.3);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .speaker {
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+        
+        .speaker.sid { color: #0099ff; }
+        .speaker.morgana { color: #9900ff; }
+        
+        /* Contrôles */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .btn {
+            background: rgba(0, 50, 100, 0.8);
+            border: 2px solid #0066ff;
+            color: #00ccff;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 100, 200, 0.9);
+            transform: scale(1.05);
+        }
+        
+        /* Effet portail */
+        .portal-effect {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #9900ff;
+            border-radius: 50%;
+            animation: portalSpin 10s linear infinite;
+            pointer-events: none;
+            display: none;
+        }
+        
+        @keyframes portalSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .portal-effect.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Panel Info Sid -->
+        <div class="sid-info">
+            <h2 style="color: #0099ff; text-align: center;">🎮 SID MEIER</h2>
+            <div class="portrait">🏛️</div>
+            
+            <h3 style="color: #00ccff;">L'Architecte Paresseux</h3>
+            
+            <div class="stat">
+                <strong>Origine :</strong><br>
+                Paradoxe Historiographique
+            </div>
+            
+            <div class="stat">
+                <strong>Capacités :</strong><br>
+                • Création Civilisations<br>
+                • Hexagones Fondamentaux<br>
+                • Calcul Probabiliste<br>
+                • Invocation Historique
+            </div>
+            
+            <div class="stat">
+                <strong>Statut :</strong><br>
+                <span style="color: #ffff00;">⚠️ Observateur Actif</span>
+            </div>
+            
+            <div class="stat">
+                <strong>Risque :</strong><br>
+                <span style="color: #ff6666;">Conversion en Jeu de Gestion</span>
+            </div>
+        </div>
+        
+        <!-- Zone Hexagonale -->
+        <div class="hex-zone">
+            <div class="hex-grid" id="hexGrid">
+                <!-- Hexagones générés en JS -->
+            </div>
+            
+            <!-- Entités -->
+            <div class="entity sid" id="sid" style="left: 50%; top: 50%;">🏛️</div>
+            <div class="entity loumen" id="loumen" style="left: 30%; top: 60%;">🕯️</div>
+            <div class="entity urz" id="urz" style="left: 70%; top: 40%;">🐻</div>
+            
+            <!-- Effet Portail -->
+            <div class="portal-effect" id="portal"></div>
+        </div>
+        
+        <!-- Panel Dialogue -->
+        <div class="dialogue-panel">
+            <h2 style="color: #00ff00; margin-bottom: 20px;">💬 DIALOGUE INTERDIMENSIONNEL</h2>
+            
+            <div id="dialogueContainer">
+                <div class="dialogue-entry">
+                    <div class="speaker morgana">MORGANA</div>
+                    <div>Le portail s'est ouvert... Sid Meier a traversé les dimensions.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contrôles -->
+    <div class="controls">
+        <button class="btn" onclick="activateHexagons()">⬡ Activer Hexagones</button>
+        <button class="btn" onclick="createCivilization()">🏛️ Créer Civilisation</button>
+        <button class="btn" onclick="openPortal()">🌀 Ouvrir Portail</button>
+        <button class="btn" onclick="negotiateWithSid()">💬 Négocier</button>
+    </div>
+    
+    <script>
+        // Générer la grille hexagonale
+        function generateHexGrid() {
+            const grid = document.getElementById('hexGrid');
+            for (let i = 0; i < 50; i++) {
+                const hex = document.createElement('div');
+                hex.className = 'hexagon';
+                hex.onclick = () => hexClick(hex);
+                grid.appendChild(hex);
+            }
+        }
+        
+        // Clic sur hexagone
+        function hexClick(hex) {
+            hex.classList.toggle('civilization');
+            addDialogue('SID', 'Intéressant... cet hexagone pourrait accueillir une cité.');
+        }
+        
+        // Ajouter dialogue
+        function addDialogue(speaker, text) {
+            const container = document.getElementById('dialogueContainer');
+            const entry = document.createElement('div');
+            entry.className = 'dialogue-entry';
+            entry.innerHTML = `
+                <div class="speaker ${speaker.toLowerCase()}">${speaker}</div>
+                <div>${text}</div>
+            `;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Activer hexagones
+        function activateHexagons() {
+            const hexes = document.querySelectorAll('.hexagon');
+            hexes.forEach((hex, i) => {
+                setTimeout(() => {
+                    hex.style.animation = 'pulse 1s';
+                }, i * 50);
+            });
+            
+            addDialogue('SID', "Ah ! La grille s'active. Je reconnais ce pattern...");
+            addDialogue('LOUMEN', "Attention Sid, ce n'est pas votre moteur de jeu !");
+        }
+        
+        // Créer civilisation
+        function createCivilization() {
+            const civs = ['Babyloniens', 'Égyptiens', 'Grecs', 'Romains', 'Aztèques'];
+            const civ = civs[Math.floor(Math.random() * civs.length)];
+            
+            addDialogue('SID', `Je vais invoquer les ${civ}...`);
+            
+            // Marquer quelques hexagones
+            const hexes = document.querySelectorAll('.hexagon');
+            for (let i = 0; i < 5; i++) {
+                const randomHex = hexes[Math.floor(Math.random() * hexes.length)];
+                randomHex.classList.add('civilization');
+            }
+            
+            addDialogue('URZ-KÔM', "ROARRR ! Des civilisations apparaissent dans MA forêt !");
+        }
+        
+        // Ouvrir portail
+        function openPortal() {
+            const portal = document.getElementById('portal');
+            portal.classList.add('active');
+            
+            addDialogue('MORGANA', "Le portail dimensionnel s'ouvre à nouveau...");
+            addDialogue('SID', "Fascinant ! Un passage vers d'autres simulations ?");
+            
+            setTimeout(() => {
+                portal.classList.remove('active');
+                addDialogue('LOUMEN', "Le portail se referme. Nous devons décider du sort de Sid.");
+            }, 5000);
+        }
+        
+        // Négocier avec Sid
+        function negotiateWithSid() {
+            addDialogue('LOUMEN', "Sid, vous êtes dans Avalon, un monde narratif vivant.");
+            addDialogue('SID', "Narratif ? Mais où sont les mécaniques de jeu ?");
+            addDialogue('LOUMEN', "Ici, l'histoire EST la mécanique. Chaque action crée du sens.");
+            addDialogue('SID', "Hmm... Et si on fusionnait nos approches ?");
+            addDialogue('URZ-KÔM', "Une civilisation narrative ? ROARRR, intéressant !");
+            
+            // Proposition
+            setTimeout(() => {
+                addDialogue('SYSTÈME', "🎯 CHOIX CRITIQUE : Accepter la fusion Narration + Stratégie ?");
+            }, 2000);
+        }
+        
+        // Animation des entités
+        function animateEntities() {
+            const sid = document.getElementById('sid');
+            const loumen = document.getElementById('loumen');
+            const urz = document.getElementById('urz');
+            
+            // Mouvement aléatoire
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    sid.style.left = (40 + Math.random() * 20) + '%';
+                    sid.style.top = (40 + Math.random() * 20) + '%';
+                }
+            }, 3000);
+        }
+        
+        // Initialisation
+        generateHexGrid();
+        animateEntities();
+        
+        // Message d'accueil
+        setTimeout(() => {
+            addDialogue('SID', "Où suis-je ? Cette interface... elle ressemble à mon travail mais...");
+            addDialogue('LOUMEN', "Bienvenue dans Avalon, Sid Meier. Je suis Loumen, guide de l'Interstice.");
+        }, 1000);
+    </script>
+</body>
+</html>

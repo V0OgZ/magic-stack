@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panopticon 6D - Tableau de Bord</title>
+  <style>
+    body{margin:0;background:#0b0b12;color:#e8e6ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    header{padding:16px 20px;border-bottom:1px solid #2b2a3a;position:sticky;top:0;background:#0b0b12;z-index:10}
+    h1{margin:0;font-size:18px;letter-spacing:.4px}
+    .grid{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+    .card{background:#141424;border:1px solid #2b2a3a;border-radius:12px;padding:12px}
+    .card h2{font-size:14px;margin:0 0 8px 0;color:#ffd700}
+    canvas{width:100%;height:220px;background:#0f0f1f;border:1px solid #2b2a3a;border-radius:8px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+    .pill{padding:4px 8px;border-radius:999px;border:1px solid #3a3953;background:#10101d;font-size:12px}
+    .ok{color:#2eea9a;border-color:#1a6b49;background:#0d1f18}
+    .err{color:#ff6b6b;border-color:#6b1a1a;background:#1f0d0d}
+  </style>
+  <script src="../config.js"></script>
+  <script>
+    async function chk(url,id){ const el=document.getElementById(id); el.className='pill'; el.textContent='…'; try{ const c=new AbortController(); setTimeout(()=>c.abort(),1500); await fetch(url,{mode:'no-cors',signal:c.signal}); el.className='pill ok'; el.textContent='online'; }catch(e){ el.className='pill err'; el.textContent='offline'; } }
+    function lineChart(id){ const c=document.getElementById(id); const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||1; const w=c.clientWidth,h=c.clientHeight; c.width=w*dpr; c.height=h*dpr; ctx.scale(dpr,dpr); let t=0; function draw(){ ctx.clearRect(0,0,w,h); ctx.strokeStyle='#9ad'; ctx.beginPath(); for(let x=0;x<w;x++){ const y=h/2 + Math.sin((x+t)/30)*30 + Math.cos((x+t)/13)*10; x?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke(); t+=2; requestAnimationFrame(draw);} draw(); }
+    window.addEventListener('load',()=>{ ['lat','qps','psi'].forEach(lineChart); const back=(window.ConfigUtils?ConfigUtils.getBackends():{javaBackend:'http://localhost:8082',rustBackend:'http://localhost:3001'}); chk(back.javaBackend+'/api/magic/health','sJava'); chk(back.rustBackend+'/health','sRust'); });
+  </script>
+</head>
+<body>
+  <header><h1>Panopticon 6D • Tableau de Bord</h1></header>
+  <div class="grid">
+    <section class="card">
+      <h2>Statut Backends</h2>
+      <div class="row"><span>Java 8082</span><span id="sJava" class="pill">—</span></div>
+      <div class="row"><span>Rust 3001</span><span id="sRust" class="pill">—</span></div>
+    </section>
+    <section class="card">
+      <h2>Latence (ms)</h2>
+      <canvas id="lat"></canvas>
+    </section>
+    <section class="card">
+      <h2>QPS (req/s)</h2>
+      <canvas id="qps"></canvas>
+    </section>
+    <section class="card">
+      <h2>Ψ Cohérence</h2>
+      <canvas id="psi"></canvas>
+    </section>
+  </div>
+</body>
+  </html>
+

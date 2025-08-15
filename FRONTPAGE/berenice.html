@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BruhNice - Hackeuse Temporelle</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            touch-action: manipulation;
+        }
+
+        /* NIVEAU 0 - Terminal */
+        #level0 {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #000;
+            padding: 20px;
+        }
+
+        #terminal {
+            flex: 1;
+            background: #111;
+            border: 2px solid #0f0;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        #terminal-input {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        #terminal-prompt {
+            color: #0f0;
+            margin-right: 5px;
+        }
+
+        #terminal-cmd {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .terminal-line {
+            margin: 2px 0;
+        }
+
+        .terminal-error {
+            color: #f00;
+        }
+
+        .terminal-success {
+            color: #0ff;
+        }
+
+        /* NIVEAU 1+ - Jeu principal */
+        #gameContainer {
+            display: none;
+            width: 100%;
+            height: 100dvh;
+            position: relative;
+            text-align: center;
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            background: #222;
+            image-rendering: pixelated;
+        }
+
+        #stats {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.85);
+            padding: 10px 12px;
+            border: 1px solid #0ff;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 0 16px rgba(0,255,255,0.35);
+            min-width: 180px;
+            max-width: 240px;
+        }
+        
+        #stats .stat-row {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+            gap: 10px;
+        }
+        
+        #stats .stat-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+        
+        #stats .stat-label {
+            flex: 1;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,255,255,0.5);
+        }
+        
+        #stats .stat-value { color: #0ff; font-weight: bold; font-size: 14px; }
+
+        /* Energy bar */
+        #energyBar { flex: 1; height: 8px; border: 1px solid #0ff; border-radius: 6px; overflow: hidden; background: rgba(0,255,255,0.08); }
+        #energyFill { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffff, #7fffd4); box-shadow: 0 0 6px rgba(0,255,255,0.7); }
+
+        /* Hide advanced rows by default */
+        #stats .details { display: none; opacity: 0.85; }
+        #stats.show-details .details { display: flex; }
+
+        /* Mobile adjustments */
+        @media (max-width: 480px) {
+            #gameCanvas { height: 62%; }
+            #cards { height: 38%; }
+            .card { width: 110px; height: 150px; padding: 10px; }
+            .card-desc, .card-effect { display: none; }
+        }
+
+        #dialogue {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 300px;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border: 2px solid #f0f;
+            border-radius: 5px;
+            display: none;
+        }
+        /* Top action bar */
+        #topBar { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; z-index: 60; }
+        .top-btn { padding: 6px 10px; background: rgba(0,0,0,0.85); color: #0ff; border: 1px solid #0ff; border-radius: 8px; font-size: 12px; box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+        .top-btn:active { transform: translateY(1px); }
+        @media (max-width: 480px) { .top-btn { font-size: 11px; padding: 6px 8px; } }
+
+        /* Overlays */
+        .overlay {
+            position: absolute; inset: 0; z-index: 80; display: none;
+            background: rgba(0,0,0,0.9);
+        }
+        .overlay .box { max-width: 620px; margin: 8vh auto; background: rgba(0,0,0,0.85); border: 1px solid #0ff; border-radius: 10px; padding: 16px; color: #0ff; }
+        .overlay .box h3 { margin: 0 0 10px 0; }
+        .overlay .close { float: right; background: transparent; border: 1px solid #0ff; color: #0ff; border-radius: 6px; padding: 6px 8px; }
+        #editorFrame { width: 95%; height: 72vh; border: 1px solid #0ff; border-radius: 8px; }
+
+        #cards {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,20,0.9));
+            border-top: 2px solid #0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .card {
+            width: 140px;
+            height: 180px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: 3px solid #0ff;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,255,255,0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(0,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-15px) scale(1.05);
+            border-color: #fff;
+            box-shadow: 0 10px 20px rgba(255,0,255,0.5);
+        }
+
+        .card.cooldown {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #0ff;
+            color: #000;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .card-name {
+            font-size: 12px;
+            color: #0ff;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .card-desc {
+            font-size: 10px;
+            color: #aaa;
+            flex: 1;
+        }
+
+        .card-effect {
+            font-size: 9px;
+            color: #f0f;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* Combat overlay */
+        #combatOverlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 30%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+        }
+
+        .combat-hero {
+            position: absolute;
+            width: 150px;
+            height: 200px;
+            background: rgba(0,255,255,0.1);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #hero-player {
+            bottom: 20px;
+            left: 50px;
+        }
+
+        #hero-enemy {
+            top: 20px;
+            right: 50px;
+        }
+
+        .hero-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #0ff;
+        }
+
+        .hero-portrait {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            background: #111;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 16px rgba(0,255,255,0.4);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .hero-portrait-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid #0ff;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.8;
+        }
+
+        .hero-hp {
+            font-size: 18px;
+            color: #0f0;
+            margin-bottom: 5px;
+        }
+
+        .hero-name {
+            font-size: 14px;
+            color: #0ff;
+        }
+
+        /* Effets visuels */
+        @keyframes glitch {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            10% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+            20% { transform: translate(2px, -2px); filter: hue-rotate(180deg); }
+            30% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); }
+            40% { transform: translate(2px, 2px); filter: hue-rotate(360deg); }
+            50% { transform: translate(0); filter: hue-rotate(0deg); }
+            100% { transform: translate(0); filter: hue-rotate(0deg); }
+        }
+
+        .glitch-effect {
+            animation: glitch 0.5s infinite;
+        }
+
+        /* Messages flottants */
+        .floating-msg {
+            position: absolute;
+            color: #0ff;
+            font-size: 20px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: float-up 2s ease-out forwards;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes float-up {
+            0% { 
+                transform: translateY(0) scale(0.5); 
+                opacity: 0;
+            }
+            50% { 
+                transform: translateY(-30px) scale(1.2); 
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(-60px) scale(0.8); 
+                opacity: 0;
+            }
+        }
+
+        /* Loading */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #0ff;
+            text-align: center;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
+        /* Avatar styles */
+        .avatar-ber0 { 
+            background-image: url('/FRONTPAGE/BALLON_CUBE/PICS_CHARACTERS/ber0.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .avatar-ber1 { 
+            background-image: url('/FRONTPAGE/BALLON_CUBE/PICS_CHARACTERS/ber1.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .avatar-ber2 { 
+            background-image: url('/FRONTPAGE/BALLON_CUBE/PICS_CHARACTERS/ber2.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        /* Grille de jeu MAGNIFIQUE style PWA */
+        #gameGrid {
+            display: grid;
+            grid-template-columns: repeat(10, 60px);
+            grid-template-rows: repeat(10, 60px);
+            gap: 3px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,50,0.9));
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            width: fit-content;
+            box-shadow: 0 0 30px rgba(0,255,255,0.5), inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .grid-cell {
+            background: linear-gradient(135deg, rgba(0,50,100,0.3), rgba(0,100,150,0.2));
+            border: 2px solid rgba(0,255,255,0.4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .grid-cell::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .grid-cell:hover::before {
+            opacity: 1;
+        }
+        
+        .grid-cell:hover {
+            background: linear-gradient(135deg, rgba(0,255,255,0.4), rgba(0,150,200,0.3));
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0,255,255,0.7);
+            z-index: 10;
+        }
+        
+        .grid-cell.wall {
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            border-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .grid-cell.objective {
+            animation: pulse 2s infinite;
+            background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,255,0,0.2));
+            border-color: gold;
+        }
+
+        /* Causality Fog (ombre portée adversaire) */
+        .grid-cell.fog { filter: brightness(0.45) saturate(0.6); }
+        .grid-cell.hidden { opacity: 0.1; pointer-events: none; }
+        .grid-cell.enemy-now { box-shadow: inset 0 0 0 2px rgba(178,102,255,0.75), 0 0 12px rgba(178,102,255,0.55); }
+        .grid-cell.enemy-stale { box-shadow: inset 0 0 0 2px rgba(178,102,255,0.35); filter: saturate(0.9) brightness(0.95); }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .player-avatar {
+            width: 56px;
+            height: 56px;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 10;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div>INITIALIZING TEMPORAL HACK</div>
+        <div class="loading-dots">LOADING</div>
+    </div>
+
+    <!-- NIVEAU 0 - Terminal Tutorial -->
+    <div id="level0" style="display:none;">
+        <div id="terminal">
+            <div class="terminal-line terminal-success">== BÉRÉNICE TEMPORAL HACKER v1.0 ==</div>
+            <div class="terminal-line">Connectée à: INTERSTICE.QUANTUM.NET</div>
+            <div class="terminal-line">Date: 2024-??-?? (temporal drift detected)</div>
+            <div class="terminal-line">---</div>
+            <div class="terminal-line">ALERTE: Faille temporelle détectée!</div>
+            <div class="terminal-line">Tu es coincée dans l'Interstice.</div>
+            <div class="terminal-line">Tape 'help' pour voir les commandes.</div>
+        </div>
+        <div id="terminal-input">
+            <span id="terminal-prompt">berenice@interstice:~$ </span>
+            <input type="text" id="terminal-cmd" autofocus>
+        </div>
+    </div>
+
+    <!-- Game Container (Niveaux 1+) -->
+    <div id="gameContainer">
+        <div id="topBar">
+            <button class="top-btn" id="btnHelp">Aide</button>
+            <button class="top-btn" id="btnTalk">Parler</button>
+            <button class="top-btn" id="btnEditor">Mode Éditeur</button>
+            <button class="top-btn" id="btnHero">Héroïne</button>
+            <button class="top-btn" id="btnLevels">Niveaux</button>
+        </div>
+        <div id="helpOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('helpOverlay').style.display='none'">Fermer</button>
+                <h3>Guide rapide</h3>
+                <ol style="text-align:left; color:#0ff;">
+                    <li>Tape ./hack.sh pour démarrer</li>
+                    <li>Touche une case pour te déplacer</li>
+                    <li>Récupère 3 💎, rejoins 🚪</li>
+                    <li>En combat: joue une carte → l’ennemi répond</li>
+                    <li>Fork Process crée un clone 🧬</li>
+                </ol>
+            </div>
+        </div>
+        <div id="editorOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('editorOverlay').style.display='none'">Fermer</button>
+                <h3>Éditeur Avancé</h3>
+                <iframe id="editorFrame" src="/world-editor/?embed=1"></iframe>
+            </div>
+        </div>
+        <div id="heroOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('heroOverlay').style.display='none'">Fermer</button>
+                <h3>Profil de Bérénice</h3>
+                <div id="heroContent" style="display:flex; gap:16px; align-items:flex-start; justify-content:flex-start;">
+                    <div>
+                        <div id="heroPortrait" class="hero-portrait avatar-ber0"></div>
+                        <div style="display:flex; gap:6px; margin-top:8px; opacity:0.8;">
+                            <div class="hero-portrait-mini avatar-ber0" title="Niveau 1"></div>
+                            <div class="hero-portrait-mini avatar-ber1" title="Niveau 2"></div>
+                            <div class="hero-portrait-mini avatar-ber2" title="Niveau 3"></div>
+                        </div>
+                    </div>
+                    <div style="min-width:240px; max-width:60vw; text-align:left;">
+                        <div id="heroName" style="font-weight:bold; color:#0ff; margin-bottom:6px;">Bérénice</div>
+                        <div id="heroDesc" style="font-size:12px; color:#9ff; margin-bottom:10px;"></div>
+                        <div style="font-weight:bold; color:#0ff; margin:8px 0 4px;">Capacités</div>
+                        <div id="heroAbilities" style="display:flex; flex-direction:column; gap:6px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="levelsOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('levelsOverlay').style.display='none'">Fermer</button>
+                <h3>Choisir le niveau</h3>
+                <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+                    <button class="top-btn" onclick="startLevel(1)">Niveau 1</button>
+                    <button class="top-btn" onclick="startLevel(2)">Niveau 2</button>
+                    <button class="top-btn" onclick="startLevel(3)">Niveau 3</button>
+                </div>
+            </div>
+        </div>
+        <!-- Container pour la grille et l'avatar -->
+        <div style="position: relative; display: inline-block; margin: 0 auto;">
+            <!-- Grille de jeu style PWA -->
+            <div id="gameGrid"></div>
+            
+            <!-- Avatar du joueur -->
+            <img id="playerAvatar" class="player-avatar avatar-ber0" style="display:none;">
+        </div>
+        
+        <!-- Stats compactes (tap pour détails) -->
+        <div id="stats" title="Touchez pour plus de détails">
+            <div class="stat-row">
+                <span class="stat-icon">❤️</span>
+                <span class="stat-label">HP</span>
+                <span class="stat-value"><span id="hp">30</span>/<span id="maxHp">30</span></span>
+            </div>
+            <div class="stat-row" style="gap:6px">
+                <span class="stat-icon">⚡</span>
+                <div id="energyBar"><div id="energyFill"></div></div>
+                <span class="stat-value" id="energyText">0/10</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">🌀</span>
+                <span class="stat-label">Phase</span>
+                <span class="stat-value"><span id="level">1</span></span>
+            </div>
+            <div class="stat-row details">
+                <span class="stat-icon">💎</span>
+                <span class="stat-label">Cristaux</span>
+                <span class="stat-value" id="crystals">5</span>
+            </div>
+            <div class="stat-row details">
+                <span class="stat-icon">📍</span>
+                <span class="stat-label">Position</span>
+                <span class="stat-value" id="pos">0,0,0</span>
+            </div>
+            <div class="stat-row details">
+                <span class="stat-icon">Ψ</span>
+                <span class="stat-label">Quantum</span>
+                <span class="stat-value" id="psi">0.5</span>
+            </div>
+        </div>
+
+        <!-- Dialogue -->
+        <div id="dialogue">
+            <div id="dialogue-speaker">???</div>
+            <div id="dialogue-text"></div>
+        </div>
+
+        <!-- Combat Overlay -->
+        <div id="combatOverlay">
+            <div id="hero-player" class="combat-hero">
+                <div class="hero-avatar avatar-ber0"></div>
+                <div class="hero-hp">HP: 30/30</div>
+                <div class="hero-name">BruhNice</div>
+            </div>
+            <div id="hero-enemy" class="combat-hero">
+                <div class="hero-avatar"></div>
+                <div class="hero-hp">HP: 40/40</div>
+                <div class="hero-name">???</div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div id="cards">
+            <!-- Les cartes seront générées dynamiquement -->
+        </div>
+    </div>
+
+    <script>
+        // Configuration globale (prod/dev safe)
+        const __isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
+        const CONFIG = {
+            JAVA_API: __isLocal ? 'http://localhost:8082' : '/api',
+            RUST_API: __isLocal ? 'http://localhost:3001' : '/engine',
+            VECTOR_DB: __isLocal ? 'http://localhost:5000' : '/vector',
+            LLM_API: __isLocal ? 'http://localhost:8889' : '/llm',
+            TICK_RATE: 100, // ms
+            DEBUG_MODE: true
+        };
+
+        // État du jeu
+        let gameState = {
+            currentLevel: 0,
+            player: {
+                id: 'berenice_bruhnnice',
+                hp: 30,
+                maxHp: 30,
+                mana: 3,
+                maxMana: 10,
+                crystals: 0,
+                position_6d: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    t: 0,
+                    c: 1,
+                    psi: 0.5
+                },
+                avatar: 'ber0',
+                cards: [],
+                inventory: []
+            },
+            world: {
+                entities: [],
+                map: null,
+                fogOfWar: true,
+                visited: [],
+                enemySeenAt: [],
+                losRadius: 2
+            },
+            combat: {
+                active: false,
+                enemy: null,
+                turn: 'player'
+            }
+        };
+
+        // Terminal commands (Niveau 0)
+        const terminalCommands = {
+            help: () => {
+                return `Commandes disponibles:
+- help : Affiche cette aide
+- ls : Liste les fichiers
+- cd <dir> : Change de répertoire
+- cat <file> : Lit un fichier
+- ./hack.sh : Lance le hack temporel
+- whoami : Qui suis-je?
+- clear : Efface l'écran`;
+            },
+            ls: () => {
+                if (gameState.player.position_6d.x === 0) {
+                    return "bugs.exe  readme.txt  hack.sh  portal/";
+                } else {
+                    return "server1.quantum  server2.quantum  server3.quantum  LOCKED/";
+                }
+            },
+            whoami: () => {
+                return `berenice - Hackeuse temporelle (10 ans)
+Discord: BruhNice
+Connexions: Quelques contacts utiles dans l'Interstice
+Status: PERDUE DANS L'INTERSTICE`;
+            },
+            cat: (args) => {
+                if (args[0] === 'readme.txt') {
+                    return `URGENT - LIRE IMMÉDIATEMENT
+
+Bérénice,
+
+Si tu lis ça, c'est que le serveur quantique a planté.
+Tu es dans l'Interstice - l'espace entre les mondes.
+Il y a des gens qui connaissent les passages secrets.
+Certains contrôlent même le brouillard.
+
+Pour sortir, tu dois:
+1. Hacker les serveurs temporels
+2. Stabiliser ton Ψ (psi) à 1.0
+3. Vaincre les gardiens
+4. Trouver le portail de retour
+
+Lance ./hack.sh pour commencer.
+
+PS: Méfie-toi du Dragon. Il déteste Excalibur.`;
+                }
+                return "Fichier non trouvé";
+            },
+            './hack.sh': () => {
+                setTimeout(() => startLevel(1), 2000);
+                return `Initialisation du hack temporel...
+[####______] 40%
+[########__] 80%
+[##########] 100%
+
+HACK RÉUSSI! Téléportation vers Niveau 1...`;
+            },
+            clear: () => {
+                document.getElementById('terminal').innerHTML = '';
+                return '';
+            }
+        };
+
+        // Initialisation
+        window.onload = async function() {
+            // Check backend services
+            const services = await checkServices();
+            
+            if (services.allUp) {
+                document.getElementById('loading').style.display = 'none';
+                startLevel(0);
+            } else {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color:#f00">ERREUR: Services manquants!</div>
+                    <div>Java API: ${services.java ? '✓' : '✗'}</div>
+                    <div>Rust Engine: ${services.rust ? '✓' : '✗'}</div>
+                    <div>Vector DB: ${services.vector ? '✓' : '✗'}</div>
+                `;
+            }
+
+            // Terminal input handler
+            document.getElementById('terminal-cmd').addEventListener('keypress', handleTerminalInput);
+
+            // Start game loop
+            setInterval(gameLoop, CONFIG.TICK_RATE);
+        };
+
+        async function checkServices() {
+            const checks = {
+                java: fetch(CONFIG.JAVA_API + '/health').then(r => r.ok).catch(() => false),
+                rust: fetch(CONFIG.RUST_API + '/health').then(r => r.ok).catch(() => false),
+                vector: fetch(CONFIG.VECTOR_DB + '/health').then(r => r.ok).catch(() => false)
+            };
+
+            const results = await Promise.all(Object.values(checks));
+            return {
+                java: results[0],
+                rust: results[1],
+                vector: results[2],
+                allUp: results.every(r => r)
+            };
+        }
+
+        function handleTerminalInput(e) {
+            if (e.key === 'Enter') {
+                const input = e.target.value.trim();
+                const terminal = document.getElementById('terminal');
+                
+                // Affiche la commande
+                const cmdLine = document.createElement('div');
+                cmdLine.className = 'terminal-line';
+                cmdLine.textContent = 'berenice@interstice:~$ ' + input;
+                terminal.appendChild(cmdLine);
+
+                // Exécute la commande
+                const [cmd, ...args] = input.split(' ');
+                let output = '';
+
+                if (terminalCommands[cmd]) {
+                    output = terminalCommands[cmd](args);
+                } else if (input === '') {
+                    output = '';
+                } else {
+                    output = `bash: ${cmd}: command not found`;
+                }
+
+                if (output) {
+                    const outputLine = document.createElement('div');
+                    outputLine.className = 'terminal-line';
+                    if (output.includes('non trouvé') || output.includes('not found')) {
+                        outputLine.className += ' terminal-error';
+                    }
+                    outputLine.textContent = output;
+                    terminal.appendChild(outputLine);
+                }
+
+                // Clear input
+                e.target.value = '';
+                
+                // Scroll to bottom
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        function startLevel(level) {
+            gameState.currentLevel = level;
+            
+            if (level === 0) {
+                document.getElementById('level0').style.display = 'flex';
+                document.getElementById('gameContainer').style.display = 'none';
+            } else {
+                document.getElementById('level0').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                initLevel(level);
+            }
+        }
+
+        async function initLevel(level) {
+            const levelConfigs = {
+                1: {
+                    name: "Prairie Bugguée",
+                    avatar: "ber0",
+                    map: generateMap(10, 10, 'prairie'),
+                    cards: ["Ping", "Firewall", "Debug"],
+                    enemies: ["Virus Lapin", "Bug Syntaxique"],
+                    dialogue: "SÉRIEUX?! Un avatar cartoon?! Je DÉTESTE ça! Bruh!"
+                },
+                2: {
+                    name: "Serveur Quantique",
+                    avatar: "ber1",
+                    map: generateMap(12, 12, 'quantum'),
+                    cards: ["Fork Process", "Ctrl+Z", "Stack Overflow"],
+                    enemies: ["Process Zombie", "Memory Leak"],
+                    dialogue: "Enfin! Ça c'est mieux! Mode hacker activé!"
+                },
+                3: {
+                    name: "Coeur de l'Interstice",
+                    avatar: "ber2",
+                    map: generateMap(14, 14, 'interstice'),
+                    cards: ["Sudo Privilege", "Kernel Panic", "Time.sleep(∞)"],
+                    enemies: ["GROEKEN", "Dragon Temporel", "Arthur Quantique"],
+                    dialogue: "Maintenant on parle! Cyberpunk mode ON!"
+                }
+            };
+
+            const config = levelConfigs[level];
+            if (!config) return;
+
+            // Update avatar
+            gameState.player.avatar = config.avatar;
+            updateAvatar();
+
+            // Show dialogue
+            showDialogue("Bérénice", config.dialogue);
+
+            // Load cards
+            await loadCards(config.cards);
+
+            // Initialize map and content
+            gameState.world.map = config.map;
+            gameState.world.visited = Array.from({length:10}, ()=>Array(10).fill(false));
+            initWorldContent(level);
+
+            // Set initial position
+            gameState.player.position_6d.x = 1;
+            gameState.player.position_6d.y = 1;
+            
+            // Start rendering
+            renderGame();
+        }
+
+        function generateMap(width, height, type) {
+            const map = [];
+            const tiles = {
+                prairie: ['🌳', '🌺', '🌿', '·'],
+                quantum: ['▓', '░', '⚡', '◊'],
+                interstice: ['█', '▒', '◈', '∴']
+            };
+
+            for (let y = 0; y < height; y++) {
+                const row = [];
+                for (let x = 0; x < width; x++) {
+                    const tileSet = tiles[type];
+                    row.push(tileSet[Math.floor(Math.random() * tileSet.length)]);
+                }
+                map.push(row);
+            }
+
+            // Add objectives
+            map[5][5] = '💎'; // Crystal
+            map[height-2][width-2] = '🚪'; // Exit
+
+            return map;
+        }
+
+        function rndInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+        function initWorldContent(level){
+            const ents = [];
+            const size = 10;
+            // Exit
+            ents.push({ type:'exit', x: 9, y: 9, emoji:'🚪' });
+            // Treasures
+            const treasureCount = level===1?4:(level===2?6:8);
+            for(let i=0;i<treasureCount;i++){
+                ents.push({ type:'item', subtype:'crystal', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji:'💎' });
+            }
+            // Artefacts
+            const arts=['🗡️','🛡️','🧪','📜'];
+            for(let i=0;i<(level>=2?2:1);i++){
+                ents.push({ type:'item', subtype:'artifact', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji: arts[rndInt(0,arts.length-1)] });
+            }
+            // Creatures
+            const pool = level===1?['🐺','🕷️']:(level===2?['👾','🧟','🦇']:['🐉','🧛','👹']);
+            const mobs = level===1?2:(level===2?3:4);
+            for(let i=0;i<mobs;i++){
+                ents.push({ type:'creature', name:'enemy_'+(i+1), x:rndInt(1,size-2), y:rndInt(1,size-2), emoji: pool[rndInt(0,pool.length-1)], hp: 20+(level*10), maxHp: 20+(level*10) });
+            }
+            // Ensure not on start
+            gameState.world.entities = ents.filter(e => !(e.x===1 && e.y===1));
+        }
+
+        async function loadCards(cardNames) {
+            const cardDefinitions = {
+                "Ping": {
+                    cost: 1,
+                    desc: "Teste la connexion",
+                    effect: "1 dégât, pioche si touche",
+                    code: "ping -c 1 enemy.ip",
+                    action: async (target) => {
+                        await dealDamage(target, 1);
+                        if (target.hp > 0) drawCard();
+                    }
+                },
+                "Firewall": {
+                    cost: 2,
+                    desc: "Protection réseau",
+                    effect: "Bloque 3 dégâts",
+                    code: "iptables -A INPUT -j DROP",
+                    action: async () => {
+                        gameState.player.shield = 3;
+                    }
+                },
+                "Debug": {
+                    cost: 1,
+                    desc: "Analyse du code",
+                    effect: "Pioche 2, défausse 1",
+                    code: "console.log(hand);",
+                    action: async () => {
+                        drawCard();
+                        drawCard();
+                        // TODO: implement discard
+                    }
+                },
+                "Fork Process": {
+                    cost: 3,
+                    desc: "Duplication quantique",
+                    effect: "Crée un clone 2/2",
+                    code: "process.fork()",
+                    action: async () => {
+                        createClone();
+                    }
+                },
+                "Ctrl+Z": {
+                    cost: 2,
+                    desc: "Annulation temporelle",
+                    effect: "Annule dernière action",
+                    code: "git revert HEAD~1",
+                    action: async () => {
+                        await revertLastAction();
+                    }
+                },
+                "Stack Overflow": {
+                    cost: 4,
+                    desc: "Débordement récursif",
+                    effect: "X dégâts (X = cartes en main)",
+                    code: "while(1) damage.push()",
+                    action: async (target) => {
+                        const damage = gameState.player.cards.length;
+                        await dealDamage(target, damage);
+                    }
+                },
+                "Sudo Privilege": {
+                    cost: 6,
+                    desc: "Escalade de privilèges",
+                    effect: "Contrôle 1 ennemi",
+                    code: "sudo chown berenice enemy",
+                    action: async (target) => {
+                        target.controller = 'player';
+                    }
+                },
+                "Kernel Panic": {
+                    cost: 7,
+                    desc: "Crash système total",
+                    effect: "Détruit tout, pioche 3",
+                    code: "kernel panic: not syncing",
+                    action: async () => {
+                        gameState.world.entities = [];
+                        for (let i = 0; i < 3; i++) drawCard();
+                    }
+                },
+                "Time.sleep(∞)": {
+                    cost: 8,
+                    desc: "Boucle infinie temporelle",
+                    effect: "Gèle tout 2 tours",
+                    code: "while(true) { wait(); }",
+                    action: async () => {
+                        gameState.world.frozen = 2;
+                    }
+                }
+            };
+
+            gameState.player.cards = cardNames.map(name => ({
+                ...cardDefinitions[name],
+                name: name,
+                cooldown: 0
+            }));
+
+            renderCards();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cards');
+            container.innerHTML = '';
+
+            // Icônes pour chaque carte
+            const cardIcons = {
+                'Ping': '📡',
+                'Firewall': '🛡️',
+                'Debug': '🔍',
+                'Fork Process': '🔀',
+                'Ctrl+Z': '↩️',
+                'Stack Overflow': '💥',
+                'Sudo Privilege': '👑',
+                'Kernel Panic': '☠️',
+                'Time.sleep(∞)': '⏸️',
+                'SSH Tunnel': '🔐',
+                'Git Push': '⬆️',
+                'DDoS': '⚡',
+                'Défault': '✨'
+            };
+
+            gameState.player.cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card' + (card.cooldown > 0 ? ' cooldown' : '');
+                const icon = cardIcons[card.name] || cardIcons['Défault'];
+                
+                cardEl.innerHTML = `
+                    <div style="position: absolute; top: 5px; right: 5px; font-size: 16px; font-weight: bold; color: #0ff;">⚡${card.cost}</div>
+                    <div style="font-size: 36px; margin-bottom: 10px; filter: drop-shadow(0 0 10px currentColor);">${icon}</div>
+                    <div class="card-name" style="font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(0,255,255,0.8);">${card.name}</div>
+                    <div class="card-desc" style="font-size: 11px; color: #aaa; margin: 5px 0;">${card.desc}</div>
+                    <div class="card-effect" style="font-size: 10px; color: #0ff; font-family: monospace;">${card.code}</div>
+                `;
+                
+                if (card.cooldown === 0) {
+                    cardEl.onclick = () => playCard(index);
+                }
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        async function playCard(index) {
+            const card = gameState.player.cards[index];
+            
+            if (card.cooldown > 0) {
+                showFloatingMessage("En cooldown!", card.x, card.y, '#f00');
+                return;
+            }
+
+            if (gameState.player.mana < card.cost) {
+                showFloatingMessage("Pas assez de mana!", card.x, card.y, '#f00');
+                return;
+            }
+
+            // Consume mana
+            gameState.player.mana -= card.cost;
+            updateStats();
+
+            // Apply cooldown
+            card.cooldown = card.cost;
+
+            // Execute card action
+            if (card.action) {
+                await card.action(gameState.combat.enemy);
+            }
+
+            // If in combat, progress turn
+            if (gameState.combat.active && gameState.combat.turn === 'player') {
+                // Small chance to damage enemy if card is offensive
+                if (card.name === 'Ping' || card.name === 'Stack Overflow' || card.name === 'Kernel Panic') {
+                    const e = gameState.combat.enemy;
+                    if (e) {
+                        e.hp = Math.max(0, e.hp - 5);
+                        if (e.hp <= 0) { endCombat(true); }
+                    }
+                }
+                gameState.combat.turn = 'enemy';
+            }
+
+            // Call backend (map card → real formula; simulate mode)
+            try {
+                const CARD_TO_FORMULA = {
+                    'Ping': 'Δt[PING(1)]',
+                    'Firewall': 'SHIELD(3)',
+                    'Debug': 'REVEAL(FOG)',
+                    'Fork Process': '⊙(SELF) ⊕ CLONE(2,2)',
+                    'Ctrl+Z': 'Ψ(state[-1]) → RESTORE',
+                    'Stack Overflow': 'DAMAGE(X)',
+                    'Sudo Privilege': 'CONTROL(1)',
+                    'Kernel Panic': 'NUKE(); DRAW(3)',
+                    'Time.sleep(∞)': 'FREEZE(2)'
+                };
+                const payload = {
+                    formula: CARD_TO_FORMULA[card.name] ?? card.code,
+                    mode: 'simulate',
+                    context: { caster: gameState.player.id, target: gameState.combat.enemy?.id }
+                };
+                const response = await fetch(CONFIG.JAVA_API + '/magic/cast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (CONFIG.DEBUG_MODE) console.log('Cast result:', result);
+                const literary = result?.outputs?.literary || '...';
+                const iconic = result?.outputs?.iconic || '✨';
+                showDialogue(iconic, literary);
+                showFloatingMessage(iconic, 300, 300, '#0ff');
+            } catch (error) {
+                console.error('API error:', error);
+            }
+
+            // Visual effect
+            showFloatingMessage(card.name + "!", 300, 300, '#0ff');
+            
+            renderCards();
+        }
+
+        function showDialogue(speaker, text) {
+            const dialogue = document.getElementById('dialogue');
+            document.getElementById('dialogue-speaker').textContent = speaker;
+            document.getElementById('dialogue-text').textContent = text;
+            dialogue.style.display = 'block';
+
+            setTimeout(() => {
+                dialogue.style.display = 'none';
+            }, 5000);
+        }
+
+        function showFloatingMessage(text, x, y, color = '#0ff') {
+            const msg = document.createElement('div');
+            msg.className = 'floating-msg';
+            msg.style.left = x + 'px';
+            msg.style.top = y + 'px';
+            msg.style.color = color;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        function updateStats() {
+            document.getElementById('hp').textContent = gameState.player.hp;
+            document.getElementById('maxHp').textContent = gameState.player.maxHp;
+            document.getElementById('level').textContent = gameState.currentLevel;
+            document.getElementById('mana').textContent = gameState.player.mana;
+            document.getElementById('maxMana').textContent = gameState.player.maxMana;
+            document.getElementById('pos').textContent = 
+                `${gameState.player.position_6d.x},${gameState.player.position_6d.y},${gameState.player.position_6d.z}`;
+            const manaPct = Math.min(100, Math.max(0, (gameState.player.mana / gameState.player.maxMana) * 100));
+            document.getElementById('energyFill').style.width = manaPct + '%';
+            document.getElementById('energyText').textContent = `${Math.floor(gameState.player.mana)}/${gameState.player.maxMana}`;
+            document.getElementById('psi').textContent = gameState.player.position_6d.psi.toFixed(2);
+        }
+
+        function updateAvatar() {
+            // Update combat avatars
+            const combatAvatars = document.querySelectorAll('.hero-avatar');
+            combatAvatars.forEach(avatar => {
+                if (avatar.parentElement.id === 'hero-player') {
+                    avatar.className = 'hero-avatar avatar-' + gameState.player.avatar;
+                }
+            });
+            
+            // Update main player avatar
+            const playerAvatar = document.getElementById('playerAvatar');
+            if (playerAvatar) {
+                playerAvatar.className = 'player-avatar avatar-' + gameState.player.avatar;
+                // Show the correct image based on level
+                if (gameState.currentLevel === 1) {
+                    showDialogue("Bérénice", "SÉRIEUX?! Cet avatar cartoon?! Je DÉTESTE!");
+                } else if (gameState.currentLevel === 2) {
+                    showDialogue("Bérénice", "Enfin! Ça c'est mieux! Mode hacker activé!");
+                } else if (gameState.currentLevel === 3) {
+                    showDialogue("Bérénice", "Maintenant on parle! Cyberpunk mode ON!");
+                }
+            }
+            // Update hero overlay portrait if open
+            const heroPortrait = document.getElementById('heroPortrait');
+            if (heroPortrait) {
+                heroPortrait.className = 'hero-portrait avatar-' + gameState.player.avatar;
+            }
+        }
+
+        async function gameLoop() {
+            if (gameState.currentLevel === 0) return;
+
+            // Tick synchronization with backend
+            gameState.player.position_6d.t++;
+
+            // Update cooldowns
+            gameState.player.cards.forEach(card => {
+                if (card.cooldown > 0) card.cooldown--;
+            });
+
+            // Regenerate mana
+            if (gameState.player.mana < gameState.player.maxMana) {
+                gameState.player.mana += 0.01;
+            }
+
+            // Decay clone TTL
+            if (gameState.world.entities?.length) {
+                gameState.world.entities.forEach(e => { if (e.type==='clone') e.ttl--; });
+                gameState.world.entities = gameState.world.entities.filter(e => e.type!=='clone' || e.ttl>0);
+            }
+
+            // Simple turn-based when combat active
+            if (gameState.combat.active && gameState.combat.turn === 'enemy') {
+                await new Promise(r => setTimeout(r, 450));
+                // Enemy deals 3 damage
+                gameState.player.hp = Math.max(0, gameState.player.hp - 3);
+                updateStats();
+                if (gameState.player.hp <= 0) { endCombat(false); return; }
+                gameState.combat.turn = 'player';
+            }
+
+            // Update UI
+            updateStats();
+            
+            // Sync with Rust backend every 100ms
+            if (gameState.player.position_6d.t % 1 === 0) {
+                try {
+                    const response = await fetch(CONFIG.RUST_API + '/v2/tick', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            player_id: gameState.player.id,
+                            position_6d: gameState.player.position_6d,
+                            actions: [] // TODO: queue actions
+                        })
+                    });
+
+                    const worldState = await response.json();
+                    // TODO: update world state
+                } catch (error) {
+                    // Continue locally if backend is down
+                }
+            }
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            // Créer une grille 10x10
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // Click pour déplacer
+                    cell.onclick = () => movePlayer(x, y);
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+        
+        function renderGame() {
+            if (gameState.currentLevel === 0) return;
+            
+            const grid = document.getElementById('gameGrid');
+            if (!grid.children.length) createGrid();
+            
+            const cells = grid.querySelectorAll('.grid-cell');
+            const avatar = document.getElementById('playerAvatar');
+            
+            // Clear grid
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.className = 'grid-cell';
+            });
+            
+            // Render based on level
+            const levelData = {
+                1: { walls: '🌳' },
+                2: { walls: '▓' },
+                3: { walls: '⚡' }
+            };
+            
+            const data = levelData[gameState.currentLevel];
+            if (data) {
+                // Place walls on edges (size=10)
+                for (let i = 0; i < 10; i++) {
+                    cells[i].innerHTML = data.walls;
+                    cells[i].classList.add('wall');
+                    cells[90 + i].innerHTML = data.walls;
+                    cells[90 + i].classList.add('wall');
+                    cells[i * 10].innerHTML = data.walls;
+                    cells[i * 10].classList.add('wall');
+                    cells[i * 10 + 9].innerHTML = data.walls;
+                    cells[i * 10 + 9].classList.add('wall');
+                }
+
+                // Render entities (items/creatures/exit) if visible
+                const px = gameState.player.position_6d.x, py = gameState.player.position_6d.y;
+                const los = gameState.world.losRadius || 2;
+                (gameState.world.entities||[]).forEach(ent => {
+                    const idx = ent.y*10 + ent.x; const cell = cells[idx]; if(!cell) return;
+                    const visible = Math.abs(ent.x-px)+Math.abs(ent.y-py) <= los || gameState.world.visited[ent.y]?.[ent.x];
+                    if (!visible) return;
+                    cell.textContent = ent.emoji;
+                    if (ent.type==='item') cell.classList.add('objective');
+                });
+            }
+
+            // Fog of war (visited + LOS radius=2) & Causality Fog (enemy projection)
+            if (!gameState.world.visited.length) {
+                gameState.world.visited = Array.from({length:10},()=>Array(10).fill(false));
+            }
+            if (!gameState.world.enemySeenAt.length) {
+                gameState.world.enemySeenAt = Array.from({length:10},()=>Array(10).fill(0));
+            }
+            const px = gameState.player.position_6d.x;
+            const py = gameState.player.position_6d.y;
+            const r = gameState.world.losRadius || 2;
+            for (let dy=-r; dy<=r; dy++) {
+                for (let dx=-r; dx<=r; dx++) {
+                    const x=px+dx, y=py+dy; if(x>=0&&x<10&&y>=0&&y<10) gameState.world.visited[y][x]=true;
+                }
+            }
+            for (let y=0; y<10; y++) {
+                for (let x=0; x<10; x++) {
+                    const cell = cells[y*10+x];
+                    if (!gameState.world.visited[y][x]) cell.classList.add('hidden');
+                    else if (Math.abs(x-px)+Math.abs(y-py) > r) cell.classList.add('fog');
+                }
+            }
+
+            // Server-side LOS (engine) for future-proof visibility (fallback to local if fails)
+            (async () => {
+                try {
+                    const obstacles = Array.from({length:10},()=>Array(10).fill(0));
+                    for (let i=0;i<10;i++){ obstacles[0][i]=1; obstacles[9][i]=1; obstacles[i][0]=1; obstacles[i][9]=1; }
+                    const res = await fetch(CONFIG.RUST_API + '/api/visibility/los', {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ width:10, height:10, obstacles, agents:[{x:px,y:py,kind:'player'}], radius:r })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        for (let y=0; y<10; y++) {
+                            for (let x=0; x<10; x++) {
+                                const i = y*10+x; if (!data.visible[i]) cells[i].classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (_) { /* ignore */ }
+            })();
+
+            // Causality Fog: mark tiles visible by any creature (their FOV)
+            const enemyLOS = new Set();
+            const now = performance.now();
+            const losR = 3;
+            (gameState.world.entities||[]).forEach(ent => {
+                if (ent.type==='creature') {
+                    for (let dy=-losR; dy<=losR; dy++) {
+                        for (let dx=-losR; dx<=losR; dx++) {
+                            const ex = ent.x+dx, ey = ent.y+dy; if (ex<0||ex>=10||ey<0||ey>=10) continue;
+                            if (Math.abs(dx)+Math.abs(dy) <= losR) {
+                                const key = ey*10+ex; enemyLOS.add(key);
+                                gameState.world.enemySeenAt[ey][ex] = now;
+                            }
+                        }
+                    }
+                }
+            });
+            // apply styles
+            for (let i=0;i<cells.length;i++){
+                const cell = cells[i];
+                const y = Math.floor(i/10), x = i%10;
+                const last = gameState.world.enemySeenAt[y]?.[x] || 0;
+                if (enemyLOS.has(i)) cell.classList.add('enemy-now');
+                else if (now - last < 7000) cell.classList.add('enemy-stale');
+            }
+            
+            // Update player avatar
+            avatar.style.display = 'block';
+            avatar.style.position = 'absolute';
+            const cellSize = 63; // 60px + 3px gap
+            const padding = 15;
+            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 6) + 'px';
+            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 6) + 'px';
+            
+            // Change avatar based on level
+            avatar.className = 'player-avatar avatar-ber' + Math.min(gameState.currentLevel - 1, 2);
+        }
+        
+        function movePlayer(x, y) {
+            if (gameState.currentLevel === 0) return;
+            
+            // Check walls
+            const cells = document.querySelectorAll('.grid-cell');
+            const targetCell = cells[y * 10 + x];
+            if (targetCell && !targetCell.classList.contains('wall')) {
+                gameState.player.position_6d.x = x;
+                gameState.player.position_6d.y = y;
+                renderGame();
+                checkObjectives(x, y);
+                // Entity interactions
+                const ent = (gameState.world.entities||[]).find(e=>e.x===x && e.y===y);
+                if (ent) {
+                    if (ent.type==='item') {
+                        if (ent.subtype==='crystal') { gameState.player.crystals=(gameState.player.crystals||0)+1; showFloatingMessage('💎 +1', x*52, y*52, '#0ff'); }
+                        else { (gameState.player.inventory||[]).push(ent.emoji); showFloatingMessage('Ramassé '+ent.emoji, x*52, y*52, '#0ff'); }
+                        gameState.world.entities = gameState.world.entities.filter(e=>e!==ent);
+                        updateStats();
+                    } else if (ent.type==='creature' && !gameState.combat.active) {
+                        gameState.combat.enemy = { id: ent.name||'enemy', x: ent.x, y: ent.y, hp: ent.hp||30, maxHp: ent.maxHp||30 };
+                        startCombat();
+                    } else if (ent.type==='exit') {
+                        showFloatingMessage('Niveau '+(gameState.currentLevel+1)+'!', x*52, y*52, '#0ff');
+                        setTimeout(()=> startLevel(Math.min(3, gameState.currentLevel+1)), 400);
+                    }
+                }
+            }
+        }
+        
+        function checkObjectives(x, y) { /* handled via entities */ }
+
+        // Helper functions
+        async function dealDamage(target, amount) {
+            if (!target) return;
+            target.hp -= amount;
+            showFloatingMessage(`-${amount}`, target.x, target.y, '#f00');
+        }
+
+        function drawCard() {
+            // TODO: implement card drawing
+            showFloatingMessage("Pioche!", 100, 400, '#0f0');
+        }
+
+        function createClone() {
+            // Visible ghost clone on the grid for 6 ticks
+            const px = gameState.player.position_6d.x;
+            const py = gameState.player.position_6d.y;
+            gameState.world.entities.push({ type:'clone', x: px, y: py, ttl: 6 });
+            gameState.player.position_6d.psi = Math.min(1, gameState.player.position_6d.psi + 0.3);
+            showFloatingMessage('Clone!', px*52, py*52, '#f0f');
+        }
+
+        async function revertLastAction() {
+            // TODO: implement action history and revert
+            showFloatingMessage("Ctrl+Z!", 250, 250, '#ff0');
+        }
+
+        // Toggle details on stats tap
+        document.addEventListener('click', (e) => {
+            const s = document.getElementById('stats');
+            if (s && (s === e.target || s.contains(e.target))) {
+                s.classList.toggle('show-details');
+            }
+        });
+
+        // Top bar actions
+        window.addEventListener('DOMContentLoaded', () => {
+            const btnHelp = document.getElementById('btnHelp');
+            const btnTalk = document.getElementById('btnTalk');
+            const btnEditor = document.getElementById('btnEditor');
+            const btnHero = document.getElementById('btnHero');
+            const btnLevels = document.getElementById('btnLevels');
+            if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
+            if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
+            if (btnLevels) btnLevels.onclick = () => { document.getElementById('levelsOverlay').style.display = 'block'; };
+            if (btnHero) btnHero.onclick = async () => {
+                try {
+                    const res = await fetch(CONFIG.JAVA_API + '/heroes/berenice_temporalhacker');
+                    if (res.ok) {
+                        const hero = await res.json();
+                        const name = hero.name || 'Bérénice';
+                        const desc = hero.backstory || hero.description || '';
+                        const spells = hero.spells || [];
+                        const portrait = document.getElementById('heroPortrait');
+                        portrait.className = 'hero-portrait avatar-' + gameState.player.avatar;
+                        document.getElementById('heroName').textContent = name;
+                        document.getElementById('heroDesc').textContent = desc;
+                        const list = document.getElementById('heroAbilities');
+                        list.innerHTML = '';
+                        spells.slice(0, 6).forEach(s => {
+                            const row = document.createElement('div');
+                            row.style.display = 'flex';
+                            row.style.flexDirection = 'column';
+                            row.innerHTML = `<div style="color:#0ff; font-weight:bold;">${s.name}</div><div style="color:#9ff; font-size:12px">${s.description||''}</div>`;
+                            list.appendChild(row);
+                        });
+                    }
+                } catch {}
+                document.getElementById('heroOverlay').style.display = 'block';
+            };
+            if (btnTalk) btnTalk.onclick = async () => {
+                try {
+                    const q = `Bérénice, niveau ${gameState.currentLevel}`;
+                    const ctx = await fetch(CONFIG.VECTOR_DB + '/search', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query: 'Bérénice backstory', limit: 3 }) }).then(r=>r.json()).catch(()=>({results:[]}));
+                    const prompt = { character: 'berenice', context: { level: gameState.currentLevel, hints: ctx.results?.map(r=>r.match).join('\n').slice(0,500) || '' } };
+                    const resp = await fetch(CONFIG.LLM_API + '/character/speak', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(prompt) }).then(r=>r.json()).catch(()=>({ text: "Je vais y arriver! (mode offline)" }));
+                    showDialogue('Bérénice', resp.text || 'Je vais y arriver!');
+                } catch {
+                    showDialogue('Bérénice', 'Je vais y arriver!');
+                }
+            };
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (gameState.currentLevel === 0) return;
+
+            const moves = {
+                'ArrowUp': [0, -1],
+                'ArrowDown': [0, 1],
+                'ArrowLeft': [-1, 0],
+                'ArrowRight': [1, 0],
+                'w': [0, -1],
+                's': [0, 1],
+                'a': [-1, 0],
+                'd': [1, 0]
+            };
+
+            if (moves[e.key]) {
+                const [dx, dy] = moves[e.key];
+                gameState.player.position_6d.x += dx;
+                gameState.player.position_6d.y += dy;
+                e.preventDefault();
+            }
+        });
+
+        // Touch controls for mobile
+        let touchStartX = null;
+        let touchStartY = null;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!touchStartX || !touchStartY) return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal swipe
+                gameState.player.position_6d.x += dx > 0 ? 1 : -1;
+            } else {
+                // Vertical swipe
+                gameState.player.position_6d.y += dy > 0 ? 1 : -1;
+            }
+
+            touchStartX = null;
+            touchStartY = null;
+        });
+
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button after level 1
+            if (gameState.currentLevel >= 1) {
+                showDialogue("System", "Tu peux installer le jeu! (A2HS)");
+            }
+        });
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then((reg)=>{
+                // Auto-reload when a new SW takes control
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    try { window.location.reload(); } catch {}
+                });
+                // Periodic update check (no heavy downloads thanks to cache-first images)
+                setInterval(() => { try { reg.update(); } catch {} }, 60000);
+            }).catch(()=>{});
+        }
+    </script>
+</body>
+</html>

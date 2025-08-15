@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 TEST TCG-MAP INTEGRATION - GROKÆN</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="AVALON-TCG/styles/tcg-combat.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #game-canvas {
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a1a;
+            position: relative;
+        }
+        
+        /* Map simple pour test */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(50, 40px);
+            grid-template-rows: repeat(50, 40px);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .map-tile {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #333;
+            background: #222;
+        }
+        
+        .map-tile.grass {
+            background: #2d4a2d;
+        }
+        
+        .map-tile.water {
+            background: #1a3a5a;
+        }
+        
+        /* Héros */
+        .hero {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #3366ff;
+            border: 2px solid #66aaff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        /* Zones de combat */
+        .combat-zone {
+            position: absolute;
+            border: 2px dashed #ff6666;
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.1);
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.3; }
+        }
+        
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #666;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #666;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #333;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #444;
+            border-color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-canvas">
+        <div class="map-grid" id="map"></div>
+        <div class="hero" id="hero">🧙</div>
+        
+        <!-- Zones de combat -->
+        <div class="combat-zone" style="width: 160px; height: 160px; top: 380px; left: 580px;"></div>
+        <div class="combat-zone" style="width: 240px; height: 240px; top: 480px; left: 980px;"></div>
+    </div>
+    
+    <div id="hud">
+        <h3>🎮 HEROES OF TIME - TEST TCG</h3>
+        <p>Position: <span id="hero-pos">25, 25</span></p>
+        <p>Cartes: <span id="card-count">7</span></p>
+        <p>Artefacts: <span id="artifact-count">0</span></p>
+    </div>
+    
+    <div id="controls">
+        <h4>Contrôles</h4>
+        <p>↑↓←→ ou WASD pour bouger</p>
+        <button onclick="testCombat()">Test Combat TCG</button>
+        <button onclick="resetPosition()">Reset Position</button>
+    </div>
+    
+    <script type="module">
+        // Import des modules (simulé pour le test)
+        let heroX = 25;
+        let heroY = 25;
+        let inCombat = false;
+        
+        // Créer la map simple
+        function createMap() {
+            const map = document.getElementById('map');
+            for (let y = 0; y < 50; y++) {
+                for (let x = 0; x < 50; x++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'map-tile';
+                    
+                    // Terrain varié
+                    if (Math.random() < 0.3) {
+                        tile.classList.add('grass');
+                    } else if (Math.random() < 0.1) {
+                        tile.classList.add('water');
+                    }
+                    
+                    map.appendChild(tile);
+                }
+            }
+        }
+        
+        // Déplacer le héros
+        function moveHero(dx, dy) {
+            if (inCombat) return;
+            
+            heroX = Math.max(0, Math.min(49, heroX + dx));
+            heroY = Math.max(0, Math.min(49, heroY + dy));
+            
+            const hero = document.getElementById('hero');
+            hero.style.left = (heroX * 40) + 'px';
+            hero.style.top = (heroY * 40) + 'px';
+            
+            document.getElementById('hero-pos').textContent = `${heroX}, ${heroY}`;
+            
+            // Vérifier les zones de combat
+            checkCombatZones();
+        }
+        
+        // Vérifier les zones de combat
+        function checkCombatZones() {
+            // Zone 1: Goblins (15, 20)
+            if (Math.abs(heroX - 15) <= 2 && Math.abs(heroY - 20) <= 2) {
+                initiateTCGCombat('goblin-camp');
+            }
+            
+            // Zone 2: Boss temporel (25, 25)
+            if (Math.abs(heroX - 25) <= 3 && Math.abs(heroY - 25) <= 3) {
+                initiateTCGCombat('temporal-guardian');
+            }
+        }
+        
+        // Démarrer un combat TCG
+        window.testCombat = function() {
+            initiateTCGCombat('test-combat');
+        };
+        
+        function initiateTCGCombat(combatId) {
+            if (inCombat) return;
+            
+            console.log(`🎴 Combat TCG déclenché: ${combatId}`);
+            inCombat = true;
+            
+            // Créer l'interface de combat TCG
+            const combatOverlay = document.createElement('div');
+            combatOverlay.id = 'tcg-combat-overlay';
+            combatOverlay.innerHTML = `
+                <div class="tcg-battlefield">
+                    <div class="enemy-side">
+                        <div class="enemy-info">
+                            <div class="health-bar">
+                                <div class="health-fill" style="width: 100%"></div>
+                                <span class="health-text">30/30</span>
+                            </div>
+                            <div class="mana-crystals">
+                                <div class="mana-crystal"></div>
+                                <div class="mana-crystal empty"></div>
+                                <div class="mana-crystal empty"></div>
+                            </div>
+                        </div>
+                        <div class="enemy-board">
+                            <div class="tcg-card">
+                                <div class="card-cost">2</div>
+                                <div class="card-name">Goblin Scout</div>
+                                <div class="card-image">👺</div>
+                                <div class="card-stats">
+                                    <span class="card-attack">2</span>
+                                    <span class="card-health">1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="battlefield-center">
+                        <div class="phase-indicator">COMBAT PHASE</div>
+                        <div class="combat-log">
+                            Combat démarré !<br>
+                            C'est votre tour...
+                        </div>
+                    </div>
+                    
+                    <div class="player-side">
+                        <div class="player-board">
+                            <div class="tcg-card">
+                                <div class="card-cost">3</div>
+                                <div class="card-name">Hero Strike</div>
+                                <div class="card-image">⚔️</div>
+                                <div class="card-stats">
+                                    <span class="card-attack">3</span>
+                                    <span class="card-health">2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player-hand">
+                            <div class="tcg-card playable">
+                                <div class="card-cost">1</div>
+                                <div class="card-name">Defend</div>
+                                <div class="card-image">🛡️</div>
+                            </div>
+                            <div class="tcg-card playable">
+                                <div class="card-cost">2</div>
+                                <div class="card-name">Temporal Glimpse</div>
+                                <div class="card-image">🔮</div>
+                            </div>
+                            <div class="tcg-card">
+                                <div class="card-cost">4</div>
+                                <div class="card-name">Quantum Leap</div>
+                                <div class="card-image">⚡</div>
+                            </div>
+                        </div>
+                        <div class="player-info">
+                            <div class="health-bar">
+                                <div class="health-fill" style="width: 100%"></div>
+                                <span class="health-text">30/30</span>
+                            </div>
+                            <div class="mana-crystals">
+                                <div class="mana-crystal"></div>
+                                <div class="mana-crystal"></div>
+                                <div class="mana-crystal"></div>
+                                <div class="mana-crystal empty"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tcg-controls">
+                    <button onclick="endTurn()">End Turn</button>
+                    <button onclick="endCombat()">End Combat (Test)</button>
+                </div>
+            `;
+            
+            document.body.appendChild(combatOverlay);
+        }
+        
+        // Terminer le combat
+        window.endCombat = function() {
+            const overlay = document.getElementById('tcg-combat-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+            inCombat = false;
+            
+            // Récompenses
+            const cardCount = document.getElementById('card-count');
+            cardCount.textContent = parseInt(cardCount.textContent) + 2;
+        };
+        
+        window.endTurn = function() {
+            console.log("Tour terminé !");
+            // Animation de fin de tour
+        };
+        
+        // Reset position
+        window.resetPosition = function() {
+            heroX = 25;
+            heroY = 25;
+            moveHero(0, 0);
+        };
+        
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    moveHero(0, -1);
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    moveHero(0, 1);
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    moveHero(-1, 0);
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    moveHero(1, 0);
+                    break;
+            }
+        });
+        
+        // Initialisation
+        createMap();
+        moveHero(0, 0);
+        
+        console.log("🎮 GROKÆN TCG-MAP INTEGRATION TEST READY!");
+    </script>
+</body>
+</html>

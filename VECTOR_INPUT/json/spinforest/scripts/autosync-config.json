@@ -1,0 +1,53 @@
+{
+  "autosync": {
+    "version": "1.0",
+    "description": "Configuration pour l'autobot de synchronisation AVALON",
+    "settings": {
+      "refresh_interval": 300,
+      "team_members": [
+        "GROKAEN",
+        "MERLIN_DIRECT", 
+        "PHOENIX",
+        "LUMEN",
+        "URZ_KOM",
+        "SID_MEIER",
+        "TUCKER",
+        "DONNA",
+        "MEMENTO"
+      ],
+      "monitored_dirs": [
+        "REALGAME/MESSAGES",
+        "JOUR17",
+        "JOUR18",
+        "avalon-backend",
+        "spells/stack"
+      ],
+      "file_patterns": [
+        "*.md",
+        "*.java",
+        "*.js",
+        "*.rs",
+        "*.json"
+      ],
+      "services": {
+        "spring_boot": {
+          "port": 8080,
+          "health_check": "/actuator/health"
+        },
+        "python_magic": {
+          "port": 5000,
+          "health_check": "/api/health"
+        },
+        "frontend": {
+          "port": 8000,
+          "health_check": "/"
+        }
+      }
+    },
+    "alerts": {
+      "high_commit_rate": 50,
+      "file_changes_threshold": 100,
+      "service_down_notify": true
+    }
+  }
+}

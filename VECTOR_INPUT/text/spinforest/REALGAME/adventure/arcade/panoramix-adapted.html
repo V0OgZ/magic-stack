@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧙‍♂️ Atelier de Panoramix - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(circle at center, #1a0033, #000);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+        
+        /* Particules magiques */
+        .magic-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #9370DB;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float-up 3s infinite;
+        }
+        
+        @keyframes float-up {
+            from {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100px) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Container principal */
+        .cauldron-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Panel gauche - Ingrédients */
+        .ingredients-panel {
+            width: 25%;
+            background: rgba(75, 0, 130, 0.1);
+            border-right: 2px solid #9370DB;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .ingredients-panel h2 {
+            color: #9370DB;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #9370DB;
+        }
+        
+        .ingredient {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #9370DB;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.3s;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ingredient:hover {
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+        }
+        
+        .ingredient.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .ingredient-icon {
+            font-size: 20px;
+        }
+        
+        .ingredient-info {
+            flex: 1;
+        }
+        
+        .ingredient-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        /* Zone centrale - Chaudron */
+        .cauldron-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .cauldron {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at 50% 80%, #2a1810, #4a2c2a);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            border: 5px solid #8B4513;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+        
+        .cauldron:hover {
+            transform: scale(1.05);
+            box-shadow: 0 25px 50px rgba(138, 43, 226, 0.3);
+        }
+        
+        .cauldron-content {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 80px;
+            border-radius: 50%;
+            background: rgba(50, 0, 100, 0.3);
+            border: 2px solid #9370DB;
+            overflow: hidden;
+        }
+        
+        .brew-bubble {
+            position: absolute;
+            background: rgba(147, 112, 219, 0.7);
+            border-radius: 50%;
+            animation: bubble-rise 2s infinite;
+        }
+        
+        @keyframes bubble-rise {
+            0% {
+                bottom: 0;
+                opacity: 0.8;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+        
+        .cauldron-steam {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
+            border-radius: 50px;
+            animation: steam-rise 1s infinite;
+        }
+        
+        @keyframes steam-rise {
+            0% {
+                transform: translateX(-50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(-50%) scale(2) translateY(-20px);
+                opacity: 0;
+            }
+        }
+        
+        /* Panel droite - Recettes et résultats */
+        .recipes-panel {
+            width: 25%;
+            background: rgba(75, 0, 130, 0.1);
+            border-left: 2px solid #9370DB;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .recipes-panel h2 {
+            color: #9370DB;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #9370DB;
+        }
+        
+        .recipe {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid #9370DB;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .recipe:hover {
+            background: rgba(138, 43, 226, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .recipe.available {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .recipe-name {
+            font-size: 16px;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+        
+        .recipe-runes {
+            font-size: 12px;
+            color: #9370DB;
+            margin-bottom: 8px;
+        }
+        
+        .recipe-ingredients {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+        
+        .recipe-effect {
+            font-size: 12px;
+            color: #90EE90;
+            font-style: italic;
+        }
+        
+        /* Interface utilisateur */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .panoramix-title {
+            font-size: 24px;
+            color: #FFD700;
+            text-shadow: 0 0 15px #FFD700;
+        }
+        
+        .close-btn {
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.1);
+        }
+        
+        .brew-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #9370DB, #8A2BE2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3);
+        }
+        
+        .brew-button:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 15px 30px rgba(138, 43, 226, 0.5);
+        }
+        
+        .brew-button:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+        }
+        
+        /* Messages */
+        .message-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .success {
+            border-color: #90EE90;
+            color: #90EE90;
+        }
+        
+        .error {
+            border-color: #FF6B6B;
+            color: #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barre supérieure -->
+    <div class="top-bar">
+        <div class="panoramix-title">🧙‍♂️ Atelier de Panoramix l'Archidruide</div>
+        <button class="close-btn" onclick="closeWorkshop()">✕</button>
+    </div>
+
+    <div class="cauldron-container">
+        <!-- Panel gauche - Ingrédients -->
+        <div class="ingredients-panel">
+            <h2>🌿 Ingrédients Disponibles</h2>
+            <div id="ingredientsList">
+                <!-- Généré dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Zone centrale - Chaudron -->
+        <div class="cauldron-area">
+            <div class="cauldron" onclick="startBrewing()">
+                <div class="cauldron-content">
+                    <div id="brewBubbles">
+                        <!-- Bulles générées dynamiquement -->
+                    </div>
+                </div>
+                <div class="cauldron-steam"></div>
+            </div>
+            
+            <button class="brew-button" id="brewBtn" onclick="brewSelectedRecipe()">
+                🧪 Créer la Potion
+            </button>
+        </div>
+
+        <!-- Panel droite - Recettes -->
+        <div class="recipes-panel">
+            <h2>📜 Grimoire de Recettes</h2>
+            <div id="recipesList">
+                <!-- Généré dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Message overlay -->
+    <div class="message-overlay" id="messageOverlay">
+        <div id="messageText"></div>
+    </div>
+
+    <script>
+        // 🧙‍♂️ SYSTÈME PANORAMIX ADAPTÉ POUR HOMM3 6D
+        
+        // État du système
+        let playerInventory = {};
+        let selectedRecipe = null;
+        let isArcadeMode = false;
+        
+        // Recettes de Panoramix
+        const recipes = {
+            'potion_vie': {
+                name: 'Potion de Vie',
+                runes: '⟨ᚨᚲᚢᚨ_ᚢᛁᛏᚨᛖ⟩',
+                ingredients: { herbs: 3, water: 1, honey: 1 },
+                effect: '+50 HP, Régénération 5 tours',
+                description: 'L\'eau de vie des druides ancestraux'
+            },
+            'elixir_temporel': {
+                name: 'Élixir Temporel',
+                runes: '⟨ᛏᛖᛗᛈᛟᚱᚨᛚᛖ_ᛖᛚᛁᚲᛋᛁᚱ⟩',
+                ingredients: { temporal_essence: 2, herbs: 5, crystal_water: 1 },
+                effect: 'Manipulation du temps pendant 3 tours',
+                description: 'Permet de plier le temps à votre volonté'
+            },
+            'sang_de_dragon': {
+                name: 'Sang de Dragon',
+                runes: '⟨ᛞᚱᚨᚲᛟᚾᛁᛋ_ᛋᚨᚾᚷᚢᛁᛋ⟩',
+                ingredients: { dragon_scale: 1, fire_essence: 3, herbs: 10 },
+                effect: 'Immunité feu + ATK x2 pendant 5 tours',
+                description: 'Le sang des anciens dragons de feu'
+            }
+        };
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Vérifier si on est en mode arcade (intégration HOMM3)
+            const urlParams = new URLSearchParams(window.location.search);
+            isArcadeMode = urlParams.get('arcade') === 'true';
+            
+            if (isArcadeMode) {
+                // Récupérer données joueur
+                const playerData = urlParams.get('player_data');
+                if (playerData) {
+                    const data = JSON.parse(decodeURIComponent(playerData));
+                    playerInventory = data.resources || {};
+                }
+            } else {
+                // Mode standalone - inventaire de test
+                playerInventory = {
+                    herbs: 15,
+                    water: 8,
+                    honey: 5,
+                    temporal_essence: 3,
+                    crystal_water: 2,
+                    dragon_scale: 1,
+                    fire_essence: 4
+                };
+            }
+            
+            // Initialiser l'interface
+            initializeIngredients();
+            initializeRecipes();
+            startParticleSystem();
+        });
+        
+        // 🌿 SYSTÈME INGRÉDIENTS
+        function initializeIngredients() {
+            const container = document.getElementById('ingredientsList');
+            container.innerHTML = '';
+            
+            const ingredientInfo = {
+                herbs: { icon: '🌿', name: 'Herbes Curatives' },
+                water: { icon: '💧', name: 'Eau Pure' },
+                honey: { icon: '🍯', name: 'Miel Sacré' },
+                temporal_essence: { icon: '⏳', name: 'Essence Temporelle' },
+                crystal_water: { icon: '💎', name: 'Eau Cristalline' },
+                dragon_scale: { icon: '🐲', name: 'Écaille de Dragon' },
+                fire_essence: { icon: '🔥', name: 'Essence de Feu' }
+            };
+            
+            Object.entries(playerInventory).forEach(([ingredient, count]) => {
+                if (count > 0 && ingredientInfo[ingredient]) {
+                    const info = ingredientInfo[ingredient];
+                    const element = document.createElement('div');
+                    element.className = 'ingredient';
+                    element.innerHTML = `
+                        <div class="ingredient-icon">${info.icon}</div>
+                        <div class="ingredient-info">
+                            <div>${info.name}</div>
+                            <div style="font-size: 12px; color: #ccc;">${ingredient}</div>
+                        </div>
+                        <div class="ingredient-count">${count}</div>
+                    `;
+                    container.appendChild(element);
+                }
+            });
+        }
+        
+        // 📜 SYSTÈME RECETTES
+        function initializeRecipes() {
+            const container = document.getElementById('recipesList');
+            container.innerHTML = '';
+            
+            Object.entries(recipes).forEach(([id, recipe]) => {
+                const canCraft = checkCanCraft(recipe.ingredients);
+                
+                const element = document.createElement('div');
+                element.className = `recipe ${canCraft ? 'available' : ''}`;
+                element.onclick = () => selectRecipe(id);
+                
+                const ingredientsText = Object.entries(recipe.ingredients)
+                    .map(([ing, count]) => `${count} ${ing}`)
+                    .join(', ');
+                
+                element.innerHTML = `
+                    <div class="recipe-name">${recipe.name}</div>
+                    <div class="recipe-runes">${recipe.runes}</div>
+                    <div class="recipe-ingredients">📋 ${ingredientsText}</div>
+                    <div class="recipe-effect">✨ ${recipe.effect}</div>
+                `;
+                
+                container.appendChild(element);
+            });
+        }
+        
+        function checkCanCraft(ingredients) {
+            return Object.entries(ingredients).every(([ingredient, needed]) => 
+                (playerInventory[ingredient] || 0) >= needed
+            );
+        }
+        
+        function selectRecipe(recipeId) {
+            selectedRecipe = recipeId;
+            
+            // Mettre à jour visuel
+            document.querySelectorAll('.recipe').forEach(el => {
+                el.style.background = 'rgba(138, 43, 226, 0.2)';
+            });
+            
+            event.target.style.background = 'rgba(255, 215, 0, 0.2)';
+            
+            // Activer bouton si possible
+            const canCraft = checkCanCraft(recipes[recipeId].ingredients);
+            document.getElementById('brewBtn').disabled = !canCraft;
+            
+            showMessage(`🧙‍♂️ Panoramix: "Excellente recette ! ${recipes[recipeId].description}"`, 'info');
+        }
+        
+        // 🧪 SYSTÈME BRASSAGE
+        function startBrewing() {
+            // Animation bulles
+            const container = document.getElementById('brewBubbles');
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'brew-bubble';
+                    bubble.style.left = Math.random() * 80 + '%';
+                    bubble.style.width = bubble.style.height = Math.random() * 20 + 10 + 'px';
+                    container.appendChild(bubble);
+                    
+                    setTimeout(() => bubble.remove(), 2000);
+                }, i * 200);
+            }
+        }
+        
+        function brewSelectedRecipe() {
+            if (!selectedRecipe) {
+                showMessage('❌ Aucune recette sélectionnée !', 'error');
+                return;
+            }
+            
+            const recipe = recipes[selectedRecipe];
+            
+            if (!checkCanCraft(recipe.ingredients)) {
+                showMessage('❌ Ingrédients insuffisants !', 'error');
+                return;
+            }
+            
+            // Consommer ingrédients
+            Object.entries(recipe.ingredients).forEach(([ingredient, count]) => {
+                playerInventory[ingredient] -= count;
+            });
+            
+            // Animation brassage
+            startBrewing();
+            
+            // Résultat après animation
+            setTimeout(() => {
+                const rewards = {
+                    item: selectedRecipe,
+                    name: recipe.name,
+                    effect: recipe.effect,
+                    runes: recipe.runes
+                };
+                
+                showMessage(`✨ ${recipe.name} créée avec succès !\\n${recipe.runes}`, 'success');
+                
+                // Communiquer avec parent (HOMM3 6D)
+                if (isArcadeMode) {
+                    sendRewardToParent(rewards);
+                }
+                
+                // Mettre à jour interface
+                initializeIngredients();
+                initializeRecipes();
+                selectedRecipe = null;
+                document.getElementById('brewBtn').disabled = true;
+                
+            }, 2000);
+        }
+        
+        // 💌 COMMUNICATION PARENT (HOMM3 6D)
+        function sendRewardToParent(rewards) {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'MINIGAME_COMPLETE',
+                    data: {
+                        success: true,
+                        rewards: rewards,
+                        consumed_resources: Object.entries(recipes[selectedRecipe].ingredients)
+                            .reduce((acc, [ing, count]) => {
+                                acc[ing] = count;
+                                return acc;
+                            }, {}),
+                        minigame_id: 'panoramix_potions'
+                    }
+                }, '*');
+            }
+        }
+        
+        function closeWorkshop() {
+            if (isArcadeMode && window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'MINIGAME_CLOSE',
+                    data: { minigame_id: 'panoramix_potions' }
+                }, '*');
+            } else {
+                window.close();
+            }
+        }
+        
+        // 🎨 SYSTÈME PARTICULES
+        function startParticleSystem() {
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'magic-particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                // Couleurs aléatoires magiques
+                const colors = ['#9370DB', '#8A2BE2', '#FFD700', '#90EE90'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 5000);
+            }, 500);
+        }
+        
+        // 💬 SYSTÈME MESSAGES
+        function showMessage(text, type = 'info') {
+            const overlay = document.getElementById('messageOverlay');
+            const textEl = document.getElementById('messageText');
+            
+            textEl.textContent = text;
+            overlay.className = `message-overlay ${type}`;
+            overlay.style.display = 'block';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Citations Panoramix aléatoires
+        const panoramixQuotes = [
+            "Par Toutatis ! Voilà une excellente potion !",
+            "Ces Romains sont fous... mais cette recette est parfaite !",
+            "La magie druidique ne ment jamais !",
+            "Buvez ça, et vous serez invincible !",
+            "Attention ! Cette potion est plus puissante que d'habitude !",
+            "J'ai ajouté un soupçon de magie temporelle..."
+        ];
+        
+        setInterval(() => {
+            if (Math.random() < 0.3) { // 30% chance
+                const quote = panoramixQuotes[Math.floor(Math.random() * panoramixQuotes.length)];
+                console.log(`🧙‍♂️ Panoramix: "${quote}"`);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "created": "2025-01-27",
+    "author": "Claude + Phoenix Loumen",
+    "purpose": "Prompts Stable Diffusion pour créatures temporelles",
+    "model": "v1-5-pruned-emaonly",
+    "settings": {
+      "steps": 30,
+      "cfg_scale": 7.5,
+      "width": 512,
+      "height": 512,
+      "sampler": "DPM++ 2M Karras"
+    }
+  },
+  
+  "base_style": "fantasy art, highly detailed, magical creature, glowing effects, ethereal, mystical atmosphere, professional TCG art style, centered composition",
+  
+  "negative_prompt": "low quality, blurry, distorted, ugly, bad anatomy, extra limbs, text, watermark, signature, frame, border",
+  
+  "creatures": [
+    {
+      "id": "luciole_quantique_memory",
+      "name": "Luciole des Souvenirs",
+      "category": "temporal_creature",
+      "prompts": {
+        "main": "ethereal golden firefly, crystalline wings with memory fragments, glowing particles trailing behind, nostalgic aura, floating in ancient garden ruins, soft golden light, translucent body showing past memories, delicate and magical",
+        "alternative_1": "quantum firefly spirit, wings made of golden light threads, hovering over forgotten flowers, emanating warm memories, semi-transparent with visible past echoes inside, dreamy atmosphere",
+        "alternative_2": "luminescent memory wisp in firefly form, golden crystalline structure, trailing stardust of forgotten moments, gentle glow illuminating old garden stones, mystical and melancholic"
+      },
+      "art_style": "soft watercolor effects, dreamy lighting, nostalgic color palette",
+      "temporal_layer": "past"
+    },
+    
+    {
+      "id": "chat_schrodinger_nexus",
+      "name": "Whiskers l'Intemporel",
+      "category": "temporal_creature",
+      "prompts": {
+        "main": "quantum cat existing in multiple states, flickering between solid and translucent, purple and cyan energy waves, superposition effect with multiple overlapping forms, mysterious glowing eyes, cosmic fur pattern",
+        "alternative_1": "schrodinger's cat with reality distortion, half alive half spectral, quantum particles swirling around, multiple timeline versions visible simultaneously, enigmatic expression",
+        "alternative_2": "interdimensional feline, body phasing between realities, quantum probability clouds, eyes showing different timelines, ethereal whiskers sensing parallel worlds"
+      },
+      "art_style": "glitch art elements, quantum visualization, surreal physics",
+      "temporal_layer": "superposition"
+    },
+    
+    {
+      "id": "chevalier_quantique_battlefield",
+      "name": "Sir Galahad l'Éternel",
+      "category": "temporal_creature",
+      "prompts": {
+        "main": "spectral knight frozen mid-charge, translucent silver armor with heroic engravings, eternal battle stance, glowing sword raised, time-frozen particles around him, noble and determined expression visible through ethereal helmet",
+        "alternative_1": "ghostly paladin caught in temporal loop, shimmering plate armor, frozen in heroic moment, battle aura emanating courage, translucent form showing past glory",
+        "alternative_2": "eternal warrior spirit, quantum armor reflecting multiple battles, suspended in time bubble, radiant with unbreakable will, heroic pose against invisible foes"
+      },
+      "art_style": "epic heroic fantasy, dramatic lighting, metallic shine effects",
+      "temporal_layer": "past"
+    },
+    
+    {
+      "id": "phenix_renaissance_future",
+      "name": "Ignis le Prophétique",
+      "category": "temporal_creature",
+      "prompts": {
+        "main": "prophetic phoenix with future-sight flames, wings showing visions of tomorrow, rebirth fire in pink and gold, feathers made of temporal energy, majestic pose with head raised to future skies, trails of destiny",
+        "alternative_1": "phoenix of future timelines, body composed of prophetic flames, wings spread showing possible futures, eternal rebirth glow, cosmic fire effects",
+        "alternative_2": "transcendent firebird, future visions dancing in flames, quantum feathers shifting through time, eyes burning with tomorrow's wisdom, rising from probability ashes"
+      },
+      "art_style": "vibrant flame effects, prophetic symbolism, dynamic composition",
+      "temporal_layer": "future"
+    },
+    
+    {
+      "id": "archonte_probabilites_nexus",
+      "name": "Cosmos l'Architecte du Destin",
+      "category": "temporal_creature",
+      "prompts": {
+        "main": "cosmic entity of pure probability, humanoid form made of swirling galaxies and mathematical equations, multiple arms weaving fate threads, reality distortion aura, transcendent being beyond time, purple and gold energy",
+        "alternative_1": "nexus being at center of all timelines, crystalline body containing infinite possibilities, architect of destiny with cosmic tools, probability waves emanating",
+        "alternative_2": "supreme temporal guardian, form shifting between dimensions, holding the threads of all possible futures, mathematical patterns in ethereal robes, omniscient presence"
+      },
+      "art_style": "cosmic horror beauty, fractal patterns, reality-bending effects",
+      "temporal_layer": "interstice"
+    }
+  ],
+  
+  "batch_generation": {
+    "total_images": 15,
+    "per_creature": 3,
+    "priority_order": [
+      "chat_schrodinger_nexus",
+      "luciole_quantique_memory",
+      "chevalier_quantique_battlefield",
+      "phenix_renaissance_future",
+      "archonte_probabilites_nexus"
+    ],
+    "output_format": "{creature_id}_{variant}_{timestamp}.png"
+  }
+}

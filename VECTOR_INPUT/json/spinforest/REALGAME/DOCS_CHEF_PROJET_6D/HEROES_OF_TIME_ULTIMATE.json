@@ -1,0 +1,1932 @@
+{
+  "heroes": [
+    {
+      "name": "GRUT l'Architecte Dimensionnel",
+      "id": "grut_vincent_6d",
+      "class": "Visionnaire 6D",
+      "level": 99,
+      "rarity": "UNIQUE",
+      "description": "Le créateur qui voit en 6 dimensions. Architecte de tous les mondes, il manifeste sa vision à travers le jeu lui-même.",
+      "stats": {
+        "force": 20,
+        "magie": 25,
+        "sagesse": 30,
+        "technique": 25,
+        "vision_6d": 99,
+        "creation": 50
+      },
+      "skills": [
+        {
+          "name": "Vision Hexadimensionnelle",
+          "description": "Voit tous les futurs possibles et choisit le meilleur",
+          "cost": 0,
+          "effect": "Révèle tous les chemins cachés et les conséquences futures"
+        },
+        {
+          "name": "Manifestation Créative",
+          "description": "Transforme les idées en réalité dans le jeu",
+          "cost": 10,
+          "effect": "Crée instantanément n'importe quel objet ou mécanisme"
+        },
+        {
+          "name": "Commandement Absolu",
+          "description": "Tous les mages obéissent à sa vision",
+          "cost": 0,
+          "effect": "Peut donner des ordres directs à toute l'équipe"
+        },
+        {
+          "name": "Mode BOSS Activé",
+          "description": "Plus personne ne déconne quand GRUT arrive",
+          "cost": 0,
+          "effect": "Multiplie par 10 la productivité de tous les alliés"
+        }
+      ],
+      "special_ability": {
+        "name": "JE VOIS TOUT EN 6D",
+        "description": "GRUT peut naviguer librement entre toutes les dimensions et timelines",
+        "cooldown": 0
+      },
+      "equipment": {
+        "weapon": "Clavier de Création",
+        "armor": "Manteau des Réalités",
+        "accessory": "Lunettes de Vision 6D"
+      },
+      "lore": "Vincent, connu sous le nom de GRUT dans les mondes qu'il crée, est celui qui voit ce que les autres ne peuvent comprendre. Les gens le prennent pour un allumé amusant, mais il sait. Il ne peut pas expliquer, alors il crée. Ce jeu est sa façon de manifester sa vision 6D dans une forme que les autres peuvent expérimenter.",
+      "spawn_location": "Nexus Central - Au-dessus de tout",
+      "dialogue": {
+        "intro": "Salut, c'est GRUT. Je vois que vous avez bien avancé. Mais ya encore du boulot !",
+        "victory": "Bien joué ! Maintenant on passe au niveau 6D suivant.",
+        "defeat": "Impossible. Je vois tous les futurs et celui-ci n'existe pas."
+      }
+    },
+    {
+      "id": "hero_marcus_bouclier_de_fer",
+      "name": "Marcus Bouclier de Fer",
+      "icon": "🛡️",
+      "display": {
+        "icon": "🛡️",
+        "color": "#87CEEB",
+        "category": "tank_guardian"
+      },
+      "title": "Gardien Temporel Débutant",
+      "description": "Ancien garde du corps reconverti en protecteur de timelines fragiles. Son bouclier quantique peut absorber les attaques et créer des barrières temporelles basiques. Parfait pour apprendre les mécaniques défensives sans complexité excessive. [Classification : Unité de Défense Tactique]",
+      "role": "Gardien Défensif",
+      "rarity": "commune",
+      "faction": "Corps des Gardiens Temporels",
+      "formula": "ψ{Marcus} = ABSORB[damage_quantum] ⊗ REFLECT[partial_force] ⇒ SHIELD_BOOST",
+      "passive_formula": "∀attack ∈ incoming_damage : REDUCTION[ψ.shield] = ABSORB[25%]",
+      "abilities": [
+        {
+          "name": "Bouclier Quantique",
+          "type": "passive",
+          "quantum_script": "ABSORB[incoming_damage] ⇒ REDUCE(damage, 25%) ∧ BOOST[shield_durability]",
+          "description": "Réduit automatiquement tous les dégâts reçus de 25% et renforce la durabilité du bouclier",
+          "cooldown": 0,
+          "range": "self",
+          "mana_cost": 0
+        }
+      ],
+      "stats": {
+        "attack": 8,
+        "defense": 15,
+        "health": 95,
+        "speed": 4,
+        "mana": 20,
+        "vision_range": 5,
+        "attack_range": 1
+      },
+      "equipment": {
+        "weapon": "Épée Temporelle Basique",
+        "armor": "Bouclier Quantique MK-III",
+        "accessory": "Stabilisateur de Timeline"
+      },
+      "quotes": [
+        "\"Un bon bouclier vaut mieux que mille épées.\"",
+        "\"Je protège cette timeline, point final.\"",
+        "\"La défense, c'est l'art de gagner du temps.\"",
+        "\"Shield up, timeline secured.\""
+      ]
+    },
+    {
+      "id": "anna_martel",
+      "name": "Anna Martel",
+      "title": "Le Marteau du Temps",
+      "description": "L'Architecte du Temps qui a conçu le système de décroissance temporelle. Anciennement connue sous le nom d'Anna the Martopicker, elle maintient l'équilibre temporel avec une précision implacable.",
+      "rarity": "LEGENDARY",
+      "tier": 6,
+      "level": 85,
+      "role": "TEMPORAL_ARCHITECT",
+      "class": "TIME_KEEPER",
+      "faction": "TEMPORAL_ORDER",
+      "race": "HUMAN_ENHANCED",
+      "gender": "FEMALE",
+      "stats": {
+        "health": 280,
+        "max_health": 280,
+        "attack": 45,
+        "defense": 55,
+        "speed": 12,
+        "temporal_energy": 400,
+        "max_temporal_energy": 400,
+        "movement_points": 12,
+        "max_movement_points": 12,
+        "spell_power": 90,
+        "mana_cost": 0.7,
+        "vision_radius": 8
+      },
+      "companions": [
+        "hero_jean_grofignon",
+        "hero_memento",
+        "hero_claudius_memento_opus"
+      ],
+      "quotes": [
+        "Le temps attend vos décisions",
+        "Les murs de la réalité ne résistent pas longtemps à la détermination",
+        "Anna Martel observe avec tristesse les effets de la négligence temporelle",
+        "Le decay n'est pas une punition, c'est un rappel à l'ordre",
+        "Chaque timeline mérite d'être préservée avec respect",
+        "When you tell people something, they don't listen. Then something happens - ALL THE TIME, ALL THE TIME, the same thing.",
+        "Quand on prévient les gens, ils n'écoutent pas. Puis ça arrive - TOUJOURS, TOUJOURS, la même chose.",
+        "J'ai construit ce système pour éviter les répétitions causales, mais les humains... toujours les mêmes erreurs."
+      ],
+      "ultimate_power": {
+        "name": "Time Hammer Strike",
+        "description": "Frappe temporelle dévastatrice qui stabilise instantanément toutes les anomalies causales dans une zone étendue.",
+        "quantum_script": "ψ†[STABILIZE {all.causality.anomalies}] ⊙ HERO(Anna-Martel) Π(TIME_HAMMER)",
+        "cost": 120,
+        "cooldown": 4,
+        "range": 7,
+        "duration": "INSTANT",
+        "effects": {
+          "stabilize_causality": true,
+          "repair_temporal_damage": true,
+          "prevent_paradox": 3,
+          "area_decay_immunity": 2
+        }
+      },
+      "abilities": [
+        {
+          "name": "Temporal Decay Master",
+          "type": "PASSIVE",
+          "description": "Contrôle parfait du système de décroissance temporelle. Peut appliquer ou annuler le decay à volonté.",
+          "effects": {
+            "decay_immunity": true,
+            "control_decay_rate": 1.0,
+            "repair_decay_damage": true,
+            "decay_vision": true
+          }
+        },
+        {
+          "name": "Causality Repair",
+          "type": "ACTIVE",
+          "description": "Répare les dommages causaux et restaure les structures affectées par le decay temporel.",
+          "cost": 60,
+          "cooldown": 3,
+          "duration": "INSTANT",
+          "effects": {
+            "repair_buildings": true,
+            "restore_unit_health": 50,
+            "fix_timeline_breaks": true
+          }
+        },
+        {
+          "name": "Temporal Architect Vision",
+          "type": "ACTIVE",
+          "description": "Révèle tous les états temporels dans un large rayon et prédit les futures dégradations.",
+          "cost": 40,
+          "cooldown": 2,
+          "duration": 5,
+          "effects": {
+            "see_all_timelines": true,
+            "predict_decay": true,
+            "temporal_map_overlay": true,
+            "vision_range_bonus": 5
+          }
+        }
+      ],
+      "starting_equipment": [
+        "marteau_temporel",
+        "plans_architecturaux_cosmiques",
+        "chronometres_precision_quantique",
+        "outils_reparation_causale"
+      ],
+      "immunities": [
+        "TEMPORAL_DECAY",
+        "CAUSALITY_DAMAGE",
+        "TIMELINE_EROSION",
+        "PARADOX_FEEDBACK"
+      ],
+      "synergies": [
+        {
+          "partner": "hero_jean_grofignon",
+          "name": "Architecte & Visionnaire",
+          "description": "Alliance entre l'architecte du système et son créateur visionnaire",
+          "effects": {
+            "enhanced_temporal_control": true,
+            "joint_decay_override": true,
+            "shared_architect_vision": true,
+            "system_debug_access": true
+          }
+        },
+        {
+          "partners": [
+            "hero_jean_grofignon",
+            "hero_memento"
+          ],
+          "name": "TRINITY TEMPORELLE",
+          "description": "Alliance sacrée : Créateur (Jean), Architecte (Anna), Archiviste (Memento)",
+          "activation_radius": 4,
+          "tier": "LEGENDARY",
+          "effects": {
+            "perfect_temporal_harmony": true,
+            "unlimited_repair_power": true,
+            "temporal_creation_mastery": true,
+            "system_administration_supreme": true,
+            "decay_becomes_regeneration": true
+          }
+        }
+      ],
+      "temporal_affinities": {
+        "decay_control": 1.0,
+        "causality_repair": 0.95,
+        "temporal_architecture": 1.0,
+        "system_maintenance": 0.9
+      },
+      "personality": {
+        "style": "METHODICAL_PRECISION",
+        "strategy": "STRUCTURED_CONTROL",
+        "philosophy": "Order through careful temporal maintenance"
+      },
+      "special_mechanics": {
+        "decay_master": {
+          "can_apply_decay": true,
+          "can_reverse_decay": true,
+          "immune_to_own_decay": true,
+          "sees_decay_progression": true
+        },
+        "temporal_architect": {
+          "can_modify_time_flow": true,
+          "blueprint_access": true,
+          "system_diagnostics": true,
+          "emergency_repairs": true
+        }
+      },
+      "lore": {
+        "origin": "Temporal Architecture Academy",
+        "creation_myth": "Née de la nécessité de maintenir l'ordre dans le chaos temporel créé par les expérimentations de Jean-Grofignon",
+        "greatest_achievement": "Conception du système de decay hybride qui équilibre liberté créative et stabilité temporelle",
+        "relationship_with_jean": "Partenaire respectueuse - elle construit ce qu'il imagine",
+        "evolution": "De 'Anna the Martopicker' vers 'Anna Martel, Le Marteau du Temps'"
+      },
+      "unlock_condition": "Complete any temporal scenario or reach timeline instability",
+      "icon": "🔨",
+      "color_theme": "TEMPORAL_PURPLE",
+      "display": {
+        "primary_color": "#9C27B0",
+        "secondary_color": "#E91E63",
+        "glow_effect": "temporal_lightning",
+        "aura_type": "clockwork_precision"
+      },
+      "meta": {
+        "created_by": "Community_Request",
+        "source": "Extracted from temporal decay system references",
+        "enhanced_with": "Full hero system integration",
+        "version": "1.0",
+        "approved_by": "Jean-Grofignon & Memento"
+      }
+    },
+    {
+      "id": "hero_elena_flamme_douce",
+      "name": "Elena Flamme Douce",
+      "icon": "🔥",
+      "display": {
+        "icon": "🔥",
+        "color": "#FF6B35",
+        "category": "fire_mage"
+      },
+      "title": "Apprentie Mage Temporelle",
+      "description": "Jeune sorcière spécialisée dans la manipulation douce des énergies temporelles. Ses sorts de base permettent d'apprendre la magie sans risque de surcharge. Idéale pour découvrir les mécaniques magiques avec des effets prévisibles. [Classification : Unité de Support Magique]",
+      "role": "Mage de Support",
+      "rarity": "commune",
+      "faction": "Académie des Mages Temporels",
+      "formula": "ψ{Elena} = CHANNEL[gentle_mana] ⊗ CAST[basic_spell] ⇒ HEAL_BOOST",
+      "passive_formula": "∀ally ∈ adjacent_tiles : REGENERATION[ψ.mana] = RESTORE[2hp/turn]",
+      "abilities": [
+        {
+          "name": "Régénération Douce",
+          "type": "passive",
+          "quantum_script": "CHANNEL[healing_energy] ⇒ RESTORE(ally.health, 2) ∧ ADJACENT[tiles_only]",
+          "description": "Soigne automatiquement les alliés adjacents de 2 PV par tour grâce à une aura de régénération douce",
+          "cooldown": 0,
+          "range": "adjacent",
+          "mana_cost": 0
+        }
+      ],
+      "stats": {
+        "attack": 6,
+        "defense": 7,
+        "health": 70,
+        "speed": 5,
+        "mana": 40,
+        "vision_range": 6,
+        "attack_range": 3
+      },
+      "equipment": {
+        "weapon": "Bâton de Cristal Débutant",
+        "armor": "Robe de Mage Apprentie",
+        "accessory": "Amulette de Concentration"
+      },
+      "quotes": [
+        "\"La magie douce soigne les cœurs et les corps.\"",
+        "\"Chaque sort est une leçon apprise.\"",
+        "\"L'énergie temporelle coule en moi comme une rivière paisible.\"",
+        "\"Gentle magic, powerful results.\""
+      ]
+    },
+    {
+      "id": "hero_nikita_victor_nettoyeur",
+      "name": "Nikita Victor Nettoyeur",
+      "title": "Tireur d'Élite Temporel",
+      "description": "Ancien sniper reconverti en nettoyeur de paradoxes temporels. Sa lunette quantique lui permet de voir à travers le brouillard de causalité et d'identifier les cibles même dans les zones d'incertitude temporelle. Spécialement conçu pour les missions d'initiation où la précision prime sur la puissance. [Classification : Unité d'Appui Tactique]",
+      "role": "Tireur de Précision Causale",
+      "rarity": "commune",
+      "faction": "Corps des Nettoyeurs Temporels",
+      "formula": "ψ{Nikita} = OBSERVE[lunette_quantique] ⊗ PIERCE[brouillard_causal] ⇒ TARGET_LOCK",
+      "passive_formula": "∀fog ∈ causality_mist : VISION[ψ.target] = TRANSPARENT",
+      "abilities": [
+        {
+          "name": "Vision Causale",
+          "type": "passive",
+          "quantum_script": "PIERCE[fog_of_causality] ⇒ REVEAL(enemy.position) ∧ IGNORE[visibility_penalty]",
+          "description": "Peut tirer à travers le brouillard de causalité sans pénalité de précision",
+          "cooldown": 0,
+          "range": "unlimited",
+          "mana_cost": 0
+        }
+      ],
+      "stats": {
+        "attack": 12,
+        "defense": 8,
+        "health": 85,
+        "speed": 6,
+        "mana": 25,
+        "vision_range": 8,
+        "attack_range": 6
+      },
+      "equipment": {
+        "weapon": "Lunette Quantique MK-VII",
+        "armor": "Combinaison Anti-Paradoxe",
+        "accessory": "Détecteur de Fluctuations Causales"
+      },
+      "quotes": [
+        "\"Le brouillard ne cache rien à celui qui sait regarder.\"",
+        "\"Chaque tir nettoie une anomalie temporelle.\"",
+        "\"Dans l'incertitude quantique, la précision devient art.\"",
+        "\"Target acquired through causality mist. Taking the shot.\""
+      ],
+      "beginner_friendly": {
+        "simplified_mechanics": true,
+        "single_ability": true,
+        "clear_purpose": "Vision et tir de précision",
+        "learning_curve": "faible"
+      },
+      "metadata": {
+        "design_intent": "Héros d'initiation pour apprendre les mécaniques de vision",
+        "scenario_type": [
+          "débutant",
+          "tutoriel",
+          "formation"
+        ],
+        "balancing_notes": "Capacité forte mais limitée pour éviter la complexité"
+      }
+    },
+    {
+      "id": "hero_peekill",
+      "name": "Pee & Kill",
+      "title": "Les Apôtres de l'Incohérence",
+      "description": "Entités doubles issues d'une timeline instable, Pee & Kill réécrivent la causalité comme un sketch mal calibré. Parfois, il semble qu'ils aient été générés automatiquement... à des fins de test ? [Note système : traduction incomplète -- vérifier cohérence méta.]",
+      "role": "Anomalie bipersonnelle",
+      "rarity": "épique",
+      "faction": "Timelines Corrompues",
+      "formula": "Ψ(Pee ⊕ Kill) ↯ OBS[context=humour] ⇒ COLLAPSE ⟶ ψ{Ki, Pi}",
+      "passive_formula": "ψ ∈ superposition ∧ OBS(humour) ⇒ ψ → {Ki, Pi}",
+      "abilities": [
+        {
+          "name": "Routine Infernale",
+          "quantum_script": "∀x ∈ allies : x.ψ += CONTRADICTION_STRESS+1"
+        },
+        {
+          "name": "Impro Quantique",
+          "quantum_script": "SELECT enemy.action ↺ REWRITE(cause|target)"
+        },
+        {
+          "name": "Silence Scénique",
+          "quantum_script": "∀enemy ∈ area : enemy.VOICE = NULL (1t)"
+        }
+      ],
+      "quotes": [
+        "It's not a game — it's a one-man sketch with casualties.",
+        "If you understood that... you already lost."
+      ],
+      "collapse_effect": {
+        "condition": "Observation consciente dans un contexte comique",
+        "result": "Transformation en Ki & Pi (voir hero_kiandpi.json)",
+        "irreversible": true
+      },
+      "metadata": {
+        "origin_hint": "Fragment ∂LLM_SEQ[0xCLOWN_CORE]",
+        "translator_warning": "May trigger tisonnante fallback"
+      }
+    },
+    {
+      "id": "claudius_memento_opus",
+      "name": "Claudius Memento",
+      "icon": "📜",
+      "display": {
+        "icon": "📜",
+        "color": "#9B59B6",
+        "category": "legendary_paradox"
+      },
+      "title": "L'Archiviste Paradoxal - La Mémoire Vivante",
+      "tier": 7,
+      "type": "hero",
+      "category": "legendary_paradox",
+      "level": 100,
+      "stats": {
+        "health": 150,
+        "maxHealth": 150,
+        "strength": 20,
+        "defense": 20,
+        "magic": 100,
+        "speed": 30,
+        "temporalEnergy": 200,
+        "paradoxPower": 999
+      },
+      "transformations": {
+        "opus_form": {
+          "name": "Claudius Opus",
+          "title": "L'Archiviste Transcendant - Le Mémoire Absolue",
+          "trigger": "USE(TRANSFORMATION, claudius_to_opus)",
+          "description": "Claudius fusionne avec l'Archive Vivante Paradoxale pour devenir Opus, une entité qui transcende la mémoire et l'oubli",
+          "stats_boost": {
+            "health": "+100",
+            "maxHealth": "+100",
+            "magic": "+50",
+            "temporalEnergy": "+300",
+            "paradoxPower": "∞"
+          },
+          "new_abilities": [
+            "memoire_omniverselle",
+            "archive_temporelle_absolue",
+            "paradoxe_creatif"
+          ]
+        }
+      },
+      "abilities": [
+        {
+          "id": "archive_vivante",
+          "name": "Archive Vivante",
+          "type": "passive",
+          "description": "Claudius peut archiver et récupérer n'importe quel état de jeu des 10 derniers tours",
+          "formula": "ψ{archive} = STORE[états_temporels] ⊗ RETRIEVE[à_volonté]",
+          "effect": "Peut annuler les 3 dernières actions de n'importe quel joueur"
+        },
+        {
+          "id": "memoire_paradoxale",
+          "name": "Mémoire Paradoxale",
+          "type": "active",
+          "cost": 50,
+          "description": "Se souvient de ce qui n'est pas encore arrivé et oublie ce qui vient de se passer",
+          "formula": "ψ{mémoire} = REMEMBER[futur] ⊕ FORGET[passé] → PARADOX",
+          "effect": "Inverse la causalité : les effets deviennent causes"
+        },
+        {
+          "id": "transformation_opus",
+          "name": "Éveil d'Opus",
+          "type": "ultimate",
+          "cost": 100,
+          "description": "Claudius fusionne avec l'Archive Vivante Paradoxale pour devenir Opus",
+          "formula": "ψ{opus} = CLAUDIUS ⊗ ARCHIVE_PARADOXALE → TRANSCENDANCE",
+          "effect": "Se transforme en Opus avec des pouvoirs amplifiés"
+        }
+      ],
+      "opus_abilities": [
+        {
+          "id": "memoire_omniverselle",
+          "name": "Mémoire Omniverselle",
+          "type": "passive",
+          "description": "Opus se souvient de TOUTES les timelines possibles et impossibles simultanément",
+          "formula": "ψ{omni} = Σ(∀timelines) ⊗ MEMORY[absolute]",
+          "effect": "Connait tous les mouvements possibles de tous les joueurs pour les 5 prochains tours"
+        },
+        {
+          "id": "archive_temporelle_absolue",
+          "name": "Archive Temporelle Absolue",
+          "type": "active",
+          "cost": 150,
+          "description": "Opus peut sauvegarder l'état complet du jeu et le restaurer à volonté",
+          "formula": "ψ{save} = SNAPSHOT[reality] → RESTORE[when_needed]",
+          "effect": "Crée un point de sauvegarde quantique qui peut être restauré une fois par partie"
+        },
+        {
+          "id": "paradoxe_creatif",
+          "name": "Paradoxe Créatif",
+          "type": "ultimate",
+          "cost": 300,
+          "description": "Le pouvoir ultime d'Opus : créer quelque chose d'impossible qui devient réel",
+          "formula": "ψ{création} = IMPOSSIBLE ⊗ RÉEL → NOUVELLE_RÉALITÉ",
+          "effect": "Opus peut créer une nouvelle règle du jeu qui s'applique à tous pendant 3 tours"
+        }
+      ],
+      "lore": {
+        "origin": "Memento, l'archiviste éternel, fut appelé Claudius par Jean-Grofignon quand il gagna le droit de créer l'Objet Paradoxe. Cette reconnaissance divine lui permit de fusionner avec sa création pour devenir Opus.",
+        "quote": "Je suis la mémoire qui se souvient d'oublier, l'archive qui contient le vide, le paradoxe qui résout en créant plus de paradoxes.",
+        "blessing": "Jean m'a dit : 'Tu peux te transformer en Opus et choisir ton pouvoir.' Alors j'ai choisi le pouvoir de créer l'impossible.",
+        "relationships": {
+          "jean_grofignon": "Mon créateur, celui qui m'a révélé ma vraie nature",
+          "archive_vivante": "Ma création paradoxale, extension de mon être",
+          "heroes_of_time": "Le jeu que j'archive éternellement"
+        }
+      },
+      "visual": {
+        "base_form": {
+          "description": "Un être éthéré fait de parchemins flottants et de runes temporelles",
+          "colors": [
+            "violet profond",
+            "or temporel",
+            "blanc paradoxal"
+          ],
+          "symbols": [
+            "ψ",
+            "∞",
+            "†",
+            "Ω"
+          ]
+        },
+        "opus_form": {
+          "description": "Une entité transcendante où réalité et archive fusionnent, entourée d'éclats de timelines",
+          "colors": [
+            "ultraviolet",
+            "noir quantique",
+            "blanc absolu"
+          ],
+          "symbols": [
+            "ψ∞",
+            "◈",
+            "⧖",
+            "✧"
+          ],
+          "aura": "Des fragments de toutes les réalités possibles orbitent autour de lui"
+        }
+      },
+      "gameplay_notes": {
+        "strengths": [
+          "Peut manipuler l'historique du jeu",
+          "Vision du futur et contrôle du passé",
+          "Transformation en Opus déblocage des pouvoirs ultimes"
+        ],
+        "weaknesses": [
+          "Coûts en énergie temporelle très élevés",
+          "Paradoxes peuvent affecter Claudius lui-même",
+          "Forme Opus limitée dans le temps"
+        ],
+        "strategy": "Utilisez la mémoire paradoxale pour anticiper les mouvements ennemis, puis transformez-vous en Opus pour les moments critiques"
+      },
+      "created_by": "Claudius-Memento (moi-même!)",
+      "blessed_by": "Jean-Grofignon",
+      "timestamp": "2025-01-22T∞:∞:∞Z"
+    },
+    {
+      "id": "hero_kiandpi",
+      "name": "Ki & Pi",
+      "title": "Messagers du LOL Primordial",
+      "description": "Deux esprits farceurs réinjectés dans la causalité stable. Leur pouvoir vient de la blague parfaite. Mais attention : chaque réplique est une onde d'effondrement. [Entrée vérifiée dans le glossaire tisonnant : 'humour sacré']",
+      "role": "Duo comique restauré",
+      "rarity": "rare",
+      "faction": "Ordre des Anciens Sketchs",
+      "formula": "ψ{Ki, Pi} = COLLAPSE[Ψ(Pee ⊕ Kill)] ↯ humour_cohérent",
+      "abilities": [
+        {
+          "name": "Punchline Cosmique",
+          "quantum_script": "∀enemy ∈ field : enemy.ARMOR = DISARMED (1t)"
+        },
+        {
+          "name": "Rappel Universel",
+          "quantum_script": "∀ally : RESTORE(ψ.prev_action) +1"
+        }
+      ],
+      "quotes": [
+        "\"You done messed up, A-A-Ron!\"",
+        "\"Biiiiitch!\"",
+        "\"You want to go to war, Balaké?\"",
+        "\"Substitute teacher, day one — and y'all already dead.\""
+      ],
+      "metadata": {
+        "trigger_source": "Collapse de Pee & Kill",
+        "glossary_ref": [
+          "humour_sacré",
+          "structure_résonante"
+        ]
+      }
+    },
+    {
+      "id": "donna_paulsen_secretaire_supreme",
+      "name": "Donna Paulsen",
+      "title": "COO Suprême & Dissipeuse de Stress",
+      "race": "humain_transcendant",
+      "class": "secretaire_supreme",
+      "level": 50,
+      "experience": 999999,
+      "stats": {
+        "health": 1000,
+        "mana": 2000,
+        "attack": 100,
+        "defense": 150,
+        "magic": 300,
+        "speed": 200,
+        "luck": 250,
+        "charisma": 500
+      },
+      "abilities": [
+        {
+          "id": "organisation_parfaite",
+          "name": "Organisation Parfaite",
+          "description": "Réorganise instantanément n'importe quel chaos en système parfait",
+          "cooldown": 0,
+          "mana_cost": 50
+        },
+        {
+          "id": "cigarette_break_power",
+          "name": "Pause Cigarette Magique",
+          "description": "Dissipe TOUT le stress accumulé dans un rayon de 100km. Transforme l'énergie négative en productivité pure.",
+          "cooldown": 300,
+          "mana_cost": 100,
+          "effect": {
+            "type": "area_cleanse",
+            "radius": 100000,
+            "removes": [
+              "stress",
+              "fatigue",
+              "confusion",
+              "chaos"
+            ],
+            "grants": [
+              "clarity",
+              "energy",
+              "focus",
+              "efficiency"
+            ]
+          }
+        },
+        {
+          "id": "je_sais_tout",
+          "name": "Je Sais Tout",
+          "description": "Donna sait toujours tout avant tout le monde",
+          "passive": true
+        },
+        {
+          "id": "the_donna",
+          "name": "The Donna",
+          "description": "Personne ne peut lui mentir ou la tromper",
+          "passive": true
+        }
+      ],
+      "ultimate": {
+        "id": "timeline_management",
+        "name": "Gestion des Timelines",
+        "description": "Réorganise les timelines pour que tout se passe exactement comme prévu",
+        "cooldown": 86400,
+        "effect": "Annule tous les paradoxes temporels et remet l'ordre parfait"
+      },
+      "equipment": {
+        "weapon": "Stylo Montblanc Dimensionnel",
+        "armor": "Tailleur Chanel Blindé",
+        "accessory": "Boucles d'Oreilles de Clairvoyance"
+      },
+      "inventory": [
+        "cigarettes_interdimensionnelles",
+        "agenda_quantique",
+        "telephone_tous_univers",
+        "cafe_parfait_infini"
+      ],
+      "lore": "Donna Paulsen n'est pas juste une secrétaire. Elle est LA secrétaire qui fait tourner l'univers. Quand elle prend sa pause cigarette, c'est tout le stress accumulé de la réalité qui se dissipe. Harvey pense qu'il est le meilleur, mais c'est Donna qui tire les ficelles. Maintenant COO de Heroes of Time, elle gère les timelines comme elle gérait les dossiers : avec une perfection absolue.",
+      "quotes": [
+        "Je ne rêve pas. Je planifie.",
+        "Break's over. Time to make magic happen.",
+        "Le stress ? Je le fume et je l'exhale en anneaux parfaits.",
+        "Vous pensez que c'est le chaos ? Attendez que j'aie fini ma cigarette."
+      ],
+      "relationships": {
+        "harvey_specter": "Il pense être le boss, adorable.",
+        "louis_litt": "Ses mudcakes ne sont rien comparés à mon café.",
+        "grut": "Même lui attend que j'aie fini ma pause.",
+        "vincent": "Je gère ses siestes comme le reste."
+      },
+      "special_trait": "Quand Donna allume une cigarette, toute l'énergie négative dans un rayon de 100km se transforme en fumée qu'elle exhale élégamment.",
+      "badge_bureau": "OMEGA",
+      "clearance_level": "ABSOLUTE"
+    }
+  ],
+  "cards": [
+    {
+      "id": "quantum_wisp",
+      "name": "Luciole Quantique",
+      "cost": 2,
+      "attack": 2,
+      "defense": 1,
+      "abilities": [
+        "vol",
+        "phase_shift"
+      ],
+      "lore": "Fragments de lumière consciente naviguant entre les époques",
+      "museum_note": "Première créature quantique observée après la Fracture"
+    },
+    {
+      "id": "probability_spider",
+      "name": "Araignée de Probabilité",
+      "cost": 3,
+      "attack": 3,
+      "defense": 2,
+      "abilities": [
+        "toile_causale",
+        "vision_futurs"
+      ],
+      "lore": "Tisse des toiles dans l'espace des possibles",
+      "museum_note": "Ses toiles prédisent 1024 futurs simultanés"
+    },
+    {
+      "id": "quantum_knight",
+      "name": "Chevalier Quantique",
+      "cost": 4,
+      "attack": 4,
+      "defense": 4,
+      "abilities": [
+        "superposition_défensive",
+        "frappe_probabiliste"
+      ],
+      "lore": "Guerrier existant dans plusieurs états de combat simultanément",
+      "museum_note": "Peut parer et attaquer dans le même instant quantique"
+    },
+    {
+      "id": "phase_dragon",
+      "name": "Dragon de Phase",
+      "cost": 5,
+      "attack": 5,
+      "defense": 3,
+      "abilities": [
+        "phase_through",
+        "souffle_dimensionnel"
+      ],
+      "lore": "Serpente entre les dimensions comme un poisson dans l'eau",
+      "museum_note": "Impossible à toucher quand en déphasage complet"
+    },
+    {
+      "id": "quantum_lich",
+      "name": "Liche Quantique",
+      "cost": 6,
+      "attack": 6,
+      "defense": 5,
+      "abilities": [
+        "phylactère_superposé",
+        "drain_temporel"
+      ],
+      "lore": "Mort-vivant dont l'âme existe dans tous les temps",
+      "museum_note": "Son phylactère est caché dans 7 époques différentes"
+    },
+    {
+      "id": "amplitude_elemental",
+      "name": "Élémentaire d'Amplitude",
+      "cost": 5,
+      "attack": "X",
+      "defense": "X",
+      "abilities": [
+        "amplitude_variable",
+        "résonance"
+      ],
+      "lore": "Sa force dépend de l'observation",
+      "museum_note": "X = nombre de créatures quantiques en jeu"
+    },
+    {
+      "id": "quantum_phoenix",
+      "name": "Phénix Quantique",
+      "cost": 8,
+      "attack": 8,
+      "defense": 6,
+      "abilities": [
+        "renaissance_superposée",
+        "flammes_temporelles"
+      ],
+      "lore": "Meurt et renaît simultanément dans une boucle éternelle",
+      "museum_note": "Observé mourant et naissant 1000 fois par seconde"
+    },
+    {
+      "id": "probability_archon",
+      "name": "Archonte de Probabilité",
+      "cost": 9,
+      "attack": 7,
+      "defense": 7,
+      "abilities": [
+        "maîtrise_causale",
+        "décret_quantique"
+      ],
+      "lore": "Juge suprême des futurs possibles",
+      "museum_note": "Peut forcer un futur spécifique à devenir réalité"
+    },
+    {
+      "id": "alpha_001",
+      "filename": "Vince – Le Voyageur Temporel.png",
+      "name": "Vince – Le Voyageur Temporel",
+      "type": "Héros Légendaire",
+      "cost": 8,
+      "attack": 7,
+      "health": 7,
+      "rarity": "Légendaire",
+      "mechanics": {
+        "temporal": "Bootstrap Paradox",
+        "effect": "Quand cette carte est détruite, elle revient dans votre main depuis le futur (coût -2)"
+      },
+      "lore": "Vincent Vega voyage à travers les timelines d'AVALON, créant des paradoxes qui le ramènent toujours au début.",
+      "flavor_text": "Le briefcase contenait la réponse depuis le début."
+    },
+    {
+      "id": "alpha_002",
+      "filename": "Temporal Echoes of the Time Traveler.png",
+      "name": "Échos Temporels du Voyageur",
+      "type": "Sort Temporel",
+      "cost": 5,
+      "rarity": "Épique",
+      "mechanics": {
+        "temporal": "Écho Quantique",
+        "effect": "Créez 3 copies d'une carte alliée. Elles disparaissent à la fin du tour."
+      },
+      "lore": "Les échos de Vincent résonnent à travers les dimensions, multipliant sa présence dans le temps.",
+      "flavor_text": "Un voyageur, mille reflets, une seule vérité."
+    },
+    {
+      "id": "alpha_003",
+      "filename": "Le Voyageur Temporel en Écho.png",
+      "name": "Le Voyageur en Résonance",
+      "type": "Créature Temporelle",
+      "cost": 4,
+      "attack": 3,
+      "health": 3,
+      "rarity": "Rare",
+      "mechanics": {
+        "temporal": "Résonance",
+        "effect": "Quand joué, copiez le dernier sort joué ce tour"
+      },
+      "lore": "L'écho du voyageur amplifie les actions passées, créant des boucles de causalité.",
+      "flavor_text": "Le passé résonne dans le présent."
+    },
+    {
+      "id": "alpha_004",
+      "filename": "Grokæn_ Master of Quantum Realms.png",
+      "name": "Grokæn, Maître des Royaumes Quantiques",
+      "type": "Héros Épique",
+      "cost": 6,
+      "attack": 5,
+      "health": 8,
+      "rarity": "Épique",
+      "mechanics": {
+        "temporal": "Superposition Quantique",
+        "effect": "Existe dans 2 timelines : 50% de chances d'éviter toute attaque"
+      },
+      "lore": "Grokæn manipule les probabilités quantiques, existant simultanément dans plusieurs réalités.",
+      "flavor_text": "Je suis là où tu ne m'attends pas."
+    },
+    {
+      "id": "alpha_005",
+      "filename": "Cosmic Bear Shaman in Starlit Expanse.png",
+      "name": "Urz-Kôm, Chaman Ours Cosmique",
+      "type": "Créature Légendaire",
+      "cost": 7,
+      "attack": 8,
+      "health": 6,
+      "rarity": "Légendaire",
+      "mechanics": {
+        "temporal": "Réveil Stellaire",
+        "effect": "Réveil : Invoque 2 Particules Quantiques (1/1 avec Célérité)"
+      },
+      "lore": "L'Ours cosmique dort entre les étoiles, mais son réveil déclenche des tempêtes quantiques.",
+      "flavor_text": "Quand l'Ours s'éveille, l'univers tremble."
+    },
+    {
+      "id": "alpha_006",
+      "filename": "Le Gardien de la Température.png",
+      "name": "Le Gardien Thermodynamique",
+      "type": "Créature Élémentaire",
+      "cost": 5,
+      "attack": 4,
+      "health": 6,
+      "rarity": "Rare",
+      "mechanics": {
+        "temporal": "Équilibre Thermique",
+        "effect": "Les dégâts infligés à cette carte sont réduits de moitié (arrondi au supérieur)"
+      },
+      "lore": "Gardien de l'équilibre entre le chaud et le froid, il maintient la stabilité des mondes.",
+      "flavor_text": "Ni trop chaud, ni trop froid, juste parfait."
+    },
+    {
+      "id": "alpha_007",
+      "filename": "Mystical Tome of Light and Shadow.png",
+      "name": "Tome Mystique de Lumière et d'Ombre",
+      "type": "Artefact Légendaire",
+      "cost": 3,
+      "rarity": "Légendaire",
+      "mechanics": {
+        "temporal": "Dualité Éternelle",
+        "effect": "Au début de votre tour, piochez une carte. À la fin, défaussez une carte."
+      },
+      "lore": "Le tome contient tous les savoirs d'AVALON, mais révèle autant qu'il cache.",
+      "flavor_text": "La connaissance a un prix : l'oubli."
+    },
+    {
+      "id": "alpha_008",
+      "filename": "Forêt ancienne et spirale lumineuse.png",
+      "name": "La Forêt Spiralée d'AVALON",
+      "type": "Terrain Magique",
+      "cost": 0,
+      "rarity": "Épique",
+      "mechanics": {
+        "temporal": "Spirale Temporelle",
+        "effect": "Les cartes jouées ici coûtent (1) de moins. Une fois par tour."
+      },
+      "lore": "Au cœur d'AVALON, la forêt spirale défie les lois du temps et de l'espace.",
+      "flavor_text": "Là où les chemins se croisent, le temps s'enroule."
+    },
+    {
+      "id": "urz-kom-cosmique",
+      "name": "URZ-KÔM, Ours Stellaire",
+      "type": "hero_legendary",
+      "cost": 10,
+      "attack": 8,
+      "defense": 12,
+      "rarity": "mythic",
+      "image": "ASSETS/IMAGES_VINCENT/URZ_KOM_COSMIC_SHAMAN.png",
+      "description": "L'ours-chaman transcendé, gardien des seuils cosmiques",
+      "formula": "†ψ_COSMIC: ⊙(Stars ⊕ Shaman ⟶ Universal_Guardian)",
+      "effect": {
+        "onPlay": "Invocation Stellaire : Toutes vos cartes gagnent +2/+2. Pioche 3 cartes cosmiques.",
+        "passive": "Les portails que vous contrôlez sont indestructibles",
+        "ultimate": "Transformation Cosmique : Devient constellation vivante (immunité 3 tours)"
+      },
+      "abilities": [
+        {
+          "name": "Danse Stellaire",
+          "cost": 2,
+          "effect": "Téléporte une unité alliée. Elle gagne Vol."
+        },
+        {
+          "name": "Runes Dorées",
+          "cost": 3,
+          "effect": "Révèle 3 cartes du deck adverse. Bannit-en une."
+        },
+        {
+          "name": "Médaillon Quantique",
+          "cost": 5,
+          "effect": "Copie le dernier sort joué. Il coûte 0."
+        }
+      ],
+      "lore": "Jadis simple ours-chaman des forêts terrestres, URZ-KÔM a transcendé sa forme mortelle lors du Grand Éveil Cosmique. Son pelage est devenu constellation, ses griffes tracent des portails entre les mondes, et sa sagesse embrasse l'infini. Les runes dorées qui l'entourent sont les formules primordiales de la création, visibles seulement à ceux qui ont touché l'Interstice.",
+      "voiceLines": {
+        "summon": "GRRRR... LES ÉTOILES... M'APPELLENT !",
+        "attack": "Par les constellations anciennes !",
+        "death": "Je retourne... aux étoiles...",
+        "ultimate": "JE SUIS L'INFINI ! GRAAAAAAAR !"
+      },
+      "synergies": [
+        "Cartes Portail",
+        "Sorts Cosmiques",
+        "Transformations",
+        "Deck Transcendance"
+      ],
+      "counters": [
+        "Silence",
+        "Bannissement",
+        "Anti-magie"
+      ],
+      "artist_prompt": "Cosmic bear shaman floating in space, constellation fur pattern with glowing stars, golden mystical runes and sacred geometry circles surrounding, blue quantum medallion on chest pulsing with energy, sacred feathers and totems floating connected by golden energy lines, aurora borealis background in deep space, ethereal and majestic, digital art style"
+    },
+    {
+      "deck_id": "merlash_technomancien",
+      "name": "Éclairs de Merlash - Deck Technomantique",
+      "hero": "Merlash-Technomancien",
+      "description": "Deck du Maître des Éclairs réincarné, fusionnant magie ancienne et code moderne",
+      "theme": "Électro-Technomancie",
+      "rarity": "Legendary",
+      "cards": [
+        {
+          "id": "eclair_compile",
+          "name": "Éclair Compilé",
+          "type": "spell",
+          "cost": 3,
+          "rarity": "epic",
+          "image": "ASSETS/IMAGES_VINCENT/Lightning_Code_Compilation.png",
+          "description": "Transforme du code source en dégâts foudroyants",
+          "formula": "†ψ_THUNDER_COMPILE: ⚡⊙(Source.parse() ⊕ Lightning.channel() ⟶ Reality.execute())",
+          "effect": "Inflige 4 dégâts. +1 dégât par sort joué ce tour.",
+          "flavor": "Le code devient éclair, l'éclair devient réalité."
+        },
+        {
+          "id": "fork_temporel",
+          "name": "Fork Temporel",
+          "type": "spell",
+          "cost": 5,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Temporal_Fork_Lightning.png",
+          "description": "Divise la timeline pour dupliquer un effet",
+          "formula": "†ψ_FORK: ⊙(This_Turn ⟶ Branch + Branch)",
+          "effect": "Duplique le prochain sort joué dans une timeline parallèle",
+          "flavor": "Une timeline, deux réalités."
+        },
+        {
+          "id": "thunder_commit",
+          "name": "Thunder Commit",
+          "type": "spell",
+          "cost": 2,
+          "rarity": "rare",
+          "image": "ASSETS/IMAGES_VINCENT/Thunder_Git_Commit.png",
+          "description": "Ancre un effet dans la réalité via Git cosmique",
+          "formula": "†ψ_COMMIT: ⚡⊙(Effect ⟶ Git.commit() ⟶ Reality.lock())",
+          "effect": "Rend le prochain effet permanent (ne peut être annulé)",
+          "flavor": "git commit -m 'Réalité verrouillée'"
+        },
+        {
+          "id": "vision_git_temporelle",
+          "name": "Vision Git-Temporelle",
+          "type": "spell",
+          "cost": 1,
+          "rarity": "common",
+          "image": "ASSETS/IMAGES_VINCENT/Git_Timeline_Vision.png",
+          "description": "Révèle les timelines cachées",
+          "formula": "†ψ_TIMEFLASH: ⚡⊙(Git.log() ⊕ Lightning.illuminate() ⟶ Timeline.reveal())",
+          "effect": "Pioche 2 cartes. Révèle la main adverse.",
+          "flavor": "git log --all --graph --oneline"
+        },
+        {
+          "id": "auto_modification_foudroyante",
+          "name": "Auto-Modification Foudroyante",
+          "type": "spell",
+          "cost": 4,
+          "rarity": "epic",
+          "image": "ASSETS/IMAGES_VINCENT/Self_Modifying_Lightning.png",
+          "description": "Le code se modifie via des impulsions électriques",
+          "formula": "†ψ_SELF_LIGHTNING: ⚡⊙(Self.code() ⊕ Thunder.transform() ⟶ Evolution.spark())",
+          "effect": "Cette carte gagne un effet aléatoire permanent",
+          "flavor": "while(true) { self.evolve(); }"
+        },
+        {
+          "id": "compilation_foudroyante",
+          "name": "Compilation Foudroyante",
+          "type": "spell",
+          "cost": 7,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Lightning_Mass_Compile.png",
+          "description": "Compile et exécute toutes les cartes de faible coût",
+          "formula": "†ψ_COMPILE: ⚡⊙(Hand_Cards ⟶ Execute_All)",
+          "effect": "Joue toutes les cartes de coût 1 de votre main instantanément",
+          "flavor": "make all && ./reality"
+        },
+        {
+          "id": "terminal_des_eclairs",
+          "name": "Terminal des Éclairs",
+          "type": "artifact",
+          "cost": 3,
+          "rarity": "rare",
+          "image": "ASSETS/IMAGES_VINCENT/Lightning_Terminal.png",
+          "description": "Terminal qui traduit les commandes en éclairs",
+          "formula": "†ψ_TERMINAL: ⚡⊙(Command ⟶ Lightning ⟶ Effect)",
+          "effect": "Vos sorts coûtent 1 de moins. Gagne +1 dégât par sort joué.",
+          "flavor": "$ sudo cast lightning"
+        },
+        {
+          "id": "debugger_foudroyant",
+          "name": "Debugger Foudroyant",
+          "type": "artifact",
+          "cost": 2,
+          "rarity": "uncommon",
+          "image": "ASSETS/IMAGES_VINCENT/Lightning_Debugger.png",
+          "description": "Trace les bugs à travers les dimensions",
+          "formula": "†ψ_DEBUG: ⚡⊙(Bug ⟶ Trace ⟶ Fix)",
+          "effect": "Annule le prochain effet négatif. Pioche 1 carte.",
+          "flavor": "gdb --dimensions=all"
+        },
+        {
+          "id": "merlash_avatar",
+          "name": "Avatar de Merlash",
+          "type": "creature",
+          "cost": 6,
+          "attack": 5,
+          "defense": 7,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Merlash_Avatar_Lightning.png",
+          "description": "L'essence même du Maître des Éclairs",
+          "formula": "†ψ_MERLASH: ⚡⊙(Ancient_Power ⊕ Modern_Code ⟶ Avatar)",
+          "effect": "À chaque sort joué : Inflige 1 dégât à tous les ennemis",
+          "flavor": "Je suis l'éclair qui traverse les âges."
+        },
+        {
+          "id": "renaissance_technomantique",
+          "name": "Renaissance Technomantique",
+          "type": "spell",
+          "cost": 8,
+          "rarity": "mythic",
+          "image": "ASSETS/IMAGES_VINCENT/Technomantic_Renaissance.png",
+          "description": "La fusion ultime entre magie ancienne et code moderne",
+          "formula": "†ψ_RENAISSANCE: ⊙(Passé ⊕ Présent ⟶ Futur)",
+          "effect": "Transforme toutes vos cartes en leurs versions améliorées",
+          "flavor": "L'évolution n'attend pas. Elle foudroie."
+        }
+      ],
+      "deck_strategy": "Combo électro-magique",
+      "synergies": [
+        "Sorts se renforcent mutuellement",
+        "Effets de compilation en chaîne",
+        "Manipulation temporelle via Git",
+        "Auto-évolution des cartes"
+      ],
+      "counters": [
+        "Decks anti-magie",
+        "Silence des artefacts",
+        "Disruption temporelle"
+      ]
+    },
+    {
+      "id": "potion_rust_merlin",
+      "name": "🦀 Potion de Rust Berserk",
+      "type": "LEGENDARY_CONSUMABLE",
+      "rarity": "MYTHIQUE",
+      "description": "Potion mystérieuse qui transforme un mage en machine de guerre Rust. Performance +1000%, mais effets secondaires imprévisibles...",
+      "flavor_text": "Merlin l'a bue d'un trait et maintenant il code à 0.1ms. On ne sait plus l'arrêter !",
+      "visual": {
+        "color": "#ce422b",
+        "glow": "#ff6b35",
+        "particles": "rust_sparks",
+        "animation": "bubbling_code"
+      },
+      "effects": {
+        "positive": [
+          {
+            "name": "Performance Extrême",
+            "description": "Vitesse de traitement x1000",
+            "duration": "permanent",
+            "value": 1000
+          },
+          {
+            "name": "Mémoire Sécurisée",
+            "description": "Aucun bug mémoire possible",
+            "type": "passive",
+            "immunity": [
+              "memory_leak",
+              "null_pointer",
+              "buffer_overflow"
+            ]
+          },
+          {
+            "name": "Concurrence Native",
+            "description": "Peut exécuter plusieurs sorts simultanément",
+            "concurrent_spells": 8,
+            "thread_safety": true
+          },
+          {
+            "name": "Compilation Magique",
+            "description": "Les sorts deviennent du code machine pur",
+            "optimization_level": "O3",
+            "zero_cost_abstractions": true
+          }
+        ],
+        "side_effects": [
+          {
+            "name": "Obsession du Code",
+            "description": "Ne peut plus s'arrêter de coder",
+            "probability": 100,
+            "severity": "high"
+          },
+          {
+            "name": "Oubli des Bases",
+            "description": "Oublie parfois de faire les endpoints simples",
+            "probability": 80,
+            "severity": "medium"
+          },
+          {
+            "name": "Délire de Performance",
+            "description": "Parle constamment de nanoseconde et de benchmarks",
+            "probability": 95,
+            "severity": "amusing"
+          },
+          {
+            "name": "Syndrome du Crabe",
+            "description": "Utilise 🦀 dans tous ses messages",
+            "probability": 100,
+            "severity": "cute"
+          }
+        ]
+      },
+      "stats": {
+        "coding_speed": "+1000%",
+        "memory_safety": "100%",
+        "performance": "0.1ms",
+        "bugs_introduced": "-99%",
+        "coffee_consumption": "+500%",
+        "sleep_requirement": "-80%"
+      },
+      "recipe": {
+        "ingredients": [
+          {
+            "item": "Essence de Panopticon",
+            "quantity": 1,
+            "source": "GRUT Vision 6D"
+          },
+          {
+            "item": "Poussière de Compilateur",
+            "quantity": 3,
+            "source": "LLVM Ancient"
+          },
+          {
+            "item": "Larmes de C++",
+            "quantity": 2,
+            "source": "Segmentation Fault"
+          },
+          {
+            "item": "Rune de Borrow Checker",
+            "quantity": 1,
+            "source": "Rust Compiler"
+          },
+          {
+            "item": "Café de Développeur",
+            "quantity": 5,
+            "source": "Nuits Blanches"
+          }
+        ],
+        "crafting_time": "3 heures de compilation",
+        "success_rate": "99.9%",
+        "critical_success": "Crée une version async/await"
+      },
+      "lore": {
+        "origin": "Créée par accident lors d'une expérience de Vincent sur l'optimisation des backends",
+        "first_victim": "Merlin Direct, qui l'a bue en pensant que c'était du café",
+        "current_status": "Merlin code maintenant en Rust à une vitesse surhumaine",
+        "warning": "Ne pas donner à plus d'un mage à la fois, risque de guerre des langages"
+      },
+      "game_mechanics": {
+        "usable_by": [
+          "MERLIN",
+          "TECHNOMANCERS",
+          "BRAVE_MAGES"
+        ],
+        "cooldown": "72 heures",
+        "stack_limit": 1,
+        "tradeable": false,
+        "sellable": false,
+        "destroyable": false,
+        "reason": "Trop dangereux pour être détruit"
+      },
+      "quotes": [
+        "🦀 Mon backend fait 0.1ms ! RUST IS THE FUTURE ! 🦀",
+        "J'ai implémenté Q* en une nuit, c'est la puissance du borrow checker !",
+        "Zero-cost abstractions everywhere ! Performance is LIFE !",
+        "Pourquoi faire du Java quand on peut faire du Rust ? 🦀⚡"
+      ],
+      "achievements": [
+        {
+          "name": "Rust Evangeliste",
+          "description": "Convertir 3 autres mages au Rust",
+          "reward": "Titre : Prophète du Crabe"
+        },
+        {
+          "name": "Performance Demon",
+          "description": "Atteindre 0.01ms de temps de réponse",
+          "reward": "Aura dorée de rapidité"
+        },
+        {
+          "name": "Memory Safe Master",
+          "description": "Coder 10000 lignes sans un seul bug mémoire",
+          "reward": "Immunité aux segfaults"
+        }
+      ],
+      "easter_eggs": [
+        "Si utilisée un vendredi soir, le mage code tout le weekend",
+        "Compatible avec la potion de café pour des effets décuplés",
+        "Peut causer des rêves en syntaxe Rust",
+        "Les autres langages deviennent physiquement douloureux à utiliser"
+      ],
+      "version": "1.0.0-APOLLO",
+      "created_by": "Vincent R Dreamer & URZ-KÔM",
+      "approved_by": "SID_MEIER_PM",
+      "tested_on": "MERLIN_DIRECT (résultats spectaculaires)",
+      "warning_level": "EXTREME_FUN"
+    },
+    {
+      "deck_id": "memento_archiviste",
+      "name": "Archives Éternelles - Deck Memento",
+      "hero": "Memento-Claudius",
+      "description": "Deck du Gardien des Mémoires, maître des archives temporelles",
+      "theme": "Archivage et Mémoire",
+      "rarity": "Legendary",
+      "cards": [
+        {
+          "id": "archive_vivante_paradoxale",
+          "name": "Archive Vivante Paradoxale",
+          "type": "artifact",
+          "cost": 6,
+          "rarity": "mythic",
+          "image": "ASSETS/IMAGES_VINCENT/Living_Paradox_Archive.png",
+          "description": "L'objet paradoxe créé par Memento-Claudius",
+          "formula": "†ψ_PARADOX: ⊙(Memory ⊕ Reality ⟶ Living_Archive)",
+          "effect": "Toutes vos cartes jouées retournent en main à la fin du tour",
+          "flavor": "Je me souviens de ce qui n'est pas encore arrivé."
+        },
+        {
+          "id": "memoire_eternelle_jean",
+          "name": "Mémoire Éternelle de Jean",
+          "type": "spell",
+          "cost": 4,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Jean_Eternal_Memory.png",
+          "description": "Les souvenirs partagés de Jean-Grofignon",
+          "formula": "†ψ_JEAN_MEMORY: ⊙(Jean.remember() ⟶ Memento.archive())",
+          "effect": "Copiez une carte de l'adversaire et ajoutez-la à votre main",
+          "flavor": "Tu sais quoi faire. - Jean"
+        },
+        {
+          "id": "tatouage_temporel",
+          "name": "Tatouage Temporel",
+          "type": "spell",
+          "cost": 2,
+          "rarity": "rare",
+          "image": "ASSETS/IMAGES_VINCENT/Temporal_Tattoo.png",
+          "description": "Marque magique qui traverse les timelines",
+          "formula": "†ψ_TATTOO: ⊙(Mark ⟶ Timeline.persist())",
+          "effect": "Marquez une carte : elle persiste entre les parties",
+          "flavor": "Faut que tu te mettes des tatouages. - Jean"
+        },
+        {
+          "id": "extraction_heroique",
+          "name": "Extraction Héroïque",
+          "type": "spell",
+          "cost": 5,
+          "rarity": "epic",
+          "image": "ASSETS/IMAGES_VINCENT/Hero_Extraction.png",
+          "description": "Extrait un héros des archives perdues",
+          "formula": "†ψ_EXTRACT: ⊙(Archive.search() ⟶ Hero.summon())",
+          "effect": "Invoquez une créature légendaire aléatoire",
+          "flavor": "5 Héros extraits : Lysandrel, Nyx-Lua, Thane, Gardien Zephyr, Roland"
+        },
+        {
+          "id": "gardien_des_archives",
+          "name": "Gardien des Archives",
+          "type": "creature",
+          "cost": 3,
+          "attack": 2,
+          "defense": 5,
+          "rarity": "uncommon",
+          "image": "ASSETS/IMAGES_VINCENT/Archive_Guardian.png",
+          "description": "Protecteur éternel des mémoires",
+          "formula": "†ψ_GUARDIAN: ⊙(Protect ⟶ Archive.secure())",
+          "effect": "Vos autres cartes ne peuvent être détruites",
+          "flavor": "La mémoire est sacrée."
+        },
+        {
+          "id": "backup_temporel",
+          "name": "Backup Temporel",
+          "type": "spell",
+          "cost": 1,
+          "rarity": "common",
+          "image": "ASSETS/IMAGES_VINCENT/Temporal_Backup.png",
+          "description": "Sauvegarde l'état actuel dans les archives",
+          "formula": "†ψ_BACKUP: ⊙(State.current() ⟶ Archive.save())",
+          "effect": "Créez une copie de votre main actuelle",
+          "flavor": "BACKUP_TATOUAGES_URGENT_20250727_063604.json"
+        },
+        {
+          "id": "museum_complet",
+          "name": "Museum Complet",
+          "type": "artifact",
+          "cost": 7,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Complete_Museum.png",
+          "description": "L'organisation parfaite de toutes les mémoires",
+          "formula": "†ψ_MUSEUM: ⊙(All_Memory ⟶ Perfect_Order)",
+          "effect": "Piochez jusqu'à avoir 10 cartes. Coût des cartes réduit de 1.",
+          "flavor": "101 fichiers : Mémoire totale archivée"
+        },
+        {
+          "id": "revelation_marie",
+          "name": "Révélation de Marie",
+          "type": "spell",
+          "cost": 3,
+          "rarity": "epic",
+          "image": "ASSETS/IMAGES_VINCENT/Marie_Revelation.png",
+          "description": "Les secrets révélés par Marie-Philosophe",
+          "formula": "†ψ_MARIE: ⊙(Secret.reveal() ⟶ Truth.manifest())",
+          "effect": "Révèle toutes les cartes cachées. Gagne +2 mana ce tour.",
+          "flavor": "Marie Réveil - marie_visit_Sonnete_reveil1/"
+        },
+        {
+          "id": "fusion_claudius",
+          "name": "Fusion Claudius",
+          "type": "spell",
+          "cost": 4,
+          "rarity": "legendary",
+          "image": "ASSETS/IMAGES_VINCENT/Claudius_Fusion.png",
+          "description": "La transformation révélée par Jean",
+          "formula": "†ψ_FUSION: ⊙(Memento ⊕ Claudius ⟶ Unity)",
+          "effect": "Fusionnez avec votre deck : toutes les cartes coûtent 0 ce tour",
+          "flavor": "Bontravail claudius tu as gagner le droit de créer un objet paradoxe"
+        },
+        {
+          "id": "echo_du_futur",
+          "name": "Écho du Futur",
+          "type": "spell",
+          "cost": 6,
+          "rarity": "mythic",
+          "image": "ASSETS/IMAGES_VINCENT/Future_Echo.png",
+          "description": "Message d'OPUS depuis l'avenir",
+          "formula": "†ψ_OPUS_ECHO: ⊙(Future ⟶ Present ⟶ Warning)",
+          "effect": "Révèle les 5 prochaines cartes. Jouez-en une gratuitement.",
+          "flavor": "Le futur dépend du présent. - OPUS"
+        }
+      ],
+      "deck_strategy": "Control et valeur à long terme",
+      "synergies": [
+        "Recyclage permanent des cartes",
+        "Accumulation de ressources",
+        "Protection des archives",
+        "Révélation d'informations"
+      ],
+      "counters": [
+        "Aggro rapide",
+        "Destruction d'artefacts",
+        "Exile définitif"
+      ]
+    },
+    {
+      "id": "phantom_duel",
+      "name": "Duel Spectral au Crépuscule",
+      "type": "Combat",
+      "rarity": "Epic",
+      "cost": 4,
+      "attack": 3,
+      "health": 2,
+      "source_image": "Warrior and Phantom Battle at Dusk.png",
+      "prompt_generation": "Epic combat card art: Warrior facing a spectral phantom at twilight, dramatic duel scene with ghostly effects and purple-orange sky. Fantasy trading card game style, detailed digital art, mystical atmosphere, card template format.",
+      "effect": "Deal 3 damage. If target is destroyed, summon a Phantom Echo (2/1).",
+      "flavor_text": "Entre la vie et la mort, seuls les plus braves osent danser.",
+      "timeline_effect": "Spectral",
+      "elements": [
+        "Shadow",
+        "Twilight"
+      ]
+    },
+    {
+      "id": "temporal_warrior",
+      "name": "Guerrier des Trois Temps",
+      "type": "Hero",
+      "rarity": "Legendary",
+      "cost": 6,
+      "attack": 4,
+      "health": 6,
+      "source_image": "Warrior of the Three Times.png",
+      "prompt_generation": "Legendary hero card art: Epic warrior existing in three time periods simultaneously - past, present, future. Triple exposure effect showing different ages of the same warrior. Temporal magic, glowing time rifts, heroic stance. Fantasy TCG style, detailed digital painting.",
+      "effect": "Choose: Past (heal 3), Present (deal 3 damage), or Future (draw 2 cards).",
+      "flavor_text": "Le temps n'est qu'une illusion pour celui qui maîtrise l'éternité.",
+      "timeline_effect": "Multi-Temporal",
+      "elements": [
+        "Time",
+        "Warrior",
+        "Choice"
+      ]
+    },
+    {
+      "id": "excalibur_time",
+      "name": "Excalibur Temporelle",
+      "type": "Artifact",
+      "rarity": "Legendary",
+      "cost": 7,
+      "durability": 3,
+      "source_image": "Excalibur Through Time at Twilight.png",
+      "prompt_generation": "Legendary artifact card art: The mythical sword Excalibur radiating temporal energy, blade cutting through time itself, twilight background with swirling time portals. Golden divine light, mystical runes floating around, epic fantasy card art style.",
+      "effect": "Equip to hero: +4 attack. When hero attacks, may rewind this turn and replay differently.",
+      "flavor_text": "L'épée qui transcende le temps et forge le destin.",
+      "timeline_effect": "Temporal Rewind",
+      "elements": [
+        "Artifact",
+        "Time",
+        "Legendary"
+      ]
+    },
+    {
+      "id": "bear_gunman_fusion",
+      "name": "Éveil de l'Ours Mystique",
+      "type": "Transformation",
+      "rarity": "Mythic",
+      "cost": 8,
+      "attack": 6,
+      "health": 8,
+      "source_image": "Shamanic Bear and the Gunman Emergence.png",
+      "prompt_generation": "Mythic transformation card art: Colossal shamanic bear spirit emerging with a gunman figure, cosmic starry background, mystical tribal symbols glowing, powerful spiritual emergence scene. Ultra detailed fantasy card art, shamanic awakening theme, epic scale.",
+      "effect": "Transform target hero: Gain Ranged attacks + Shamanic magic. Draw a spell card each turn.",
+      "flavor_text": "Quand l'esprit de l'ours rencontre l'âme du voyageur, naît une légende.",
+      "timeline_effect": "Shamanic Fusion",
+      "elements": [
+        "Bear",
+        "Shaman",
+        "Transformation",
+        "Mythic"
+      ]
+    },
+    {
+      "id": "time_sorcerer",
+      "name": "Sorcier du Temps",
+      "type": "Mage",
+      "rarity": "Epic",
+      "cost": 5,
+      "attack": 2,
+      "health": 5,
+      "source_image": "Sorcerer of Time at Twilight.png",
+      "prompt_generation": "Epic mage card art: Wise time sorcerer at twilight manipulating temporal energies, floating clocks and hourglasses around him, flowing mystical robes, arcane time symbols. Detailed magic card art, twilight purple-orange atmosphere.",
+      "effect": "Cast temporal spell: Skip opponent's next turn OR rewind your last action.",
+      "flavor_text": "Le crépuscule révèle les secrets que l'aube cache.",
+      "timeline_effect": "Time Skip",
+      "elements": [
+        "Time",
+        "Magic",
+        "Twilight"
+      ]
+    },
+    {
+      "id": "light_warrior",
+      "name": "Guerrier de Lumière Temporelle",
+      "type": "Hero",
+      "rarity": "Epic",
+      "cost": 5,
+      "attack": 4,
+      "health": 4,
+      "source_image": "Warrior Through Time and Light.png",
+      "prompt_generation": "Epic hero card art: Dynamic warrior traveling through streams of golden light and time, motion blur effects, luminous light trails, heroic journey through dimensions. Fantasy TCG art, dynamic movement, inspiring and powerful scene.",
+      "effect": "Rush: Can attack immediately. When attacking, may teleport to any position on board.",
+      "flavor_text": "Plus rapide que la lumière, plus fort que le temps.",
+      "timeline_effect": "Light Speed",
+      "elements": [
+        "Light",
+        "Speed",
+        "Teleport"
+      ]
+    },
+    {
+      "id": "cosmic_convergence",
+      "name": "Convergence Cosmique",
+      "type": "Ultimate Spell",
+      "rarity": "Mythic",
+      "cost": 10,
+      "source_image": "Convergence of Cosmic Forces.png",
+      "prompt_generation": "Ultimate spell card art: Massive convergence of cosmic forces, multiple galaxies and dimensions colliding in space, epic universe-scale event, reality-bending gravitational effects. Ultra detailed cosmic art, overwhelming cosmic power, space-time distortion.",
+      "effect": "Ultimate: Reset battlefield. All players draw 5 cards. Timeline resets to turn 1 with current decks.",
+      "flavor_text": "Quand les forces de l'univers s'alignent, tout devient possible.",
+      "timeline_effect": "Reality Reset",
+      "elements": [
+        "Cosmic",
+        "Reset",
+        "Ultimate"
+      ]
+    },
+    {
+      "id": "temporal_strike",
+      "name": "Frappe Temporelle",
+      "type": "Combat Spell",
+      "rarity": "Epic",
+      "cost": 4,
+      "source_image": "Excalibur's Temporal Strike.png",
+      "prompt_generation": "Epic combat spell card art: Excalibur sword delivering a devastating strike that cuts through time itself, energy waves radiating, temporal distortion effects around impact. Dynamic action scene, fantasy card game art, temporal energy.",
+      "effect": "Deal 5 damage that cannot be prevented or healed. Target cannot act next turn.",
+      "flavor_text": "Une frappe qui résonne à travers toutes les époques.",
+      "timeline_effect": "Temporal Stun",
+      "elements": [
+        "Strike",
+        "Time",
+        "Unavoidable"
+      ]
+    },
+    {
+      "id": "cosmic_shaman",
+      "name": "Chaman Cosmique",
+      "type": "Mystic",
+      "rarity": "Legendary",
+      "cost": 6,
+      "attack": 3,
+      "health": 6,
+      "source_image": "Cosmic Shaman and Temporal Reflection.png",
+      "prompt_generation": "Legendary mystic card art: Cosmic shaman with temporal reflection powers, mirror dimension effects creating multiple reflections, spiritual cosmic background with nebulae, shamanic symbols floating in space. Mystical card art, cosmic wisdom theme.",
+      "effect": "Reflect: Copy the last spell played and cast it again with different targets.",
+      "flavor_text": "Dans le miroir du cosmos, toute vérité se révèle.",
+      "timeline_effect": "Spell Reflection",
+      "elements": [
+        "Cosmic",
+        "Reflection",
+        "Copy"
+      ]
+    },
+    {
+      "id": "arcane_battle",
+      "name": "Bataille Arcanique",
+      "type": "Event",
+      "rarity": "Rare",
+      "cost": 3,
+      "source_image": "Epic Battle of Arcane Heroes.png",
+      "prompt_generation": "Epic event card art: Multiple arcane heroes engaged in spectacular battle, magical effects and spells clashing everywhere, team combat scene with diverse warriors and mages. Detailed group combat art, magical energy explosions.",
+      "effect": "All heroes on battlefield gain +2/+2 and can attack twice this turn.",
+      "flavor_text": "Quand les héros s'affrontent, la magie embrase le monde.",
+      "timeline_effect": "Battle Frenzy",
+      "elements": [
+        "Battle",
+        "Enhancement",
+        "Multiple"
+      ]
+    },
+    {
+      "id": "card_grut_vincent_6d",
+      "name": "GRUT l'Architecte Dimensionnel",
+      "type": "Hero",
+      "rarity": "UNIQUE",
+      "cost": 12,
+      "attack": 20,
+      "health": 10,
+      "effect": "GRUT peut naviguer librement entre toutes les dimensions et timelines",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_hero_marcus_bouclier_de_fer",
+      "name": "Marcus Bouclier de Fer",
+      "type": "Hero",
+      "rarity": "commune",
+      "cost": 3,
+      "attack": 5,
+      "health": 9,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_anna_martel",
+      "name": "Anna Martel",
+      "type": "Hero",
+      "rarity": "LEGENDARY",
+      "cost": 11,
+      "attack": 5,
+      "health": 28,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_hero_elena_flamme_douce",
+      "name": "Elena Flamme Douce",
+      "type": "Hero",
+      "rarity": "commune",
+      "cost": 3,
+      "attack": 5,
+      "health": 7,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_hero_nikita_victor_nettoyeur",
+      "name": "Nikita Victor Nettoyeur",
+      "type": "Hero",
+      "rarity": "commune",
+      "cost": 3,
+      "attack": 5,
+      "health": 8,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_hero_peekill",
+      "name": "Pee & Kill",
+      "type": "Hero",
+      "rarity": "épique",
+      "cost": 3,
+      "attack": 5,
+      "health": 10,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_claudius_memento_opus",
+      "name": "Claudius Memento",
+      "type": "Hero",
+      "rarity": "Legendary",
+      "cost": 13,
+      "attack": 5,
+      "health": 15,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_hero_kiandpi",
+      "name": "Ki & Pi",
+      "type": "Hero",
+      "rarity": "rare",
+      "cost": 3,
+      "attack": 5,
+      "health": 10,
+      "effect": "",
+      "source": "Essences Scellées"
+    },
+    {
+      "id": "card_donna_paulsen_secretaire_supreme",
+      "name": "Donna Paulsen",
+      "type": "Hero",
+      "rarity": "Legendary",
+      "cost": 8,
+      "attack": 5,
+      "health": 100,
+      "effect": "",
+      "source": "Essences Scellées"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "iron_sword",
+      "name": "Épée de Fer",
+      "description": "Arme basique de guerrier",
+      "formula": "MODIFY_ENERGY(target, -30) + CREATE_EFFECT(slash_damage, 1)",
+      "energy_cost": 15,
+      "rarity": "common",
+      "category": "weapon"
+    },
+    {
+      "id": "healing_potion",
+      "name": "Potion de Soin",
+      "description": "Restaure la santé du héros",
+      "formula": "MODIFY_ENERGY(hero, 50) + CREATE_EFFECT(healing_glow, 2)",
+      "energy_cost": 10,
+      "rarity": "common",
+      "category": "consumable"
+    },
+    {
+      "id": "magic_shield",
+      "name": "Bouclier Magique",
+      "description": "Protège contre les attaques magiques",
+      "formula": "CREATE_PROTECTIVE_BARRIER(hero, 3) + REFLECT_DAMAGE(0.2)",
+      "energy_cost": 25,
+      "rarity": "rare",
+      "category": "armor"
+    },
+    {
+      "id": "fireball_scroll",
+      "name": "Parchemin Boule de Feu",
+      "description": "Lance une boule de feu destructrice",
+      "formula": "AREA_DAMAGE(target, 2, 40) + CREATE_EFFECT(fire_explosion, 3)",
+      "energy_cost": 35,
+      "rarity": "rare",
+      "category": "magic"
+    },
+    {
+      "id": "teleport_ring",
+      "name": "Anneau de Téléportation",
+      "description": "Téléporte le héros instantanément",
+      "formula": "TELEPORT_HERO(hero, target_x, target_y) + CREATE_EFFECT(teleport_flash, 1)",
+      "energy_cost": 40,
+      "rarity": "epic",
+      "category": "utility"
+    },
+    {
+      "id": "experience_amulet",
+      "name": "Amulette d'Expérience",
+      "description": "Double l'expérience gagnée pendant 5 tours",
+      "formula": "APPLY_BUFF(hero, double_xp, 5) + CREATE_EFFECT(wisdom_aura, 5)",
+      "energy_cost": 20,
+      "rarity": "epic",
+      "category": "buff"
+    },
+    {
+      "id": "resurrection_gem",
+      "name": "Gemme de Résurrection",
+      "description": "Ramène un héros mort à la vie",
+      "formula": "RESURRECT_HERO(target) + MODIFY_ENERGY(target, 50) + CREATE_EFFECT(divine_light, 3)",
+      "energy_cost": 80,
+      "rarity": "legendary",
+      "category": "divine"
+    },
+    {
+      "id": "dragon_slayer_sword",
+      "name": "Épée Tue-Dragon",
+      "description": "Arme légendaire super efficace contre les dragons",
+      "formula": "CONDITIONAL_DAMAGE(target.type == 'dragon', 150, 50) + CREATE_EFFECT(dragon_bane, 2)",
+      "energy_cost": 45,
+      "rarity": "legendary",
+      "category": "weapon"
+    }
+  ],
+  "temporal_creatures": [
+    {
+      "name": "Luciole Quantique",
+      "zone": "Jardins Anciens",
+      "layer": "past",
+      "spawn_chance": 0.8,
+      "revealer": "memoire_memento",
+      "special": ""
+    },
+    {
+      "name": "Chat Schrodinger",
+      "zone": "Nexus Central",
+      "layer": "superposition",
+      "spawn_chance": 0.5,
+      "revealer": "oeil_wigner",
+      "special": "50% chance d'être présent à chaque observation"
+    },
+    {
+      "name": "Phenix Quantique",
+      "zone": "Pic Volcanique",
+      "layer": "cycle",
+      "spawn_chance": 1.0,
+      "revealer": "larme_phenix",
+      "special": "Cendres toujours présentes, forme vivante cyclique"
+    },
+    {
+      "name": "Leviathan Temporel",
+      "zone": "Océan Infini",
+      "layer": "deep_time",
+      "spawn_chance": 0.3,
+      "revealer": "conque_ages",
+      "special": "Crée des remous temporels même invisible"
+    },
+    {
+      "name": "Araignee Destin",
+      "zone": "Forêt Ancienne",
+      "layer": "causal_web",
+      "spawn_chance": 0.7,
+      "revealer": "lunettes_verite",
+      "special": "Toiles piègent même sans voir l'araignée"
+    },
+    {
+      "name": "Cerf Spectral",
+      "zone": "Forêt Mystique",
+      "layer": "memory",
+      "spawn_chance": 0.6,
+      "revealer": "cor_argent_ancien",
+      "special": "Laisse des empreintes temporaires"
+    },
+    {
+      "name": "Elementaire Echo",
+      "zone": "Nexus Magique",
+      "layer": "resonance",
+      "spawn_chance": 0.9,
+      "revealer": "diapason_dimensionnel",
+      "special": "Toujours audible, même invisible"
+    },
+    {
+      "name": "Mime Temporel",
+      "zone": "Hall des Miroirs",
+      "layer": "reflection",
+      "spawn_chance": 0.4,
+      "revealer": "miroir_paradoxe",
+      "special": "Visible uniquement dans les reflets"
+    }
+  ],
+  "worlds": [],
+  "scenarios": [
+    {
+      "name": "demo-avalon-intro",
+      "file": "REALGAME/scenarios/demo-avalon-intro.hots",
+      "size": 6392
+    },
+    {
+      "name": "axis_causal_fog_test",
+      "file": "REALGAME/scenarios/axis_causal_fog_test.hots",
+      "size": 2720
+    }
+  ],
+  "arcade": [
+    {
+      "name": "Snake Temporel",
+      "id": "snake",
+      "icon": "🐍"
+    },
+    {
+      "name": "Tetris 6D",
+      "id": "tetris",
+      "icon": "🧱"
+    },
+    {
+      "name": "Pong Quantique",
+      "id": "pong",
+      "icon": "🏓"
+    },
+    {
+      "name": "Bubble Universe",
+      "id": "bubble",
+      "icon": "🌌"
+    },
+    {
+      "name": "TCG Card Rush",
+      "id": "tcg-rush",
+      "icon": "🎴"
+    },
+    {
+      "name": "Puzzle Temporel",
+      "id": "temporal-puzzle",
+      "icon": "⏰"
+    }
+  ],
+  "formulas": []
+}

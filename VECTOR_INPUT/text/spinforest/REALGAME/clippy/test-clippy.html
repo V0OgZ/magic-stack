@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Clippy - Heroes of Time</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .mode-button {
+            background: #2196F3;
+        }
+        
+        .mode-button:hover {
+            background: #1976D2;
+        }
+        
+        .event-button {
+            background: #FF9800;
+        }
+        
+        .event-button:hover {
+            background: #F57C00;
+        }
+        
+        #log {
+            background: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        
+        .log-info { color: #2196F3; }
+        .log-success { color: #4CAF50; }
+        .log-warning { color: #FF9800; }
+        .log-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Clippy Integration</h1>
+    
+    <div class="test-section">
+        <h2>🎮 Modes de Jeu</h2>
+        <button class="mode-button" onclick="initMode('tcg')">Mode TCG</button>
+        <button class="mode-button" onclick="initMode('forest')">Mode Forêt</button>
+        <button class="mode-button" onclick="initMode('arcade')">Mode Arcade</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>💬 Dialogues</h2>
+        <button onclick="startTutorial()">Lancer Tutoriel TCG</button>
+        <button onclick="startForest()">Entrer dans la Forêt</button>
+        <button onclick="showSavePrompt()">Prompt Sauvegarde</button>
+        <button onclick="showQuickMessage()">Message Rapide</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Événements de Jeu</h2>
+        <button class="event-button" onclick="simulateLowHP()">Simuler PV Bas</button>
+        <button class="event-button" onclick="simulateVictory()">Simuler Victoire</button>
+        <button class="event-button" onclick="simulateDiscovery()">Simuler Découverte</button>
+        <button class="event-button" onclick="simulateDamage()">Simuler Dégâts</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎛️ Contrôles UI</h2>
+        <button onclick="showClippy()">Afficher Clippy</button>
+        <button onclick="hideClippy()">Cacher Clippy</button>
+        <button onclick="changePosition()">Changer Position</button>
+        <button onclick="testDrag()">Info Drag & Drop</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Log des Événements</h2>
+        <div id="log"></div>
+        <button onclick="clearLog()">Effacer Log</button>
+    </div>
+    
+    <!-- Scripts Clippy -->
+    <script src="dialogue/dialogue-trees.js"></script>
+    <script src="ui/clippy-floating.js"></script>
+    <script src="integration/game-hooks.js"></script>
+    
+    <script>
+        // Logger
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Initialisation
+        let currentMode = null;
+        
+        async function initMode(mode) {
+            log(`Initialisation mode ${mode}...`, 'info');
+            
+            try {
+                // Nettoyer l'instance précédente
+                if (window.clippy.initialized) {
+                    window.clippy.cleanup();
+                    log('Instance précédente nettoyée', 'info');
+                }
+                
+                // Initialiser le nouveau mode
+                await window.clippy.init(mode);
+                currentMode = mode;
+                log(`Mode ${mode} initialisé avec succès !`, 'success');
+                
+                // Message de bienvenue
+                window.clippy.showMessage(`Mode ${mode} activé !`, 2000);
+                
+            } catch (error) {
+                log(`Erreur initialisation: ${error.message}`, 'error');
+            }
+        }
+        
+        // Tests Dialogues
+        function startTutorial() {
+            if (!checkInit()) return;
+            log('Lancement tutoriel TCG', 'info');
+            window.clippy.startDialogue('tcg_tutorial', 'start');
+        }
+        
+        function startForest() {
+            if (!checkInit()) return;
+            log('Dialogue entrée forêt', 'info');
+            window.clippy.startDialogue('forest_entrance', 'start');
+        }
+        
+        function showSavePrompt() {
+            if (!checkInit()) return;
+            log('Affichage prompt sauvegarde', 'info');
+            window.clippy.startDialogue('save_system', 'save_prompt');
+        }
+        
+        function showQuickMessage() {
+            if (!checkInit()) return;
+            const messages = [
+                "Salut ! Je suis Clippy !",
+                "Besoin d'aide ?",
+                "Tu progresses bien !",
+                "N'oublie pas de sauvegarder !"
+            ];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            log(`Message rapide: "${msg}"`, 'info');
+            window.clippy.showMessage(msg, 3000);
+        }
+        
+        // Tests Événements
+        function simulateLowHP() {
+            if (!checkInit()) return;
+            log('Simulation PV bas', 'warning');
+            window.dispatchEvent(new CustomEvent('tcg_turn_start', {
+                detail: { player: { hp: 5, hand: [1, 2, 3] } }
+            }));
+        }
+        
+        function simulateVictory() {
+            if (!checkInit()) return;
+            log('Simulation victoire', 'success');
+            // Effacer first_victory pour tester
+            localStorage.removeItem('first_victory');
+            window.dispatchEvent(new CustomEvent('tcg_match_end', {
+                detail: { winner: 'player' }
+            }));
+        }
+        
+        function simulateDiscovery() {
+            if (!checkInit()) return;
+            const items = ['Épée magique', 'Potion de vie', 'Clé dorée', 'Carte au trésor'];
+            const item = items[Math.floor(Math.random() * items.length)];
+            log(`Simulation découverte: ${item}`, 'success');
+            window.dispatchEvent(new CustomEvent('dialogue_discover', {
+                detail: { item: item }
+            }));
+        }
+        
+        function simulateDamage() {
+            if (!checkInit()) return;
+            const damage = Math.floor(Math.random() * 20) + 5;
+            log(`Simulation dégâts: ${damage}`, 'warning');
+            window.dispatchEvent(new CustomEvent('dialogue_damage', {
+                detail: { amount: damage }
+            }));
+        }
+        
+        // Contrôles UI
+        function showClippy() {
+            if (!checkInit()) return;
+            log('Affichage Clippy', 'info');
+            window.clippy.show();
+        }
+        
+        function hideClippy() {
+            if (!checkInit()) return;
+            log('Masquage Clippy', 'info');
+            window.clippy.hide();
+        }
+        
+        function changePosition() {
+            if (!checkInit()) return;
+            const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            const current = window.clippy.ui.config.position;
+            const currentIndex = positions.indexOf(current);
+            const newPosition = positions[(currentIndex + 1) % positions.length];
+            
+            window.clippy.ui.setPosition(newPosition);
+            log(`Position changée: ${current} → ${newPosition}`, 'info');
+            window.clippy.showMessage(`Nouvelle position: ${newPosition}`, 2000);
+        }
+        
+        function testDrag() {
+            if (!checkInit()) return;
+            log('Test drag & drop', 'info');
+            window.clippy.showMessage("Tu peux me déplacer en cliquant sur ma barre de titre !", 4000);
+        }
+        
+        // Utilitaires
+        function checkInit() {
+            if (!window.clippy || !window.clippy.initialized) {
+                log('Clippy non initialisé ! Choisissez d\'abord un mode.', 'error');
+                return false;
+            }
+            return true;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log effacé', 'info');
+        }
+        
+        // Init au chargement
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Page de test chargée', 'info');
+            log('Choisissez un mode pour commencer', 'warning');
+            
+            // Écouter les touches
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F1') {
+                    e.preventDefault();
+                    log('Touche F1 pressée', 'info');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

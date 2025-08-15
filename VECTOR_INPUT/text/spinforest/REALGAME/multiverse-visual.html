@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 MULTIVERSE - Sélecteur de Mondes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #multiverse-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('ASSETS/IMAGES_VINCENT/Multiverse.png');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .world-portal {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 3px solid #0ff;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .world-portal:hover {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.2);
+            transform: scale(1.2);
+            box-shadow: 0 0 30px #FFD700;
+        }
+        
+        .world-name {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        
+        /* Positions des portails sur l'image */
+        #world1 { top: 20%; left: 20%; }
+        #world2 { top: 15%; right: 25%; }
+        #world3 { bottom: 30%; left: 15%; }
+        #world4 { bottom: 20%; right: 20%; }
+        #world5 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        .timeline-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0ff;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        /* Particules flottantes */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #0ff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite linear;
+        }
+        
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        #title {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700;
+            font-size: 48px;
+            text-shadow: 3px 3px 6px #000;
+            letter-spacing: 5px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 3px 3px 6px #000, 0 0 10px #FFD700; }
+            to { text-shadow: 3px 3px 6px #000, 0 0 20px #FFD700, 0 0 30px #FFD700; }
+        }
+    </style>
+</head>
+<body>
+    <div id="multiverse-container">
+        <h1 id="title">MULTIVERSE</h1>
+        
+        <!-- Portails vers les mondes -->
+        <div class="world-portal" id="world1" onclick="enterWorld('frontiere-feu-foi')">
+            <div class="world-name">
+                Frontière de<br>Feu et Foi
+                <div class="timeline-indicator">Timeline α-1</div>
+            </div>
+        </div>
+        
+        <div class="world-portal" id="world2" onclick="enterWorld('royaume-glace')">
+            <div class="world-name">
+                Royaume de<br>Glace Éternelle
+                <div class="timeline-indicator">Timeline β-3</div>
+            </div>
+        </div>
+        
+        <div class="world-portal" id="world3" onclick="enterWorld('cite-temporelle')">
+            <div class="world-name">
+                Cité<br>Temporelle
+                <div class="timeline-indicator">Timeline γ-∞</div>
+            </div>
+        </div>
+        
+        <div class="world-portal" id="world4" onclick="enterWorld('foret-quantique')">
+            <div class="world-name">
+                Forêt<br>Quantique
+                <div class="timeline-indicator">Timeline δ-?</div>
+            </div>
+        </div>
+        
+        <div class="world-portal" id="world5" onclick="enterWorld('interstice')">
+            <div class="world-name">
+                L'INTERSTICE<br>∅
+                <div class="timeline-indicator">Hors-Temps</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Créer des particules flottantes
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                document.getElementById('multiverse-container').appendChild(particle);
+            }
+        }
+        
+        // Entrer dans un monde
+        function enterWorld(worldName) {
+            console.log(`🌀 Entrée dans le monde: ${worldName}`);
+            
+            // Animation de zoom
+            const container = document.getElementById('multiverse-container');
+            container.style.transition = 'transform 1s ease-in';
+            container.style.transform = 'scale(10)';
+            
+            setTimeout(() => {
+                // Rediriger vers la carte du monde
+                if (worldName === 'frontiere-feu-foi') {
+                    window.location.href = 'MODES/CARTE_ISO_2D/demo-frontiere-feu-foi.html';
+                } else {
+                    alert(`Le monde "${worldName}" est en cours de création...`);
+                    container.style.transform = 'scale(1)';
+                }
+            }, 1000);
+        }
+        
+        // Initialiser
+        createParticles();
+        
+        // Son d'ambiance (si disponible)
+        const audio = new Audio('ASSETS/SOUNDS/multiverse-ambient.mp3');
+        audio.loop = true;
+        audio.volume = 0.3;
+        // audio.play(); // Décommenter quand le son est disponible
+    </script>
+</body>
+</html>
