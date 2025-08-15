@@ -1254,6 +1254,52 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             renderCards();
         }
 
+        // Bind compact combat actions
+        (function setupCombatButtons(){
+            const atk = document.getElementById('btnAttack');
+            const skl = document.getElementById('btnSkill');
+            if (atk) atk.onclick = async () => {
+                if (!gameState.combat.active || !gameState.combat.enemy) return;
+                await dealDamage(gameState.combat.enemy, 2);
+                if (gameState.combat.enemy.hp <= 0) { endCombat(true); return; }
+                gameState.combat.turn = 'enemy';
+            };
+            if (skl) skl.onclick = async () => {
+                if (!gameState.combat.active || !gameState.combat.enemy) return;
+                // Level 1 skills rotate between Ping / Firewall / Debug
+                const enemy = gameState.combat.enemy;
+                if (gameState.currentLevel === 1) {
+                    // Simple round-robin
+                    const cyc = (window.__skillCyc = (window.__skillCyc||0)+1) % 3;
+                    if (cyc === 0) { await dealDamage(enemy, 3); }
+                    else if (cyc === 1) { gameState.player.shield = (gameState.player.shield||0)+3; showFloatingMessage('Bouclier +3', enemy.x, enemy.y, '#0ff'); }
+                    else { drawCard(); }
+                }
+                if (enemy.hp <= 0) { endCombat(true); return; }
+                gameState.combat.turn = 'enemy';
+            };
+        })();
+
+        // Enemy simple AI turn
+        (function setupEnemyLoop(){
+            setInterval(()=>{
+                if (!gameState.combat.active || gameState.combat.turn !== 'enemy') return;
+                const dmg = 3;
+                const shield = gameState.player.shield||0;
+                if (shield > 0) {
+                    const absorb = Math.min(shield, dmg);
+                    gameState.player.shield -= absorb;
+                    const rem = dmg - absorb;
+                    if (rem > 0) gameState.player.hp = Math.max(0, gameState.player.hp - rem);
+                } else {
+                    gameState.player.hp = Math.max(0, gameState.player.hp - dmg);
+                }
+                updateStats();
+                if (gameState.player.hp <= 0) { endCombat(false); return; }
+                gameState.combat.turn = 'player';
+            }, 700);
+        })();
+
         function showDialogue(speaker, text) {
             const dialogue = document.getElementById('dialogue');
             document.getElementById('dialogue-speaker').textContent = speaker;
@@ -1591,6 +1637,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const need = 3;
             const have = gameState.player.crystals||0;
             chip.textContent = `Objectif: ${have}/${need} 💎 → 🚪`;
+            if (have >= need) chip.style.borderColor = '#0f0'; else chip.style.borderColor = '#0ff';
         }
 
         function toggleCombatUI(on) {
