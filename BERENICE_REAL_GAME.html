@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroes of Time - Bérénice Edition</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* En-tête */
+        .header {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Zone de jeu */
+        .game-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Carte du jeu */
+        #gameCanvas {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+            background: #2d3748;
+        }
+
+        /* HUD - Barre d'info */
+        .hud {
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Indicateur Psi avec effet visuel */
+        .psi-indicator {
+            width: 100px;
+            height: 20px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .psi-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f260 0%, #0575e6 100%);
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .psi-golden {
+            position: absolute;
+            right: 38.2%; /* Position du nombre d'or */
+            top: -5px;
+            bottom: -5px;
+            width: 2px;
+            background: #FFD700;
+            box-shadow: 0 0 10px #FFD700;
+        }
+
+        /* Barre de cartes */
+        .card-bar {
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .card {
+            width: 80px;
+            height: 100px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(255,215,0,0.5);
+        }
+
+        .card.selected {
+            border-color: #00FF00;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+
+        .card.cooldown {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        .card-name {
+            font-size: 12px;
+            color: white;
+            text-align: center;
+        }
+
+        .cooldown-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            transition: height 0.1s linear;
+        }
+
+        /* Effets visuels */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes quantumGlow {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.3; }
+        }
+
+        .quantum-effect {
+            animation: quantumGlow 2s infinite;
+        }
+
+        /* Messages de jeu */
+        .game-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: #FFD700;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 30px rgba(255,215,0,0.8);
+        }
+
+        /* Console de debug (cachée par défaut) */
+        .debug-console {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #00FF00;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 10px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        /* Loader */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .loader-spinner {
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 5px solid #FFD700;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Indicateur Phi */
+        .phi-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            display: none;
+        }
+
+        .phi-perfect {
+            color: #FFD700;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        🎮 Heroes of Time - Niveau 1 : La Prairie Magique 🌟
+    </div>
+
+    <!-- Zone de jeu principale -->
+    <div class="game-area">
+        <canvas id="gameCanvas" width="640" height="640"></canvas>
+        
+        <!-- Message de jeu -->
+        <div id="gameMessage" class="game-message"></div>
+        
+        <!-- Indicateur Phi -->
+        <div id="phiIndicator" class="phi-indicator">
+            Φ = <span id="phiValue">1.000</span>
+        </div>
+        
+        <!-- Console de debug -->
+        <div id="debugConsole" class="debug-console"></div>
+        
+        <!-- Loader -->
+        <div id="loader" class="loader">
+            <div>Chargement du monde quantique...</div>
+            <div class="loader-spinner"></div>
+        </div>
+    </div>
+
+    <!-- HUD - Barre d'informations -->
+    <div class="hud">
+        <div class="stat">
+            <span>❤️ Vie:</span>
+            <span id="health">3/3</span>
+        </div>
+        
+        <div class="stat">
+            <span>Ψ Quantique:</span>
+            <div class="psi-indicator">
+                <div class="psi-golden"></div>
+                <div id="psiBar" class="psi-fill" style="width: 50%"></div>
+            </div>
+            <span id="psiValue">0.500</span>
+        </div>
+        
+        <div class="stat">
+            <span>💎 Cristaux:</span>
+            <span id="crystals">0/3</span>
+        </div>
+        
+        <div class="stat">
+            <span>⏱️ Temps:</span>
+            <span id="timeElapsed">00:00</span>
+        </div>
+    </div>
+
+    <!-- Barre de cartes -->
+    <div class="card-bar" id="cardBar">
+        <!-- Les cartes seront générées dynamiquement -->
+    </div>
+
+    <script>
+        // Configuration du jeu
+        const CONFIG = {
+            // Connexions API
+            API_JAVA: 'http://localhost:8082',
+            API_RUST: 'http://localhost:3001',
+            API_VECTOR: 'http://localhost:5000',
+            
+            // Paramètres du jeu
+            TILE_SIZE: 32,
+            MAP_WIDTH: 20,
+            MAP_HEIGHT: 20,
+            TICK_RATE: 100, // 100ms comme spécifié
+            
+            // États quantiques
+            PHI_TARGET: 0.618, // Nombre d'or
+            PHI_TOLERANCE: 0.01,
+            
+            // Debug
+            DEBUG_MODE: true
+        };
+
+        // État global du jeu
+        let gameState = {
+            // Position 6D du héros
+            hero: {
+                id: 'berenice',
+                position: {
+                    x: 2, y: 3, z: 0,
+                    t: 0, c: 1, psi: 0.5
+                },
+                health: 3,
+                maxHealth: 3,
+                sprite: '👧',
+                opacity: 1.0
+            },
+            
+            // État du monde
+            map: null,
+            entities: [],
+            crystalsCollected: 0,
+            timeStarted: Date.now(),
+            selectedCard: null,
+            
+            // États temporels
+            timelines: [0], // Timeline actuelle
+            clones: [], // Clones quantiques
+            
+            // Synchronisation
+            lastTick: Date.now(),
+            worldTime: 0,
+            entityTime: 0
+        };
+
+        // Canvas et contexte
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Système de debug
+        class DebugConsole {
+            constructor() {
+                this.console = document.getElementById('debugConsole');
+                this.messages = [];
+                this.maxMessages = 20;
+            }
+            
+            log(message, type = 'info') {
+                const timestamp = new Date().toISOString().substr(11, 12);
+                const entry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+                this.messages.push(entry);
+                
+                if (this.messages.length > this.maxMessages) {
+                    this.messages.shift();
+                }
+                
+                this.console.innerHTML = this.messages.join('<br>');
+                this.console.scrollTop = this.console.scrollHeight;
+            }
+            
+            error(message) {
+                this.log(message, 'error');
+                console.error(message);
+            }
+        }
+
+        const debug = new DebugConsole();
+
+        // Gestionnaire de ressources
+        class ResourceManager {
+            constructor() {
+                this.resources = {};
+                this.loaded = false;
+            }
+            
+            async loadResources() {
+                try {
+                    debug.log('Chargement des ressources...');
+                    
+                    // Charger les ressources depuis l'API Java
+                    const response = await fetch(`${CONFIG.API_JAVA}/api/resources/for-editor`);
+                    if (!response.ok) throw new Error('Erreur chargement ressources');
+                    
+                    this.resources = await response.json();
+                    debug.log(`${Object.keys(this.resources).length} ressources chargées`);
+                    
+                    this.loaded = true;
+                    return true;
+                } catch (error) {
+                    debug.error(`Erreur ressources: ${error.message}`);
+                    // Fallback avec ressources minimales
+                    this.resources = this.getDefaultResources();
+                    this.loaded = true;
+                    return false;
+                }
+            }
+            
+            getDefaultResources() {
+                return {
+                    tiles: {
+                        grass: { symbol: '·', color: '#4ade80' },
+                        tree: { symbol: '🌳', color: '#065f46' },
+                        flower: { symbol: '🌺', color: '#ec4899' },
+                        mushroom: { symbol: '🍄', color: '#ef4444' },
+                        door: { symbol: '🚪', color: '#6366f1' }
+                    },
+                    entities: {
+                        crystal: { symbol: '💎', color: '#60a5fa' },
+                        bunny: { symbol: '🐰', color: '#fbbf24' },
+                        star: { symbol: '⭐', color: '#fde047' },
+                        slime: { symbol: '🟢', color: '#22c55e' }
+                    },
+                    cards: [
+                        { id: 'fire', icon: '🔥', name: 'Feu', formula: '🔥(target)', cooldown: 2000 },
+                        { id: 'shield', icon: '🛡️', name: 'Bouclier', formula: '🛡️(self)', cooldown: 3000 },
+                        { id: 'thunder', icon: '⚡', name: 'Éclair', formula: '⚡(target)', cooldown: 2500 },
+                        { id: 'quantum', icon: '🔮', name: 'Stabiliser', formula: 'Φ(self)', cooldown: 5000 },
+                        { id: 'clone', icon: '👥', name: 'Clone', formula: '👥(self)', cooldown: 4000 }
+                    ]
+                };
+            }
+        }
+
+        const resources = new ResourceManager();
+
+        // Gestionnaire de carte
+        class MapManager {
+            constructor() {
+                this.tiles = [];
+                this.entities = [];
+            }
+            
+            async loadMap() {
+                try {
+                    // Dans un vrai cas, charger depuis l'API ou World Editor
+                    // Pour l'instant, générer depuis l'ASCII de Beren.md
+                    this.generateMapFromASCII();
+                    return true;
+                } catch (error) {
+                    debug.error(`Erreur chargement map: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            generateMapFromASCII() {
+                // Map basée sur Beren.md
+                const asciiMap = [
+                    '🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳⭐·········🐰🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳··🌺······🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳·👧····💎··🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳···🍄····🌳🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳·······💎·🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳··🌺······🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳········🌳🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳···💎····🌳🌳🌳🌳🌳🌳🌳🌳🌳',
+                    '🌳🌳🌳🚪🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳'
+                ];
+                
+                // Étendre à 20x20
+                for (let y = asciiMap.length; y < CONFIG.MAP_HEIGHT; y++) {
+                    asciiMap.push('🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳🌳');
+                }
+                
+                // Parser la map
+                this.tiles = [];
+                this.entities = [];
+                
+                for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
+                    for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
+                        const char = asciiMap[y]?.[x] || '🌳';
+                        
+                        // Déterminer le type de tuile
+                        let tileType = 'grass';
+                        let walkable = true;
+                        
+                        switch(char) {
+                            case '🌳':
+                                tileType = 'tree';
+                                walkable = false;
+                                break;
+                            case '·':
+                                tileType = 'grass';
+                                break;
+                            case '🌺':
+                                tileType = 'flower';
+                                break;
+                            case '🍄':
+                                tileType = 'mushroom';
+                                break;
+                            case '🚪':
+                                tileType = 'door';
+                                break;
+                            case '👧':
+                                // Position initiale du héros
+                                gameState.hero.position.x = x;
+                                gameState.hero.position.y = y;
+                                tileType = 'grass';
+                                break;
+                            case '💎':
+                                // Cristal à collecter
+                                this.entities.push({
+                                    id: `crystal_${x}_${y}`,
+                                    type: 'crystal',
+                                    position: { x, y, z: 0, t: 0, c: 1, psi: 1.0 },
+                                    collected: false
+                                });
+                                tileType = 'grass';
+                                break;
+                            case '🐰':
+                                // Lapin gentil
+                                this.entities.push({
+                                    id: `bunny_${x}_${y}`,
+                                    type: 'bunny',
+                                    position: { x, y, z: 0, t: 0, c: 1, psi: 1.0 },
+                                    friendly: true
+                                });
+                                tileType = 'grass';
+                                break;
+                            case '⭐':
+                                // Objectif
+                                this.entities.push({
+                                    id: 'objective',
+                                    type: 'star',
+                                    position: { x, y, z: 0, t: 0, c: 1, psi: 1.0 }
+                                });
+                                tileType = 'grass';
+                                break;
+                        }
+                        
+                        this.tiles.push({
+                            x, y,
+                            type: tileType,
+                            walkable: walkable
+                        });
+                    }
+                }
+                
+                gameState.map = this;
+                gameState.entities = this.entities;
+                debug.log(`Map générée: ${this.tiles.length} tuiles, ${this.entities.length} entités`);
+            }
+            
+            getTile(x, y) {
+                return this.tiles.find(t => t.x === x && t.y === y);
+            }
+            
+            isWalkable(x, y) {
+                const tile = this.getTile(x, y);
+                return tile ? tile.walkable : false;
+            }
+        }
+
+        const mapManager = new MapManager();
+
+        // Système de rendu
+        class Renderer {
+            constructor() {
+                this.camera = { x: 0, y: 0 };
+            }
+            
+            render() {
+                // Effacer le canvas
+                ctx.fillStyle = '#1a202c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Rendre la grille
+                this.renderGrid();
+                
+                // Rendre les tuiles
+                this.renderTiles();
+                
+                // Rendre les entités
+                this.renderEntities();
+                
+                // Rendre les clones quantiques
+                this.renderClones();
+                
+                // Rendre le héros
+                this.renderHero();
+                
+                // Effets visuels
+                this.renderEffects();
+            }
+            
+            renderGrid() {
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                
+                for (let x = 0; x <= CONFIG.MAP_WIDTH; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x * CONFIG.TILE_SIZE, 0);
+                    ctx.lineTo(x * CONFIG.TILE_SIZE, CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE);
+                    ctx.stroke();
+                }
+                
+                for (let y = 0; y <= CONFIG.MAP_HEIGHT; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y * CONFIG.TILE_SIZE);
+                    ctx.lineTo(CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE, y * CONFIG.TILE_SIZE);
+                    ctx.stroke();
+                }
+            }
+            
+            renderTiles() {
+                if (!gameState.map) return;
+                
+                gameState.map.tiles.forEach(tile => {
+                    const tileData = resources.resources.tiles?.[tile.type];
+                    if (!tileData) return;
+                    
+                    const x = tile.x * CONFIG.TILE_SIZE;
+                    const y = tile.y * CONFIG.TILE_SIZE;
+                    
+                    // Fond de tuile
+                    if (tile.type === 'grass') {
+                        ctx.fillStyle = '#064e3b';
+                        ctx.fillRect(x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+                    }
+                    
+                    // Symbole
+                    ctx.font = `${CONFIG.TILE_SIZE * 0.8}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        tileData.symbol,
+                        x + CONFIG.TILE_SIZE / 2,
+                        y + CONFIG.TILE_SIZE / 2
+                    );
+                });
+            }
+            
+            renderEntities() {
+                gameState.entities.forEach(entity => {
+                    if (entity.collected) return;
+                    
+                    const entityData = resources.resources.entities?.[entity.type];
+                    if (!entityData) return;
+                    
+                    const x = entity.position.x * CONFIG.TILE_SIZE;
+                    const y = entity.position.y * CONFIG.TILE_SIZE;
+                    
+                    // Effet de pulsation pour les objets importants
+                    if (entity.type === 'crystal' || entity.type === 'star') {
+                        const pulse = Math.sin(Date.now() / 500) * 0.2 + 0.8;
+                        ctx.save();
+                        ctx.globalAlpha = pulse;
+                    }
+                    
+                    ctx.font = `${CONFIG.TILE_SIZE * 0.8}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        entityData.symbol,
+                        x + CONFIG.TILE_SIZE / 2,
+                        y + CONFIG.TILE_SIZE / 2
+                    );
+                    
+                    if (entity.type === 'crystal' || entity.type === 'star') {
+                        ctx.restore();
+                    }
+                });
+            }
+            
+            renderClones() {
+                gameState.clones.forEach(clone => {
+                    const x = clone.position.x * CONFIG.TILE_SIZE;
+                    const y = clone.position.y * CONFIG.TILE_SIZE;
+                    
+                    // Transparence basée sur Psi
+                    ctx.save();
+                    ctx.globalAlpha = clone.position.psi;
+                    
+                    ctx.font = `${CONFIG.TILE_SIZE * 0.8}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        '👧',
+                        x + CONFIG.TILE_SIZE / 2,
+                        y + CONFIG.TILE_SIZE / 2
+                    );
+                    
+                    ctx.restore();
+                });
+            }
+            
+            renderHero() {
+                const hero = gameState.hero;
+                const x = hero.position.x * CONFIG.TILE_SIZE;
+                const y = hero.position.y * CONFIG.TILE_SIZE;
+                
+                // Calculer l'opacité basée sur Psi
+                const opacity = Math.max(0.3, hero.position.psi);
+                
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                
+                // Aura dorée si proche de Phi
+                if (Math.abs(hero.position.psi - CONFIG.PHI_TARGET) < CONFIG.PHI_TOLERANCE) {
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 20;
+                }
+                
+                ctx.font = `${CONFIG.TILE_SIZE * 0.8}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    hero.sprite,
+                    x + CONFIG.TILE_SIZE / 2,
+                    y + CONFIG.TILE_SIZE / 2
+                );
+                
+                ctx.restore();
+            }
+            
+            renderEffects() {
+                // Particules quantiques si Psi < 0.3
+                if (gameState.hero.position.psi < 0.3) {
+                    const numParticles = 10;
+                    const time = Date.now() / 1000;
+                    
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                    
+                    for (let i = 0; i < numParticles; i++) {
+                        const angle = (i / numParticles) * Math.PI * 2 + time;
+                        const radius = 30 + Math.sin(time * 2 + i) * 10;
+                        
+                        const x = gameState.hero.position.x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 + Math.cos(angle) * radius;
+                        const y = gameState.hero.position.y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 + Math.sin(angle) * radius;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+        }
+
+        const renderer = new Renderer();
+
+        // Gestionnaire d'API
+        class APIManager {
+            constructor() {
+                this.sessionId = `berenice_${Date.now()}`;
+            }
+            
+            async initializeGame() {
+                try {
+                    // 1. Réinitialiser l'inventaire
+                    await this.callAPI('POST', `${CONFIG.API_JAVA}/api/game/inventory/reset/berenice`);
+                    
+                    // 2. Initialiser le monde
+                    await this.tick();
+                    
+                    debug.log('Jeu initialisé avec succès');
+                    return true;
+                } catch (error) {
+                    debug.error(`Erreur initialisation: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            async tick() {
+                try {
+                    const tickData = {
+                        current_tw: gameState.worldTime,
+                        current_te: gameState.entityTime,
+                        entities: [
+                            {
+                                id: gameState.hero.id,
+                                position: gameState.hero.position,
+                                health: gameState.hero.health
+                            },
+                            ...gameState.clones,
+                            ...gameState.entities.filter(e => !e.collected)
+                        ]
+                    };
+                    
+                    const response = await this.callAPI('POST', `${CONFIG.API_RUST}/api/v2/tick`, tickData);
+                    
+                    if (response.world_time !== undefined) {
+                        gameState.worldTime = response.world_time;
+                    }
+                    if (response.entity_time !== undefined) {
+                        gameState.entityTime = response.entity_time;
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    // Pas grave si le tick échoue, on continue
+                    return null;
+                }
+            }
+            
+            async castSpell(formula, target = null) {
+                try {
+                    const castData = {
+                        formula: formula,
+                        caster: gameState.hero.id,
+                        target: target,
+                        position: gameState.hero.position,
+                        includeQuantum: true
+                    };
+                    
+                    const response = await this.callAPI('POST', `${CONFIG.API_JAVA}/api/magic/cast`, castData);
+                    
+                    if (response.traceHash) {
+                        debug.log(`Trace: ${response.traceHash}`);
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    debug.error(`Erreur sort: ${error.message}`);
+                    return null;
+                }
+            }
+            
+            async searchNearby() {
+                try {
+                    const searchData = {
+                        center: gameState.hero.position,
+                        radius: 3,
+                        mode: 'QUANTUM'
+                    };
+                    
+                    const response = await this.callAPI('POST', `${CONFIG.API_RUST}/api/qstar/search`, searchData);
+                    return response;
+                } catch (error) {
+                    return null;
+                }
+            }
+            
+            async callAPI(method, url, data = null) {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                return await response.json();
+            }
+        }
+
+        const apiManager = new APIManager();
+
+        // Contrôleur de jeu
+        class GameController {
+            constructor() {
+                this.keys = {};
+                this.selectedCard = null;
+                this.cardCooldowns = new Map();
+                this.gameRunning = false;
+                this.tickInterval = null;
+            }
+            
+            init() {
+                // Événements clavier
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+                
+                // Générer les cartes
+                this.generateCards();
+                
+                // Touches de debug
+                if (CONFIG.DEBUG_MODE) {
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'F12') {
+                            const console = document.getElementById('debugConsole');
+                            console.style.display = console.style.display === 'none' ? 'block' : 'none';
+                        }
+                        if (e.key === 'F11') {
+                            const indicator = document.getElementById('phiIndicator');
+                            indicator.style.display = indicator.style.display === 'none' ? 'block' : 'none';
+                        }
+                    });
+                }
+            }
+            
+            generateCards() {
+                const cardBar = document.getElementById('cardBar');
+                const cards = resources.resources.cards || [];
+                
+                cards.forEach((cardData, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.cardId = cardData.id;
+                    card.dataset.formula = cardData.formula;
+                    card.dataset.cooldown = cardData.cooldown;
+                    
+                    card.innerHTML = `
+                        <div class="card-icon">${cardData.icon}</div>
+                        <div class="card-name">${cardData.name}</div>
+                        <div class="cooldown-overlay" style="height: 0%"></div>
+                    `;
+                    
+                    // Clic sur carte
+                    card.addEventListener('click', () => this.selectCard(card));
+                    
+                    // Raccourci clavier
+                    if (index < 9) {
+                        card.title = `Touche ${index + 1}`;
+                    }
+                    
+                    cardBar.appendChild(card);
+                });
+            }
+            
+            selectCard(cardElement) {
+                // Vérifier cooldown
+                if (cardElement.classList.contains('cooldown')) {
+                    this.showMessage('Cette carte est en recharge!', 1000);
+                    return;
+                }
+                
+                // Désélectionner l'ancienne
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                
+                // Sélectionner la nouvelle
+                cardElement.classList.add('selected');
+                this.selectedCard = cardElement;
+                
+                // Action immédiate pour certaines cartes
+                const cardId = cardElement.dataset.cardId;
+                if (cardId === 'quantum' || cardId === 'shield' || cardId === 'clone') {
+                    this.useCard(cardElement);
+                }
+            }
+            
+            async useCard(cardElement) {
+                const formula = cardElement.dataset.formula;
+                const cooldown = parseInt(cardElement.dataset.cooldown);
+                const cardId = cardElement.dataset.cardId;
+                
+                debug.log(`Utilisation carte: ${cardId} - ${formula}`);
+                
+                // Appliquer le cooldown
+                this.applyCooldown(cardElement, cooldown);
+                
+                // Effets locaux immédiats
+                switch(cardId) {
+                    case 'quantum':
+                        // Stabiliser Phi
+                        this.stabilizePhi();
+                        break;
+                    case 'shield':
+                        // Effet bouclier
+                        this.showMessage('🛡️ Bouclier activé!', 1500);
+                        break;
+                    case 'clone':
+                        // Créer un clone
+                        this.createClone();
+                        break;
+                }
+                
+                // Appel API
+                const response = await apiManager.castSpell(formula, null);
+                if (response && response.success) {
+                    debug.log(`Sort réussi: ${response.message || 'OK'}`);
+                }
+            }
+            
+            applyCooldown(cardElement, duration) {
+                cardElement.classList.add('cooldown');
+                const overlay = cardElement.querySelector('.cooldown-overlay');
+                
+                let elapsed = 0;
+                const interval = setInterval(() => {
+                    elapsed += 100;
+                    const percent = Math.max(0, 100 - (elapsed / duration * 100));
+                    overlay.style.height = `${percent}%`;
+                    
+                    if (elapsed >= duration) {
+                        clearInterval(interval);
+                        cardElement.classList.remove('cooldown');
+                        overlay.style.height = '0%';
+                    }
+                }, 100);
+            }
+            
+            stabilizePhi() {
+                const targetPsi = CONFIG.PHI_TARGET;
+                const currentPsi = gameState.hero.position.psi;
+                
+                // Animation de stabilisation
+                const steps = 20;
+                const increment = (targetPsi - currentPsi) / steps;
+                let step = 0;
+                
+                const stabilizeInterval = setInterval(() => {
+                    gameState.hero.position.psi += increment;
+                    this.updatePsiDisplay();
+                    
+                    step++;
+                    if (step >= steps) {
+                        clearInterval(stabilizeInterval);
+                        gameState.hero.position.psi = targetPsi;
+                        this.showMessage('✨ Phi parfait atteint! ✨', 2000);
+                        this.checkPhiBonus();
+                    }
+                }, 50);
+            }
+            
+            createClone() {
+                const clone = {
+                    id: `clone_${Date.now()}`,
+                    position: {
+                        ...gameState.hero.position,
+                        t: gameState.hero.position.t + 1, // Timeline différente
+                        psi: 0.3 // Clone transparent
+                    }
+                };
+                
+                gameState.clones.push(clone);
+                this.showMessage('👥 Clone créé!', 1500);
+                
+                // Le clone disparaît après 10 secondes
+                setTimeout(() => {
+                    const index = gameState.clones.findIndex(c => c.id === clone.id);
+                    if (index !== -1) {
+                        gameState.clones.splice(index, 1);
+                    }
+                }, 10000);
+            }
+            
+            handleKeyDown(e) {
+                this.keys[e.key] = true;
+                
+                // Raccourcis cartes (1-5)
+                if (e.key >= '1' && e.key <= '5') {
+                    const cardIndex = parseInt(e.key) - 1;
+                    const card = document.querySelectorAll('.card')[cardIndex];
+                    if (card) this.selectCard(card);
+                }
+                
+                // Déplacement
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
+                    e.preventDefault();
+                    this.moveHero(e.key);
+                }
+            }
+            
+            handleKeyUp(e) {
+                this.keys[e.key] = false;
+            }
+            
+            moveHero(key) {
+                if (!this.gameRunning) return;
+                
+                const hero = gameState.hero;
+                let newX = hero.position.x;
+                let newY = hero.position.y;
+                
+                switch(key) {
+                    case 'ArrowUp':
+                    case 'w':
+                        newY--;
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                        newY++;
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                        newX--;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        newX++;
+                        break;
+                }
+                
+                // Vérifier les limites
+                if (newX < 0 || newX >= CONFIG.MAP_WIDTH || 
+                    newY < 0 || newY >= CONFIG.MAP_HEIGHT) {
+                    return;
+                }
+                
+                // Vérifier si c'est marchable
+                if (!mapManager.isWalkable(newX, newY)) {
+                    return;
+                }
+                
+                // Mettre à jour la position
+                hero.position.x = newX;
+                hero.position.y = newY;
+                
+                // Effets quantiques du mouvement
+                this.updateQuantumState();
+                
+                // Vérifier les collisions
+                this.checkCollisions();
+            }
+            
+            updateQuantumState() {
+                // Le mouvement affecte l'état quantique
+                const speed = 0.02;
+                gameState.hero.position.psi = Math.max(0.1, Math.min(1.0, 
+                    gameState.hero.position.psi - speed + Math.random() * 0.01
+                ));
+                
+                // Si des clones existent, vérifier la proximité
+                gameState.clones.forEach(clone => {
+                    const dist = Math.abs(clone.position.x - gameState.hero.position.x) + 
+                                Math.abs(clone.position.y - gameState.hero.position.y);
+                    
+                    if (dist < 3) {
+                        // Les clones proches augmentent Psi
+                        gameState.hero.position.psi = Math.min(1.0, 
+                            gameState.hero.position.psi + 0.05
+                        );
+                        clone.position.psi = Math.min(1.0, clone.position.psi + 0.05);
+                    }
+                });
+                
+                this.updatePsiDisplay();
+            }
+            
+            checkCollisions() {
+                const heroX = gameState.hero.position.x;
+                const heroY = gameState.hero.position.y;
+                
+                gameState.entities.forEach(entity => {
+                    if (entity.collected) return;
+                    
+                    if (entity.position.x === heroX && entity.position.y === heroY) {
+                        switch(entity.type) {
+                            case 'crystal':
+                                this.collectCrystal(entity);
+                                break;
+                            case 'star':
+                                this.reachObjective(entity);
+                                break;
+                            case 'bunny':
+                                this.meetBunny(entity);
+                                break;
+                        }
+                    }
+                });
+                
+                // Vérifier la sortie
+                const exitTile = mapManager.getTile(heroX, heroY);
+                if (exitTile && exitTile.type === 'door') {
+                    this.checkVictory();
+                }
+            }
+            
+            collectCrystal(crystal) {
+                crystal.collected = true;
+                gameState.crystalsCollected++;
+                
+                this.showMessage('💎 Cristal collecté!', 1500);
+                this.updateCrystalDisplay();
+                
+                // Bonus quantique
+                gameState.hero.position.psi = Math.min(1.0, 
+                    gameState.hero.position.psi + 0.1
+                );
+                this.updatePsiDisplay();
+            }
+            
+            reachObjective(star) {
+                this.showMessage('⭐ Objectif atteint!', 2000);
+                
+                // Vérifier si Phi est parfait
+                if (Math.abs(gameState.hero.position.psi - CONFIG.PHI_TARGET) < CONFIG.PHI_TOLERANCE) {
+                    this.showMessage('✨ BONUS PHI PARFAIT! ✨', 3000);
+                }
+            }
+            
+            meetBunny(bunny) {
+                this.showMessage('🐰 Le lapin te souhaite bonne chance!', 2000);
+                bunny.collected = true; // Pour ne pas répéter le message
+                
+                // Le lapin donne un petit bonus
+                gameState.hero.health = Math.min(gameState.hero.maxHealth, 
+                    gameState.hero.health + 1
+                );
+                this.updateHealthDisplay();
+            }
+            
+            checkVictory() {
+                if (gameState.crystalsCollected >= 3) {
+                    this.victory();
+                } else {
+                    this.showMessage(`Il te manque ${3 - gameState.crystalsCollected} cristaux!`, 2000);
+                }
+            }
+            
+            victory() {
+                this.gameRunning = false;
+                clearInterval(this.tickInterval);
+                
+                const timeElapsed = Math.floor((Date.now() - gameState.timeStarted) / 1000);
+                const phiBonus = Math.abs(gameState.hero.position.psi - CONFIG.PHI_TARGET) < CONFIG.PHI_TOLERANCE ? 2.0 : 1.0;
+                const score = Math.floor((1000 - timeElapsed) * phiBonus);
+                
+                const message = `
+                    <div style="font-size: 32px; margin-bottom: 20px;">🎉 VICTOIRE! 🎉</div>
+                    <div>Temps: ${this.formatTime(timeElapsed)}</div>
+                    <div>Bonus Phi: x${phiBonus}</div>
+                    <div style="font-size: 28px; margin-top: 20px;">Score: ${score}</div>
+                `;
+                
+                document.getElementById('gameMessage').innerHTML = message;
+                document.getElementById('gameMessage').style.display = 'block';
+            }
+            
+            updatePsiDisplay() {
+                const psi = gameState.hero.position.psi;
+                document.getElementById('psiValue').textContent = psi.toFixed(3);
+                document.getElementById('psiBar').style.width = `${psi * 100}%`;
+                
+                // Indicateur Phi
+                const phiValue = document.getElementById('phiValue');
+                const phiIndicator = document.getElementById('phiIndicator');
+                if (phiValue) {
+                    const phi = 1.0 + psi * 0.618;
+                    phiValue.textContent = phi.toFixed(3);
+                    
+                    if (Math.abs(psi - CONFIG.PHI_TARGET) < CONFIG.PHI_TOLERANCE) {
+                        phiValue.classList.add('phi-perfect');
+                    } else {
+                        phiValue.classList.remove('phi-perfect');
+                    }
+                }
+            }
+            
+            updateHealthDisplay() {
+                document.getElementById('health').textContent = 
+                    `${gameState.hero.health}/${gameState.hero.maxHealth}`;
+            }
+            
+            updateCrystalDisplay() {
+                document.getElementById('crystals').textContent = 
+                    `${gameState.crystalsCollected}/3`;
+            }
+            
+            updateTimeDisplay() {
+                const elapsed = Math.floor((Date.now() - gameState.timeStarted) / 1000);
+                document.getElementById('timeElapsed').textContent = this.formatTime(elapsed);
+            }
+            
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            showMessage(text, duration = 2000) {
+                const messageEl = document.getElementById('gameMessage');
+                messageEl.textContent = text;
+                messageEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, duration);
+            }
+            
+            checkPhiBonus() {
+                if (Math.abs(gameState.hero.position.psi - CONFIG.PHI_TARGET) < CONFIG.PHI_TOLERANCE) {
+                    // Révéler un coffre secret!
+                    gameState.entities.push({
+                        id: 'secret_chest',
+                        type: 'star',
+                        position: { x: 10, y: 10, z: 0, t: 0, c: 1, psi: 1.0 },
+                        secret: true
+                    });
+                    this.showMessage('✨ Un coffre secret apparaît! ✨', 3000);
+                }
+            }
+            
+            async start() {
+                debug.log('Démarrage du jeu...');
+                this.gameRunning = true;
+                gameState.timeStarted = Date.now();
+                
+                // Initialiser avec l'API
+                await apiManager.initializeGame();
+                
+                // Démarrer le tick synchronisé
+                this.tickInterval = setInterval(async () => {
+                    // Tick API
+                    await apiManager.tick();
+                    
+                    // Update local
+                    this.updateTimeDisplay();
+                    
+                    // Rendu
+                    renderer.render();
+                    
+                }, CONFIG.TICK_RATE);
+                
+                // Premier rendu
+                renderer.render();
+                
+                // Afficher un message de bienvenue
+                this.showMessage('Bienvenue Bérénice! Collecte les 3 cristaux!', 3000);
+            }
+        }
+
+        const gameController = new GameController();
+
+        // Initialisation du jeu
+        async function initGame() {
+            debug.log('Initialisation Heroes of Time - Bérénice Edition');
+            
+            try {
+                // Charger les ressources
+                await resources.loadResources();
+                
+                // Charger la carte
+                await mapManager.loadMap();
+                
+                // Initialiser les contrôles
+                gameController.init();
+                
+                // Cacher le loader
+                document.getElementById('loader').style.display = 'none';
+                
+                // Démarrer le jeu
+                await gameController.start();
+                
+            } catch (error) {
+                debug.error(`Erreur fatale: ${error.message}`);
+                document.getElementById('loader').innerHTML = 
+                    '<div style="color: #ef4444;">Erreur de chargement!<br>Vérifiez que les services sont démarrés.</div>';
+            }
+        }
+
+        // Lancer le jeu quand la page est prête
+        window.addEventListener('load', initGame);
+        
+        // Debug: exposer l'état global
+        if (CONFIG.DEBUG_MODE) {
+            window.gameState = gameState;
+            window.debug = debug;
+            window.apiManager = apiManager;
+        }
+    </script>
+</body>
+</html>
