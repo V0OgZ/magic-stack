@@ -546,10 +546,8 @@
 
     <!-- Game Container (Niveaux 1+) -->
     <div id="gameContainer">
-        <div id="topBar">
+        <div id="topBar" style="display:none">
             <button class="top-btn" id="btnHelp">Aide</button>
-            <!-- <button class="top-btn" id="btnTalk">Parler</button> -->
-            <!-- <button class="top-btn" id="btnEditor">Mode Éditeur</button> -->
             <button class="top-btn" id="btnHero">Héroïne</button>
             <button class="top-btn" id="btnLevels">Niveaux</button>
         </div>
@@ -648,6 +646,9 @@
                 <span class="stat-value" id="psi">0.5</span>
             </div>
         </div>
+
+        <!-- Bouton info minimal -->
+        <button id="btnInfo" aria-label="Aide" style="position:fixed; right:10px; bottom:10px; z-index:1000; padding:8px 10px; border-radius:12px; border:2px solid #0ff; background:#001018; color:#0ff; box-shadow:0 0 10px rgba(0,255,255,0.5);">i</button>
 
         <!-- Dialogue -->
         <div id="dialogue">
@@ -1510,6 +1511,27 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         
         function checkObjectives(x, y) { /* handled via entities */ }
 
+        // Combat minimal handlers with auto-dialogs
+        function startCombat(enemy) {
+            gameState.combat.active = true;
+            gameState.combat.enemy = enemy;
+            gameState.combat.turn = 'player';
+            showDialogue('Bérénice','En garde!');
+        }
+
+        function endCombat(victory) {
+            gameState.combat.active = false;
+            if (victory) {
+                gameState.world.entities = gameState.world.entities.filter(e => e !== gameState.combat.enemy);
+                showDialogue('Bérénice','Victoire!');
+            } else {
+                showDialogue('Bérénice','Aïe...');
+                gameState.player.hp = gameState.player.maxHp;
+            }
+            gameState.combat.enemy = null;
+            renderGame();
+        }
+
         // Helper functions
         async function dealDamage(target, amount) {
             if (!target) return;
@@ -1547,10 +1569,12 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         // Top bar actions
         window.addEventListener('DOMContentLoaded', () => {
             const btnHelp = document.getElementById('btnHelp');
+            const btnInfo = document.getElementById('btnInfo');
             const btnEditor = document.getElementById('btnEditor');
             const btnHero = document.getElementById('btnHero');
             const btnLevels = document.getElementById('btnLevels');
             if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
+            if (btnInfo) btnInfo.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
             // if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
             if (btnLevels) btnLevels.onclick = () => { document.getElementById('levelsOverlay').style.display = 'block'; };
             if (btnHero) btnHero.onclick = async () => {
