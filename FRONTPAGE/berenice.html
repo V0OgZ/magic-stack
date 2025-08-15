@@ -82,7 +82,7 @@
         #gameContainer {
             display: none;
             width: 100%;
-            height: 100%;
+            height: 100dvh;
             position: relative;
             text-align: center;
         }
@@ -160,6 +160,21 @@
             border-radius: 5px;
             display: none;
         }
+        /* Top action bar */
+        #topBar { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; z-index: 60; }
+        .top-btn { padding: 6px 10px; background: rgba(0,0,0,0.85); color: #0ff; border: 1px solid #0ff; border-radius: 8px; font-size: 12px; box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+        .top-btn:active { transform: translateY(1px); }
+        @media (max-width: 480px) { .top-btn { font-size: 11px; padding: 6px 8px; } }
+
+        /* Overlays */
+        .overlay {
+            position: absolute; inset: 0; z-index: 80; display: none;
+            background: rgba(0,0,0,0.9);
+        }
+        .overlay .box { max-width: 620px; margin: 8vh auto; background: rgba(0,0,0,0.85); border: 1px solid #0ff; border-radius: 10px; padding: 16px; color: #0ff; }
+        .overlay .box h3 { margin: 0 0 10px 0; }
+        .overlay .close { float: right; background: transparent; border: 1px solid #0ff; color: #0ff; border-radius: 6px; padding: 6px 8px; }
+        #editorFrame { width: 95%; height: 72vh; border: 1px solid #0ff; border-radius: 8px; }
 
         #cards {
             position: absolute;
@@ -503,6 +518,31 @@
 
     <!-- Game Container (Niveaux 1+) -->
     <div id="gameContainer">
+        <div id="topBar">
+            <button class="top-btn" id="btnHelp">Aide</button>
+            <button class="top-btn" id="btnTalk">Parler</button>
+            <button class="top-btn" id="btnEditor">Mode Éditeur</button>
+        </div>
+        <div id="helpOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('helpOverlay').style.display='none'">Fermer</button>
+                <h3>Guide rapide</h3>
+                <ol style="text-align:left; color:#0ff;">
+                    <li>Tape ./hack.sh pour démarrer</li>
+                    <li>Touche une case pour te déplacer</li>
+                    <li>Récupère 3 💎, rejoins 🚪</li>
+                    <li>En combat: joue une carte → l’ennemi répond</li>
+                    <li>Fork Process crée un clone 🧬</li>
+                </ol>
+            </div>
+        </div>
+        <div id="editorOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('editorOverlay').style.display='none'">Fermer</button>
+                <h3>Éditeur Avancé</h3>
+                <iframe id="editorFrame" src="/world-editor/?embed=1"></iframe>
+            </div>
+        </div>
         <!-- Container pour la grille et l'avatar -->
         <div style="position: relative; display: inline-block; margin: 0 auto;">
             <!-- Grille de jeu style PWA -->
@@ -1361,6 +1401,26 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             if (s && (s === e.target || s.contains(e.target))) {
                 s.classList.toggle('show-details');
             }
+        });
+
+        // Top bar actions
+        window.addEventListener('DOMContentLoaded', () => {
+            const btnHelp = document.getElementById('btnHelp');
+            const btnTalk = document.getElementById('btnTalk');
+            const btnEditor = document.getElementById('btnEditor');
+            if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
+            if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
+            if (btnTalk) btnTalk.onclick = async () => {
+                try {
+                    const q = `Bérénice, niveau ${gameState.currentLevel}`;
+                    const ctx = await fetch(CONFIG.VECTOR_DB + '/search', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query: 'Bérénice backstory', limit: 3 }) }).then(r=>r.json()).catch(()=>({results:[]}));
+                    const prompt = { character: 'berenice', context: { level: gameState.currentLevel, hints: ctx.results?.map(r=>r.match).join('\n').slice(0,500) || '' } };
+                    const resp = await fetch(CONFIG.LLM_API + '/character/speak', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(prompt) }).then(r=>r.json()).catch(()=>({ text: "Je vais y arriver! (mode offline)" }));
+                    showDialogue('Bérénice', resp.text || 'Je vais y arriver!');
+                } catch {
+                    showDialogue('Bérénice', 'Je vais y arriver!');
+                }
+            };
         });
 
         // Keyboard controls
