@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Architecture Heroes of Time - Carte Technique 🗺️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .architecture-container {
+            display: grid;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .layer {
+            background: rgba(26, 26, 46, 0.8);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .layer-title {
+            font-size: 1.5em;
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .component {
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid #45b7d1;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(69, 183, 209, 0.3);
+        }
+
+        .component-title {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .component-desc {
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        .tech-stack {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background: #2a2a4a;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin: 2px;
+            color: #4ecdc4;
+        }
+
+        .connection {
+            position: relative;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px dashed #4ecdc4;
+            border-radius: 8px;
+        }
+
+        .connection-title {
+            color: #45b7d1;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .flow-box {
+            background: #1a1a2e;
+            border: 2px solid #45b7d1;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 10px;
+            position: relative;
+        }
+
+        .flow-arrow {
+            color: #4ecdc4;
+            font-size: 2em;
+            margin: 0 10px;
+        }
+
+        .endpoint {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd700;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 5px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .demo-section {
+            background: rgba(155, 89, 182, 0.2);
+            border: 2px solid #9b59b6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-card {
+            background: rgba(22, 33, 62, 0.9);
+            border: 1px solid #9b59b6;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .demo-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .demo-purpose {
+            color: #4ecdc4;
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .target-audience {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .audience-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .audience-badge.dev {
+            background: #45b7d1;
+        }
+
+        .audience-badge.player {
+            background: #4ecdc4;
+        }
+
+        .legend {
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid #666;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 30px;
+        }
+
+        .legend-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .live {
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-active {
+            background: #4ecdc4;
+            box-shadow: 0 0 10px #4ecdc4;
+        }
+
+        .status-beta {
+            background: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .status-demo {
+            background: #9b59b6;
+            box-shadow: 0 0 10px #9b59b6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ Architecture Heroes of Time 🗺️</h1>
+        <p>Carte technique complète - Comment tout se connecte</p>
+    </div>
+
+    <div class="architecture-container">
+        <!-- LAYER 1: FRONTEND -->
+        <div class="layer">
+            <div class="layer-title">🎨 LAYER 1: INTERFACES FRONTEND</div>
+            <div class="components">
+                <div class="component">
+                    <div class="component-title">🏠 Pages Principales</div>
+                    <div class="component-desc">
+                        Points d'entrée pour les joueurs
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">HTML5</span>
+                        <span class="tech-badge">CSS3</span>
+                        <span class="tech-badge">JavaScript</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        /FRONTPAGE/index.html
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">⚛️ Applications React</div>
+                    <div class="component-desc">
+                        Interfaces interactives complexes
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">React 18</span>
+                        <span class="tech-badge">Vite</span>
+                        <span class="tech-badge">TypeScript</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        /world-editor/
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        /magic-stack-unified/
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">🌍 Bubble Worlds</div>
+                    <div class="component-desc">
+                        Univers personnels des héros
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Three.js</span>
+                        <span class="tech-badge">WebGL</span>
+                        <span class="tech-badge">Physics.js</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-beta"></span>
+                        BALLON_CUBE/BUBBLE_WORLDS/
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">🧪 Spells Lab</div>
+                    <div class="component-desc">
+                        Laboratoire de formules magiques
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Vue.js</span>
+                        <span class="tech-badge">Monaco Editor</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        /FRONTPAGE/spells-lab.html
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONNEXIONS -->
+        <div class="connection">
+            <div class="connection-title">🔗 FLUX DE DONNÉES</div>
+            <div class="flow-diagram">
+                <div class="flow-box">Frontend</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box">API Gateway<br>(Java :8082)</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box">Services Backend</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box">Bases de données</div>
+            </div>
+        </div>
+
+        <!-- LAYER 2: BACKEND SERVICES -->
+        <div class="layer">
+            <div class="layer-title">⚙️ LAYER 2: SERVICES BACKEND</div>
+            <div class="components">
+                <div class="component">
+                    <div class="component-title">☕ Java Orchestrator</div>
+                    <div class="component-desc">
+                        API principale et orchestration
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Spring Boot</span>
+                        <span class="tech-badge">Maven</span>
+                        <span class="tech-badge">H2 Database</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :8082/api/magic/*
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :8082/api/world/*
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">🦀 Rust Engine</div>
+                    <div class="component-desc">
+                        Moteur temporel et physique
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Rust</span>
+                        <span class="tech-badge">Actix-web</span>
+                        <span class="tech-badge">Tokio</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :3001/temporal/*
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :3001/execute
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">🐍 Python Vector DB</div>
+                    <div class="component-desc">
+                        Mémoire sémantique et IA
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Flask</span>
+                        <span class="tech-badge">FAISS</span>
+                        <span class="tech-badge">Transformers</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :5001/search
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-active live"></span>
+                        :5001/upload
+                    </div>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">🌊 Temporal Event Bus</div>
+                    <div class="component-desc">
+                        Communication temps réel
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">WebSocket</span>
+                        <span class="tech-badge">Python asyncio</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="status-indicator status-beta"></span>
+                        ws://localhost:8765
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEMOS SECTION -->
+        <div class="demo-section">
+            <div class="layer-title">🎮 DÉMOS ET LEUR BUT</div>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <div class="demo-title">🧊 Cubic World</div>
+                    <div class="demo-purpose">But: Démontrer le moteur 2D+Time</div>
+                    <div class="component-desc">
+                        Monde cubique avec agents autonomes, démontre la physique temporelle
+                        et les agents IA persistants.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge dev">DEV</span>
+                        <span class="audience-badge player">JOUEUR</span>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-title">🌍 Bubble Worlds</div>
+                    <div class="demo-purpose">But: Univers personnalisables</div>
+                    <div class="component-desc">
+                        Chaque héros a sa bulle avec physique custom. Montre la flexibilité
+                        du moteur et le système multi-univers.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge player">JOUEUR</span>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-title">🧪 Spells Lab</div>
+                    <div class="demo-purpose">But: Tester les formules magiques</div>
+                    <div class="component-desc">
+                        Interface pour créer et tester des sorts. Montre l'API de traduction
+                        et le moteur d'exécution temporel.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge dev">DEV</span>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-title">🌌 Interstice Visualizer</div>
+                    <div class="demo-purpose">But: Visualiser la base H2</div>
+                    <div class="component-desc">
+                        Montre toutes les entités stockées, leurs relations et l'histoire.
+                        Debug tool pour comprendre l'état du monde.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge dev">DEV</span>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-title">🤖 Goldorak Quantum</div>
+                    <div class="demo-purpose">But: Features quantiques avancées</div>
+                    <div class="component-desc">
+                        Démontre superposition, intrication, géométrie non-euclidienne.
+                        Showcase des capacités extrêmes du moteur.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge dev">DEV</span>
+                        <span class="audience-badge player">JOUEUR</span>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-title">💬 Chat Interdimensionnel</div>
+                    <div class="demo-purpose">But: Communication entre bulles</div>
+                    <div class="component-desc">
+                        WebSocket en action, messages entre univers. Montre la persistence
+                        et la communication temps réel.
+                    </div>
+                    <div class="target-audience">
+                        <span class="audience-badge player">JOUEUR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEGEND -->
+        <div class="legend">
+            <div class="legend-title">📊 LÉGENDE</div>
+            <div class="legend-item">
+                <span class="status-indicator status-active"></span>
+                <span>Service actif en production</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-indicator status-beta"></span>
+                <span>Beta / En développement</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-indicator status-demo"></span>
+                <span>Demo / Expérimental</span>
+            </div>
+            <div class="legend-item">
+                <span class="audience-badge dev">DEV</span>
+                <span>Pour développeurs frontend</span>
+            </div>
+            <div class="legend-item">
+                <span class="audience-badge player">JOUEUR</span>
+                <span>Pour joueurs finaux</span>
+            </div>
+        </div>
+
+        <!-- ARCHITECTURE FLOW -->
+        <div class="layer" style="margin-top: 30px;">
+            <div class="layer-title">🔄 FLUX COMPLET D'UNE ACTION</div>
+            <div style="padding: 20px; line-height: 2;">
+                <strong>Exemple: Lancer un sort dans Bubble World</strong><br>
+                1. 🖱️ <span class="tech-badge">Frontend</span> Joueur clique "Fulguropoing"<br>
+                2. 📡 <span class="tech-badge">JavaScript</span> Envoie POST à /api/magic/execute<br>
+                3. ☕ <span class="tech-badge">Java:8082</span> Reçoit, valide, traduit la formule<br>
+                4. 🦀 <span class="tech-badge">Rust:3001</span> Exécute dans le moteur temporel<br>
+                5. 💾 <span class="tech-badge">H2 DB</span> Persiste les changements d'état<br>
+                6. 🌊 <span class="tech-badge">WebSocket</span> Broadcast aux autres joueurs<br>
+                7. 🎨 <span class="tech-badge">Three.js</span> Update visuel dans toutes les bulles<br>
+                8. 🐍 <span class="tech-badge">Vector:5001</span> Archive dans la mémoire sémantique
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation des connexions
+        document.addEventListener('DOMContentLoaded', () => {
+            const indicators = document.querySelectorAll('.status-indicator');
+            indicators.forEach(indicator => {
+                if (indicator.classList.contains('status-active')) {
+                    indicator.parentElement.style.color = '#4ecdc4';
+                }
+            });
+
+            // Effet de survol sur les composants
+            const components = document.querySelectorAll('.component');
+            components.forEach(comp => {
+                comp.addEventListener('mouseenter', () => {
+                    comp.style.borderColor = '#ffd700';
+                });
+                comp.addEventListener('mouseleave', () => {
+                    comp.style.borderColor = '#45b7d1';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

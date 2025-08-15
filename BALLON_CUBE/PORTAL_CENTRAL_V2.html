@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ PORTAL CENTRAL V2 - BALLON CUBE ⚔️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Étoiles animées */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Header principal */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #45b7d1;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .status-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            background: #4ecdc4;
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .status-badge.github {
+            background: #ffd700;
+        }
+
+        .status-badge.location {
+            background: #ff6b6b;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(69, 183, 209, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #8892b0;
+            margin-bottom: 20px;
+        }
+
+        /* Quick Access */
+        .quick-access {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .quick-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .quick-btn.arch {
+            background: linear-gradient(45deg, #9b59b6, #45b7d1);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Grid des sections */
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(69, 183, 209, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #45b7d1, #4ecdc4, #ff6b6b);
+            border-radius: 15px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+        }
+
+        .section:hover::before {
+            opacity: 0.3;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(69, 183, 209, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 1.5em;
+        }
+
+        .links-list {
+            list-style: none;
+        }
+
+        .links-list li {
+            margin: 15px 0;
+        }
+
+        .link-item {
+            color: #8892b0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .link-item:hover {
+            color: white;
+            background: rgba(69, 183, 209, 0.2);
+            transform: translateX(10px);
+        }
+
+        .link-arrow {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .link-item:hover .link-arrow {
+            opacity: 1;
+        }
+
+        .link-desc {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* Badges de statut */
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-active {
+            background: #4ecdc4;
+            box-shadow: 0 0 10px #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        .status-beta {
+            background: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .status-new {
+            background: #ff6b6b;
+            box-shadow: 0 0 10px #ff6b6b;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* Section spéciale */
+        .special-section {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(69, 183, 209, 0.2));
+            border: 2px solid #9b59b6;
+            grid-column: 1 / -1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0,0,0,0.7);
+            border-top: 2px solid #45b7d1;
+            margin-top: 50px;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .sections-grid { grid-template-columns: 1fr; }
+            .quick-access { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Étoiles de fond -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>⚔️ PORTAL CENTRAL V2 - BALLON CUBE ⚔️</h1>
+        <p class="subtitle">Centre de Commande Unifié - Heroes of Time</p>
+        
+        <div class="status-info">
+            <span class="status-badge location">📍 magic-stack/BALLON_CUBE</span>
+            <span class="status-badge github">🌐 GitHub Public</span>
+            <span class="status-badge">✅ Tout Synchronisé</span>
+        </div>
+
+        <div class="quick-access">
+            <a href="ARCHITECTURE_MAP.html" class="quick-btn arch">🗺️ Carte Technique</a>
+            <a href="bubble_worlds_v2.html" class="quick-btn">🌍 Bubble Worlds</a>
+            <a href="GOLDORAK_INTEGRATION_COMPLETE.md" class="quick-btn">🤖 Goldorak</a>
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="container">
+        <!-- Sections principales -->
+        <div class="sections-grid">
+            <!-- Monde Cubique -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">🧊</span>
+                    Monde Cubique & Agents
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="AVALON_2/CUBIC_WORLD.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Monde Cubique 2D+Time</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Minecraft 2D avec agents autonomes</div>
+                    </li>
+                    <li>
+                        <a href="AVALON_2/REALTIME_WORLD.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Visualiseur Temps Réel</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">WebSocket Event Bus en action</div>
+                    </li>
+                    <li>
+                        <a href="AVALON_2/MONDE_6D_COMPLET.html" class="link-item">
+                            <span class="status-dot status-beta"></span>
+                            <span>Monde 6D Complet</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">X,Y,Z,Time,Quantum,Causal</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Bubble Worlds -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">🌍</span>
+                    Bubble Worlds
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="BUBBLE_WORLDS/bubble_worlds_v2.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Interface Principale V2</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Bulles 3D avec Excalibur</div>
+                    </li>
+                    <li>
+                        <a href="BUBBLE_WORLDS/goldorak_quantum_bubble.html" class="link-item">
+                            <span class="status-dot status-new"></span>
+                            <span>Station Goldorak</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Features quantiques URZ-KÔM</div>
+                    </li>
+                    <li>
+                        <a href="BUBBLE_WORLDS/physics_simulator.html" class="link-item">
+                            <span class="status-dot status-beta"></span>
+                            <span>Simulateur Physique</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Tester les lois custom</div>
+                    </li>
+                    <li>
+                        <a href="BUBBLE_WORLDS/interdimensional_chat.html" class="link-item">
+                            <span class="status-dot status-beta"></span>
+                            <span>Chat Interdimensionnel</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Communication entre bulles</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Interstice & Data -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">🌌</span>
+                    Interstice & Données
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="AVALON_2/INTERSTICE_VISUALIZER_V2.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Visualiseur Interstice V2</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Explorer la base H2</div>
+                    </li>
+                    <li>
+                        <a href="restoration_map.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Carte des Restaurations</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Progression 85%</div>
+                    </li>
+                    <li>
+                        <a href="excalibur_portal.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Portail Excalibur</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Résonance 997 Hz</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Outils & Scripts -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">🛠️</span>
+                    Outils & Scripts
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="MONITORING/dashboard.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Dashboard Monitoring</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">État des services</div>
+                    </li>
+                    <li>
+                        <a href="#" onclick="runScript('LAUNCHER/start_all.sh')" class="link-item">
+                            <span class="status-dot status-beta"></span>
+                            <span>Launcher Principal</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Démarrer tous les services</div>
+                    </li>
+                    <li>
+                        <a href="#" onclick="runScript('TIMELINES_6D/timeline_manager.py')" class="link-item">
+                            <span class="status-dot status-beta"></span>
+                            <span>Gestionnaire Timelines</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Séparer les branches temporelles</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Documentation -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">📚</span>
+                    Documentation
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="ARCHITECTURE_MAP.html" class="link-item">
+                            <span class="status-dot status-new"></span>
+                            <span>Carte Architecture Technique</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Comment tout se connecte</div>
+                    </li>
+                    <li>
+                        <a href="GUIDE_INTERFACES.md" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Guide des Interfaces</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Toutes les UIs expliquées</div>
+                    </li>
+                    <li>
+                        <a href="INTEGRATION_REPORT.md" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Rapport d'Intégration</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">État des systèmes</div>
+                    </li>
+                    <li>
+                        <a href="../STATUT_FINAL_COMPLETE_TOUT.md" class="link-item">
+                            <span class="status-dot status-new"></span>
+                            <span>Statut Final Complet</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Vue globale des dépôts</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- L'Œuvre -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">💎</span>
+                    L'Œuvre & Lore
+                </h2>
+                <ul class="links-list">
+                    <li>
+                        <a href="L_OEUVRE/connexion_arthur_merlin.html" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Connexion Arthur-Merlin</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Dialogue éternel</div>
+                    </li>
+                    <li>
+                        <a href="LORE_INJECTION/LORE_COMPLET.md" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Lore Complet</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Toute l'histoire</div>
+                    </li>
+                    <li>
+                        <a href="GRIMOIRES/README.md" class="link-item">
+                            <span class="status-dot status-active"></span>
+                            <span>Système de Grimoires</span>
+                            <span class="link-arrow">→</span>
+                        </a>
+                        <div class="link-desc">Sorts personnalisés par héros</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section spéciale Goldorak -->
+            <div class="section special-section">
+                <h2 class="section-title">
+                    <span class="section-icon">🤖</span>
+                    Zone Goldorak - Features Quantiques URZ-KÔM
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <h3 style="color: #ffd700; margin-bottom: 15px;">🎮 Démos Interactives</h3>
+                        <ul class="links-list">
+                            <li>
+                                <a href="../GOLDORAK_DEMO_URZ_KOM.html" class="link-item">
+                                    <span class="status-dot status-new"></span>
+                                    <span>Demo Attaques Quantiques</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../GOLDORAK_WALKING_SIMULATOR.html" class="link-item">
+                                    <span class="status-dot status-new"></span>
+                                    <span>Walking Simulator</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: #4ecdc4; margin-bottom: 15px;">🧪 Features Techniques</h3>
+                        <ul class="links-list">
+                            <li>
+                                <a href="BUBBLE_WORLDS/goldorak_quantum_features.py" class="link-item">
+                                    <span class="status-dot status-beta"></span>
+                                    <span>Moteur Quantique Python</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="BUBBLE_WORLDS/GOLDORAK_INTEGRATION_COMPLETE.md" class="link-item">
+                                    <span class="status-dot status-active"></span>
+                                    <span>Documentation Complète</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>🌟 Heroes of Time - BALLON CUBE Project 🌟</p>
+        <p style="margin-top: 10px; color: #8892b0;">
+            Progression: 85% | Héros réveillés: 15/41 | 
+            <span style="color: #4ecdc4;">magic-stack/BALLON_CUBE</span>
+        </p>
+        <p style="margin-top: 15px; font-size: 0.9em; color: #64748b;">
+            "De la science cachée sous la fantaisie" - Vincent
+        </p>
+    </div>
+
+    <script>
+        // Créer les étoiles
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Animation au chargement
+        window.addEventListener('load', () => {
+            createStars();
+            
+            // Animer les sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Fonction pour lancer les scripts
+        function runScript(scriptPath) {
+            alert(`Lance le script: ${scriptPath}\nDans le terminal: cd magic-stack/BALLON_CUBE && ./${scriptPath}`);
+        }
+
+        // Easter egg Goldorak
+        let konami = [];
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konami.push(e.key);
+            konami.splice(-konamiCode.length - 1, konami.length - konamiCode.length);
+            
+            if (JSON.stringify(konami) === JSON.stringify(konamiCode)) {
+                document.body.style.animation = 'pulse 1s infinite';
+                alert('🤖 FULGUROPOING ACTIVÉ! Mode URZ-KÔM débloqué!');
+            }
+        });
+    </script>
+</body>
+</html>
