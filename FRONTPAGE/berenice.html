@@ -633,6 +633,7 @@
                 maxHp: 30,
                 mana: 3,
                 maxMana: 10,
+                crystals: 0,
                 position_6d: {
                     x: 0,
                     y: 0,
@@ -648,7 +649,9 @@
             world: {
                 entities: [],
                 map: null,
-                fogOfWar: true
+                fogOfWar: true,
+                visited: [],
+                losRadius: 2
             },
             combat: {
                 active: false,
@@ -855,9 +858,11 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             // Load cards
             await loadCards(config.cards);
 
-            // Initialize map
+            // Initialize map and content
             gameState.world.map = config.map;
-            
+            gameState.world.visited = Array.from({length:10}, ()=>Array(10).fill(false));
+            initWorldContent(level);
+
             // Set initial position
             gameState.player.position_6d.x = 1;
             gameState.player.position_6d.y = 1;
@@ -888,6 +893,33 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             map[height-2][width-2] = '🚪'; // Exit
 
             return map;
+        }
+
+        function rndInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+        function initWorldContent(level){
+            const ents = [];
+            const size = 10;
+            // Exit
+            ents.push({ type:'exit', x: 9, y: 9, emoji:'🚪' });
+            // Treasures
+            const treasureCount = level===1?4:(level===2?6:8);
+            for(let i=0;i<treasureCount;i++){
+                ents.push({ type:'item', subtype:'crystal', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji:'💎' });
+            }
+            // Artefacts
+            const arts=['🗡️','🛡️','🧪','📜'];
+            for(let i=0;i<(level>=2?2:1);i++){
+                ents.push({ type:'item', subtype:'artifact', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji: arts[rndInt(0,arts.length-1)] });
+            }
+            // Creatures
+            const pool = level===1?['🐺','🕷️']:(level===2?['👾','🧟','🦇']:['🐉','🧛','👹']);
+            const mobs = level===1?2:(level===2?3:4);
+            for(let i=0;i<mobs;i++){
+                ents.push({ type:'creature', name:'enemy_'+(i+1), x:rndInt(1,size-2), y:rndInt(1,size-2), emoji: pool[rndInt(0,pool.length-1)], hp: 20+(level*10), maxHp: 20+(level*10) });
+            }
+            // Ensure not on start
+            gameState.world.entities = ents.filter(e => !(e.x===1 && e.y===1));
         }
 
         async function loadCards(cardNames) {
@@ -1262,22 +1294,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             
             // Render based on level
             const levelData = {
-                1: {
-                    objectives: [{x: 2, y: 2, emoji: '💎'}, {x: 7, y: 3, emoji: '💎'}, {x: 5, y: 8, emoji: '💎'}],
-                    exit: {x: 9, y: 9, emoji: '🚪'},
-                    enemy: {x: 6, y: 1, emoji: '🐰'},
-                    walls: '🌳'
-                },
-                2: {
-                    objectives: [{x: 1, y: 1, emoji: '🖥️'}, {x: 8, y: 8, emoji: '🖥️'}, {x: 4, y: 5, emoji: '🖥️'}],
-                    exit: {x: 9, y: 0, emoji: '🌀'},
-                    enemy: {x: 5, y: 5, emoji: '👤'},
-                    walls: '▓'
-                },
-                3: {
-                    enemy: {x: 5, y: 2, emoji: '💀'},
-                    walls: '⚡'
-                }
+                1: { walls: '🌳' },
+                2: { walls: '▓' },
+                3: { walls: '⚡' }
             };
             
             const data = levelData[gameState.currentLevel];
@@ -1294,20 +1313,16 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     cells[i * 10 + 9].classList.add('wall');
                 }
 
-                // Objectives / exit / enemy
-                data.objectives?.forEach(obj => {
-                    const cell = cells[obj.y * 10 + obj.x];
-                    if (cell) { cell.innerHTML = obj.emoji; cell.classList.add('objective'); }
+                // Render entities (items/creatures/exit) if visible
+                const px = gameState.player.position_6d.x, py = gameState.player.position_6d.y;
+                const los = gameState.world.losRadius || 2;
+                (gameState.world.entities||[]).forEach(ent => {
+                    const idx = ent.y*10 + ent.x; const cell = cells[idx]; if(!cell) return;
+                    const visible = Math.abs(ent.x-px)+Math.abs(ent.y-py) <= los || gameState.world.visited[ent.y]?.[ent.x];
+                    if (!visible) return;
+                    cell.textContent = ent.emoji;
+                    if (ent.type==='item') cell.classList.add('objective');
                 });
-                if (data.exit) {
-                    const cell = cells[data.exit.y * 10 + data.exit.x];
-                    if (cell) { cell.innerHTML = data.exit.emoji; cell.classList.add('objective'); }
-                }
-                if (data.enemy) {
-                    const cell = cells[data.enemy.y * 10 + data.enemy.x];
-                    if (cell) cell.innerHTML = data.enemy.emoji;
-                    if (!gameState.combat.enemy) gameState.combat.enemy = { id: 'enemy_1', x: data.enemy.x, y: data.enemy.y, hp: 40, maxHp: 40 };
-                }
             }
 
             // Fog of war (visited + LOS radius=2)
@@ -1353,21 +1368,26 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 gameState.player.position_6d.y = y;
                 renderGame();
                 checkObjectives(x, y);
+                // Entity interactions
+                const ent = (gameState.world.entities||[]).find(e=>e.x===x && e.y===y);
+                if (ent) {
+                    if (ent.type==='item') {
+                        if (ent.subtype==='crystal') { gameState.player.crystals=(gameState.player.crystals||0)+1; showFloatingMessage('💎 +1', x*52, y*52, '#0ff'); }
+                        else { (gameState.player.inventory||[]).push(ent.emoji); showFloatingMessage('Ramassé '+ent.emoji, x*52, y*52, '#0ff'); }
+                        gameState.world.entities = gameState.world.entities.filter(e=>e!==ent);
+                        updateStats();
+                    } else if (ent.type==='creature' && !gameState.combat.active) {
+                        gameState.combat.enemy = { id: ent.name||'enemy', x: ent.x, y: ent.y, hp: ent.hp||30, maxHp: ent.maxHp||30 };
+                        startCombat();
+                    } else if (ent.type==='exit') {
+                        showFloatingMessage('Niveau '+(gameState.currentLevel+1)+'!', x*52, y*52, '#0ff');
+                        setTimeout(()=> startLevel(Math.min(3, gameState.currentLevel+1)), 400);
+                    }
+                }
             }
         }
         
-        function checkObjectives(x, y) {
-            // Check level objectives
-            if (gameState.currentLevel === 1) {
-                if ((x === 2 && y === 2) || (x === 7 && y === 3) || (x === 5 && y === 8)) {
-                    showFloatingMessage("💎 Cristal!", x * 52, y * 52, '#0f0');
-                }
-                if (x === 9 && y === 9) {
-                    showFloatingMessage("Niveau 2!", x * 52, y * 52, '#0ff');
-                    setTimeout(() => startLevel(2), 1000);
-                }
-            }
-        }
+        function checkObjectives(x, y) { /* handled via entities */ }
 
         // Helper functions
         async function dealDamage(target, amount) {
