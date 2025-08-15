@@ -100,12 +100,40 @@
         #stats {
             position: absolute;
             top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(30,30,50,0.95));
+            padding: 20px;
             border: 2px solid #0ff;
-            border-radius: 5px;
-            font-size: 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            box-shadow: 0 0 25px rgba(0,255,255,0.6), inset 0 0 15px rgba(0,0,0,0.5);
+            min-width: 250px;
+        }
+        
+        #stats .stat-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            gap: 10px;
+        }
+        
+        #stats .stat-icon {
+            font-size: 24px;
+            width: 35px;
+            text-align: center;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+        
+        #stats .stat-label {
+            flex: 1;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,255,255,0.5);
+        }
+        
+        #stats .stat-value {
+            color: #0ff;
+            font-weight: bold;
+            font-size: 16px;
         }
 
         #dialogue {
@@ -137,22 +165,41 @@
         }
 
         .card {
-            width: 120px;
-            height: 160px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f3a);
-            border: 2px solid #0ff;
-            border-radius: 10px;
-            padding: 10px;
+            width: 140px;
+            height: 180px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: 3px solid #0ff;
+            border-radius: 15px;
+            padding: 15px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,255,255,0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(0,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card:hover {
-            transform: translateY(-10px);
-            border-color: #f0f;
+            transform: translateY(-15px) scale(1.05);
+            border-color: #fff;
             box-shadow: 0 10px 20px rgba(255,0,255,0.5);
         }
 
@@ -337,44 +384,68 @@
             background-position: center;
         }
         
-        /* Grille de jeu style PWA */
+        /* Grille de jeu MAGNIFIQUE style PWA */
         #gameGrid {
             display: grid;
-            grid-template-columns: repeat(10, 50px);
-            grid-template-rows: repeat(10, 50px);
-            gap: 2px;
+            grid-template-columns: repeat(10, 60px);
+            grid-template-rows: repeat(10, 60px);
+            gap: 3px;
             margin: 20px auto;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,50,0.9));
+            padding: 15px;
+            border-radius: 15px;
             position: relative;
             width: fit-content;
+            box-shadow: 0 0 30px rgba(0,255,255,0.5), inset 0 0 20px rgba(0,0,0,0.5);
         }
         
         .grid-cell {
-            background: rgba(0,255,255,0.1);
-            border: 1px solid #0ff;
-            border-radius: 5px;
+            background: linear-gradient(135deg, rgba(0,50,100,0.3), rgba(0,100,150,0.2));
+            border: 2px solid rgba(0,255,255,0.4);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .grid-cell::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .grid-cell:hover::before {
+            opacity: 1;
         }
         
         .grid-cell:hover {
-            background: rgba(0,255,255,0.3);
-            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(0,255,255,0.4), rgba(0,150,200,0.3));
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0,255,255,0.7);
+            z-index: 10;
         }
         
         .grid-cell.wall {
-            background: #333;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            border-color: #666;
             cursor: not-allowed;
         }
         
         .grid-cell.objective {
             animation: pulse 2s infinite;
+            background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,255,0,0.2));
+            border-color: gold;
         }
         
         @keyframes pulse {
@@ -383,11 +454,13 @@
         }
         
         .player-avatar {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             position: absolute;
             transition: all 0.3s ease;
             z-index: 10;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.8);
         }
     </style>
 </head>
@@ -426,13 +499,38 @@
             <img id="playerAvatar" class="player-avatar avatar-ber0" style="display:none;">
         </div>
         
-        <!-- Stats -->
+        <!-- Stats MAGNIFIQUES -->
         <div id="stats">
-            <div>HP: <span id="hp">30</span>/<span id="maxHp">30</span></div>
-            <div>Niveau: <span id="level">1</span></div>
-            <div>Mana: <span id="mana">3</span>/<span id="maxMana">10</span></div>
-            <div>Position: <span id="pos">0,0,0</span></div>
-            <div>Ψ: <span id="psi">0.5</span></div>
+            <div class="stat-row">
+                <span class="stat-icon">❤️</span>
+                <span class="stat-label">HP</span>
+                <span class="stat-value"><span id="hp">30</span>/<span id="maxHp">30</span></span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">⚡</span>
+                <span class="stat-label">Énergie</span>
+                <span class="stat-value"><span id="mana">100</span></span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">🌀</span>
+                <span class="stat-label">Phase</span>
+                <span class="stat-value"><span id="level">1</span></span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">💎</span>
+                <span class="stat-label">Cristaux</span>
+                <span class="stat-value">5</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">📍</span>
+                <span class="stat-label">Position</span>
+                <span class="stat-value" id="pos">0,0,0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-icon">Ψ</span>
+                <span class="stat-label">Quantum</span>
+                <span class="stat-value" id="psi">0.5</span>
+            </div>
         </div>
 
         <!-- Dialogue -->
@@ -842,14 +940,34 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const container = document.getElementById('cards');
             container.innerHTML = '';
 
+            // Icônes pour chaque carte
+            const cardIcons = {
+                'Ping': '📡',
+                'Firewall': '🛡️',
+                'Debug': '🔍',
+                'Fork': '🔀',
+                'Ctrl+Z': '↩️',
+                'Stack Overflow': '💥',
+                'Sudo': '👑',
+                'Kernel Panic': '☠️',
+                'Time.sleep()': '⏸️',
+                'SSH Tunnel': '🔐',
+                'Git Push': '⬆️',
+                'DDoS': '⚡',
+                'Défault': '✨'
+            };
+
             gameState.player.cards.forEach((card, index) => {
                 const cardEl = document.createElement('div');
                 cardEl.className = 'card' + (card.cooldown > 0 ? ' cooldown' : '');
+                const icon = cardIcons[card.name] || cardIcons['Défault'];
+                
                 cardEl.innerHTML = `
-                    <div class="card-cost">${card.cost}</div>
-                    <div class="card-name">${card.name}</div>
-                    <div class="card-desc">${card.desc}</div>
-                    <div class="card-effect">${card.code}</div>
+                    <div style="position: absolute; top: 5px; right: 5px; font-size: 16px; font-weight: bold; color: #0ff;">⚡${card.cost}</div>
+                    <div style="font-size: 36px; margin-bottom: 10px; filter: drop-shadow(0 0 10px currentColor);">${icon}</div>
+                    <div class="card-name" style="font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(0,255,255,0.8);">${card.name}</div>
+                    <div class="card-desc" style="font-size: 11px; color: #aaa; margin: 5px 0;">${card.desc}</div>
+                    <div class="card-effect" style="font-size: 10px; color: #0ff; font-family: monospace;">${card.code}</div>
                 `;
                 
                 if (card.cooldown === 0) {
@@ -1119,10 +1237,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             // Update player avatar
             avatar.style.display = 'block';
             avatar.style.position = 'absolute';
-            const cellSize = 52; // 50px + 2px gap
-            const padding = 10;
-            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 2) + 'px';
-            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 2) + 'px';
+            const cellSize = 63; // 60px + 3px gap
+            const padding = 15;
+            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 6) + 'px';
+            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 6) + 'px';
             
             // Change avatar based on level
             avatar.className = 'player-avatar avatar-ber' + Math.min(gameState.currentLevel - 1, 2);
