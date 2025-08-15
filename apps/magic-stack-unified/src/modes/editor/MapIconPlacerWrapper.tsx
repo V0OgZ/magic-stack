@@ -45,13 +45,17 @@ export function MapIconPlacerWrapper() {
           break;
 
         case 'LOAD_MAP':
-          // Chargement depuis Interstice (Java 8082)
+          // Chargement depuis Interstice (Java)
           try {
             const apiBase = ['localhost','127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8082' : '';
-            const response = await fetch(`${apiBase}/api/interstice/${data.mapId}`);
+            const response = await fetch(`${apiBase}/api/interstice/download`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ entityId: data.mapId })
+            });
             if (response.ok) {
               const mapWrapper = await response.json();
-              const mapData = mapWrapper?.data ?? mapWrapper;
+              const mapData = mapWrapper?.entityData ?? mapWrapper?.data ?? mapWrapper;
               sendToIframe({ type: 'MAP_LOADED', data: mapData });
             } else {
               sendToIframe({ type: 'LOAD_ERROR', message: `HTTP ${response.status}` });

@@ -10,6 +10,7 @@ import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { ResourceBar } from '../../shared/components/ResourceBar';
 import { useEditorStore } from './store/editorStore';
 import { MapIconPlacerV2 } from './MapIconPlacerV2';
+import { ArchiveSearchPanel } from '../../shared/components/ArchiveSearchPanel';
 import { MapIconPlacerWrapper } from './MapIconPlacerWrapper';
 
 export function EditorView(): React.ReactElement {
@@ -166,6 +167,40 @@ export function EditorView(): React.ReactElement {
           >
             🎨 Ouvrir World Editor
           </a>
+        </div>
+
+        {/* Charger par Interstice ID */}
+        <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input id="intersticeId" placeholder="Interstice ID" style={{ padding: 8, borderRadius: 8, border: '1px solid #667eea', background: 'rgba(0,0,0,0.4)', color: 'white' }} />
+          <button
+            onClick={async () => {
+              const idEl = document.getElementById('intersticeId') as HTMLInputElement | null;
+              const id = idEl?.value?.trim();
+              if (!id) return;
+              try {
+                const isLocal = ['localhost','127.0.0.1'].includes(window.location.hostname);
+                const apiBase = isLocal ? 'http://localhost:8082' : '';
+                const res = await fetch(`${apiBase}/api/interstice/download`, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ entityId: id })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                const mapData = json?.entityData ?? json?.data ?? json;
+                importMap(mapData);
+                setMode('test');
+              } catch (e) {
+                console.error('Load interstice failed', e);
+              }
+            }}
+            style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #667eea', background: '#667eea', color: 'white' }}
+          >
+            ⬇️ Charger depuis Interstice
+          </button>
+        </div>
+
+        {/* Recherche archives (Vector DB) */}
+        <div style={{ marginTop: 24, width: 600 }}>
+          <ArchiveSearchPanel />
         </div>
         
         <div style={{
