@@ -20,6 +20,9 @@ public class MagicEngineService {
     private final FormulaRegistryService registry;
     private final UltimateSpecService ultimates;
     private final RustTemporalClient rust;
+    // In-memory world diff ring buffer (latest snapshots only; process memory)
+    private final Deque<Map<String, Object>> recentWorldDiffSnapshots = new ArrayDeque<>();
+    private static final int WORLD_DIFF_HISTORY_LIMIT = 50;
 
     public MagicEngineService(FormulaRegistryService registry) {
         this.registry = registry;
@@ -40,6 +43,95 @@ public class MagicEngineService {
         }
     }
     
+    /**
+     * Record a world diff snapshot in memory, normalizing to the shape:
+     * { ts: <ms>, diffs: [...], bbox: {xMin,xMax,yMin,yMax} | null }
+     */
+    public synchronized void recordWorldDiff(Object diffRaw) {
+        try {
+            long ts = System.currentTimeMillis();
+            List<Object> diffs = new ArrayList<>();
+            if (diffRaw instanceof Map<?,?> map) {
+                Object d = map.get("diffs");
+                if (d instanceof Collection<?> col) {
+                    diffs.addAll((Collection<?>) col);
+                } else if (map.containsKey("entities")) {
+                    Object entities = map.get("entities");
+                    if (entities instanceof Collection<?> col2) {
+                        diffs.addAll(col2);
+                    } else if (entities instanceof Map<?,?> m2) {
+                        diffs.add(m2);
+                    } else {
+                        diffs.add(map);
+                    }
+                } else {
+                    diffs.add(map);
+                }
+            } else if (diffRaw instanceof Collection<?> col) {
+                diffs.addAll((Collection<?>) col);
+            } else if (diffRaw != null) {
+                diffs.add(diffRaw);
+            }
+            Map<String, Object> bbox = computeBboxFromDiffs(diffs);
+            Map<String, Object> snapshot = new HashMap<>();
+            snapshot.put("ts", ts);
+            snapshot.put("diffs", diffs);
+            snapshot.put("bbox", bbox);
+            if (recentWorldDiffSnapshots.size() >= WORLD_DIFF_HISTORY_LIMIT) {
+                recentWorldDiffSnapshots.pollFirst();
+            }
+            recentWorldDiffSnapshots.addLast(snapshot);
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) log.debug("recordWorldDiff failed: {}", e.getMessage());
+        }
+    }
+    
+    private Map<String, Object> computeBboxFromDiffs(List<Object> diffs) {
+        Double xMin = null, xMax = null, yMin = null, yMax = null;
+        for (Object o : diffs) {
+            if (o instanceof Map<?,?> m) {
+                Object pos = m.get("position");
+                if (pos instanceof Map<?,?> pm) {
+                    xMin = minD(xMin, pm.get("x")); xMax = maxD(xMax, pm.get("x"));
+                    yMin = minD(yMin, pm.get("y")); yMax = maxD(yMax, pm.get("y"));
+                } else {
+                    xMin = minD(xMin, m.get("x")); xMax = maxD(xMax, m.get("x"));
+                    yMin = minD(yMin, m.get("y")); yMax = maxD(yMax, m.get("y"));
+                }
+            }
+        }
+        if (xMin == null || xMax == null || yMin == null || yMax == null) return null;
+        Map<String, Object> bbox = new HashMap<>();
+        bbox.put("xMin", xMin); bbox.put("xMax", xMax);
+        bbox.put("yMin", yMin); bbox.put("yMax", yMax);
+        return bbox;
+    }
+    
+    private Double minD(Double a, Object b) {
+        Double v = toDouble(b); if (v == null) return a; return a == null ? v : Math.min(a, v);
+    }
+    private Double maxD(Double a, Object b) {
+        Double v = toDouble(b); if (v == null) return a; return a == null ? v : Math.max(a, v);
+    }
+    private Double toDouble(Object o) {
+        try { return o == null ? null : Double.parseDouble(String.valueOf(o)); } catch (Exception e) { return null; }
+    }
+    
+    /** Return the most recent world diff snapshot, or an empty one. */
+    public synchronized Map<String, Object> getLatestWorldDiffSnapshot() {
+        Map<String, Object> last = recentWorldDiffSnapshots.peekLast();
+        if (last == null) {
+            Map<String, Object> empty = new HashMap<>();
+            empty.put("ts", System.currentTimeMillis());
+            empty.put("diffs", Collections.emptyList());
+            empty.put("bbox", null);
+            return empty;
+        }
+        // defensive copy
+        Map<String, Object> copy = new HashMap<>(last);
+        return copy;
+    }
+
     public CastResponse cast(CastRequest request) {
         CastResponse response = new CastResponse();
         
@@ -180,18 +272,21 @@ public class MagicEngineService {
                             wdm.putIfAbsent("phases", Arrays.asList("transform","divine_bubble","mass_rez","exhaustion","recovery"));
                         }
                         response.setWorldDiff(wdm);
+                        recordWorldDiff(wdm);
                     } else if (parsed.containsKey("world_diff") && parsed.get("world_diff") == null) {
                         // Ensure not null in response
                         Map<String, Object> empty = new HashMap<>();
                         empty.put("notes", "world_diff missing; empty diff");
                         if (handledAsUltimate) empty.put("ultimate", "MILLENNIUM_CONTROLLER");
                         response.setWorldDiff(empty);
+                        recordWorldDiff(empty);
                     } else {
                         // If structure differs, expose full payload under raw
                         Map<String, Object> fallback = new HashMap<>();
                         fallback.put("raw", parsed);
                         if (handledAsUltimate) fallback.put("ultimate", "MILLENNIUM_CONTROLLER");
                         response.setWorldDiff(fallback);
+                        recordWorldDiff(fallback);
                     }
                 } catch (Exception ignore) {
                     if (log.isWarnEnabled()) {
@@ -201,6 +296,7 @@ public class MagicEngineService {
                     diff.put("entitiesUpdated", 0);
                     diff.put("notes", "apply fallback; rust unavailable");
                     response.setWorldDiff(diff);
+                    recordWorldDiff(diff);
                 }
             }
         } catch (Exception e) {
