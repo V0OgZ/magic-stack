@@ -27,7 +27,8 @@ export function MapIconPlacerWrapper() {
                 version: data?.version,
               },
             };
-            const response = await fetch('http://localhost:8082/api/interstice/upload', {
+            const apiBase = ['localhost','127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8082' : '';
+            const response = await fetch(`${apiBase}/api/interstice/upload`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload),
@@ -46,7 +47,8 @@ export function MapIconPlacerWrapper() {
         case 'LOAD_MAP':
           // Chargement depuis Interstice (Java 8082)
           try {
-            const response = await fetch(`http://localhost:8082/api/interstice/${data.mapId}`);
+            const apiBase = ['localhost','127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8082' : '';
+            const response = await fetch(`${apiBase}/api/interstice/${data.mapId}`);
             if (response.ok) {
               const mapWrapper = await response.json();
               const mapData = mapWrapper?.data ?? mapWrapper;
@@ -124,10 +126,11 @@ export function MapIconPlacerWrapper() {
 
   const checkAPIs = async () => {
     // Vérifier chaque backend
+    const isLocal = ['localhost','127.0.0.1'].includes(window.location.hostname);
     const checks = [
-      { url: 'http://localhost:3001/health', key: 'rust' },
-      { url: 'http://localhost:8082/health', key: 'java' },
-      { url: 'http://localhost:7500/health', key: 'vectorDB' }
+      { url: isLocal ? 'http://localhost:3001/health' : '/engine/health', key: 'rust' },
+      { url: isLocal ? 'http://localhost:8082/health' : '/api/health', key: 'java' },
+      { url: isLocal ? 'http://localhost:7500/health' : '/vector/health', key: 'vectorDB' }
     ];
 
     for (const check of checks) {
@@ -177,13 +180,14 @@ export function MapIconPlacerWrapper() {
         title="Map Icon Placer HD"
         onLoad={() => {
           // Envoyer la config initiale au HTML
+          const isLocal = ['localhost','127.0.0.1'].includes(window.location.hostname);
           sendToIframe({
             type: 'INIT',
             apis: {
-              rust: 'http://localhost:3001',
-              java: 'http://localhost:8082',
-              vectorDB: 'http://localhost:7500',
-              clippy: 'http://localhost:7501'
+              rust: isLocal ? 'http://localhost:3001' : '/engine',
+              java: isLocal ? 'http://localhost:8082' : '/api',
+              vectorDB: isLocal ? 'http://localhost:7500' : '/vector',
+              clippy: isLocal ? 'http://localhost:7501' : '/clippy'
             }
           });
         }}

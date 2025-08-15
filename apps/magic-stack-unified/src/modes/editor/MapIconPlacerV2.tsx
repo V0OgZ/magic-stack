@@ -226,10 +226,11 @@ export function MapIconPlacerV2(props: MapIconPlacerCallbacks = {}): React.React
   // Initialisation V2 Adapter avec WebSocket
   useEffect(() => {
     console.log('🚀 Initialisation V2 Adapter...');
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     v2AdapterRef.current = new V2Adapter({
-      rustUrl: 'http://localhost:3001',
-      javaUrl: 'http://localhost:8082',
-      pythonUrl: 'http://localhost:7500'
+      rustUrl: isLocal ? 'http://localhost:3001' : '/engine',
+      javaUrl: isLocal ? 'http://localhost:8082' : '/api',
+      pythonUrl: isLocal ? 'http://localhost:5001' : '/vector'
     });
     
     const adapter = v2AdapterRef.current;

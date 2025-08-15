@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Bérénice Adventures - Heroes of Time 🌟</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fredoka', cursive;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Container principal */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header avec infos */
+        .game-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-title {
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 1.2em;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Zone de jeu principale */
+        .game-zone {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Map du monde */
+        .world-map {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Grille de jeu */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 2px;
+            background: #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .tile {
+            width: 50px;
+            height: 50px;
+            background: #87CEEB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .tile.wall {
+            background: #654321;
+        }
+
+        .tile.grass {
+            background: #90EE90;
+        }
+
+        .tile.water {
+            background: #4682B4;
+        }
+
+        .tile.door {
+            background: #FFD700;
+        }
+
+        .tile.item {
+            background: #FFB6C1;
+        }
+
+        /* Personnage */
+        .hero-sprite {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #FFB6C1, #FF69B4);
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+        }
+
+        /* Panneau latéral */
+        .side-panel {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Zone d'action/combat */
+        .action-zone {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: #333;
+            text-align: center;
+        }
+
+        .enemy-display {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+
+        .dialogue-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        /* Zone des cartes */
+        .cards-zone {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cards-title {
+            color: #333;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Cartes plus petites */
+        .card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .card-title {
+            font-size: 0.9em;
+        }
+
+        .card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card.disabled:hover {
+            transform: none;
+        }
+
+        /* Messages flottants */
+        .floating-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 2em;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .floating-message.show {
+            display: block;
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-zone {
+                flex-direction: column;
+            }
+            .side-panel {
+                width: 100%;
+                flex-direction: row;
+            }
+            .game-grid {
+                grid-template-columns: repeat(8, 40px);
+                grid-template-rows: repeat(6, 40px);
+            }
+            .tile {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Container principal -->
+    <div class="game-container">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="game-title">⚔️ Bérénice Adventures ⚔️</div>
+            <div class="game-stats">
+                <div class="stat">❤️ <span id="health">100</span></div>
+                <div class="stat">⭐ <span id="score">0</span></div>
+                <div class="stat">💎 <span id="crystals">0</span>/3</div>
+            </div>
+        </div>
+
+        <!-- Zone de jeu -->
+        <div class="game-zone">
+            <!-- Map principale -->
+            <div class="world-map">
+                <div class="game-grid" id="gameGrid">
+                    <!-- La grille sera générée par JavaScript -->
+                </div>
+                <div class="hero-sprite" id="hero"></div>
+            </div>
+
+            <!-- Panneau latéral -->
+            <div class="side-panel">
+                <!-- Zone d'action -->
+                <div class="action-zone">
+                    <h3>Zone d'Action</h3>
+                    <div class="enemy-display" id="enemyDisplay">🌻</div>
+                    <div class="dialogue-box" id="dialogueBox">
+                        Bienvenue Bérénice ! 
+                        Utilise les flèches pour te déplacer.
+                    </div>
+                </div>
+
+                <!-- Zone des cartes -->
+                <div class="cards-zone">
+                    <h3 class="cards-title">Mes Pouvoirs Magiques</h3>
+                    <div class="cards-container">
+                        <div class="card" id="card-fire" onclick="useCard('fire')">
+                            <div class="card-icon">🔥</div>
+                            <div class="card-title">Feu</div>
+                        </div>
+                        <div class="card" id="card-ice" onclick="useCard('ice')">
+                            <div class="card-icon">❄️</div>
+                            <div class="card-title">Glace</div>
+                        </div>
+                        <div class="card" id="card-heal" onclick="useCard('heal')">
+                            <div class="card-icon">💚</div>
+                            <div class="card-title">Soin</div>
+                        </div>
+                        <div class="card" id="card-teleport" onclick="useCard('teleport')">
+                            <div class="card-icon">✨</div>
+                            <div class="card-title">Téléport</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            ⬆️⬇️⬅️➡️ pour bouger | 💎 Ramasse les cristaux | 🚪 Trouve la sortie
+        </div>
+    </div>
+
+    <!-- Message flottant -->
+    <div class="floating-message" id="floatingMessage"></div>
+
+    <script>
+        // Configuration du jeu
+        const GRID_WIDTH = 10;
+        const GRID_HEIGHT = 8;
+        const TILE_SIZE = 50;
+        
+        // État du jeu
+        let gameState = {
+            heroX: 2,
+            heroY: 4,
+            health: 100,
+            score: 0,
+            crystals: 0,
+            currentLevel: 1,
+            isMoving: false,
+            inCombat: false
+        };
+
+        // Map du niveau 1
+        const level1Map = {
+            name: "La Prairie Magique",
+            width: 10,
+            height: 8,
+            tiles: [
+                "WWWWWWWWWW",
+                "W⭐....CRW",
+                "W..F....W",
+                "W.H....CW",
+                "W...M..W",
+                "W.....CW",
+                "W......W",
+                "WWWWDWWWW"
+            ],
+            legend: {
+                'W': { type: 'wall', icon: '🌳' },
+                '.': { type: 'grass', icon: '🌱' },
+                'H': { type: 'hero', icon: '👧' },
+                'C': { type: 'crystal', icon: '💎' },
+                'D': { type: 'door', icon: '🚪' },
+                'M': { type: 'monster', icon: '🐰' },
+                'F': { type: 'flower', icon: '🌺' },
+                'R': { type: 'rock', icon: '🗿' },
+                '⭐': { type: 'star', icon: '⭐' }
+            }
+        };
+
+        // Initialiser la grille
+        function initGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.id = `tile-${x}-${y}`;
+                    grid.appendChild(tile);
+                }
+            }
+            
+            renderMap();
+            updateHeroPosition();
+        }
+
+        // Afficher la map
+        function renderMap() {
+            for (let y = 0; y < level1Map.height; y++) {
+                for (let x = 0; x < level1Map.width; x++) {
+                    const char = level1Map.tiles[y][x];
+                    const tileInfo = level1Map.legend[char];
+                    const tile = document.getElementById(`tile-${x}-${y}`);
+                    
+                    if (tileInfo && char !== 'H') {
+                        tile.textContent = tileInfo.icon;
+                        tile.className = `tile ${tileInfo.type}`;
+                    }
+                }
+            }
+        }
+
+        // Mettre à jour la position du héros
+        function updateHeroPosition() {
+            const hero = document.getElementById('hero');
+            const grid = document.getElementById('gameGrid');
+            const rect = grid.getBoundingClientRect();
+            const tile = document.getElementById(`tile-${gameState.heroX}-${gameState.heroY}`);
+            const tileRect = tile.getBoundingClientRect();
+            
+            hero.style.left = (tileRect.left - rect.left + 5) + 'px';
+            hero.style.top = (tileRect.top - rect.top + 5) + 'px';
+        }
+
+        // Déplacement du héros
+        function moveHero(dx, dy) {
+            if (gameState.isMoving || gameState.inCombat) return;
+            
+            const newX = gameState.heroX + dx;
+            const newY = gameState.heroY + dy;
+            
+            // Vérifier les limites
+            if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
+                return;
+            }
+            
+            // Vérifier ce qu'il y a sur la case
+            const targetChar = level1Map.tiles[newY][newX];
+            const targetInfo = level1Map.legend[targetChar];
+            
+            if (!targetInfo || targetInfo.type === 'wall') {
+                showDialogue("Je ne peux pas aller là !");
+                return;
+            }
+            
+            // Déplacer le héros
+            gameState.isMoving = true;
+            gameState.heroX = newX;
+            gameState.heroY = newY;
+            updateHeroPosition();
+            
+            // Gérer les interactions
+            setTimeout(() => {
+                handleTileInteraction(targetChar, targetInfo);
+                gameState.isMoving = false;
+            }, 300);
+        }
+
+        // Gérer les interactions avec les cases
+        function handleTileInteraction(char, info) {
+            switch (info.type) {
+                case 'crystal':
+                    collectCrystal();
+                    break;
+                case 'monster':
+                    startCombat('🐰', 'Lapin Magique');
+                    break;
+                case 'flower':
+                    showDialogue("Quelle belle fleur ! 🌺");
+                    gameState.score += 10;
+                    updateStats();
+                    break;
+                case 'door':
+                    if (gameState.crystals >= 3) {
+                        showFloatingMessage("NIVEAU TERMINÉ ! 🎉");
+                        setTimeout(() => nextLevel(), 2000);
+                    } else {
+                        showDialogue(`Il me faut ${3 - gameState.crystals} cristaux de plus !`);
+                    }
+                    break;
+                case 'star':
+                    showDialogue("Une étoile magique ! ✨");
+                    gameState.score += 50;
+                    updateStats();
+                    break;
+            }
+        }
+
+        // Ramasser un cristal
+        function collectCrystal() {
+            gameState.crystals++;
+            gameState.score += 100;
+            updateStats();
+            
+            // Effacer le cristal de la map
+            const tile = document.getElementById(`tile-${gameState.heroX}-${gameState.heroY}`);
+            tile.textContent = level1Map.legend['.'].icon;
+            tile.className = 'tile grass';
+            
+            showDialogue(`Cristal trouvé ! ${gameState.crystals}/3 💎`);
+            
+            if (gameState.crystals === 3) {
+                showFloatingMessage("Tous les cristaux ! Va à la sortie ! 🚪");
+            }
+        }
+
+        // Démarrer un combat
+        function startCombat(enemy, enemyName) {
+            gameState.inCombat = true;
+            document.getElementById('enemyDisplay').textContent = enemy;
+            showDialogue(`Un ${enemyName} apparaît ! Utilise tes cartes !`);
+            
+            // Activer les cartes
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('disabled');
+            });
+        }
+
+        // Utiliser une carte
+        async function useCard(type) {
+            if (!gameState.inCombat && type !== 'heal' && type !== 'teleport') {
+                showDialogue("Pas d'ennemi à combattre !");
+                return;
+            }
+            
+            // Désactiver temporairement les cartes
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.add('disabled');
+            });
+            
+            try {
+                // Appeler l'API pour l'effet
+                const formula = getFormulaForCard(type);
+                const response = await fetch('http://localhost:8082/api/magic/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ formula: formula, language: 'fr' })
+                });
+                
+                // Simuler l'effet même si l'API échoue
+                applyCardEffect(type);
+                
+            } catch (error) {
+                // Mode simulation si l'API ne marche pas
+                applyCardEffect(type);
+            }
+        }
+
+        // Obtenir la formule pour une carte
+        function getFormulaForCard(type) {
+            const formulas = {
+                'fire': '🔥(ennemi)',
+                'ice': '❄️(ennemi, gel=2)',
+                'heal': '💚(héros, 25)',
+                'teleport': '✨(héros, position=aléatoire)'
+            };
+            return formulas[type] || '';
+        }
+
+        // Appliquer l'effet d'une carte
+        function applyCardEffect(type) {
+            switch (type) {
+                case 'fire':
+                    if (gameState.inCombat) {
+                        showDialogue("BOULE DE FEU ! 🔥 L'ennemi est vaincu !");
+                        endCombat(true);
+                    }
+                    break;
+                case 'ice':
+                    if (gameState.inCombat) {
+                        showDialogue("RAYON GLACÉ ! ❄️ L'ennemi est gelé !");
+                        endCombat(true);
+                    }
+                    break;
+                case 'heal':
+                    gameState.health = Math.min(100, gameState.health + 25);
+                    updateStats();
+                    showDialogue("Soin magique ! +25 PV 💚");
+                    break;
+                case 'teleport':
+                    // Téléporter à une position aléatoire libre
+                    teleportHero();
+                    break;
+            }
+            
+            // Réactiver les cartes après un délai
+            setTimeout(() => {
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.remove('disabled');
+                });
+            }, 1000);
+        }
+
+        // Fin du combat
+        function endCombat(victory) {
+            gameState.inCombat = false;
+            
+            if (victory) {
+                gameState.score += 200;
+                updateStats();
+                
+                // Effacer l'ennemi de la map
+                const tile = document.getElementById(`tile-${gameState.heroX}-${gameState.heroY}`);
+                tile.textContent = level1Map.legend['.'].icon;
+                tile.className = 'tile grass';
+                
+                document.getElementById('enemyDisplay').textContent = '🌟';
+            }
+        }
+
+        // Téléporter le héros
+        function teleportHero() {
+            let newX, newY;
+            let attempts = 0;
+            
+            do {
+                newX = Math.floor(Math.random() * GRID_WIDTH);
+                newY = Math.floor(Math.random() * GRID_HEIGHT);
+                attempts++;
+            } while (
+                (level1Map.tiles[newY][newX] === 'W' || 
+                 level1Map.tiles[newY][newX] === 'M') && 
+                attempts < 50
+            );
+            
+            if (attempts < 50) {
+                gameState.heroX = newX;
+                gameState.heroY = newY;
+                updateHeroPosition();
+                showDialogue("Téléportation ! ✨");
+            }
+        }
+
+        // Afficher un dialogue
+        function showDialogue(text) {
+            document.getElementById('dialogueBox').textContent = text;
+        }
+
+        // Afficher un message flottant
+        function showFloatingMessage(text) {
+            const msg = document.getElementById('floatingMessage');
+            msg.textContent = text;
+            msg.classList.add('show');
+            
+            setTimeout(() => {
+                msg.classList.remove('show');
+            }, 2000);
+        }
+
+        // Mettre à jour les stats
+        function updateStats() {
+            document.getElementById('health').textContent = gameState.health;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('crystals').textContent = gameState.crystals;
+        }
+
+        // Niveau suivant
+        function nextLevel() {
+            gameState.currentLevel++;
+            showFloatingMessage(`Niveau ${gameState.currentLevel} !`);
+            // Ici on pourrait charger une nouvelle map
+        }
+
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    moveHero(0, -1);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    moveHero(0, 1);
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    moveHero(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    moveHero(1, 0);
+                    break;
+            }
+        });
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            initGrid();
+            updateStats();
+            showDialogue("Bienvenue Bérénice ! Ramasse les 3 cristaux 💎 !");
+        });
+    </script>
+</body>
+</html>

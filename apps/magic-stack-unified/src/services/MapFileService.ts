@@ -22,7 +22,7 @@ export interface LoadResult<T> {
 class MapFileServiceClass {
   private readonly STORAGE_KEY_WORLDS = 'unified_worlds';
   private readonly STORAGE_KEY_MAPS = 'unified_maps';
-  private readonly BACKEND_URL = 'http://localhost:8082/api';
+  private readonly BACKEND_URL = ['localhost','127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8082/api' : '/api';
 
   // ===== SAUVEGARDE =====
 
@@ -129,7 +129,8 @@ class MapFileServiceClass {
    */
   async uploadToInterstice(map: Map): Promise<SaveResult> {
     try {
-      const response = await fetch('http://localhost:8082/api/interstice/upload', {
+      const apiBase = ['localhost','127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8082' : '';
+      const response = await fetch(`${apiBase}/api/interstice/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
