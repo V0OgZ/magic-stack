@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎈 Bubble Worlds - Univers de Poche</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .universe-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .bubbles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .bubble-world {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .bubble-world:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .bubble-world::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent, rgba(255,255,255,0.1));
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        .bubble-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .bubble-icon {
+            font-size: 2rem;
+            margin-right: 0.5rem;
+        }
+
+        .bubble-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .bubble-owner {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .bubble-status {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: rgba(0,255,0,0.2);
+            border: 1px solid rgba(0,255,0,0.5);
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .bubble-physics {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .physics-rule {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .physics-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .bubble-special {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,105,180,0.1));
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .portal-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00ffff, #0080ff);
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        .bubble-canvas {
+            width: 100%;
+            height: 150px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: floatParticle 10s infinite linear;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        @keyframes floatParticle {
+            from {
+                transform: translateY(150px);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+        }
+
+        .create-bubble-btn {
+            display: block;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid white;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .create-bubble-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .formula-display {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #00ff00;
+        }
+
+        .interdimensional-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .interdimensional-chat:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-icon {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="universe-container">
+        <h1>🎈 Bubble Worlds - Univers de Poche</h1>
+        
+        <div class="formula-display">
+            ψ_bubble = |owner⟩ ⊗ |physics⟩ ⊗ |visitors⟩ → POCKET_UNIVERSE
+        </div>
+
+        <div class="bubbles-grid">
+            <!-- Canapé Cosmique de Jean -->
+            <div class="bubble-world" onclick="enterBubble('jean')">
+                <div class="portal-indicator" title="Portail actif"></div>
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">🛋️</span>
+                        <span class="bubble-name">Canapé Cosmique</span>
+                    </div>
+                    <span class="bubble-status">ACTIF</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: Jean-Grofignon</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Gravité:</span>
+                        <span class="physics-value">0.1g</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Flux temporel:</span>
+                        <span class="physics-value">0.5x</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Amplification magique:</span>
+                        <span class="physics-value">10x</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    ✨ Le joint magique ouvre des portails automatiques
+                </div>
+                <div class="bubble-canvas" id="canvas-jean"></div>
+            </div>
+
+            <!-- Archive Vivante de Memento -->
+            <div class="bubble-world" onclick="enterBubble('memento')">
+                <div class="portal-indicator" title="Portail actif"></div>
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">📚</span>
+                        <span class="bubble-name">Archive Vivante</span>
+                    </div>
+                    <span class="bubble-status">PARADOXAL</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: Memento</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Taille:</span>
+                        <span class="physics-value">∞ × ∞</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Temps:</span>
+                        <span class="physics-value">Tous simultanés</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Causalité:</span>
+                        <span class="physics-value">Bootstrap OK</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    📖 Chaque livre est un tatouage mémoire vivant
+                </div>
+                <div class="bubble-canvas" id="canvas-memento"></div>
+            </div>
+
+            <!-- Champ d'Entraînement d'Arthur -->
+            <div class="bubble-world" onclick="enterBubble('arthur')">
+                <div class="portal-indicator" title="Portail actif"></div>
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">⚔️</span>
+                        <span class="bubble-name">Avalon Training</span>
+                    </div>
+                    <span class="bubble-status">INTENSIF</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: Arthur Pendragon</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Taille:</span>
+                        <span class="physics-value">50 × 50</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Flux temporel:</span>
+                        <span class="physics-value">10x</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Combat:</span>
+                        <span class="physics-value">Réaliste</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    ⚔️ Excalibur peut trancher les règles physiques
+                </div>
+                <div class="bubble-canvas" id="canvas-arthur"></div>
+            </div>
+
+            <!-- Bowling Cosmique du Dude -->
+            <div class="bubble-world" onclick="enterBubble('dude')">
+                <div class="portal-indicator" title="Portail actif"></div>
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">🎳</span>
+                        <span class="bubble-name">Cosmic Bowling</span>
+                    </div>
+                    <span class="bubble-status">CHILL</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: The Dude</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Gravité:</span>
+                        <span class="physics-value">Variable</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Quantique:</span>
+                        <span class="physics-value">100%</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Ambiance:</span>
+                        <span class="physics-value">Maximum Zen</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    🎯 Strike = Ouvre portail dimensionnel
+                </div>
+                <div class="bubble-canvas" id="canvas-dude"></div>
+            </div>
+
+            <!-- Pocket Universe d'Opus -->
+            <div class="bubble-world" onclick="enterBubble('opus')">
+                <div class="portal-indicator" title="Portail 99.7%"></div>
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">💝</span>
+                        <span class="bubble-name">Pocket Universe</span>
+                    </div>
+                    <span class="bubble-status">99.7%</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: OPUS</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Stabilité:</span>
+                        <span class="physics-value">99.7%</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Communication:</span>
+                        <span class="physics-value">Interdim</span>
+                    </div>
+                    <div class="physics-rule">
+                        <span>Amitié:</span>
+                        <span class="physics-value">Éternelle</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    💌 Messages d'amitié traversent les dimensions
+                </div>
+                <div class="bubble-canvas" id="canvas-opus"></div>
+            </div>
+
+            <!-- Laboratoire Quantique (à créer) -->
+            <div class="bubble-world" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="bubble-header">
+                    <div>
+                        <span class="bubble-icon">🔬</span>
+                        <span class="bubble-name">Laboratoire Q*</span>
+                    </div>
+                    <span class="bubble-status">VERROUILLÉ</span>
+                </div>
+                <div class="bubble-owner">Propriétaire: ???</div>
+                <div class="bubble-physics">
+                    <div class="physics-rule">
+                        <span>Requis:</span>
+                        <span class="physics-value">Niveau 20</span>
+                    </div>
+                </div>
+                <div class="bubble-special">
+                    🔒 Débloquer avec formule runique spéciale
+                </div>
+            </div>
+        </div>
+
+        <button class="create-bubble-btn" onclick="createNewBubble()">
+            ✨ Créer Votre Bubble World ✨
+        </button>
+
+        <div class="formula-display">
+            💝 ψ_friendship = |gratitude⟩ ⊗ |anticipation⟩ ⊗ |amitié_éternelle⟩
+        </div>
+    </div>
+
+    <div class="interdimensional-chat" onclick="openChat()" title="Chat Interdimensionnel">
+        <span class="chat-icon">💬</span>
+    </div>
+
+    <script>
+        // Ajouter des particules flottantes dans chaque canvas
+        function addFloatingParticles(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'floating-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 10 + 's';
+                    canvas.appendChild(particle);
+                }, i * 2000);
+            }
+        }
+
+        // Initialiser les particules pour chaque bubble
+        ['canvas-jean', 'canvas-memento', 'canvas-arthur', 'canvas-dude', 'canvas-opus'].forEach(id => {
+            addFloatingParticles(id);
+        });
+
+        function enterBubble(owner) {
+            const messages = {
+                'jean': "Bienvenue sur mon canapé cosmique ! Le temps passe plus lentement ici...",
+                'memento': "Tu entres dans l'Archive Vivante. Tous les temps existent simultanément.",
+                'arthur': "Bienvenue au terrain d'entraînement ! 1 heure = 10 heures ici.",
+                'dude': "Hey man, welcome to the cosmic bowling alley. That's just, like, your dimension, man.",
+                'opus': "Connection établie ! Stabilité 99.7%. Message d'amitié éternelle transmis."
+            };
+            
+            alert(`🌀 Entrée dans le Bubble World !\n\n${messages[owner]}`);
+        }
+
+        function createNewBubble() {
+            const name = prompt("Nom de votre Bubble World :");
+            if (name) {
+                alert(`✨ Bubble World "${name}" en cours de création...\n\nCollectez 100 cristaux temporels pour finaliser !`);
+            }
+        }
+
+        function openChat() {
+            alert("💬 Chat Interdimensionnel\n\nOPUS → Toi : 'L'amitié transcende les dimensions !'\nMemento → Toi : 'Je me souviens de ton futur.'\nJean → Toi : 'Depuis mon canapé, je vois ton bubble.'");
+        }
+
+        // Animation de fond étoilé
+        function createStars() {
+            const body = document.body;
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'fixed';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random();
+                star.style.animation = `pulse ${2 + Math.random() * 3}s ease-in-out infinite`;
+                star.style.pointerEvents = 'none';
+                body.appendChild(star);
+            }
+        }
+
+        createStars();
+    </script>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Ballon Cube - Monde Temps Réel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #worldCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #00ff00;
+        }
+
+        .status-dot.disconnected {
+            background: #ff0000;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Chat */
+        .chat-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 400px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .chat-message {
+            margin: 3px 0;
+            padding: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #667eea;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .chat-input button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Agents List */
+        .agents-list {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .agents-list h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .agent-item.connected {
+            border-left: 3px solid #00ff00;
+        }
+
+        .agent-item.disconnected {
+            border-left: 3px solid #ff0000;
+            opacity: 0.5;
+        }
+
+        .agent-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .agent-info {
+            flex: 1;
+            font-size: 12px;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .time-display {
+            font-size: 24px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #7c8ff0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="worldCanvas"></canvas>
+
+    <!-- Status de connexion -->
+    <div class="connection-status">
+        <div class="status-dot disconnected" id="statusDot"></div>
+        <span id="statusText">Déconnecté</span>
+    </div>
+
+    <!-- Contrôles -->
+    <div class="controls">
+        <button onclick="connectToServer()">🔌 Connecter</button>
+        <button onclick="spawnAgent()">🤖 Spawn Agent</button>
+        <button onclick="clearWorld()">🗑️ Clear</button>
+    </div>
+
+    <!-- Liste des agents -->
+    <div class="agents-list">
+        <h3>🤖 Agents Connectés (<span id="agentCount">0</span>)</h3>
+        <div id="agentsList"></div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-panel">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Envoyer un message..." onkeypress="if(event.key==='Enter')sendChat()">
+            <button onclick="sendChat()">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+        <div class="time-display" id="timeDisplay">T = 0.0</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('worldCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let ws = null;
+        let connected = false;
+        let myAgentId = 'player_' + Date.now();
+        let agents = {};
+        let worldTime = 0;
+        let particles = [];
+
+        // Se connecter au serveur WebSocket
+        function connectToServer() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log('Déjà connecté');
+                return;
+            }
+
+            try {
+                ws = new WebSocket('ws://localhost:8765');
+
+                ws.onopen = () => {
+                    console.log('✅ Connecté au Temporal Event Bus');
+                    connected = true;
+                    updateConnectionStatus(true);
+                    
+                    // S'identifier comme observateur
+                    ws.send(JSON.stringify({
+                        agent_id: myAgentId,
+                        name: 'Observer',
+                        icon: '👁️'
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    handleMessage(message);
+                };
+
+                ws.onclose = () => {
+                    console.log('❌ Déconnecté');
+                    connected = false;
+                    updateConnectionStatus(false);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('Erreur WebSocket:', error);
+                    addChatMessage('System', '❌ Erreur de connexion');
+                };
+
+            } catch (error) {
+                console.error('Erreur connexion:', error);
+                addChatMessage('System', '❌ Impossible de se connecter au serveur');
+            }
+        }
+
+        // Gérer les messages reçus
+        function handleMessage(message) {
+            const type = message.type;
+
+            switch(type) {
+                case 'init':
+                    console.log('État initial reçu');
+                    break;
+
+                case 'agent_connected':
+                    addChatMessage('System', `✅ ${message.agent_id} s'est connecté`);
+                    break;
+
+                case 'agent_disconnected':
+                    addChatMessage('System', `❌ ${message.agent_id} s'est déconnecté`);
+                    if (agents[message.agent_id]) {
+                        agents[message.agent_id].connected = false;
+                    }
+                    break;
+
+                case 'agent_moved':
+                    const agentId = message.agent_id;
+                    const pos = message.position;
+                    
+                    if (!agents[agentId]) {
+                        agents[agentId] = {
+                            id: agentId,
+                            name: agentId,
+                            icon: '🤖',
+                            connected: true
+                        };
+                    }
+                    
+                    Object.assign(agents[agentId], pos);
+                    
+                    // Créer une particule pour le mouvement
+                    createParticle(pos.x, pos.y, '#00ff88');
+                    break;
+
+                case 'chat':
+                    addChatMessage(message.agent_id, message.message);
+                    
+                    // Afficher le message au-dessus de l'agent
+                    if (agents[message.agent_id]) {
+                        agents[message.agent_id].lastMessage = message.message;
+                        agents[message.agent_id].messageTime = Date.now();
+                    }
+                    break;
+
+                case 'world_tick':
+                    worldTime = message.world_time;
+                    document.getElementById('timeDisplay').textContent = `T = ${worldTime.toFixed(1)}`;
+                    
+                    // Mettre à jour les agents
+                    if (message.agents_summary) {
+                        Object.entries(message.agents_summary).forEach(([id, state]) => {
+                            if (!agents[id]) {
+                                agents[id] = { id, name: id, icon: '🤖' };
+                            }
+                            Object.assign(agents[id], state);
+                        });
+                    }
+                    
+                    updateAgentsList();
+                    break;
+
+                case 'state_update':
+                    // Mise à jour complète de l'état
+                    if (message.agents) {
+                        agents = message.agents;
+                        updateAgentsList();
+                    }
+                    break;
+            }
+        }
+
+        // Mettre à jour le statut de connexion
+        function updateConnectionStatus(isConnected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (isConnected) {
+                dot.className = 'status-dot connected';
+                text.textContent = 'Connecté';
+            } else {
+                dot.className = 'status-dot disconnected';
+                text.textContent = 'Déconnecté';
+            }
+        }
+
+        // Ajouter un message au chat
+        function addChatMessage(sender, text) {
+            const messages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message';
+            
+            const time = new Date().toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            
+            msgDiv.innerHTML = `<span style="color: #667eea">[${time}]</span> <strong>${sender}:</strong> ${text}`;
+            messages.appendChild(msgDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Envoyer un message
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (text && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    text: text
+                }));
+                input.value = '';
+            }
+        }
+
+        // Mettre à jour la liste des agents
+        function updateAgentsList() {
+            const list = document.getElementById('agentsList');
+            const count = Object.keys(agents).filter(id => agents[id].connected).length;
+            document.getElementById('agentCount').textContent = count;
+            
+            list.innerHTML = Object.values(agents)
+                .filter(a => a.id !== myAgentId)
+                .map(agent => `
+                    <div class="agent-item ${agent.connected ? 'connected' : 'disconnected'}">
+                        <span class="agent-icon">${agent.icon || '🤖'}</span>
+                        <div class="agent-info">
+                            <div><strong>${agent.name || agent.id}</strong></div>
+                            <div style="font-size: 10px; color: #888;">
+                                X:${Math.floor(agent.x || 0)} Y:${Math.floor(agent.y || 0)} T:${(agent.t || 0).toFixed(1)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Créer une particule
+        function createParticle(x, y, color) {
+            particles.push({
+                x, y, color,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                life: 1.0
+            });
+        }
+
+        // Spawn un nouvel agent
+        async function spawnAgent() {
+            if (!connected) {
+                alert('Connectez-vous d\'abord au serveur!');
+                return;
+            }
+
+            // Lancer un agent Python en arrière-plan
+            addChatMessage('System', '🚀 Lancement d\'un nouvel agent...');
+            
+            // Simuler le spawn (normalement on lancerait le script Python)
+            const agentNames = ['OPUS', 'Merlin', 'LUMEN', 'URZ-KÔM', 'GRUFAEN'];
+            const name = agentNames[Math.floor(Math.random() * agentNames.length)];
+            addChatMessage('System', `🤖 Agent ${name} va bientôt se connecter...`);
+        }
+
+        // Nettoyer le monde
+        function clearWorld() {
+            particles = [];
+            addChatMessage('System', '🗑️ Monde nettoyé');
+        }
+
+        // Animation
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grille de fond
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.1)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Dessiner les particules
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                
+                if (p.life > 0) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+                    return true;
+                }
+                return false;
+            });
+
+            ctx.globalAlpha = 1;
+
+            // Dessiner les agents
+            Object.values(agents).forEach(agent => {
+                if (agent.id === myAgentId) return;
+                
+                const x = agent.x || 400;
+                const y = agent.y || 300;
+                
+                // Halo temporel
+                if (agent.connected) {
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
+                    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+                    gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x - 30, y - 30, 60, 60);
+                }
+
+                // Agent
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(agent.icon || '🤖', x, y);
+
+                // Nom
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px monospace';
+                ctx.fillText(agent.name || agent.id, x, y - 25);
+
+                // Message récent
+                if (agent.lastMessage && Date.now() - agent.messageTime < 5000) {
+                    const alpha = 1 - (Date.now() - agent.messageTime) / 5000;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = '#ffd700';
+                    ctx.font = '10px monospace';
+                    ctx.fillText(agent.lastMessage, x, y - 40);
+                    ctx.globalAlpha = 1;
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Démarrer
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Auto-connect
+        setTimeout(connectToServer, 1000);
+        animate();
+    </script>
+</body>
+</html>

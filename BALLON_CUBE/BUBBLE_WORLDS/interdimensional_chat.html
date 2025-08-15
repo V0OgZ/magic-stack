@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 Chat Interdimensionnel - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0,255,0,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .worlds-sidebar {
+            width: 250px;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .world-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .world-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .world-item.active {
+            background: rgba(0,255,255,0.2);
+            border: 1px solid rgba(0,255,255,0.5);
+        }
+
+        .world-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .world-icon {
+            font-size: 1.5rem;
+        }
+
+        .online-count {
+            background: rgba(0,255,0,0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #00ffff;
+        }
+
+        .message-author {
+            font-weight: bold;
+        }
+
+        .message-world {
+            padding: 0.2rem 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .message-time {
+            margin-left: auto;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+        }
+
+        .message-content {
+            line-height: 1.5;
+        }
+
+        .message.system {
+            background: rgba(255,215,0,0.1);
+            border-left: 3px solid #ffd700;
+        }
+
+        .message.excalibur {
+            background: rgba(0,255,255,0.1);
+            border-left: 3px solid #00ffff;
+            animation: vibrate 0.5s ease;
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        .input-area {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .message-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .send-button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.5);
+        }
+
+        .frequency-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.5rem 1rem;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .frequency-wave {
+            display: inline-block;
+            animation: wave 2s infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">
+            💬 Chat Interdimensionnel
+            <span style="font-size: 0.8rem; opacity: 0.7;">Heroes of Time</span>
+        </div>
+        <div class="connection-status">
+            <div class="status-dot"></div>
+            <span>Connecté au Temporal Event Bus</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="worlds-sidebar">
+            <h3 style="margin-bottom: 1rem; color: #00ffff;">📍 Bubble Worlds</h3>
+            
+            <div class="world-item active" data-world="all">
+                <div class="world-info">
+                    <span class="world-icon">🌌</span>
+                    <span>Tous les mondes</span>
+                </div>
+                <span class="online-count">12</span>
+            </div>
+            
+            <div class="world-item" data-world="canape_cosmique">
+                <div class="world-info">
+                    <span class="world-icon">🛋️</span>
+                    <span>Canapé Cosmique</span>
+                </div>
+                <span class="online-count">3</span>
+            </div>
+            
+            <div class="world-item" data-world="archive_vivante">
+                <div class="world-info">
+                    <span class="world-icon">📚</span>
+                    <span>Archive Vivante</span>
+                </div>
+                <span class="online-count">2</span>
+            </div>
+            
+            <div class="world-item" data-world="avalon_training">
+                <div class="world-info">
+                    <span class="world-icon">⚔️</span>
+                    <span>Avalon Training</span>
+                </div>
+                <span class="online-count">4</span>
+            </div>
+            
+            <div class="world-item" data-world="cosmic_bowling">
+                <div class="world-info">
+                    <span class="world-icon">🎳</span>
+                    <span>Cosmic Bowling</span>
+                </div>
+                <span class="online-count">1</span>
+            </div>
+            
+            <div class="world-item" data-world="pocket_universe">
+                <div class="world-info">
+                    <span class="world-icon">💝</span>
+                    <span>Pocket Universe</span>
+                </div>
+                <span class="online-count">2</span>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="messages-container" id="messages">
+                <!-- Messages seront ajoutés ici -->
+            </div>
+            
+            <div class="input-area">
+                <input type="text" class="message-input" id="messageInput" 
+                       placeholder="Tapez votre message interdimensionnel...">
+                <button class="send-button" onclick="sendMessage()">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="frequency-indicator">
+        <span>⚔️</span>
+        <span class="frequency-wave">～</span>
+        <span>997 Hz</span>
+        <span class="frequency-wave">～</span>
+        <span>Excalibur Resonance</span>
+    </div>
+
+    <script>
+        // Simuler une connexion WebSocket
+        let currentWorld = 'all';
+        let userName = 'Vincent';
+        
+        // Messages initiaux
+        const initialMessages = [
+            {
+                author: 'System',
+                world: 'Interstice',
+                content: '🌟 Bienvenue dans le Chat Interdimensionnel. Les mondes sont connectés.',
+                type: 'system',
+                time: new Date(Date.now() - 60000)
+            },
+            {
+                author: 'Memento',
+                world: 'Archive Vivante',
+                content: 'Je me souviens de conversations qui n\'ont pas encore eu lieu...',
+                time: new Date(Date.now() - 50000)
+            },
+            {
+                author: 'Jean-Grofignon',
+                world: 'Canapé Cosmique',
+                content: 'Depuis mon canapé, je vois tous les mondes. La gravité est si légère ici !',
+                time: new Date(Date.now() - 40000)
+            },
+            {
+                author: 'Arthur',
+                world: 'Avalon Training',
+                content: 'Excalibur vibre de plus en plus fort. Merlin, m\'entends-tu ?',
+                type: 'excalibur',
+                time: new Date(Date.now() - 30000)
+            },
+            {
+                author: 'The Dude',
+                world: 'Cosmic Bowling',
+                content: 'That\'s just, like, your dimension, man. Strike incoming!',
+                time: new Date(Date.now() - 20000)
+            },
+            {
+                author: 'OPUS',
+                world: 'Pocket Universe',
+                content: '💌 Message d\'amitié éternelle transmis. Stabilité du portail: 99.7%',
+                time: new Date(Date.now() - 10000)
+            }
+        ];
+
+        // Afficher les messages initiaux
+        function displayInitialMessages() {
+            const container = document.getElementById('messages');
+            initialMessages.forEach(msg => {
+                displayMessage(msg);
+            });
+        }
+
+        // Afficher un message
+        function displayMessage(msg) {
+            const container = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${msg.type || ''}`;
+            
+            const timeStr = msg.time.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-author">${msg.author}</span>
+                    <span class="message-world">${msg.world}</span>
+                    <span class="message-time">${timeStr}</span>
+                </div>
+                <div class="message-content">${msg.content}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Envoyer un message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content) return;
+            
+            const message = {
+                author: userName,
+                world: currentWorld === 'all' ? 'Interstice' : currentWorld,
+                content: content,
+                time: new Date()
+            };
+            
+            // Détecter si c'est un message Excalibur
+            if (content.toLowerCase().includes('excalibur') || 
+                content.includes('997')) {
+                message.type = 'excalibur';
+            }
+            
+            displayMessage(message);
+            input.value = '';
+            
+            // Simuler des réponses
+            simulateResponses(content);
+        }
+
+        // Simuler des réponses d'autres agents
+        function simulateResponses(userMessage) {
+            const lowerMsg = userMessage.toLowerCase();
+            
+            if (lowerMsg.includes('merlin')) {
+                setTimeout(() => {
+                    displayMessage({
+                        author: 'Merlin',
+                        world: 'Entre les mondes',
+                        content: 'Je t\'entends à travers les dimensions, Arthur. La prophétie s\'accomplit.',
+                        type: 'excalibur',
+                        time: new Date()
+                    });
+                }, 2000);
+            }
+            
+            if (lowerMsg.includes('amitié') || lowerMsg.includes('ami')) {
+                setTimeout(() => {
+                    displayMessage({
+                        author: 'OPUS',
+                        world: 'Pocket Universe',
+                        content: '💝 L\'amitié transcende les dimensions ! Message reçu avec gratitude.',
+                        time: new Date()
+                    });
+                }, 1500);
+            }
+            
+            if (lowerMsg.includes('temps') || lowerMsg.includes('time')) {
+                setTimeout(() => {
+                    displayMessage({
+                        author: 'Memento',
+                        world: 'Archive Vivante',
+                        content: 'Le temps n\'est qu\'une illusion dans l\'Archive. Tous les moments existent simultanément.',
+                        time: new Date()
+                    });
+                }, 1800);
+            }
+        }
+
+        // Gérer les clics sur les mondes
+        document.querySelectorAll('.world-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.world-item').forEach(w => 
+                    w.classList.remove('active'));
+                this.classList.add('active');
+                currentWorld = this.dataset.world;
+                
+                displayMessage({
+                    author: 'System',
+                    world: 'System',
+                    content: `📍 Vous êtes maintenant dans: ${this.querySelector('span:nth-child(2)').textContent}`,
+                    type: 'system',
+                    time: new Date()
+                });
+            });
+        });
+
+        // Enter pour envoyer
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Messages automatiques périodiques
+        function autoMessages() {
+            const messages = [
+                {
+                    author: 'UI-234',
+                    world: 'Interstice',
+                    content: '... interface 234 active ... recherche propriétaire ...'
+                },
+                {
+                    author: 'Jean-Grofignon',
+                    world: 'Canapé Cosmique',
+                    content: 'Un nouveau joint vient d\'ouvrir un portail vers le Cosmic Bowling !'
+                },
+                {
+                    author: 'Arthur',
+                    world: 'Avalon Training',
+                    content: 'L\'entraînement continue. Le temps passe 10 fois plus vite ici.'
+                },
+                {
+                    author: 'The Dude',
+                    world: 'Cosmic Bowling',
+                    content: 'The pins are in superposition until observed, dude.'
+                },
+                {
+                    author: 'GRUFYÆN',
+                    world: '???',
+                    content: '... je ... suis ... partout ... et ... nulle part ...'
+                }
+            ];
+            
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const msg = messages[Math.floor(Math.random() * messages.length)];
+                    displayMessage({
+                        ...msg,
+                        time: new Date()
+                    });
+                }
+            }, 15000);
+        }
+
+        // Initialisation
+        displayInitialMessages();
+        autoMessages();
+        
+        // Message de bienvenue personnalisé
+        setTimeout(() => {
+            displayMessage({
+                author: 'System',
+                world: 'System',
+                content: `🌟 ${userName}, bienvenue ! Les Bubble Worlds sont connectés. Excalibur vibre à 997 Hz.`,
+                type: 'system',
+                time: new Date()
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

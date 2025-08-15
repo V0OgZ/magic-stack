@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Bubble World - Station Goldorak Quantique 🌌</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #universe {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #0a0e27 0%, #000 100%);
+            overflow: hidden;
+        }
+
+        /* Station spatiale */
+        .space-station {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: conic-gradient(from 0deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+            box-shadow: 0 0 100px rgba(78, 205, 196, 0.5);
+        }
+
+        .station-core {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2e;
+            border-radius: 50%;
+            border: 3px solid #16213e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        /* Goldorak */
+        #goldorak {
+            position: absolute;
+            width: 100px;
+            height: 120px;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s ease;
+        }
+
+        .goldorak-body {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff0000, #ffd700);
+            margin: 0 auto;
+            border-radius: 10px 10px 20px 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+
+        .goldorak-head {
+            width: 40px;
+            height: 40px;
+            background: #c0c0c0;
+            margin: 0 auto -10px;
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .goldorak-horns {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 20px;
+            background: linear-gradient(90deg, #ffd700, #ff0000, #ffd700);
+            clip-path: polygon(0 100%, 20% 0, 50% 100%, 80% 0, 100% 100%);
+        }
+
+        /* Mode Quantique */
+        .quantum-mode {
+            animation: quantum-shift 2s ease-in-out infinite;
+            filter: hue-rotate(0deg);
+        }
+
+        @keyframes quantum-shift {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            25% { 
+                transform: translateX(-50%) translateY(-20px) scale(1.1);
+                filter: hue-rotate(90deg) brightness(1.5);
+            }
+            50% { 
+                transform: translateX(-50%) translateY(20px) scale(0.9);
+                filter: hue-rotate(180deg) brightness(1.2);
+            }
+            75% { 
+                transform: translateX(-50%) translateY(-10px) scale(1.05);
+                filter: hue-rotate(270deg) brightness(1.4);
+            }
+        }
+
+        /* Portails quantiques */
+        .quantum-portal {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent, #9b59b6, transparent);
+            animation: portal-spin 3s linear infinite;
+            opacity: 0.8;
+        }
+
+        #portal1 { top: 10%; left: 10%; }
+        #portal2 { top: 10%; right: 10%; }
+        #portal3 { bottom: 10%; left: 10%; }
+        #portal4 { bottom: 10%; right: 10%; }
+
+        @keyframes portal-spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Non-Euclidean paths */
+        .non-euclidean-path {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #00ff00, transparent);
+            opacity: 0.6;
+            animation: path-flow 2s linear infinite;
+        }
+
+        @keyframes path-flow {
+            0% { height: 0; }
+            50% { height: 200px; }
+            100% { height: 0; }
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+        }
+
+        /* Features quantiques URZ-KÔM */
+        .quantum-feature {
+            position: absolute;
+            padding: 10px;
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid #9b59b6;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+
+        #superposition {
+            top: 20px;
+            left: 20px;
+        }
+
+        #entanglement {
+            top: 20px;
+            right: 20px;
+        }
+
+        #temporal-shift {
+            bottom: 120px;
+            left: 20px;
+        }
+
+        #dimension-fold {
+            bottom: 120px;
+            right: 20px;
+        }
+
+        /* Effet Fulguropoing */
+        .fulguropoing {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #ffff00, #ff0000, transparent);
+            border-radius: 50%;
+            animation: fulguro-blast 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fulguro-blast {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* Chat interdimensionnel */
+        .interdim-chat {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 400px;
+            background: rgba(26, 26, 46, 0.9);
+            border: 2px solid #45b7d1;
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+        }
+
+        .chat-header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #45b7d1;
+            color: white;
+            border-radius: 5px;
+        }
+
+        /* Particules quantiques */
+        .quantum-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: particle-float 10s infinite linear;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translate(0, 100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100vw, -100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Info panel */
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            text-align: center;
+        }
+
+        .status {
+            color: #4ecdc4;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="universe">
+        <!-- Station spatiale -->
+        <div class="space-station">
+            <div class="station-core">🚀</div>
+        </div>
+
+        <!-- Goldorak -->
+        <div id="goldorak">
+            <div class="goldorak-head">
+                <div class="goldorak-horns"></div>
+            </div>
+            <div class="goldorak-body"></div>
+        </div>
+
+        <!-- Portails quantiques -->
+        <div class="quantum-portal" id="portal1"></div>
+        <div class="quantum-portal" id="portal2"></div>
+        <div class="quantum-portal" id="portal3"></div>
+        <div class="quantum-portal" id="portal4"></div>
+
+        <!-- Features quantiques URZ-KÔM -->
+        <div class="quantum-feature" id="superposition">
+            🌀 SUPERPOSITION QUANTIQUE<br>
+            Goldorak existe dans 5 états simultanés
+        </div>
+        <div class="quantum-feature" id="entanglement">
+            🔗 INTRICATION QUANTIQUE<br>
+            Connecté à toutes les Bubble Worlds
+        </div>
+        <div class="quantum-feature" id="temporal-shift">
+            ⏰ DÉCALAGE TEMPOREL<br>
+            Temps ±3.14 secondes
+        </div>
+        <div class="quantum-feature" id="dimension-fold">
+            📐 PLIAGE DIMENSIONNEL<br>
+            Géométrie non-euclidienne active
+        </div>
+
+        <!-- Info panel -->
+        <div class="info-panel">
+            <h2>🤖 GOLDORAK QUANTUM BUBBLE 🌌</h2>
+            <div class="status">Mode: <span id="mode">NORMAL</span></div>
+            <div class="status">Dimension: <span id="dimension">3D</span></div>
+            <div class="status">Connexions: <span id="connections">0</span></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button onclick="toggleQuantumMode()">🌀 MODE QUANTIQUE</button>
+            <button onclick="fulguropoing()">⚡ FULGUROPOING</button>
+            <button onclick="openPortal()">🌌 OUVRIR PORTAIL</button>
+            <button onclick="toggleChat()">💬 CHAT INTERDIM</button>
+            <button onclick="activateURZKOM()">🐻 FEATURES URZ-KÔM</button>
+            <button onclick="connectToBubbles()">🔗 CONNECTER BULLES</button>
+        </div>
+
+        <!-- Chat interdimensionnel -->
+        <div class="interdim-chat" id="chat">
+            <div class="chat-header">💬 CHAT INTERDIMENSIONNEL</div>
+            <div class="chat-messages" id="messages">
+                <div>🤖 Goldorak: Station spatiale opérationnelle!</div>
+                <div>🌌 Système: En attente de connexions...</div>
+            </div>
+            <input type="text" class="chat-input" placeholder="Message interdimensionnel..." onkeypress="sendMessage(event)">
+        </div>
+    </div>
+
+    <script>
+        let quantumMode = false;
+        let urzkomActive = false;
+        let connectedBubbles = [];
+        
+        // Créer des particules quantiques
+        function createQuantumParticles() {
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.getElementById('universe').appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 10000);
+            }, 200);
+        }
+
+        // Créer des chemins non-euclidiens
+        function createNonEuclideanPaths() {
+            for (let i = 0; i < 10; i++) {
+                const path = document.createElement('div');
+                path.className = 'non-euclidean-path';
+                path.style.left = Math.random() * window.innerWidth + 'px';
+                path.style.top = Math.random() * window.innerHeight + 'px';
+                path.style.transform = `rotate(${Math.random() * 360}deg)`;
+                path.style.animationDelay = Math.random() * 2 + 's';
+                document.getElementById('universe').appendChild(path);
+            }
+        }
+
+        // Toggle mode quantique
+        function toggleQuantumMode() {
+            quantumMode = !quantumMode;
+            const goldorak = document.getElementById('goldorak');
+            const mode = document.getElementById('mode');
+            
+            if (quantumMode) {
+                goldorak.classList.add('quantum-mode');
+                mode.textContent = 'QUANTIQUE';
+                mode.style.color = '#9b59b6';
+                
+                // Effets visuels quantiques
+                document.body.style.filter = 'hue-rotate(20deg)';
+                createQuantumEchoes();
+            } else {
+                goldorak.classList.remove('quantum-mode');
+                mode.textContent = 'NORMAL';
+                mode.style.color = '#4ecdc4';
+                document.body.style.filter = 'none';
+            }
+        }
+
+        // Créer des échos quantiques de Goldorak
+        function createQuantumEchoes() {
+            for (let i = 0; i < 3; i++) {
+                const echo = document.getElementById('goldorak').cloneNode(true);
+                echo.id = 'echo' + i;
+                echo.style.opacity = 0.3 - (i * 0.1);
+                echo.style.filter = `hue-rotate(${i * 120}deg)`;
+                echo.style.left = (50 + (i - 1) * 10) + '%';
+                document.getElementById('universe').appendChild(echo);
+                
+                setTimeout(() => echo.remove(), 2000);
+            }
+        }
+
+        // Fulguropoing!
+        function fulguropoing() {
+            const blast = document.createElement('div');
+            blast.className = 'fulguropoing';
+            blast.style.left = '50%';
+            blast.style.top = '50%';
+            document.getElementById('universe').appendChild(blast);
+            
+            // Son imaginaire
+            addMessage('🤖 Goldorak', 'FULGUROPOING!!!');
+            
+            // Effet sur les portails
+            document.querySelectorAll('.quantum-portal').forEach(portal => {
+                portal.style.animation = 'portal-spin 0.5s linear infinite';
+            });
+            
+            setTimeout(() => {
+                blast.remove();
+                document.querySelectorAll('.quantum-portal').forEach(portal => {
+                    portal.style.animation = 'portal-spin 3s linear infinite';
+                });
+            }, 500);
+        }
+
+        // Ouvrir un portail
+        function openPortal() {
+            const portalId = Math.floor(Math.random() * 4) + 1;
+            const portal = document.getElementById('portal' + portalId);
+            portal.style.transform = 'scale(2)';
+            portal.style.boxShadow = '0 0 50px #9b59b6';
+            
+            addMessage('🌌 Système', `Portail ${portalId} activé! Connexion interdimensionnelle établie.`);
+            
+            setTimeout(() => {
+                portal.style.transform = 'scale(1)';
+                portal.style.boxShadow = 'none';
+            }, 3000);
+        }
+
+        // Toggle chat
+        function toggleChat() {
+            const chat = document.getElementById('chat');
+            chat.style.display = chat.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Activer features URZ-KÔM
+        function activateURZKOM() {
+            urzkomActive = !urzkomActive;
+            const features = document.querySelectorAll('.quantum-feature');
+            
+            features.forEach(feature => {
+                feature.style.display = urzkomActive ? 'block' : 'none';
+            });
+            
+            if (urzkomActive) {
+                document.getElementById('dimension').textContent = 'NON-EUCLIDIENNE';
+                addMessage('🐻 URZ-KÔM', 'Features quantiques activées! Réalité en mode OURS!');
+                
+                // Animation spéciale
+                document.querySelector('.space-station').style.animation = 'rotate 5s linear infinite reverse';
+            } else {
+                document.getElementById('dimension').textContent = '3D';
+                document.querySelector('.space-station').style.animation = 'rotate 20s linear infinite';
+            }
+        }
+
+        // Connecter aux autres bulles
+        function connectToBubbles() {
+            const bubbles = ['Arthur', 'Merlin', 'Anna', 'Opus', 'Vincent'];
+            const randomBubble = bubbles[Math.floor(Math.random() * bubbles.length)];
+            
+            if (!connectedBubbles.includes(randomBubble)) {
+                connectedBubbles.push(randomBubble);
+                document.getElementById('connections').textContent = connectedBubbles.length;
+                addMessage('🔗 Connexion', `Connecté à la bulle de ${randomBubble}!`);
+                
+                // Effet visuel
+                const portal = document.querySelector('.quantum-portal');
+                portal.style.background = 'radial-gradient(circle, #ffd700, #9b59b6, transparent)';
+                setTimeout(() => {
+                    portal.style.background = 'radial-gradient(circle, transparent, #9b59b6, transparent)';
+                }, 1000);
+            }
+        }
+
+        // Ajouter message au chat
+        function addMessage(sender, message) {
+            const messages = document.getElementById('messages');
+            const msg = document.createElement('div');
+            msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Envoyer message
+        function sendMessage(event) {
+            if (event.key === 'Enter') {
+                const input = event.target;
+                if (input.value.trim()) {
+                    addMessage('🤖 Goldorak', input.value);
+                    
+                    // Réponse automatique
+                    setTimeout(() => {
+                        const responses = [
+                            'Message reçu dans la dimension parallèle!',
+                            'Transmission quantique confirmée.',
+                            'Écho temporel détecté: ' + input.value,
+                            'Les autres bulles ont reçu le signal.'
+                        ];
+                        addMessage('🌌 Système', responses[Math.floor(Math.random() * responses.length)]);
+                    }, 1000);
+                    
+                    input.value = '';
+                }
+            }
+        }
+
+        // Initialisation
+        createQuantumParticles();
+        createNonEuclideanPaths();
+        
+        // Message de bienvenue
+        setTimeout(() => {
+            addMessage('🚀 Station', 'Bienvenue dans la Bubble World Goldorak!');
+            addMessage('🐻 URZ-KÔM', 'Features quantiques prêtes à l\'activation.');
+        }, 1000);
+    </script>
+</body>
+</html>
