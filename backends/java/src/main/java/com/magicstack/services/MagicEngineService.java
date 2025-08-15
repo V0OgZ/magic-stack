@@ -18,11 +18,13 @@ public class MagicEngineService {
     private final Map<String, Object> activeSpells = new HashMap<>();
     private final Random random = new Random();
     private final FormulaRegistryService registry;
+    private final UltimateSpecService ultimates;
     private final RustTemporalClient rust;
 
     public MagicEngineService(FormulaRegistryService registry) {
         this.registry = registry;
         this.rust = new RustTemporalClient(System.getenv().getOrDefault("RUST_BASE_URL", "http://localhost:3001"));
+        this.ultimates = new UltimateSpecService();
     }
     
     public Map<String, Object> getRegistryInfo() { return registry.getRegistryInfo(); }
@@ -163,14 +165,16 @@ public class MagicEngineService {
                         log.debug("/temporal/apply traceHash={}", applyRes.traceHash);
                     }
                     // Parse world_diff from returned JSON string
-                    Map<String, Object> parsed = new com.fasterxml.jackson.databind.ObjectMapper().readValue(applyRes.worldDiffJson, Map.class);
+                    Map<String, Object> parsed = new com.fasterxml.jackson.databind.ObjectMapper().readValue(applyRes.worldDiffJson, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
                     Object wd = parsed.get("world_diff");
                     if (log.isDebugEnabled()) {
                         log.debug("Parsed apply payload keys={}, has_world_diff={}", parsed.keySet(), (wd != null));
                     }
-                    if (wd instanceof Map) {
-                        //noinspection unchecked
-                        Map<String, Object> wdm = (Map<String, Object>) wd;
+                    if (wd instanceof Map<?, ?> tmp) {
+                        Map<String, Object> wdm = new HashMap<>();
+                        for (Map.Entry<?, ?> e : tmp.entrySet()) {
+                            wdm.put(String.valueOf(e.getKey()), e.getValue());
+                        }
                         if (handledAsUltimate) {
                             wdm.putIfAbsent("ultimate", "MILLENNIUM_CONTROLLER");
                             wdm.putIfAbsent("phases", Arrays.asList("transform","divine_bubble","mass_rez","exhaustion","recovery"));
@@ -220,6 +224,32 @@ public class MagicEngineService {
         }
         
         return response;
+    }
+
+    public CastResponse castUltimate(String formulaId, Map<String, Object> context) {
+        CastRequest req = new CastRequest();
+        req.setFormulaId(formulaId);
+        req.setMode("simulate");
+        req.setContext(context);
+        // If an UltimateSpec exists, use its engineFormula and decorate outputs
+        Optional<UltimateSpecService.UltimateSpec> specOpt = ultimates.getById(formulaId);
+        if (specOpt.isEmpty()) {
+            CastResponse r = new CastResponse();
+            r.setSuccess(false);
+            r.setMessage("Unknown ultimate: " + formulaId);
+            return r;
+        }
+        UltimateSpecService.UltimateSpec spec = specOpt.get();
+        req.setFormula(spec.engineFormula != null ? spec.engineFormula : formulaId);
+        CastResponse base = cast(req);
+        if (spec.outputs != null) base.setOutputs(new HashMap<>(spec.outputs));
+        if (spec.effects != null) base.setEffects(new ArrayList<>(spec.effects));
+        if (spec.sounds != null) base.setSounds(new ArrayList<>(spec.sounds));
+        if (base.getWorldDiff() != null && spec.phases != null) {
+            base.getWorldDiff().putIfAbsent("ultimate", formulaId);
+            base.getWorldDiff().putIfAbsent("phases", spec.phases);
+        }
+        return base;
     }
     
     public TranslateResponse translate(TranslateRequest request) {

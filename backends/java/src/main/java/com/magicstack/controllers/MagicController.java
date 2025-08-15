@@ -3,6 +3,7 @@ package com.magicstack.controllers;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.magicstack.services.MagicEngineService;
+import com.magicstack.services.UltimateSpecService;
 import com.magicstack.models.*;
 import com.magicstack.dto.*;
 import java.util.Map;
@@ -53,7 +54,13 @@ public class MagicController {
     public CastResponse castUltimate(@RequestBody Map<String, Object> body) {
         String formulaId = String.valueOf(body.getOrDefault("formulaId", ""));
         String activeHeroId = String.valueOf(body.getOrDefault("activeHeroId", ""));
-        Map<String, Object> context = (Map<String, Object>) body.getOrDefault("context", new HashMap<>());
+        Object ctx = body.get("context");
+        Map<String, Object> context = new HashMap<>();
+        if (ctx instanceof Map<?, ?> m) {
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+                context.put(String.valueOf(e.getKey()), e.getValue());
+            }
+        }
         context.put("activeHeroId", activeHeroId);
         return magicEngine.castUltimate(formulaId, context);
     }
