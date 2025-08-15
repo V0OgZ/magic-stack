@@ -73,6 +73,27 @@ public class RustTemporalClient {
         return new ApplyResult(hash, body);
     }
 
+    @SuppressWarnings("unchecked")
+    public java.util.Map<String, Object> getRecentChanges(Integer limit) throws Exception {
+        String url = baseUrl + "/api/world-state/changes" + (limit != null ? ("?limit=" + limit) : "");
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(3))
+                .GET()
+                .build();
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() / 100 != 2) {
+            throw new RuntimeException("Rust getRecentChanges failed: HTTP " + res.statusCode());
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(res.body(), java.util.Map.class);
+        } catch (Exception e) {
+            java.util.HashMap<String, Object> m = new java.util.HashMap<>();
+            m.put("raw", res.body());
+            return m;
+        }
+    }
+
     private static String quote(String s) {
         if (s == null) return "null";
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";

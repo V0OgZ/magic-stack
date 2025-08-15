@@ -423,6 +423,13 @@
                     <div class="output-title">🌍 World Diff (apply)</div>
                     <pre class="output-content" id="world-diff-content" style="white-space:pre-wrap; word-break:break-word;"></pre>
                 </div>
+                <div class="output-card" id="recent-changes" style="display:none; margin-top:12px;">
+                    <div class="output-title">🧭 Recent World Changes</div>
+                    <div style="margin-bottom:8px;">
+                        <button class="preset-btn" onclick="loadRecentChanges()">🔄 Rafraîchir</button>
+                    </div>
+                    <pre class="output-content" id="recent-changes-content" style="white-space:pre-wrap; word-break:break-word;"></pre>
+                </div>
             </div>
         </div>
         
@@ -694,6 +701,18 @@
                 wdBox.style.display = 'none';
                 wdContent.textContent = '';
             }
+
+            // Charger et afficher les changements récents après un apply
+            const recentBox = document.getElementById('recent-changes');
+            const isApply = mode === 'apply' && action === 'cast';
+            if (isApply) {
+                loadRecentChanges(20);
+                recentBox.style.display = 'block';
+            } else {
+                recentBox.style.display = 'none';
+                const rc = document.getElementById('recent-changes-content');
+                if (rc) rc.textContent = '';
+            }
         }
         
         function showError(message) {
@@ -705,6 +724,23 @@
         function toggleHelp() {
             const el = document.getElementById('help');
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function loadRecentChanges(limit = 20) {
+            try {
+                const res = await fetch(`/api/magic/world-state/changes?limit=${encodeURIComponent(limit)}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                const box = document.getElementById('recent-changes');
+                const out = document.getElementById('recent-changes-content');
+                box.style.display = 'block';
+                out.textContent = typeof json === 'string' ? json : JSON.stringify(json, null, 2);
+            } catch (e) {
+                const box = document.getElementById('recent-changes');
+                const out = document.getElementById('recent-changes-content');
+                box.style.display = 'block';
+                out.textContent = `Erreur chargement changements: ${e.message}`;
+            }
         }
         
         // Auto-focus + lecture des paramètres d'URL (action, formula, mode)
