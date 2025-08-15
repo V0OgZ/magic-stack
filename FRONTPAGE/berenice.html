@@ -1016,6 +1016,19 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 await card.action(gameState.combat.enemy);
             }
 
+            // If in combat, progress turn
+            if (gameState.combat.active && gameState.combat.turn === 'player') {
+                // Small chance to damage enemy if card is offensive
+                if (card.name === 'Ping' || card.name === 'Stack Overflow' || card.name === 'Kernel Panic') {
+                    const e = gameState.combat.enemy;
+                    if (e) {
+                        e.hp = Math.max(0, e.hp - 5);
+                        if (e.hp <= 0) { endCombat(true); }
+                    }
+                }
+                gameState.combat.turn = 'enemy';
+            }
+
             // Call backend (map card → real formula; simulate mode)
             try {
                 const CARD_TO_FORMULA = {
@@ -1132,6 +1145,22 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 gameState.player.mana += 0.01;
             }
 
+            // Decay clone TTL
+            if (gameState.world.entities?.length) {
+                gameState.world.entities.forEach(e => { if (e.type==='clone') e.ttl--; });
+                gameState.world.entities = gameState.world.entities.filter(e => e.type!=='clone' || e.ttl>0);
+            }
+
+            // Simple turn-based when combat active
+            if (gameState.combat.active && gameState.combat.turn === 'enemy') {
+                await new Promise(r => setTimeout(r, 450));
+                // Enemy deals 3 damage
+                gameState.player.hp = Math.max(0, gameState.player.hp - 3);
+                updateStats();
+                if (gameState.player.hp <= 0) { endCombat(false); return; }
+                gameState.combat.turn = 'player';
+            }
+
             // Update UI
             updateStats();
             
@@ -1213,7 +1242,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             
             const data = levelData[gameState.currentLevel];
             if (data) {
-                // Place walls on edges
+                // Place walls on edges (size=10)
                 for (let i = 0; i < 10; i++) {
                     cells[i].innerHTML = data.walls;
                     cells[i].classList.add('wall');
@@ -1224,29 +1253,40 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     cells[i * 10 + 9].innerHTML = data.walls;
                     cells[i * 10 + 9].classList.add('wall');
                 }
-                
-                // Place objectives
+
+                // Objectives / exit / enemy
                 data.objectives?.forEach(obj => {
                     const cell = cells[obj.y * 10 + obj.x];
-                    if (cell) {
-                        cell.innerHTML = obj.emoji;
-                        cell.classList.add('objective');
-                    }
+                    if (cell) { cell.innerHTML = obj.emoji; cell.classList.add('objective'); }
                 });
-                
-                // Place exit
                 if (data.exit) {
                     const cell = cells[data.exit.y * 10 + data.exit.x];
-                    if (cell) {
-                        cell.innerHTML = data.exit.emoji;
-                        cell.classList.add('objective');
-                    }
+                    if (cell) { cell.innerHTML = data.exit.emoji; cell.classList.add('objective'); }
                 }
-                
-                // Place enemy
                 if (data.enemy) {
                     const cell = cells[data.enemy.y * 10 + data.enemy.x];
                     if (cell) cell.innerHTML = data.enemy.emoji;
+                    if (!gameState.combat.enemy) gameState.combat.enemy = { id: 'enemy_1', x: data.enemy.x, y: data.enemy.y, hp: 40, maxHp: 40 };
+                }
+            }
+
+            // Fog of war (visited + LOS radius=2)
+            if (!gameState.world.visited.length) {
+                gameState.world.visited = Array.from({length:10},()=>Array(10).fill(false));
+            }
+            const px = gameState.player.position_6d.x;
+            const py = gameState.player.position_6d.y;
+            const r = gameState.world.losRadius || 2;
+            for (let dy=-r; dy<=r; dy++) {
+                for (let dx=-r; dx<=r; dx++) {
+                    const x=px+dx, y=py+dy; if(x>=0&&x<10&&y>=0&&y<10) gameState.world.visited[y][x]=true;
+                }
+            }
+            for (let y=0; y<10; y++) {
+                for (let x=0; x<10; x++) {
+                    const cell = cells[y*10+x];
+                    if (!gameState.world.visited[y][x]) cell.classList.add('hidden');
+                    else if (Math.abs(x-px)+Math.abs(y-py) > r) cell.classList.add('fog');
                 }
             }
             
@@ -1302,9 +1342,12 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         }
 
         function createClone() {
-            // TODO: implement clone creation with Phi mechanics
-            gameState.player.position_6d.psi += 0.318;
-            showFloatingMessage("Clone créé! Ψ+" + 0.318, 200, 200, '#f0f');
+            // Visible ghost clone on the grid for 6 ticks
+            const px = gameState.player.position_6d.x;
+            const py = gameState.player.position_6d.y;
+            gameState.world.entities.push({ type:'clone', x: px, y: py, ttl: 6 });
+            gameState.player.position_6d.psi = Math.min(1, gameState.player.position_6d.psi + 0.3);
+            showFloatingMessage('Clone!', px*52, py*52, '#f0f');
         }
 
         async function revertLastAction() {
