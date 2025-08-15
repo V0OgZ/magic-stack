@@ -316,6 +316,28 @@
             border: 3px solid #0ff;
         }
 
+        .hero-portrait {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            background: #111;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 16px rgba(0,255,255,0.4);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .hero-portrait-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid #0ff;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.8;
+        }
+
         .hero-hp {
             font-size: 18px;
             color: #0f0;
@@ -528,6 +550,7 @@
             <button class="top-btn" id="btnHelp">Aide</button>
             <button class="top-btn" id="btnTalk">Parler</button>
             <button class="top-btn" id="btnEditor">Mode Éditeur</button>
+            <button class="top-btn" id="btnHero">Héroïne</button>
         </div>
         <div id="helpOverlay" class="overlay">
             <div class="box">
@@ -547,6 +570,28 @@
                 <button class="close" onclick="document.getElementById('editorOverlay').style.display='none'">Fermer</button>
                 <h3>Éditeur Avancé</h3>
                 <iframe id="editorFrame" src="/world-editor/?embed=1"></iframe>
+            </div>
+        </div>
+        <div id="heroOverlay" class="overlay">
+            <div class="box">
+                <button class="close" onclick="document.getElementById('heroOverlay').style.display='none'">Fermer</button>
+                <h3>Profil de Bérénice</h3>
+                <div id="heroContent" style="display:flex; gap:16px; align-items:flex-start; justify-content:flex-start;">
+                    <div>
+                        <div id="heroPortrait" class="hero-portrait avatar-ber0"></div>
+                        <div style="display:flex; gap:6px; margin-top:8px; opacity:0.8;">
+                            <div class="hero-portrait-mini avatar-ber0" title="Niveau 1"></div>
+                            <div class="hero-portrait-mini avatar-ber1" title="Niveau 2"></div>
+                            <div class="hero-portrait-mini avatar-ber2" title="Niveau 3"></div>
+                        </div>
+                    </div>
+                    <div style="min-width:240px; max-width:60vw; text-align:left;">
+                        <div id="heroName" style="font-weight:bold; color:#0ff; margin-bottom:6px;">Bérénice</div>
+                        <div id="heroDesc" style="font-size:12px; color:#9ff; margin-bottom:10px;"></div>
+                        <div style="font-weight:bold; color:#0ff; margin:8px 0 4px;">Capacités</div>
+                        <div id="heroAbilities" style="display:flex; flex-direction:column; gap:6px;"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- Container pour la grille et l'avatar -->
@@ -1206,6 +1251,11 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     showDialogue("Bérénice", "Maintenant on parle! Cyberpunk mode ON!");
                 }
             }
+            // Update hero overlay portrait if open
+            const heroPortrait = document.getElementById('heroPortrait');
+            if (heroPortrait) {
+                heroPortrait.className = 'hero-portrait avatar-' + gameState.player.avatar;
+            }
         }
 
         async function gameLoop() {
@@ -1484,8 +1534,34 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const btnHelp = document.getElementById('btnHelp');
             const btnTalk = document.getElementById('btnTalk');
             const btnEditor = document.getElementById('btnEditor');
+            const btnHero = document.getElementById('btnHero');
             if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
             if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
+            if (btnHero) btnHero.onclick = async () => {
+                try {
+                    const res = await fetch(CONFIG.JAVA_API + '/heroes/berenice_temporalhacker');
+                    if (res.ok) {
+                        const hero = await res.json();
+                        const name = hero.name || 'Bérénice';
+                        const desc = hero.backstory || hero.description || '';
+                        const spells = hero.spells || [];
+                        const portrait = document.getElementById('heroPortrait');
+                        portrait.className = 'hero-portrait avatar-' + gameState.player.avatar;
+                        document.getElementById('heroName').textContent = name;
+                        document.getElementById('heroDesc').textContent = desc;
+                        const list = document.getElementById('heroAbilities');
+                        list.innerHTML = '';
+                        spells.slice(0, 6).forEach(s => {
+                            const row = document.createElement('div');
+                            row.style.display = 'flex';
+                            row.style.flexDirection = 'column';
+                            row.innerHTML = `<div style="color:#0ff; font-weight:bold;">${s.name}</div><div style="color:#9ff; font-size:12px">${s.description||''}</div>`;
+                            list.appendChild(row);
+                        });
+                    }
+                } catch {}
+                document.getElementById('heroOverlay').style.display = 'block';
+            };
             if (btnTalk) btnTalk.onclick = async () => {
                 try {
                     const q = `Bérénice, niveau ${gameState.currentLevel}`;
