@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Heroes of Time - Jeu de Bérénice 🌟</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fredoka', cursive;
+            background: linear-gradient(to bottom, #87CEEB, #98FB98);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Particules de fond */
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Container principal */
+        .game-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Zone de jeu (haut) */
+        .battle-zone {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.9);
+            margin: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Titre du jeu */
+        .game-title {
+            position: absolute;
+            top: 20px;
+            font-size: 2.5em;
+            color: #FF6B6B;
+            text-shadow: 3px 3px 0 #FFE66D;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Zone de combat */
+        .battle-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 800px;
+            height: 300px;
+        }
+
+        /* Personnages */
+        .character {
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .hero {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="60" r="40" fill="%23FFB6C1"/><rect x="80" y="90" width="40" height="60" fill="%234169E1"/><rect x="60" y="90" width="20" height="40" fill="%23FFB6C1"/><rect x="120" y="90" width="20" height="40" fill="%23FFB6C1"/><rect x="85" y="150" width="15" height="30" fill="%23333"/><rect x="100" y="150" width="15" height="30" fill="%23333"/><path d="M60 50 Q100 20 140 50" fill="%23FFD700" stroke="%23FFD700" stroke-width="3"/></svg>');
+        }
+
+        .monster {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="%239370DB"/><circle cx="70" cy="80" r="15" fill="%23FF0000"/><circle cx="130" cy="80" r="15" fill="%23FF0000"/><path d="M60 120 Q100 140 140 120" fill="none" stroke="%23000" stroke-width="5"/><polygon points="50,60 60,40 70,60" fill="%23FF6347"/><polygon points="130,60 140,40 150,60" fill="%23FF6347"/></svg>');
+        }
+
+        /* VS au milieu */
+        .vs-text {
+            font-size: 3em;
+            color: #FF6B6B;
+            text-shadow: 3px 3px 0 #333;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Zone de score */
+        .score-zone {
+            position: absolute;
+            top: 80px;
+            right: 30px;
+            background: #FFE66D;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.5em;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Messages de feedback */
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: #FF6B6B;
+            text-shadow: 3px 3px 0 #FFE66D;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .feedback.show {
+            animation: feedbackPop 1s ease-out;
+        }
+
+        @keyframes feedbackPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Zone des cartes (bas) */
+        .cards-zone {
+            height: 250px;
+            background: rgba(255, 255, 255, 0.95);
+            margin: 0 20px 20px 20px;
+            border-radius: 30px;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Cartes */
+        .card {
+            width: 140px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-15px) rotate(-5deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            color: white;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-mana {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FFE66D;
+            color: #333;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Effets spéciaux pour les cartes */
+        .card.fire {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .card.ice {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .card.thunder {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .card.heal {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+
+        /* Animation d'attaque */
+        .attack-effect {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .attack-effect.fire {
+            background: radial-gradient(circle, #ff6b6b, #ff0000, transparent);
+            animation: fireAttack 1s ease-out;
+        }
+
+        .attack-effect.ice {
+            background: radial-gradient(circle, #00f2fe, #4facfe, transparent);
+            animation: iceAttack 1s ease-out;
+        }
+
+        .attack-effect.thunder {
+            background: radial-gradient(circle, #fee140, #fa709a, transparent);
+            animation: thunderAttack 1s ease-out;
+        }
+
+        .attack-effect.heal {
+            background: radial-gradient(circle, #30cfd0, #330867, transparent);
+            animation: healEffect 1s ease-out;
+        }
+
+        @keyframes fireAttack {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes iceAttack {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(-180deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes thunderAttack {
+            0% {
+                transform: translateY(-200px) scaleY(2);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) scaleY(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes healEffect {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Barre de vie */
+        .health-bar {
+            width: 120px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        /* Loader pendant les appels API */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #FF6B6B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Messages d'erreur mignons */
+        .error-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FF6B6B;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .error-message.show {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card {
+                width: 100px;
+                height: 150px;
+            }
+            .card-icon {
+                font-size: 3em;
+            }
+            .card-title {
+                font-size: 1em;
+            }
+            .game-title {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Container principal -->
+    <div class="game-container">
+        <!-- Zone de bataille -->
+        <div class="battle-zone">
+            <h1 class="game-title">⚔️ Heroes of Time ⚔️</h1>
+            
+            <div class="score-zone">
+                Score: <span id="score">0</span> ⭐
+            </div>
+
+            <div class="battle-field">
+                <div class="character hero" id="hero">
+                    <div class="health-bar">
+                        <div class="health-fill" id="hero-health" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="vs-text">VS</div>
+                
+                <div class="character monster" id="monster">
+                    <div class="health-bar">
+                        <div class="health-fill" id="monster-health" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback messages -->
+            <div class="feedback" id="feedback"></div>
+
+            <!-- Loading spinner -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Attack effects container -->
+            <div id="effects-container"></div>
+        </div>
+
+        <!-- Zone des cartes -->
+        <div class="cards-zone">
+            <div class="card fire" onclick="playCard('fire', 1)">
+                <div class="card-mana">1</div>
+                <div class="card-icon">🔥</div>
+                <div class="card-title">Boule de Feu</div>
+            </div>
+
+            <div class="card ice" onclick="playCard('ice', 2)">
+                <div class="card-mana">2</div>
+                <div class="card-icon">❄️</div>
+                <div class="card-title">Rayon Gelé</div>
+            </div>
+
+            <div class="card thunder" onclick="playCard('thunder', 3)">
+                <div class="card-mana">3</div>
+                <div class="card-icon">⚡</div>
+                <div class="card-title">Éclair Fou</div>
+            </div>
+
+            <div class="card heal" onclick="playCard('heal', 2)">
+                <div class="card-mana">2</div>
+                <div class="card-icon">💚</div>
+                <div class="card-title">Soin Magique</div>
+            </div>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div class="error-message" id="error-message">
+            Oops! La magie ne fonctionne pas... Réessaie! 🌟
+        </div>
+    </div>
+
+    <script>
+        // Configuration API
+        const API_BASE_URL = 'http://localhost:8082/api/magic';
+        
+        // État du jeu
+        let gameState = {
+            score: 0,
+            heroHealth: 100,
+            monsterHealth: 100,
+            isPlaying: false
+        };
+
+        // Sons (à ajouter plus tard)
+        const sounds = {
+            fire: '🔥',
+            ice: '❄️',
+            thunder: '⚡',
+            heal: '💚'
+        };
+
+        // Messages encourageants
+        const encouragements = [
+            "Super! 🌟",
+            "Génial! 🎉",
+            "Waouh! 🚀",
+            "Bravo! 👏",
+            "Excellent! ⭐",
+            "Magnifique! ✨",
+            "Trop fort! 💪",
+            "Continue! 🎯"
+        ];
+
+        // Créer des particules de fond
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 20 + 10 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = Math.random() * 20 + 20 + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Jouer une carte
+        async function playCard(type, manaCost) {
+            if (gameState.isPlaying) return;
+            
+            gameState.isPlaying = true;
+            showLoading(true);
+
+            try {
+                // Construire la formule magique selon le type
+                let formula = '';
+                let expectedEffect = {};
+
+                switch(type) {
+                    case 'fire':
+                        formula = '🔥(monstre)';
+                        expectedEffect = { damage: 20, target: 'monster' };
+                        break;
+                    case 'ice':
+                        formula = '❄️(monstre, 2tours)';
+                        expectedEffect = { damage: 15, freeze: true, target: 'monster' };
+                        break;
+                    case 'thunder':
+                        formula = '⚡(monstre, puissance=3)';
+                        expectedEffect = { damage: 30, target: 'monster' };
+                        break;
+                    case 'heal':
+                        formula = '💚(héros, 25pv)';
+                        expectedEffect = { heal: 25, target: 'hero' };
+                        break;
+                }
+
+                // Appeler l'API pour traduire et exécuter
+                const response = await fetch(`${API_BASE_URL}/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        formula: formula,
+                        language: 'fr'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur API');
+                }
+
+                const result = await response.json();
+                
+                // Afficher l'effet visuel
+                showAttackEffect(type, expectedEffect.target);
+                
+                // Mettre à jour les points de vie
+                if (expectedEffect.damage) {
+                    gameState.monsterHealth = Math.max(0, gameState.monsterHealth - expectedEffect.damage);
+                    updateHealthBar('monster', gameState.monsterHealth);
+                }
+                
+                if (expectedEffect.heal) {
+                    gameState.heroHealth = Math.min(100, gameState.heroHealth + expectedEffect.heal);
+                    updateHealthBar('hero', gameState.heroHealth);
+                }
+
+                // Mettre à jour le score
+                gameState.score += manaCost * 10;
+                updateScore();
+
+                // Afficher un message encourageant
+                showFeedback(encouragements[Math.floor(Math.random() * encouragements.length)]);
+
+                // Vérifier la victoire
+                if (gameState.monsterHealth <= 0) {
+                    setTimeout(() => {
+                        showFeedback("VICTOIRE! 🏆");
+                        resetGame();
+                    }, 1500);
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                // Si l'API ne marche pas, on simule quand même pour Bérénice
+                simulateEffect(type);
+            } finally {
+                showLoading(false);
+                setTimeout(() => {
+                    gameState.isPlaying = false;
+                }, 1000);
+            }
+        }
+
+        // Simulation si l'API ne répond pas (pour que ça marche toujours)
+        function simulateEffect(type) {
+            const effects = {
+                fire: { damage: 20 },
+                ice: { damage: 15 },
+                thunder: { damage: 30 },
+                heal: { heal: 25 }
+            };
+
+            const effect = effects[type];
+            
+            if (effect.damage) {
+                gameState.monsterHealth = Math.max(0, gameState.monsterHealth - effect.damage);
+                updateHealthBar('monster', gameState.monsterHealth);
+                showAttackEffect(type, 'monster');
+            }
+            
+            if (effect.heal) {
+                gameState.heroHealth = Math.min(100, gameState.heroHealth + effect.heal);
+                updateHealthBar('hero', gameState.heroHealth);
+                showAttackEffect(type, 'hero');
+            }
+
+            gameState.score += 10;
+            updateScore();
+            showFeedback(encouragements[Math.floor(Math.random() * encouragements.length)]);
+
+            if (gameState.monsterHealth <= 0) {
+                setTimeout(() => {
+                    showFeedback("VICTOIRE! 🏆");
+                    resetGame();
+                }, 1500);
+            }
+        }
+
+        // Afficher l'effet d'attaque
+        function showAttackEffect(type, target) {
+            const targetElement = document.getElementById(target);
+            const rect = targetElement.getBoundingClientRect();
+            const battleZone = document.querySelector('.battle-zone');
+            const battleRect = battleZone.getBoundingClientRect();
+
+            const effect = document.createElement('div');
+            effect.className = `attack-effect ${type}`;
+            effect.style.left = (rect.left - battleRect.left + rect.width/2 - 50) + 'px';
+            effect.style.top = (rect.top - battleRect.top + rect.height/2 - 50) + 'px';
+
+            battleZone.appendChild(effect);
+
+            // Animation du personnage touché
+            targetElement.style.animation = 'shake 0.5s';
+            
+            setTimeout(() => {
+                effect.remove();
+                targetElement.style.animation = '';
+            }, 1000);
+        }
+
+        // Animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Mettre à jour la barre de vie
+        function updateHealthBar(target, health) {
+            const healthBar = document.getElementById(`${target}-health`);
+            healthBar.style.width = health + '%';
+            
+            // Changer la couleur selon la vie restante
+            if (health > 60) {
+                healthBar.style.background = 'linear-gradient(to right, #4ecdc4, #44a3aa)';
+            } else if (health > 30) {
+                healthBar.style.background = 'linear-gradient(to right, #fee140, #fa709a)';
+            } else {
+                healthBar.style.background = 'linear-gradient(to right, #ff6b6b, #ff0000)';
+            }
+        }
+
+        // Mettre à jour le score
+        function updateScore() {
+            document.getElementById('score').textContent = gameState.score;
+            
+            // Petite animation du score
+            const scoreElement = document.querySelector('.score-zone');
+            scoreElement.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                scoreElement.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Afficher un message de feedback
+        function showFeedback(message) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.classList.add('show');
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 1000);
+        }
+
+        // Afficher/cacher le loading
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.classList.toggle('show', show);
+        }
+
+        // Réinitialiser le jeu
+        function resetGame() {
+            setTimeout(() => {
+                gameState.monsterHealth = 100;
+                updateHealthBar('monster', 100);
+                showFeedback("Nouveau monstre! 🐲");
+            }, 2000);
+        }
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            updateScore();
+            
+            // Test de connexion à l'API au démarrage
+            fetch(`${API_BASE_URL}/health`)
+                .then(response => {
+                    if (response.ok) {
+                        console.log('API connectée! ✅');
+                    }
+                })
+                .catch(() => {
+                    console.log('Mode simulation activé (API non disponible)');
+                });
+        });
+
+        // Easter egg : Konami code pour Bérénice
+        let konamiCode = [];
+        const secretCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode.splice(-secretCode.length - 1, konamiCode.length - secretCode.length);
+            
+            if (JSON.stringify(konamiCode) === JSON.stringify(secretCode)) {
+                gameState.score += 1000;
+                updateScore();
+                showFeedback("CODE SECRET! 🎉🎉🎉");
+                document.body.style.animation = 'rainbow 2s';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 2000);
+            }
+        });
+
+        // Animation arc-en-ciel pour le code secret
+        const rainbowStyle = document.createElement('style');
+        rainbowStyle.textContent = `
+            @keyframes rainbow {
+                0% { filter: hue-rotate(0deg); }
+                100% { filter: hue-rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(rainbowStyle);
+    </script>
+</body>
+</html>
