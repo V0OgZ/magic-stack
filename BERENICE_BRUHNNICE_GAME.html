@@ -519,7 +519,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
 
         async function checkServices() {
             const checks = {
-                java: fetch(CONFIG.JAVA_API + '/api/health').then(r => r.ok).catch(() => false),
+                java: fetch(CONFIG.JAVA_API + '/health').then(r => r.ok).catch(() => false),
                 rust: fetch(CONFIG.RUST_API + '/health').then(r => r.ok).catch(() => false),
                 vector: fetch(CONFIG.VECTOR_DB + '/health').then(r => r.ok).catch(() => false)
             };
@@ -823,7 +823,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     mode: 'simulate',
                     context: { caster: gameState.player.id, target: gameState.combat.enemy?.id }
                 };
-                const response = await fetch(CONFIG.JAVA_API + '/api/magic/cast', {
+                const response = await fetch(CONFIG.JAVA_API + '/magic/cast', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -909,7 +909,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             // Sync with Rust backend every 100ms
             if (gameState.player.position_6d.t % 1 === 0) {
                 try {
-                    const response = await fetch(CONFIG.RUST_API + '/api/v2/tick', {
+                    const response = await fetch(CONFIG.RUST_API + '/v2/tick', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

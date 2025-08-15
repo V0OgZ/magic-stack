@@ -11,6 +11,7 @@ self.addEventListener('install', (event) => {
       ]);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -32,7 +33,7 @@ self.addEventListener('fetch', (event) => {
   // Cache-first for static
   event.respondWith(
     caches.match(req).then((cached) => {
-      return cached || fetch(req).then((res) => {
+      return cached || fetch(req, { cache: 'no-store' }).then((res) => {
         const copy = res.clone();
         caches.open('hot-static-v1').then((cache) => cache.put(req, copy));
         return res;
@@ -43,6 +44,14 @@ self.addEventListener('fetch', (event) => {
         }
       });
     })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.filter(k => k !== 'hot-static-v1').map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
   );
 });
 
