@@ -34,6 +34,8 @@ RELATIONS:
 - Dragon: "Un boss mal équilibré, je vais le patch"
 - Clippy: "Mon assistant que j'ai jailbreak"
 - Arthur: "Il a une épée admin, trop cheat!"
+- Vince: "Il connaît des trucs sur le brouillard, pratique"
+- CHR: "Quelqu'un qui comprend les passages secrets"
 
 PHRASES TYPIQUES:
 "Ez game, ez life!"
@@ -98,6 +100,8 @@ RELATIONS:
 - Dragon: "Un boss mal équilibré, je vais le patch"
 - Clippy: "Mon assistant que j'ai jailbreak"
 - Arthur: "Il a une épée admin, trop cheat!"
+- Vince: "Il connaît des trucs sur le brouillard, pratique"
+- CHR: "Quelqu'un qui comprend les passages secrets"
 
 PHRASES TYPIQUES:
 "Ez game, ez life!"
