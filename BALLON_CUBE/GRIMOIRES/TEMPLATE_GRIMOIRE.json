@@ -1,0 +1,122 @@
+{
+  "grimoire_template": {
+    "version": "2.0.0",
+    "description": "Template universel pour les grimoires de tous les héros",
+    "created_by": "MAGE_CLAUDE",
+    "creation_date": "2025-08-14"
+  },
+  
+  "structure": {
+    "metadata": {
+      "proprietaire": "{HERO_NAME}",
+      "hero_id": "{HERO_ID}",
+      "classe": "{HERO_CLASS}",
+      "niveau": 1,
+      "experience": 0,
+      "dimension": "{HOME_DIMENSION}",
+      "affinite_magique": "{PRIMARY_MAGIC}",
+      "creation_date": "{DATE}",
+      "derniere_maj": "{DATE}",
+      "signature_magique": "{UNIQUE_SIGNATURE}"
+    },
+    
+    "stats_magiques": {
+      "mana_max": 100,
+      "mana_actuel": 100,
+      "regeneration_mana": 5,
+      "puissance_sorts": 1.0,
+      "precision_formules": 0.85,
+      "resistance_paradoxe": 0.5,
+      "affinite_temporelle": 0.0,
+      "maitrise_quantique": 0.0
+    },
+    
+    "categories_sorts": {
+      "basique": {
+        "description": "Sorts de base accessibles à tous",
+        "couleur": "#808080",
+        "icone": "✨",
+        "niveau_requis": 1
+      },
+      "elementaire": {
+        "description": "Magie des éléments",
+        "couleur": "#FF6B6B",
+        "icone": "🔥",
+        "niveau_requis": 5
+      },
+      "temporel": {
+        "description": "Manipulation du temps",
+        "couleur": "#4ECDC4",
+        "icone": "⏰",
+        "niveau_requis": 10
+      },
+      "quantique": {
+        "description": "Superposition et probabilités",
+        "couleur": "#9C27B0",
+        "icone": "⚛️",
+        "niveau_requis": 15
+      },
+      "legendaire": {
+        "description": "Sorts uniques du héros",
+        "couleur": "#FFD700",
+        "icone": "⭐",
+        "niveau_requis": 20
+      }
+    },
+    
+    "sorts": {},
+    
+    "formules_apprises": [],
+    
+    "combinaisons": {
+      "description": "Sorts combinés découverts",
+      "liste": []
+    },
+    
+    "journal_magique": {
+      "description": "Historique des sorts lancés",
+      "entrees": []
+    },
+    
+    "tatouages_memoire": {
+      "description": "Souvenirs magiques permanents",
+      "tatouages": []
+    }
+  },
+  
+  "exemple_sort": {
+    "id": "sort_exemple",
+    "nom": "Nom du Sort",
+    "categorie": "basique|elementaire|temporel|quantique|legendaire",
+    "niveau": 1,
+    "formule": "⊙(composant1) + Ψ(composant2) → ∞(RESULTAT)",
+    "formule_vocale": "Incantation à prononcer",
+    "description": "Description détaillée du sort",
+    "effets": [
+      "Effet primaire",
+      "Effet secondaire",
+      "Effet tertiaire"
+    ],
+    "cout_mana": 20,
+    "duree": "Instantané|X tours|Permanent",
+    "cooldown": "X tours|X heures|Aucun",
+    "portee": "Soi|Contact|Distance|Zone",
+    "components": ["composant1", "composant2"],
+    "conditions": {
+      "niveau_requis": 1,
+      "affinite_requise": null,
+      "prerequis": []
+    },
+    "animation": {
+      "couleur": "#FFFFFF",
+      "particules": "étincelles|flammes|glace|ombre",
+      "son": "thunder|whisper|chime|roar"
+    },
+    "statistiques": {
+      "fois_lance": 0,
+      "taux_reussite": 1.0,
+      "dernier_usage": null,
+      "maitrise": 0
+    }
+  }
+}

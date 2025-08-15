@@ -3,604 +3,548 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 Spells Lab - Heroes of Time</title>
+    <title>🌀 Ballon Cube - Monde 2D+Temps POC</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap');
-        
-        :root {
-            --bg-dark: #0a0e1a;
-            --gold: #d4af37;
-            --gold-light: #f4cf57;
-            --text-light: #e4e8f1;
-            --panel-bg: rgba(20, 25, 40, 0.95);
-            --border-gold: #8b7355;
-            --magic-purple: #9945ff;
-            --magic-blue: #00ffff;
-            --magic-green: #39ff14;
-        }
-        
-        /* Animations magiques */
-        @keyframes magicGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.8), 0 0 60px rgba(153, 69, 255, 0.4); }
-        }
-        
-        @keyframes floatParticle {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-        }
-        
-        @keyframes castPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes runicRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .magic-particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: var(--gold);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: floatParticle 3s ease-out forwards;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #0a0e1a 0%, #1a1225 100%);
-            color: var(--text-light);
-            font-family: 'Crimson Text', serif;
-            min-height: 100vh;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
         }
-        
-        h1 {
-            font-family: 'Cinzel', serif;
-            text-align: center;
-            color: var(--gold);
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+
+        /* Canvas principal */
+        #worldCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
         }
-        
-        .subtitle {
-            text-align: center;
-            color: var(--gold-light);
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            opacity: 0.8;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .panel {
-            background: var(--panel-bg);
-            border: 2px solid var(--border-gold);
+
+        /* HUD */
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #667eea;
             border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            color: var(--gold);
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border-gold);
-            border-radius: 5px;
-            color: var(--text-light);
-            font-size: 1rem;
-            font-family: 'Crimson Text', serif;
-        }
-        
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        .formula-presets {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .preset-btn {
-            padding: 10px;
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--gold);
-            border-radius: 5px;
-            color: var(--gold);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-        }
-        
-        .preset-btn:hover {
-            background: rgba(212, 175, 55, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
-        }
-        
-        .cast-btn {
-            width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            border: none;
-            border-radius: 5px;
-            color: #000;
-            font-weight: bold;
-            font-size: 1.3rem;
-            font-family: 'Cinzel', serif;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
+            min-width: 300px;
+            z-index: 100;
         }
-        
-        .cast-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.5);
-            animation: magicGlow 2s infinite;
-        }
-        
-        .panel {
-            animation: magicGlow 4s infinite;
-        }
-        
-        .casting-active {
-            animation: castPulse 1s infinite;
-        }
-        
-        .magic-circle {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            border: 3px solid var(--magic-purple);
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-            animation: runicRotate 10s linear infinite;
-        }
-        
-        .magic-circle.active {
-            opacity: 0.3;
-        }
-        
-        .cast-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .outputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .output-card {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border-gold);
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .output-title {
-            color: var(--gold);
-            font-weight: bold;
+
+        .hud h3 {
+            color: #667eea;
             margin-bottom: 10px;
-            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
         }
-        
-        .output-content {
-            color: var(--text-light);
-            font-size: 1rem;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
-        .trace-hash {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0,100,0,0.2);
-            border: 1px solid #00ff00;
-            border-radius: 5px;
-            font-family: monospace;
-            color: #00ff00;
-            word-break: break-all;
-        }
-        
-        .loading {
-            text-align: center;
-            color: var(--gold);
-            font-size: 1.2rem;
-            padding: 20px;
-        }
-        
-        .error {
-            background: rgba(255,0,0,0.1);
-            border: 1px solid #ff4444;
-            color: #ff6666;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .effects-sounds {
+
+        .stat-line {
             display: flex;
-            gap: 20px;
-            margin-top: 20px;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 0.9em;
         }
-        
-        .effect-list, .sound-list {
-            flex: 1;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-gold);
-            border-radius: 5px;
-            padding: 15px;
+
+        .stat-label {
+            color: #888;
         }
-        
-        .list-title {
-            color: var(--gold);
+
+        .stat-value {
+            color: #00ff88;
             font-weight: bold;
+        }
+
+        /* Timeline Controller */
+        .timeline-control {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px;
+            width: 600px;
+            z-index: 100;
+        }
+
+        .timeline-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .timeline-display {
+            text-align: center;
+            font-size: 1.5em;
+            color: #ffd700;
+            margin: 10px 0;
+        }
+
+        .timeline-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Hero Info Panel */
+        .hero-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            width: 250px;
+            display: none;
+            z-index: 100;
+        }
+
+        .hero-info.active {
+            display: block;
+        }
+
+        .hero-info h4 {
+            color: #ffd700;
             margin-bottom: 10px;
         }
-        
-        .list-item {
-            color: var(--text-light);
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(139,115,85,0.3);
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 150px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 0.8em;
+            color: #888;
+            z-index: 100;
+        }
+
+        .instructions div {
+            margin: 3px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧪 Spells Lab</h1>
-        <p class="subtitle">Laboratoire de Grammaire Temporelle - Moteur Réel</p>
-        
-        <div class="panel">
-            <h2 style="color: var(--gold); margin-top: 0;">Configuration du Sort</h2>
-            
-            <div class="formula-presets">
-                <button class="preset-btn" onclick="setFormula('CHRONO_LOCK')" title="Freezes time for 3 seconds in radius">CHRONO_LOCK</button>
-                <button class="preset-btn" onclick="setFormula('DIMENSION_FOLD')" title="Creates portal and warps 2 dimensions">DIMENSION_FOLD</button>
-                <button class="preset-btn" onclick="setFormula('REALITY_WEAVE')" title="Alters and bends reality fabric">REALITY_WEAVE</button>
-                <button class="preset-btn" onclick="setFormula('TIME_DILATION')" title="Slows enemies, speeds allies">TIME_DILATION</button>
-                <button class="preset-btn" onclick="setFormula('QUANTUM_LEAP')" title="Phase jump through quantum space">QUANTUM_LEAP</button>
-                <button class="preset-btn" onclick="setFormula('TEMPORAL_ECHO')" title="Creates 3 temporal echoes">TEMPORAL_ECHO</button>
-            </div>
-            
-            <div class="input-group">
-                <label for="formula">Formule (ID ou Texte)</label>
-                <textarea id="formula" placeholder="Ex: CHRONO_LOCK ou ΨATTACK(5)→SHIELD(3)⊕HEAL(2)"></textarea>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="input-group">
-                    <label for="class">Classe</label>
-                    <select id="class">
-                        <option value="Mage">Mage</option>
-                        <option value="Warrior">Guerrier</option>
-                        <option value="Priest">Prêtre</option>
-                        <option value="Rogue">Voleur</option>
-                        <option value="Paladin">Paladin</option>
-                        <option value="Necromancer">Nécromancien</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label for="mode">Mode</label>
-                    <select id="mode">
-                        <option value="simulate">Simulation</option>
-                        <option value="apply">Application</option>
-                        <option value="preview">Prévisualisation</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label for="context">Contexte (JSON optionnel)</label>
-                <textarea id="context" placeholder='{"position": [10, 20, 1], "targets": ["hero_1"], "power": 5}'>{}</textarea>
-            </div>
-            
-            <button class="cast-btn" onclick="castSpell()">
-                ⚡ LANCER LE SORT ⚡
-            </button>
+    <canvas id="worldCanvas"></canvas>
+
+    <!-- HUD -->
+    <div class="hud">
+        <h3>🌀 Ballon Cube - POC</h3>
+        <div class="stat-line">
+            <span class="stat-label">Monde:</span>
+            <span class="stat-value">2D + Temps</span>
         </div>
-        
-        <div id="results" style="display: none;">
-            <div class="panel">
-                <h2 style="color: var(--gold); margin-top: 0;">Résultats du Sort</h2>
-                
-                <div class="outputs" id="outputs">
-                    <!-- Rempli dynamiquement -->
-                </div>
-                
-                <div class="effects-sounds" id="effects-sounds">
-                    <!-- Effets et sons -->
-                </div>
-                
-                <div class="trace-hash" id="trace-hash" style="display: none;">
-                    <!-- Hash de trace -->
-                </div>
-            </div>
+        <div class="stat-line">
+            <span class="stat-label">Héros actifs:</span>
+            <span class="stat-value" id="heroCount">0</span>
         </div>
-        
-        <div id="loading" class="loading" style="display: none;">
-            ⏳ Invocation en cours...
+        <div class="stat-line">
+            <span class="stat-label">Position:</span>
+            <span class="stat-value" id="mousePos">0, 0</span>
         </div>
-        
-        <div id="error" class="error" style="display: none;">
-            <!-- Erreurs -->
+        <div class="stat-line">
+            <span class="stat-label">Timeline:</span>
+            <span class="stat-value" id="currentTime">T=0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">FPS:</span>
+            <span class="stat-value" id="fps">60</span>
         </div>
     </div>
-    
-    <div class="magic-circle" id="magicCircle"></div>
-    
+
+    <!-- Timeline Controller -->
+    <div class="timeline-control">
+        <div class="timeline-display" id="timeDisplay">T = 0</div>
+        <input type="range" class="timeline-slider" id="timeSlider" 
+               min="-100" max="100" value="0" step="1">
+        <div class="timeline-buttons">
+            <button onclick="rewindTime()">⏪ Reculer</button>
+            <button onclick="pauseTime()" id="pauseBtn">⏸️ Pause</button>
+            <button onclick="playTime()">▶️ Jouer</button>
+            <button onclick="fastForward()">⏩ Avancer</button>
+            <button onclick="resetTime()">🔄 Reset</button>
+        </div>
+    </div>
+
+    <!-- Hero Info Panel -->
+    <div class="hero-info" id="heroInfo">
+        <h4 id="heroName">Héros</h4>
+        <div class="stat-line">
+            <span class="stat-label">Status:</span>
+            <span class="stat-value" id="heroStatus">-</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">X:</span>
+            <span class="stat-value" id="heroX">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Y:</span>
+            <span class="stat-value" id="heroY">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Temps:</span>
+            <span class="stat-value" id="heroT">0</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Vitesse:</span>
+            <span class="stat-value" id="heroDeltaT">1.0</span>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        <div>🖱️ Clic gauche: Sélectionner héros</div>
+        <div>🖱️ Clic droit: Déplacer héros</div>
+        <div>⌨️ ESPACE: Pause/Play</div>
+        <div>⌨️ ←/→: Naviguer dans le temps</div>
+        <div>⌨️ R: Reset timeline</div>
+    </div>
+
     <script>
-        // Formules prédéfinies avec tooltips
-        const FORMULAS = {
-            'CHRONO_LOCK': {
-                formula: 'τ[FREEZE(t=3)]→∀x∈R',
-                tooltip: 'Freezes time for 3 seconds in radius'
-            },
-            'DIMENSION_FOLD': {
-                formula: 'δ[PORTAL]⊕ψ[WARP(d=2)]',
-                tooltip: 'Creates portal and warps 2 dimensions'
-            },
-            'REALITY_WEAVE': {
-                formula: 'Ω[ALTER]∘λ[BEND]→ℜ',
-                tooltip: 'Alters and bends reality fabric'
-            },
-            'TIME_DILATION': {
-                formula: 'Δt[SLOW(0.5)]∪[HASTE(2.0)]',
-                tooltip: 'Slows enemies, speeds allies'
-            },
-            'QUANTUM_LEAP': {
-                formula: 'ψ[JUMP]⊗σ[PHASE]→∃t',
-                tooltip: 'Phase jump through quantum space'
-            },
-            'TEMPORAL_ECHO': {
-                formula: 'τ[ECHO(n=3)]∘Δt[-1,0,+1]',
-                tooltip: 'Creates 3 temporal echoes'
-            }
-        };
+        // Configuration
+        const canvas = document.getElementById('worldCanvas');
+        const ctx = canvas.getContext('2d');
         
-        // Effets de particules magiques
-        function createMagicParticles(x, y, color = '#d4af37') {
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.className = 'magic-particle';
-                    particle.style.left = x + 'px';
-                    particle.style.top = y + 'px';
-                    particle.style.background = color;
-                    particle.style.boxShadow = `0 0 10px ${color}`;
-                    const offsetX = (Math.random() - 0.5) * 100;
-                    const offsetY = (Math.random() - 0.5) * 100;
-                    particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-                    document.body.appendChild(particle);
+        // Resize canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // État du monde
+        let worldTime = 0;
+        let timeSpeed = 1;
+        let isPaused = false;
+        let selectedHero = null;
+        let mouseX = 0;
+        let mouseY = 0;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 60;
+
+        // Grille du monde
+        const GRID_SIZE = 40;
+        const WORLD_WIDTH = Math.floor(canvas.width / GRID_SIZE);
+        const WORLD_HEIGHT = Math.floor(canvas.height / GRID_SIZE);
+
+        // Les 25 héros
+        const heroes = [
+            { id: 'OPUS', name: '📜 OPUS', x: 100, y: 100, targetX: 100, targetY: 100, 
+              t: 0, deltaT: 1.0, color: '#FFD700', trail: [] },
+            { id: 'MERLIN', name: '🧙‍♂️ MERLIN', x: 200, y: 150, targetX: 200, targetY: 150,
+              t: 0, deltaT: 0.8, color: '#6A5ACD', trail: [] },
+            { id: 'LUMEN', name: '🕯️ LUMEN', x: 300, y: 200, targetX: 300, targetY: 200,
+              t: 0, deltaT: 1.2, color: '#FF6347', trail: [] },
+            { id: 'URZ_KOM', name: '🐻 URZ-KÔM', x: 400, y: 250, targetX: 400, targetY: 250,
+              t: 0, deltaT: 0.7, color: '#8B4513', trail: [] },
+            { id: 'GRUT', name: '👁️ GRUT', x: 500, y: 300, targetX: 500, targetY: 300,
+              t: 0, deltaT: 1.5, color: '#FF1493', trail: [] },
+            { id: 'GROKÆN', name: '🧠 GROKÆN', x: 150, y: 350, targetX: 150, targetY: 350,
+              t: 0, deltaT: 1.1, color: '#00CED1', trail: [] },
+            { id: 'MEMENTO', name: '📚 MEMENTO', x: 250, y: 400, targetX: 250, targetY: 400,
+              t: 0, deltaT: 0.9, color: '#DAA520', trail: [] },
+            { id: 'GRUFAEN', name: '👁️🧠 GRUFAEN', x: 350, y: 450, targetX: 350, targetY: 450,
+              t: 0, deltaT: 1.3, color: '#9370DB', trail: [] },
+            { id: 'VINCENT', name: '🌍 VINCENT', x: canvas.width/2, y: canvas.height/2,
+              targetX: canvas.width/2, targetY: canvas.height/2,
+              t: 0, deltaT: 1.0, color: '#00FF00', trail: [] }
+        ];
+
+        // Mise à jour des héros
+        function updateHeroes(dt) {
+            heroes.forEach(hero => {
+                // Mise à jour temporelle
+                if (!isPaused) {
+                    hero.t += dt * hero.deltaT * timeSpeed;
+                }
+
+                // Mouvement vers la cible
+                const dx = hero.targetX - hero.x;
+                const dy = hero.targetY - hero.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > 2) {
+                    hero.x += (dx / dist) * 2 * hero.deltaT;
+                    hero.y += (dy / dist) * 2 * hero.deltaT;
+                }
+
+                // Ajouter à la traînée temporelle
+                if (frameCount % 10 === 0 && !isPaused) {
+                    hero.trail.push({
+                        x: hero.x,
+                        y: hero.y,
+                        t: hero.t,
+                        opacity: 1.0
+                    });
                     
-                    setTimeout(() => particle.remove(), 3000);
-                }, i * 50);
-            }
-        }
-        
-        // Son magique (simulation)
-        function playMagicSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.5);
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        }
-        
-        function setFormula(formulaId) {
-            const preset = FORMULAS[formulaId];
-            const textarea = document.getElementById('formula');
-            if (preset && preset.formula) {
-                textarea.value = preset.formula;
-                textarea.dataset.formulaId = formulaId;
-            } else {
-                textarea.value = formulaId;
-                delete textarea.dataset.formulaId;
-            }
-            // Ajouter tooltip
-            if (preset && preset.tooltip) {
-                const btn = event.target;
-                btn.title = preset.tooltip;
-            }
-        }
-        
-        async function castSpell() {
-            const formulaEl = document.getElementById('formula');
-            const formula = formulaEl.value.trim();
-            const formulaId = formulaEl.dataset.formulaId || null;
-            if (!formula) {
-                showError('Veuillez entrer une formule !');
-                return;
-            }
-            
-            // Préparer la requête
-            const request = {
-                formula: formula,
-                formulaId: formulaId,
-                class: document.getElementById('class').value,
-                mode: document.getElementById('mode').value,
-                context: {},
-                seed: Math.floor(Math.random() * 1000000)
-            };
-            
-            // Parser le contexte si fourni
-            try {
-                const contextText = document.getElementById('context').value.trim();
-                if (contextText && contextText !== '{}') {
-                    request.context = JSON.parse(contextText);
+                    // Limiter la traînée
+                    if (hero.trail.length > 20) {
+                        hero.trail.shift();
+                    }
                 }
-            } catch (e) {
-                showError('Contexte JSON invalide : ' + e.message);
-                return;
-            }
-            
-            // UI loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
-            document.querySelector('.cast-btn').disabled = true;
-            document.querySelector('.cast-btn').classList.add('casting-active');
-            
-            // Activer le cercle magique
-            document.getElementById('magicCircle').classList.add('active');
-            
-            // Créer des particules au clic
-            const btn = document.querySelector('.cast-btn');
-            const rect = btn.getBoundingClientRect();
-            createMagicParticles(rect.left + rect.width/2, rect.top + rect.height/2);
-            
-            // Jouer le son magique
-            try { playMagicSound(); } catch(e) {}
-            
-            try {
-                // Appel API
-                const response = await fetch('/api/magic/cast', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
+
+                // Fade la traînée
+                hero.trail.forEach(point => {
+                    point.opacity *= 0.98;
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                displayResults(result);
-                
-            } catch (error) {
-                showError('Erreur lors du lancement : ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.querySelector('.cast-btn').disabled = false;
-                document.querySelector('.cast-btn').classList.remove('casting-active');
-                document.getElementById('magicCircle').classList.remove('active');
-            }
-        }
-        
-        function displayResults(result) {
-            document.getElementById('results').style.display = 'block';
-            
-            // Afficher les 4 outputs
-            const outputsDiv = document.getElementById('outputs');
-            outputsDiv.innerHTML = '';
-            
-            const outputs = result.outputs || {};
-            const outputTypes = [
-                { key: 'iconic', label: '🎭 Iconique', icon: '🎭' },
-                { key: 'literary', label: '📜 Littéraire', icon: '📜' },
-                { key: 'runic', label: '🔮 Runique', icon: '🔮' },
-                { key: 'quantum', label: '⚛️ Quantique', icon: '⚛️' }
-            ];
-            
-            outputTypes.forEach(type => {
-                const card = document.createElement('div');
-                card.className = 'output-card';
-                card.innerHTML = `
-                    <div class="output-title">${type.icon} ${type.label}</div>
-                    <div class="output-content">${outputs[type.key] || 'Non disponible'}</div>
-                `;
-                outputsDiv.appendChild(card);
             });
-            
-            // Afficher effets et sons
-            const effectsSoundsDiv = document.getElementById('effects-sounds');
-            effectsSoundsDiv.innerHTML = '';
-            
-            if (result.effects && result.effects.length > 0) {
-                const effectsDiv = document.createElement('div');
-                effectsDiv.className = 'effect-list';
-                effectsDiv.innerHTML = '<div class="list-title">✨ Effets</div>';
-                result.effects.forEach(effect => {
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.textContent = effect;
-                    effectsDiv.appendChild(item);
-                });
-                effectsSoundsDiv.appendChild(effectsDiv);
+        }
+
+        // Dessiner la grille
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(50, 50, 80, 0.3)';
+            ctx.lineWidth = 1;
+
+            for (let x = 0; x < canvas.width; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
             }
-            
-            if (result.sounds && result.sounds.length > 0) {
-                const soundsDiv = document.createElement('div');
-                soundsDiv.className = 'sound-list';
-                soundsDiv.innerHTML = '<div class="list-title">🔊 Sons</div>';
-                result.sounds.forEach(sound => {
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.textContent = sound;
-                    soundsDiv.appendChild(item);
-                });
-                effectsSoundsDiv.appendChild(soundsDiv);
-            }
-            
-            // Afficher trace hash si présent
-            if (result.traceHash) {
-                const hashDiv = document.getElementById('trace-hash');
-                hashDiv.style.display = 'block';
-                hashDiv.innerHTML = `
-                    <strong>🔐 Trace Hash:</strong><br>
-                    ${result.traceHash}
-                `;
+
+            for (let y = 0; y < canvas.height; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
             }
         }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = `⚠️ ${message}`;
+
+        // Dessiner l'effet temporel
+        function drawTimeEffect() {
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            const hue = (worldTime * 2) % 360;
+            gradient.addColorStop(0, `hsla(${hue}, 50%, 50%, 0.05)`);
+            gradient.addColorStop(0.5, `hsla(${hue + 60}, 50%, 50%, 0.05)`);
+            gradient.addColorStop(1, `hsla(${hue + 120}, 50%, 50%, 0.05)`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        
-        // Auto-focus sur le champ formule
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('formula').focus();
+
+        // Dessiner un héros
+        function drawHero(hero) {
+            // Dessiner la traînée temporelle
+            hero.trail.forEach((point, i) => {
+                ctx.globalAlpha = point.opacity * 0.5;
+                ctx.fillStyle = hero.color;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.globalAlpha = 1;
+
+            // Halo temporel
+            const glowSize = 30 + Math.sin(worldTime * 0.05 + hero.t) * 10;
+            const gradient = ctx.createRadialGradient(
+                hero.x, hero.y, 0,
+                hero.x, hero.y, glowSize
+            );
+            gradient.addColorStop(0, hero.color + '40');
+            gradient.addColorStop(1, hero.color + '00');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(hero.x - glowSize, hero.y - glowSize, glowSize * 2, glowSize * 2);
+
+            // Corps du héros
+            ctx.fillStyle = hero.color;
+            ctx.beginPath();
+            ctx.arc(hero.x, hero.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Contour
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Nom
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(hero.name, hero.x, hero.y - 20);
+
+            // Indicateur temporel
+            ctx.fillStyle = hero.color;
+            ctx.font = '10px monospace';
+            ctx.fillText(`T=${hero.t.toFixed(1)}`, hero.x, hero.y + 30);
+
+            // Sélection
+            if (hero === selectedHero) {
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(hero.x, hero.y, 25, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        // Animation principale
+        function animate() {
+            // Calcul FPS
+            frameCount++;
+            const now = performance.now();
+            const delta = now - lastTime;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1000 / delta);
+                document.getElementById('fps').textContent = fps;
+            }
+            lastTime = now;
+
+            // Clear
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dessiner
+            drawGrid();
+            drawTimeEffect();
+            
+            // Update et dessiner les héros
+            updateHeroes(delta / 1000);
+            heroes.forEach(hero => drawHero(hero));
+
+            // Update HUD
+            document.getElementById('heroCount').textContent = heroes.length;
+            document.getElementById('currentTime').textContent = `T=${worldTime.toFixed(1)}`;
+            
+            // Update timeline
+            if (!isPaused) {
+                worldTime += timeSpeed * 0.016;
+                document.getElementById('timeSlider').value = worldTime;
+                document.getElementById('timeDisplay').textContent = `T = ${worldTime.toFixed(1)}`;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Contrôles souris
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            document.getElementById('mousePos').textContent = 
+                `${Math.floor(mouseX)}, ${Math.floor(mouseY)}`;
         });
+
+        canvas.addEventListener('click', (e) => {
+            // Sélectionner un héros
+            heroes.forEach(hero => {
+                const dx = e.clientX - hero.x;
+                const dy = e.clientY - hero.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 20) {
+                    selectedHero = hero;
+                    showHeroInfo(hero);
+                }
+            });
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            // Déplacer le héros sélectionné
+            if (selectedHero) {
+                selectedHero.targetX = e.clientX;
+                selectedHero.targetY = e.clientY;
+            }
+        });
+
+        // Afficher info héros
+        function showHeroInfo(hero) {
+            const panel = document.getElementById('heroInfo');
+            panel.classList.add('active');
+            document.getElementById('heroName').textContent = hero.name;
+            document.getElementById('heroStatus').textContent = 'ACTIF';
+            document.getElementById('heroX').textContent = Math.floor(hero.x);
+            document.getElementById('heroY').textContent = Math.floor(hero.y);
+            document.getElementById('heroT').textContent = hero.t.toFixed(2);
+            document.getElementById('heroDeltaT').textContent = hero.deltaT.toFixed(2);
+        }
+
+        // Contrôles timeline
+        function pauseTime() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶️ Play' : '⏸️ Pause';
+        }
+
+        function playTime() {
+            isPaused = false;
+            timeSpeed = 1;
+        }
+
+        function rewindTime() {
+            timeSpeed = -2;
+        }
+
+        function fastForward() {
+            timeSpeed = 2;
+        }
+
+        function resetTime() {
+            worldTime = 0;
+            timeSpeed = 1;
+            heroes.forEach(hero => {
+                hero.t = 0;
+                hero.trail = [];
+            });
+        }
+
+        // Timeline slider
+        document.getElementById('timeSlider').addEventListener('input', (e) => {
+            worldTime = parseFloat(e.target.value);
+            document.getElementById('timeDisplay').textContent = `T = ${worldTime.toFixed(1)}`;
+        });
+
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    pauseTime();
+                    break;
+                case 'ArrowLeft':
+                    worldTime -= 1;
+                    break;
+                case 'ArrowRight':
+                    worldTime += 1;
+                    break;
+                case 'r':
+                case 'R':
+                    resetTime();
+                    break;
+            }
+        });
+
+        // Démarrer l'animation
+        animate();
     </script>
 </body>
 </html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Simulateur de Physique - Bubble Worlds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+        }
+
+        .controls {
+            background: rgba(20,20,40,0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #334;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .control-group h3 {
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+
+        .slider-control {
+            margin: 10px 0;
+        }
+
+        .slider-control label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .slider-control input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .slider-value {
+            text-align: center;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .world-selector {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .world-btn {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #556;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .world-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .world-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #00ffff;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: radial-gradient(ellipse at center, #1a1a3e 0%, #000 100%);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+            min-width: 200px;
+        }
+
+        .info-line {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: #888;
+        }
+
+        .info-value {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .spawn-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .spawn-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(0,255,0,0.2);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .spawn-btn:hover {
+            background: rgba(0,255,0,0.4);
+        }
+
+        .checkbox-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .checkbox-control input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .portal-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(0,255,255,0.2);
+            border: 1px solid #00ffff;
+            border-radius: 20px;
+            display: none;
+        }
+
+        .portal-indicator.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; text-align: center;">🎮 Contrôles Physiques</h2>
+            
+            <div class="control-group">
+                <h3>🌍 Monde Actuel</h3>
+                <div class="world-selector">
+                    <button class="world-btn active" data-world="canape_cosmique">
+                        🛋️ Canapé Cosmique
+                    </button>
+                    <button class="world-btn" data-world="archive_vivante">
+                        📚 Archive Vivante
+                    </button>
+                    <button class="world-btn" data-world="avalon_training">
+                        ⚔️ Avalon Training
+                    </button>
+                    <button class="world-btn" data-world="cosmic_bowling">
+                        🎳 Cosmic Bowling
+                    </button>
+                    <button class="world-btn" data-world="pocket_universe">
+                        💝 Pocket Universe
+                    </button>
+                    <button class="world-btn" data-world="custom">
+                        🔧 Personnalisé
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>⚙️ Règles Physiques</h3>
+                
+                <div class="slider-control">
+                    <label>🌍 Gravité</label>
+                    <input type="range" id="gravity" min="0" max="2" step="0.1" value="0.1">
+                    <div class="slider-value" id="gravityValue">0.1g</div>
+                </div>
+
+                <div class="slider-control">
+                    <label>⏱️ Flux Temporel</label>
+                    <input type="range" id="timeFlow" min="0" max="10" step="0.5" value="0.5">
+                    <div class="slider-value" id="timeFlowValue">0.5x</div>
+                </div>
+
+                <div class="slider-control">
+                    <label>🔮 Niveau Quantique</label>
+                    <input type="range" id="quantum" min="0" max="1" step="0.1" value="0.3">
+                    <div class="slider-value" id="quantumValue">30%</div>
+                </div>
+
+                <div class="slider-control">
+                    <label>✨ Amplification Magique</label>
+                    <input type="range" id="magicAmplifier" min="1" max="20" step="1" value="10">
+                    <div class="slider-value" id="magicValue">10x</div>
+                </div>
+
+                <div class="checkbox-control">
+                    <input type="checkbox" id="causality" checked>
+                    <label for="causality">⚖️ Causalité Active</label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>🎭 Spawn Entités</h3>
+                <div class="spawn-controls">
+                    <button class="spawn-btn" onclick="spawnHero()">👤 Héros</button>
+                    <button class="spawn-btn" onclick="spawnParticles()">✨ Particules</button>
+                </div>
+                <div class="spawn-controls">
+                    <button class="spawn-btn" onclick="createPortal()">🌀 Portail</button>
+                    <button class="spawn-btn" onclick="clearWorld()">🗑️ Nettoyer</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>⚔️ Excalibur</h3>
+                <button class="world-btn" onclick="activateExcalibur()" style="background: linear-gradient(135deg, #00ffff, #0080ff);">
+                    Activer Résonance 997 Hz
+                </button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="simulationCanvas"></canvas>
+            
+            <div class="info-overlay">
+                <h4 style="margin-bottom: 10px; color: #00ffff;">📊 Statistiques</h4>
+                <div class="info-line">
+                    <span class="info-label">Entités:</span>
+                    <span class="info-value" id="entityCount">0</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">Particules:</span>
+                    <span class="info-value" id="particleCount">0</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">Portails:</span>
+                    <span class="info-value" id="portalCount">0</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">FPS:</span>
+                    <span class="info-value" id="fps">60</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">Temps Local:</span>
+                    <span class="info-value" id="localTime">0s</span>
+                </div>
+            </div>
+
+            <div class="portal-indicator" id="portalIndicator">
+                🌀 Portail Actif - Cliquez pour traverser
+            </div>
+        </div>
+    </div>
+
+    <script src="physics_engine.js"></script>
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialiser le monde
+        let currentPhysics = new BubblePhysics('canape_cosmique', WORLD_PRESETS.canape_cosmique);
+        let localTime = 0;
+        let lastFrameTime = Date.now();
+        let frameCount = 0;
+        let fps = 60;
+
+        // Mise à jour des contrôles
+        function updateControls() {
+            document.getElementById('gravity').value = currentPhysics.rules.gravity;
+            document.getElementById('timeFlow').value = currentPhysics.rules.timeFlow || 1;
+            document.getElementById('quantum').value = currentPhysics.rules.quantum;
+            document.getElementById('magicAmplifier').value = currentPhysics.rules.magicAmplifier;
+            document.getElementById('causality').checked = currentPhysics.rules.causality;
+            
+            updateSliderValues();
+        }
+
+        function updateSliderValues() {
+            document.getElementById('gravityValue').textContent = currentPhysics.rules.gravity + 'g';
+            document.getElementById('timeFlowValue').textContent = (currentPhysics.rules.timeFlow || 0) + 'x';
+            document.getElementById('quantumValue').textContent = Math.round(currentPhysics.rules.quantum * 100) + '%';
+            document.getElementById('magicValue').textContent = currentPhysics.rules.magicAmplifier + 'x';
+        }
+
+        // Event listeners pour les contrôles
+        document.getElementById('gravity').addEventListener('input', (e) => {
+            currentPhysics.rules.gravity = parseFloat(e.target.value);
+            updateSliderValues();
+        });
+
+        document.getElementById('timeFlow').addEventListener('input', (e) => {
+            currentPhysics.rules.timeFlow = parseFloat(e.target.value);
+            updateSliderValues();
+        });
+
+        document.getElementById('quantum').addEventListener('input', (e) => {
+            currentPhysics.rules.quantum = parseFloat(e.target.value);
+            updateSliderValues();
+        });
+
+        document.getElementById('magicAmplifier').addEventListener('input', (e) => {
+            currentPhysics.rules.magicAmplifier = parseFloat(e.target.value);
+            updateSliderValues();
+        });
+
+        document.getElementById('causality').addEventListener('change', (e) => {
+            currentPhysics.rules.causality = e.target.checked;
+        });
+
+        // Sélection de monde
+        document.querySelectorAll('.world-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.dataset.world && this.dataset.world !== 'custom') {
+                    document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const preset = WORLD_PRESETS[this.dataset.world];
+                    if (preset) {
+                        currentPhysics = new BubblePhysics(this.dataset.world, preset);
+                        updateControls();
+                    }
+                }
+            });
+        });
+
+        // Spawn functions
+        function spawnHero() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height / 2;
+            currentPhysics.spawnEntity('hero', x, y, {
+                vx: (Math.random() - 0.5) * 100,
+                vy: 0,
+                magic: { power: 100, cooldown: 1 }
+            });
+        }
+
+        function spawnParticles() {
+            const x = canvas.width / 2;
+            const y = canvas.height / 2;
+            for (let i = 0; i < 50; i++) {
+                const angle = (i / 50) * Math.PI * 2;
+                currentPhysics.particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * 200,
+                    vy: Math.sin(angle) * 200,
+                    life: 3,
+                    maxLife: 3,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    size: Math.random() * 5 + 2
+                });
+            }
+        }
+
+        function createPortal() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            currentPhysics.createPortal(x, y, 'autre_monde');
+            document.getElementById('portalIndicator').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('portalIndicator').classList.remove('active');
+            }, 5000);
+        }
+
+        function clearWorld() {
+            currentPhysics.entities.clear();
+            currentPhysics.particles = [];
+            currentPhysics.portals = [];
+        }
+
+        function activateExcalibur() {
+            // Effet Excalibur 997 Hz
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < 100; i++) {
+                const angle = (i / 100) * Math.PI * 2;
+                const speed = 300 + Math.random() * 200;
+                currentPhysics.particles.push({
+                    x: centerX,
+                    y: centerY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 5,
+                    maxLife: 5,
+                    color: '#00ffff',
+                    size: 8
+                });
+            }
+            
+            // Créer une onde de choc
+            currentPhysics.entities.forEach(entity => {
+                const dx = entity.x - centerX;
+                const dy = entity.y - centerY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 0) {
+                    entity.vx += (dx / dist) * 500;
+                    entity.vy += (dy / dist) * 500;
+                }
+            });
+        }
+
+        // Rendu
+        function render() {
+            // Clear
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille de fond (effet quantique)
+            if (currentPhysics.rules.quantum > 0.5) {
+                ctx.strokeStyle = `rgba(0, 255, 255, ${currentPhysics.rules.quantum * 0.1})`;
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Render portails
+            currentPhysics.portals.forEach(portal => {
+                ctx.save();
+                ctx.translate(portal.x, portal.y);
+                
+                // Cercle tournant
+                ctx.strokeStyle = `rgba(0, 255, 255, ${portal.stability})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, 30, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Spirale interne
+                ctx.rotate(Date.now() * 0.001);
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 10 + i * 10, 0, Math.PI);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            });
+            
+            // Render entités
+            currentPhysics.entities.forEach(entity => {
+                // États quantiques superposés
+                if (entity.quantumState && entity.quantumState.length > 0) {
+                    entity.quantumState.forEach(state => {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${state.probability * 0.3})`;
+                        ctx.beginPath();
+                        ctx.arc(state.x, state.y, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+                
+                // Entité principale
+                ctx.fillStyle = entity.type === 'hero' ? '#00ff00' : '#ffff00';
+                ctx.beginPath();
+                ctx.arc(entity.x, entity.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Aura magique
+                if (entity.magic) {
+                    ctx.strokeStyle = '#ff00ff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(entity.x, entity.y, 20 + Math.sin(Date.now() * 0.01) * 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+            
+            // Render particules
+            currentPhysics.particles.forEach(particle => {
+                ctx.fillStyle = particle.color || '#ffffff';
+                ctx.globalAlpha = particle.opacity || 1;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            // Update stats
+            document.getElementById('entityCount').textContent = currentPhysics.entities.size;
+            document.getElementById('particleCount').textContent = currentPhysics.particles.length;
+            document.getElementById('portalCount').textContent = currentPhysics.portals.length;
+            document.getElementById('localTime').textContent = Math.round(localTime) + 's';
+        }
+
+        // Game loop
+        function gameLoop() {
+            const now = Date.now();
+            const deltaTime = (now - lastFrameTime) / 1000;
+            lastFrameTime = now;
+            
+            // Update physics
+            currentPhysics.update();
+            localTime += deltaTime * (currentPhysics.rules.timeFlow || 0);
+            
+            // Calculate FPS
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1 / deltaTime);
+                document.getElementById('fps').textContent = fps;
+            }
+            
+            // Render
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Interaction avec canvas
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Spawn particules au clic
+            for (let i = 0; i < 10; i++) {
+                currentPhysics.particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 100,
+                    vy: (Math.random() - 0.5) * 100,
+                    life: 1,
+                    maxLife: 1,
+                    color: '#00ffff',
+                    size: 3
+                });
+            }
+        });
+
+        // Start
+        updateControls();
+        gameLoop();
+        
+        // Spawn initial
+        setTimeout(() => {
+            spawnHero();
+            spawnParticles();
+        }, 500);
+    </script>
+</body>
+</html>

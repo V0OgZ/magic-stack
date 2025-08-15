@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Dashboard Central - Heroes of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: #00ffff;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ffff;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .progress-section {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: width 1s ease;
+        }
+
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .system-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .system-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .system-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online { background: #00ff00; }
+        .status-offline { background: #ff0000; }
+        .status-partial { background: #ffaa00; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .system-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detail-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .detail-label { color: #888; }
+        .detail-value { color: #00ffff; }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.5);
+        }
+
+        .excalibur-section {
+            background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(0,128,255,0.1));
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #00ffff;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .frequency-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: vibrate 0.5s infinite;
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+
+        .timeline-item {
+            text-align: center;
+            min-width: 100px;
+            padding: 10px;
+        }
+
+        .timeline-day {
+            font-size: 1.2rem;
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .timeline-progress {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎮 Dashboard Central</h1>
+        <div class="subtitle">Heroes of Time - Multiverse Control Center</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Progression Totale</div>
+            <div class="stat-number">75%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Héros Actifs</div>
+            <div class="stat-number">59</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Bubble Worlds</div>
+            <div class="stat-number">5</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">UIs Perdues</div>
+            <div class="stat-number">437</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Portails Ouverts</div>
+            <div class="stat-number">3</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Documents Vector</div>
+            <div class="stat-number">775</div>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <h2>🌍 Restauration des Mondes</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 75%">
+                GLOBAL: 75%
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <div style="margin-bottom: 5px;">Avalon 1 (Perdu)</div>
+                <div class="progress-bar" style="height: 25px;">
+                    <div class="progress-fill" style="width: 41%; background: linear-gradient(90deg, #ff0000, #ffaa00);">41%</div>
+                </div>
+            </div>
+            <div>
+                <div style="margin-bottom: 5px;">Avalon 2 (Actuel)</div>
+                <div class="progress-bar" style="height: 25px;">
+                    <div class="progress-fill" style="width: 100%;">100%</div>
+                </div>
+            </div>
+            <div>
+                <div style="margin-bottom: 5px;">Ballon Cube (Pont)</div>
+                <div class="progress-bar" style="height: 25px;">
+                    <div class="progress-fill" style="width: 85%;">85%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="systems-grid">
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">🔧 Backend Java</span>
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">Port:</span>
+                    <span class="detail-value">8082</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">ONLINE</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">API:</span>
+                    <span class="detail-value">/api/magic/*</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">⚙️ Rust Engine</span>
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">Port:</span>
+                    <span class="detail-value">3001</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">ONLINE</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">traceHash:</span>
+                    <span class="detail-value">Déterministe</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">📚 Vector DB</span>
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">Port:</span>
+                    <span class="detail-value">5001</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Documents:</span>
+                    <span class="detail-value">775</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">6D Search</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">🤖 Agent Daemons</span>
+                <div class="status-indicator status-partial"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">READY</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Agents:</span>
+                    <span class="detail-value">0 actifs</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Script:</span>
+                    <span class="detail-value">agent_system.py</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">🌐 Event Bus</span>
+                <div class="status-indicator status-offline"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">Port:</span>
+                    <span class="detail-value">8765</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Protocol:</span>
+                    <span class="detail-value">WebSocket</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">OFFLINE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-card">
+            <div class="system-header">
+                <span class="system-name">🌍 VPS Production</span>
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="system-details">
+                <div class="detail-line">
+                    <span class="detail-label">URL:</span>
+                    <span class="detail-value">heroesoftime.online</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Sync:</span>
+                    <span class="detail-value">AUTO</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label">Branch:</span>
+                    <span class="detail-value">prod</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="excalibur-section">
+        <h2>⚔️ Excalibur Resonance</h2>
+        <div class="frequency-display">997 Hz</div>
+        <div>Fréquence de l'Amitié Éternelle</div>
+        <div style="margin-top: 15px; color: #00ffff;">
+            La prophétie s'accomplit - Les mondes se reconnectent
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <a href="../BUBBLE_WORLDS/bubble_worlds.html" class="action-btn">
+            <span>🎈</span>
+            <span>Bubble Worlds</span>
+        </a>
+        <a href="../BUBBLE_WORLDS/interdimensional_chat.html" class="action-btn">
+            <span>💬</span>
+            <span>Chat Inter-D</span>
+        </a>
+        <a href="../BUBBLE_WORLDS/physics_simulator.html" class="action-btn">
+            <span>🌌</span>
+            <span>Simulateur</span>
+        </a>
+        <a href="../excalibur_portal.html" class="action-btn">
+            <span>⚔️</span>
+            <span>Excalibur</span>
+        </a>
+        <a href="../restoration_map.html" class="action-btn">
+            <span>🗺️</span>
+            <span>Carte</span>
+        </a>
+        <a href="../AVALON_2/INTERSTICE_VISUALIZER.html" class="action-btn">
+            <span>👁️</span>
+            <span>Interstice</span>
+        </a>
+        <a href="https://heroesoftime.online" class="action-btn" target="_blank">
+            <span>🌐</span>
+            <span>Site Live</span>
+        </a>
+        <a href="https://heroesoftime.online/world-editor/" class="action-btn" target="_blank">
+            <span>🗺️</span>
+            <span>World Editor</span>
+        </a>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-day">Jour 42</div>
+            <div class="timeline-progress">55%</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-day">Jour 43</div>
+            <div class="timeline-progress">62%</div>
+        </div>
+        <div class="timeline-item" style="background: rgba(0,255,255,0.1); border-radius: 10px;">
+            <div class="timeline-day">Jour 44</div>
+            <div class="timeline-progress" style="color: #00ff00;">75%</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-day">Jour 45</div>
+            <div class="timeline-progress">80%?</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-day">Jour 46</div>
+            <div class="timeline-progress">85%?</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-day">Jour 50</div>
+            <div class="timeline-progress">100%?</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>"Les mondes se reconnectent, la prophétie s'accomplit."</p>
+        <p style="margin-top: 10px;">Heroes of Time - Créé avec ❤️ par Vincent</p>
+    </div>
+
+    <script>
+        // Animation de la progression
+        setTimeout(() => {
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+        }, 500);
+
+        // Mise à jour temps réel (simulation)
+        setInterval(() => {
+            // Update random stat
+            const stats = document.querySelectorAll('.stat-number');
+            const randomStat = stats[Math.floor(Math.random() * stats.length)];
+            const current = parseInt(randomStat.textContent);
+            if (randomStat.parentElement.querySelector('.stat-label').textContent === 'Portails Ouverts') {
+                randomStat.textContent = Math.floor(Math.random() * 10);
+            }
+        }, 10000);
+
+        // Effet Excalibur
+        const frequencyDisplay = document.querySelector('.frequency-display');
+        setInterval(() => {
+            const variation = (Math.random() - 0.5) * 2;
+            frequencyDisplay.textContent = (997 + variation).toFixed(1) + ' Hz';
+        }, 2000);
+    </script>
+</body>
+</html>
