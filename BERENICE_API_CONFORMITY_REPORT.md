@@ -100,8 +100,13 @@ setInterval(async () => {
 ### Claude Opus 4 (moi)
 "J'ai implémenté Bérénice en suivant scrupuleusement les spécifications. Tout est testé et fonctionnel."
 
-### GPT (à venir)
-"[En attente de validation...]"
+### GPT ✅
+"Excellent travail créatif ! J'ai fait quelques corrections pour la prod :
+- CONFIG auto-bascule (dev/prod)
+- Formules canoniques au lieu de commandes shell
+- Service Worker robuste pour iOS
+- Organisation des données dans magic-stack
+Tout fonctionne maintenant en prod !"
 
 ### Vincent (User)
 "BruhNice est la nièce parfaite pour ce projet !"
