@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# 🎮 MAGIC STACK GO - SCRIPT DEVOPS COMPLET
-# UN SEUL SCRIPT POUR TOUT GÉRER PROPREMENT
+# 🎮 MAGIC STACK GO - SCRIPT DEVOPS PRINCIPAL
+# Version JOUR 43 - Mise à jour complète
+# Un seul script pour tout gérer proprement
 
 # Couleurs
 GREEN='\033[0;32m'
@@ -9,6 +10,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 # Base dir
@@ -49,14 +51,22 @@ compile_java() {
 
 compile_frontend() {
     echo -e "${CYAN}⚛️ Build Frontend React...${NC}"
-    cd "$MAGIC_DIR/apps/magic-stack-unified"
-    if npm ci && npm run build; then
-        echo -e "${GREEN}✅ Frontend build OK${NC}"
-        return 0
-    else
-        echo -e "${RED}❌ Erreur build frontend${NC}"
-        return 1
+    
+    # Magic Stack Unified
+    if [ -d "$MAGIC_DIR/apps/magic-stack-unified" ]; then
+        echo "  Building magic-stack-unified..."
+        cd "$MAGIC_DIR/apps/magic-stack-unified"
+        npm ci && npm run build
     fi
+    
+    # World Editor
+    if [ -d "$MAGIC_DIR/apps/world-editor" ]; then
+        echo "  Building world-editor..."
+        cd "$MAGIC_DIR/apps/world-editor"
+        npm ci && npm run build
+    fi
+    
+    echo -e "${GREEN}✅ Frontend builds OK${NC}"
 }
 
 compile_all() {
@@ -94,7 +104,7 @@ test_frontend() {
 }
 
 test_all() {
-    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════${NC}"
     echo -e "${BLUE}        🧪 TESTS COMPLETS${NC}"
     echo -e "${BLUE}═══════════════════════════════════${NC}"
     
@@ -111,113 +121,132 @@ test_all() {
 
 start_rust() {
     if ! check_port 3001; then
-        echo -e "${CYAN}Démarrage Rust...${NC}"
+        echo -e "${CYAN}🦀 Démarrage Rust (3001)...${NC}"
         cd "$MAGIC_DIR/backends/rust"
-        if [ -f "target/release/magic-rust" ]; then
-            ./target/release/magic-rust > "$MAGIC_DIR/logs/rust.log" 2>&1 &
+        if [ -f "target/release/magic-stack-server" ]; then
+            RUST_PORT=3001 ./target/release/magic-stack-server > "$MAGIC_DIR/logs/rust.log" 2>&1 &
         else
-            cargo run --release > "$MAGIC_DIR/logs/rust.log" 2>&1 &
+            RUST_PORT=3001 cargo run --release > "$MAGIC_DIR/logs/rust.log" 2>&1 &
         fi
         sleep 2
+        check_port 3001 && echo -e "${GREEN}✅ Rust démarré${NC}" || echo -e "${RED}❌ Rust échec${NC}"
+    else
+        echo -e "${GREEN}✅ Rust déjà actif (3001)${NC}"
     fi
 }
 
 start_java() {
     if ! check_port 8082; then
-        echo -e "${CYAN}Démarrage Java...${NC}"
+        echo -e "${CYAN}☕ Démarrage Java (8082)...${NC}"
         cd "$MAGIC_DIR/backends/java"
         # Utiliser le JAR s'il existe
         if [ -f "target/magic-stack-backend-1.0.0-APOLLO.jar" ]; then
-            java -jar target/magic-stack-backend-1.0.0-APOLLO.jar > "$MAGIC_DIR/logs/java.log" 2>&1 &
+            RUST_BASE_URL=http://localhost:3001 java -jar target/magic-stack-backend-1.0.0-APOLLO.jar > "$MAGIC_DIR/logs/java.log" 2>&1 &
         else
-            mvn spring-boot:run > "$MAGIC_DIR/logs/java.log" 2>&1 &
+            RUST_BASE_URL=http://localhost:3001 mvn spring-boot:run > "$MAGIC_DIR/logs/java.log" 2>&1 &
         fi
         sleep 3
+        check_port 8082 && echo -e "${GREEN}✅ Java démarré${NC}" || echo -e "${RED}❌ Java échec${NC}"
+    else
+        echo -e "${GREEN}✅ Java déjà actif (8082)${NC}"
     fi
-}
-
-start_frontend() {
-    # Compat: ancien alias, démarre UNIFIED sur 5176
-    start_unified
 }
 
 start_unified() {
     if ! check_port 5176; then
-        echo -e "${CYAN}Démarrage React UNIFIED (5176)...${NC}"
+        echo -e "${CYAN}⚛️ Démarrage React UNIFIED (5176)...${NC}"
         cd "$MAGIC_DIR/apps/magic-stack-unified"
         npm run dev > "$MAGIC_DIR/logs/frontend_unified.log" 2>&1 &
         sleep 3
+        check_port 5176 && echo -e "${GREEN}✅ Unified démarré${NC}" || echo -e "${RED}❌ Unified échec${NC}"
+    else
+        echo -e "${GREEN}✅ Unified déjà actif (5176)${NC}"
     fi
 }
 
 start_world_editor() {
     if ! check_port 5173; then
-        echo -e "${CYAN}Démarrage WorldEditor (5173)...${NC}"
+        echo -e "${CYAN}🗺️ Démarrage WorldEditor (5173)...${NC}"
         cd "$MAGIC_DIR/apps/world-editor"
         npm run dev > "$MAGIC_DIR/logs/world_editor.log" 2>&1 &
         sleep 3
+        check_port 5173 && echo -e "${GREEN}✅ WorldEditor démarré${NC}" || echo -e "${RED}❌ WorldEditor échec${NC}"
+    else
+        echo -e "${GREEN}✅ WorldEditor déjà actif (5173)${NC}"
     fi
 }
 
-# Python 5001 n'existe plus - remplacé par services 7500/7501
-
-# === LLM CLIPPY ===
-start_llm() {
-    echo -e "${CYAN}🤖 Démarrage services IA...${NC}"
+start_python() {
+    echo -e "${CYAN}🐍 Démarrage services Python...${NC}"
     
-    # Clippy LLM (7501)
-    if ! check_port 7501; then
-        if [ -d "$MAGIC_DIR/scripts/clippy" ]; then
-            cd "$MAGIC_DIR/scripts/clippy"
-            python3 clippy_memento_server.py > "$MAGIC_DIR/logs/clippy.log" 2>&1 &
+    # Vector DB (5000)
+    if ! check_port 5000; then
+        if [ -f "$MAGIC_DIR/backends/python/vector_db.py" ]; then
+            cd "$MAGIC_DIR/backends/python"
+            python3 vector_db.py > "$MAGIC_DIR/logs/vector.log" 2>&1 &
             sleep 2
-            echo -e "  ${GREEN}✓${NC} Clippy LLM lancé (7501)"
-        else
-            echo -e "  ${YELLOW}⚪${NC} Clippy LLM non trouvé (optionnel)"
+            echo -e "  ${GREEN}✓${NC} Vector DB lancé (5000)"
         fi
     else
-        echo -e "  ${GREEN}✓${NC} Clippy LLM déjà actif (7501)"
+        echo -e "  ${GREEN}✓${NC} Vector DB déjà actif (5000)"
     fi
     
-    # Vector DB (7500)
-    if ! check_port 7500; then
-        if [ -d "$MAGIC_DIR/scripts/vector_db" ]; then
-            cd "$MAGIC_DIR/scripts/vector_db"
-            python3 vector_server.py > "$MAGIC_DIR/logs/vector.log" 2>&1 &
+    # Clippy (7777)
+    if ! check_port 7777; then
+        if [ -f "$MAGIC_DIR/clippy_dev_server.py" ]; then
+            cd "$MAGIC_DIR"
+            python3 clippy_dev_server.py > "$MAGIC_DIR/logs/clippy.log" 2>&1 &
             sleep 2
-            echo -e "  ${GREEN}✓${NC} Vector DB lancé (7500)"
-        else
-            echo -e "  ${YELLOW}⚪${NC} Vector DB non trouvé (optionnel)"
+            echo -e "  ${GREEN}✓${NC} Clippy lancé (7777)"
         fi
     else
-        echo -e "  ${GREEN}✓${NC} Vector DB déjà actif (7500)"
+        echo -e "  ${GREEN}✓${NC} Clippy déjà actif (7777)"
+    fi
+}
+
+start_html_server() {
+    if ! check_port 8000; then
+        echo -e "${CYAN}🌐 Démarrage serveur HTML (8000)...${NC}"
+        cd "$MAGIC_DIR"
+        python3 html_server.py > "$MAGIC_DIR/logs/html_server.log" 2>&1 &
+        sleep 2
+        check_port 8000 && echo -e "${GREEN}✅ HTML Server démarré${NC}" || echo -e "${RED}❌ HTML Server échec${NC}"
+    else
+        echo -e "${GREEN}✅ HTML Server déjà actif (8000)${NC}"
     fi
 }
 
 start_all() {
-    echo -e "${BLUE}🚀 Démarrage de tous les services...${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}   🚀 DÉMARRAGE TOUS SERVICES${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
     echo ""
     mkdir -p "$MAGIC_DIR/logs"
     
-    echo -e "${CYAN}Backends principaux:${NC}"
+    echo -e "${MAGENTA}⚙️  Backends principaux:${NC}"
     start_rust
     start_java
     
     echo ""
-    echo -e "${CYAN}Services IA (optionnels):${NC}"
-    start_llm
+    echo -e "${MAGENTA}🐍 Services Python:${NC}"
+    start_python
     
     echo ""
-    echo -e "${CYAN}Frontend:${NC}"
-    start_frontend
+    echo -e "${MAGENTA}🎨 Frontend:${NC}"
+    start_unified
+    start_world_editor
+    start_html_server
     
     echo ""
-    echo -e "${GREEN}⏳ Attente du démarrage...${NC}"
+    echo -e "${GREEN}⏳ Attente du démarrage complet...${NC}"
     sleep 3
     
     echo ""
     show_status
-    echo -e "${GREEN}✨ Prêt! Utilisez './go api' pour tester les APIs${NC}"
+    echo ""
+    echo -e "${GREEN}✨ Système prêt!${NC}"
+    echo -e "${CYAN}🌐 Accès: http://localhost:8000/FRONTPAGE/index.html${NC}"
+    echo -e "${CYAN}🎮 Jeu: http://localhost:5176/unified${NC}"
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -228,45 +257,55 @@ stop_all() {
     echo -e "${RED}🛑 Arrêt de tous les services...${NC}"
     
     # Arrêt propre
-    pkill -f "magic-rust"
+    pkill -f "magic-stack-server"
     pkill -f "cargo run"
     pkill -f "magic-stack-backend"
     pkill -f "spring-boot:run"
     pkill -f "npm run dev"
     pkill -f "vite"
+    pkill -f "python3.*html_server"
+    pkill -f "python3.*vector_db"
+    pkill -f "python3.*clippy"
     
     echo -e "${GREEN}✅ Tous les services arrêtés${NC}"
 }
 
 # ═══════════════════════════════════════════════════════════════════
-# DEPLOY (création des artifacts)
+# DEPLOY VPS
 # ═══════════════════════════════════════════════════════════════════
 
-deploy_artifacts() {
+deploy_vps() {
     echo -e "${BLUE}═══════════════════════════════════${NC}"
-    echo -e "${BLUE}     📦 CRÉATION DES ARTIFACTS${NC}"
+    echo -e "${BLUE}    🚀 DEPLOY VPS RAPIDE${NC}"
     echo -e "${BLUE}═══════════════════════════════════${NC}"
     
-    mkdir -p "$MAGIC_DIR/dist"
+    # Test SSH
+    echo -e "${CYAN}📡 Test connexion SSH...${NC}"
+    if ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "echo 'SSH OK'" >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ SSH OK${NC}"
+    else
+        echo -e "${RED}❌ Erreur SSH - vérifiez la clé${NC}"
+        return 1
+    fi
     
-    # Rust binary
-    echo -e "${CYAN}📦 Copie binary Rust...${NC}"
-    compile_rust
-    cp "$MAGIC_DIR/backends/rust/target/release/magic-rust" "$MAGIC_DIR/dist/" 2>/dev/null
+    # Sync FRONTPAGE
+    echo -e "${CYAN}📤 Sync FRONTPAGE...${NC}"
+    rsync -avz --delete \
+        -e "ssh -i ~/.ssh/hot_magic_key" \
+        "$MAGIC_DIR/FRONTPAGE/" \
+        root@191.101.2.178:/opt/hot/app/magic-stack/FRONTPAGE/
     
-    # Java JAR
-    echo -e "${CYAN}📦 Création JAR Java...${NC}"
-    compile_java
-    cp "$MAGIC_DIR/backends/java/target/"*.jar "$MAGIC_DIR/dist/" 2>/dev/null
+    # Sync HTML files
+    echo -e "${CYAN}📤 Sync HTML files...${NC}"
+    rsync -avz \
+        -e "ssh -i ~/.ssh/hot_magic_key" \
+        --include="*.html" \
+        --exclude="*" \
+        "$MAGIC_DIR/" \
+        root@191.101.2.178:/opt/hot/app/magic-stack/
     
-    # Frontend dist
-    echo -e "${CYAN}📦 Build production Frontend...${NC}"
-    compile_frontend
-    cp -r "$MAGIC_DIR/apps/magic-stack-unified/dist" "$MAGIC_DIR/dist/frontend"
-    
-    echo ""
-    echo -e "${GREEN}✅ Artifacts créés dans $MAGIC_DIR/dist/${NC}"
-    ls -la "$MAGIC_DIR/dist/"
+    echo -e "${GREEN}✅ Deploy VPS terminé!${NC}"
+    echo -e "${CYAN}🌐 Voir: https://heroesoftime.online${NC}"
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -286,13 +325,13 @@ show_status() {
     
     echo ""
     echo -e "${CYAN}⚙️ Backend:${NC}"
-    check_port 3001 && echo -e "  ${GREEN}✅${NC} Rust (3001) - Calculs 6D" || echo -e "  ${RED}❌${NC} Rust (3001)"
-    check_port 8082 && echo -e "  ${GREEN}✅${NC} Java (8082) - CRUD & APIs" || echo -e "  ${RED}❌${NC} Java (8082)"
+    check_port 3001 && echo -e "  ${GREEN}✅${NC} Rust (3001) - Moteur temporel" || echo -e "  ${RED}❌${NC} Rust (3001)"
+    check_port 8082 && echo -e "  ${GREEN}✅${NC} Java (8082) - Orchestrateur" || echo -e "  ${RED}❌${NC} Java (8082)"
     
     echo ""
-    echo -e "${CYAN}🤖 Services IA:${NC}"
-    check_port 7500 && echo -e "  ${GREEN}✅${NC} Vector DB (7500)" || echo -e "  ${YELLOW}⚪${NC} Vector DB (7500) - Optionnel"
-    check_port 7501 && echo -e "  ${GREEN}✅${NC} LLM Clippy (7501)" || echo -e "  ${YELLOW}⚪${NC} LLM Clippy (7501) - Optionnel"
+    echo -e "${CYAN}🐍 Services Python:${NC}"
+    check_port 5000 && echo -e "  ${GREEN}✅${NC} Vector DB (5000)" || echo -e "  ${YELLOW}⚪${NC} Vector DB (5000)"
+    check_port 7777 && echo -e "  ${GREEN}✅${NC} Clippy IA (7777)" || echo -e "  ${YELLOW}⚪${NC} Clippy IA (7777)"
     
     echo ""
 }
@@ -302,19 +341,92 @@ show_status() {
 # ═══════════════════════════════════════════════════════════════════
 
 open_game() {
-    # Conserve l'alias pour UNIFIED
     start_unified
     open "http://localhost:5176/unified"
 }
 
-open_admin() {
-    start_frontend
-    open "http://localhost:5173/dashboard.html"
+open_spells() {
+    start_html_server
+    open "http://localhost:8000/FRONTPAGE/spells-lab.html"
+}
+
+open_combat() {
+    start_html_server
+    open "http://localhost:8000/IA_VS_IA_AUTOPLAY.html"
+}
+
+open_chasse() {
+    start_html_server
+    open "http://localhost:8000/CHASSE_TEMPORELLE_MEGA_MAP.html"
 }
 
 open_api() {
     start_all
-    open "http://localhost:5173/html/API_EXPLORER_COMPLETE.html"
+    open "http://localhost:8000/API_EXPLORER_COMPLETE.html"
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# HEALTHCHECK
+# ═══════════════════════════════════════════════════════════════════
+
+health_check() {
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}     🏥 HEALTH CHECK${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo ""
+    
+    echo -e "${CYAN}Local services:${NC}"
+    for PORT in 3001 5000 5173 5176 7777 8000 8082; do
+        if check_port $PORT; then
+            echo -e "  ${GREEN}✅${NC} Port $PORT actif"
+        else
+            echo -e "  ${RED}❌${NC} Port $PORT inactif"
+        fi
+    done
+    
+    echo ""
+    echo -e "${CYAN}API Tests:${NC}"
+    
+    # Test Rust
+    if curl -s http://localhost:3001/health >/dev/null 2>&1; then
+        echo -e "  ${GREEN}✅${NC} Rust API OK"
+    else
+        echo -e "  ${RED}❌${NC} Rust API KO"
+    fi
+    
+    # Test Java
+    if curl -s http://localhost:8082/api/health >/dev/null 2>&1; then
+        echo -e "  ${GREEN}✅${NC} Java API OK"
+    else
+        echo -e "  ${RED}❌${NC} Java API KO"
+    fi
+}
+
+vps_check() {
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}    🌐 VPS HEALTH CHECK${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo ""
+    echo "Checking heroesoftime.online..."
+    echo ""
+    
+    for URL in \
+        "https://heroesoftime.online/" \
+        "https://heroesoftime.online/FRONTPAGE/spells-lab.html" \
+        "https://heroesoftime.online/api/health" \
+        "https://heroesoftime.online/magic-stack-unified/" \
+        "https://heroesoftime.online/world-editor/"
+    do
+        CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+        if [ "$CODE" = "200" ]; then
+            printf "  ${GREEN}✅${NC} [%3s] %s\n" "$CODE" "$URL"
+        elif [ "$CODE" = "404" ]; then
+            printf "  ${YELLOW}⚠️${NC}  [%3s] %s\n" "$CODE" "$URL"
+        else
+            printf "  ${RED}❌${NC} [%3s] %s\n" "$CODE" "$URL"
+        fi
+    done
+    echo ""
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -323,7 +435,7 @@ open_api() {
 
 case "$1" in
     # COMPILATION
-    "compile")
+    "compile"|"build")
         compile_all
         ;;
     
@@ -333,8 +445,8 @@ case "$1" in
         ;;
     
     # DEPLOY
-    "deploy")
-        deploy_artifacts
+    "deploy"|"vps")
+        deploy_vps
         ;;
     
     # START/STOP
@@ -357,142 +469,115 @@ case "$1" in
         show_status
         ;;
     
+    "health"|"h")
+        health_check
+        ;;
+    
+    "vps-check"|"vc")
+        vps_check
+        ;;
+    
     # UI SHORTCUTS
     "game"|"g")
         open_game
         ;;
     
-    "admin"|"a")
-        open_admin
+    "spells"|"spell")
+        open_spells
+        ;;
+    
+    "combat")
+        open_combat
+        ;;
+    
+    "chasse")
+        open_chasse
         ;;
     
     "api")
         open_api
         ;;
-
-    "vps-check")
-        # Healthcheck public du VPS (front + back)
-        echo "VPS Healthcheck: heroesoftime.online"
-        for URL in \
-            "https://heroesoftime.online/" \
-            "https://heroesoftime.online/FRONTPAGE/index.html" \
-            "https://heroesoftime.online/FRONTPAGE/assets/assets/HD/ExKAlibur.png" \
-            "https://heroesoftime.online/engine/health" \
-            "https://heroesoftime.online/vector/health"
-        do
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-            printf "%3s  %s\n" "$CODE" "$URL"
-        done
-        ;;
-
-    "react")
-        # Lance uniquement l'app UNIFIED (5176) et ouvre /unified
+    
+    "unified"|"u")
         start_unified
         open "http://localhost:5176/unified"
         ;;
-
-    "we"|"world-editor")
-        # Lance l'éditeur hexagonal historique (5173)
+    
+    "we"|"world-editor"|"editor")
         start_world_editor
         open "http://localhost:5173"
         ;;
-
-    "unified")
-        # Lance l'app unifiée explicitement
-        start_unified
-        open "http://localhost:5176/unified"
-        ;;
-
-    "front")
-        # Ouvre la Frontpage via serveur HTML
-        if ! check_port 8000; then
-            cd "$MAGIC_DIR"
-            python3 html_server.py > logs/html_server.log 2>&1 &
-            sleep 2
-        fi
+    
+    "front"|"frontpage"|"fp")
+        start_html_server
         open "http://localhost:8000/FRONTPAGE/index.html"
         ;;
     
-    "map"|"editor")
-        echo -e "${CYAN}🗺️ Lancement de l'éditeur de map avancé...${NC}"
-        open "$MAGIC_DIR/apps/magic-stack-unified/public/assets/MAP_ICON_PLACER_ADVANCED.html"
-        echo -e "${GREEN}✅ Éditeur de map ouvert!${NC}"
-        echo "📝 Ton cousin peut créer des maps avec ça!"
-        ;;
-    
-    "workflow"|"wf")
-        echo -e "${CYAN}📊 Lancement du Workflow Manager...${NC}"
-        open "http://localhost:8000/WORKFLOW_MANAGER.html"
-        echo -e "${GREEN}✅ Workflow Manager ouvert!${NC}"
-        echo "🔄 Passez automatiquement de Structure → Instances → Jeu!"
-        ;;
-    
     "html")
-        echo -e "${CYAN}🌐 Lancement serveur HTML (port 8000)...${NC}"
-        if ! check_port 8000; then
-            cd "$MAGIC_DIR"
-            python3 html_server.py > logs/html_server.log 2>&1 &
-            sleep 2
-        fi
-        echo -e "${GREEN}✅ Serveur HTML lancé!${NC}"
+        start_html_server
         open "http://localhost:8000/HTML_INDEX.html"
         ;;
     
-    "mcp")
-        echo -e "${CYAN}🎯 Lancement MCP Server (port 9000)...${NC}"
-        if ! check_port 9000; then
-            cd "$MAGIC_DIR"
-            python3 mcp_server.py > logs/mcp_server.log 2>&1 &
-            sleep 2
-            echo -e "${GREEN}✅ MCP Server lancé!${NC}"
-            echo "📊 Bridge actif: Rust + Java + VectorDB + Clippy"
-            echo "🔗 http://localhost:9000/mcp/health"
-        else
-            echo -e "${GREEN}✅ MCP Server déjà actif!${NC}"
-        fi
+    # Services individuels
+    "rust")
+        start_rust
+        ;;
+    
+    "java")
+        start_java
+        ;;
+    
+    "python")
+        start_python
         ;;
     
     # HELP (et cas par défaut)
-    "help"|"h"|"")
-        echo "═══════════════════════════════════"
-        echo "    🎮 MAGIC STACK DEVOPS - JOUR 35"
-        echo "═══════════════════════════════════"
+    "help"|"--help"|"-h"|"")
+        echo -e "${MAGENTA}═══════════════════════════════════${NC}"
+        echo -e "${MAGENTA}    🎮 MAGIC STACK GO - JOUR 43${NC}"
+        echo -e "${MAGENTA}═══════════════════════════════════${NC}"
         echo ""
-        echo "🚀 Commandes principales:"
-        echo "  ./go start    - Démarre TOUS les services"
-        echo "  ./go stop     - Arrête tout"
-        echo "  ./go status   - Voir l'état des services"
-        echo "  ./go html     - Lance serveur HTML (port 8000)"
-        echo "  ./go mcp      - Lance MCP Server (port 9000)"
+        echo -e "${CYAN}🚀 Commandes principales:${NC}"
+        echo "  ./go start      - Démarre TOUS les services"
+        echo "  ./go stop       - Arrête tout"
+        echo "  ./go restart    - Redémarre tout"
+        echo "  ./go status     - État des services [alias: s]"
+        echo "  ./go health     - Test complet des APIs [alias: h]"
         echo ""
-        echo "🔨 Build & Deploy:"
-        echo "  ./go compile  - Compile tout (Rust + Java + Frontend)"
-        echo "  ./go test     - Lance tous les tests"
-        echo "  ./go deploy   - Crée les artifacts production"
+        echo -e "${CYAN}🔨 Build & Deploy:${NC}"
+        echo "  ./go compile    - Compile tout (Rust + Java + React)"
+        echo "  ./go test       - Lance tous les tests"
+        echo "  ./go deploy     - Deploy sur VPS [alias: vps]"
+        echo "  ./go vps-check  - Check santé du VPS [alias: vc]"
         echo ""
-        echo "🎯 Accès rapide:"
-        echo "  ./go we       - WorldEditor hexagonal (5173)"
-        echo "  ./go unified  - App unifiée (5176)"
-        echo "  ./go game     - Alias pour 'unified'"
-        echo "  ./go map      - 🗺️ ÉDITEUR DE MAP AVANCÉ (pour ton cousin!)"
-        echo "  ./go editor   - Alias pour map editor"
-        echo "  ./go admin    - Ouvre le dashboard admin"
-        echo "  ./go api      - Ouvre l'API Explorer"
-        echo "  ./go front    - Ouvre la Frontpage (FRONTPAGE/index.html)"
-        echo "  ./go react    - Lance UNIFIED (5176) et ouvre /unified"
-        echo "  ./go vps-check- Healthcheck public (front/back) du VPS"
-        echo "  ./go combat   - Ouvre le combat IA vs IA"
-        echo "  ./go chasse   - Ouvre la chasse temporelle"
-        echo "  ./go html     - Ouvre TOUS les vieux HTML"
+        echo -e "${CYAN}🎯 Accès rapide:${NC}"
+        echo "  ./go game       - Jeu unifié [alias: g]"
+        echo "  ./go spells     - Laboratoire de sorts 🧪"
+        echo "  ./go combat     - Combat IA vs IA ⚔️"
+        echo "  ./go chasse     - Chasse temporelle 🕐"
+        echo "  ./go api        - API Explorer 📡"
+        echo "  ./go front      - Page d'accueil [alias: fp]"
+        echo "  ./go we         - World Editor [alias: editor]"
+        echo "  ./go html       - Index tous les HTML"
         echo ""
-        echo "📍 Ports ACTUELS:"
-        echo "  5173 - WorldEditor React (historique)"
-        echo "  5176 - Unified App (React)"
-        echo "  3001 - Backend Rust (calculs 6D)"
-        echo "  8082 - Backend Java (CRUD, APIs)"
-        echo "  7500 - Vector DB (recherche)"
-        echo "  7501 - LLM Clippy (IA)"
-        echo "  8000 - Serveur HTML (tous les vieux trucs)"
+        echo -e "${CYAN}🔧 Services individuels:${NC}"
+        echo "  ./go rust       - Démarre seulement Rust (3001)"
+        echo "  ./go java       - Démarre seulement Java (8082)"
+        echo "  ./go python     - Démarre services Python (5000, 7777)"
+        echo ""
+        echo -e "${CYAN}📍 Ports actuels:${NC}"
+        echo "  3001 - Rust (moteur temporel)"
+        echo "  5000 - Python Vector DB"
+        echo "  5173 - World Editor React"
+        echo "  5176 - Unified App React"
+        echo "  7777 - Clippy IA Helper"
+        echo "  8000 - HTML Server"
+        echo "  8082 - Java Spring Boot"
+        echo ""
+        echo -e "${CYAN}🔑 SSH VPS:${NC}"
+        echo "  ssh -i ~/.ssh/hot_magic_key root@191.101.2.178"
+        echo ""
+        echo -e "${GREEN}📚 Docs: ./DEVOPS.md${NC}"
         ;;
     
     *)

@@ -1,0 +1,21 @@
+name: Translate Scenario Smoke Test
+
+on:
+  push:
+    branches:
+      - prod
+  schedule:
+    - cron: '15 * * * *'
+
+jobs:
+  smoke-test-translate-scenario:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/magic/translate-scenario
+        run: |
+          RESP=$(curl -s -X POST https://heroesoftime.online/api/magic/translate-scenario \
+            -H 'Content-Type: application/json' \
+            -d '{"hots":"HERO(Arthur)\nMOV(Arthur, @12,9)\nCREATE(CREATURE, Dragon, @5,5)","seed":42}')
+          echo "$RESP"
+          echo "$RESP" | grep -q 'markdown' || (echo 'markdown field missing' && exit 1)
+

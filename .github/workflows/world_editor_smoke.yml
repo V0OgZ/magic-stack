@@ -1,0 +1,27 @@
+name: world_editor_smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ prod ]
+  schedule:
+    - cron: '15 * * * *'
+
+jobs:
+  check_world_editor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: curl_page
+        run: |
+          curl -fsSL https://heroesoftime.online/world-editor/ -o page.html
+          test -s page.html
+      - name: extract_js
+        run: |
+          grep -Eo "/world-editor/assets/index-[^"]+\.js" page.html | head -n 1 > js_path.txt
+          test -s js_path.txt
+          cat js_path.txt
+      - name: curl_asset
+        run: |
+          ASSET=$(cat js_path.txt)
+          curl -fsI https://heroesoftime.online${ASSET} > /dev/null
+

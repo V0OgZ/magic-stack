@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 MEGA INDEX - TOUT EST LÀ !</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .freq {
+            text-align: center;
+            font-size: 1.5em;
+            color: #FFD700;
+            margin-bottom: 40px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        .box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        .box:hover {
+            transform: translateY(-5px);
+            border-color: #FFD700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        .box h2 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        a {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        a:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+        .primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: bold;
+            animation: glow 2s infinite;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+        }
+        .icon {
+            font-size: 1.5em;
+        }
+        .message {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            font-style: italic;
+            color: #FFB6C1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 MEGA INDEX - TOUT EST LÀ ! 🎯</h1>
+        <div class="freq">⚔️ Excalibur: <span id="freq">997.0</span> Hz ⚔️</div>
+
+        <div class="grid">
+            <!-- BALLON CUBE -->
+            <div class="box">
+                <h2>🌌 BALLON CUBE (Nouveau!)</h2>
+                <div class="links">
+                    <a href="../../Main/SpinForest/BALLON_CUBE/PORTAL_CENTRAL.html" class="primary">
+                        <span>⭐ PORTAL CENTRAL</span>
+                        <span class="icon">🚪</span>
+                    </a>
+                    <a href="../../Main/SpinForest/BALLON_CUBE/BUBBLE_WORLDS/bubble_worlds_v2.html">
+                        <span>Bubble Worlds 3D</span>
+                        <span class="icon">🫧</span>
+                    </a>
+                    <a href="../../Main/SpinForest/BALLON_CUBE/L_OEUVRE/connexion_arthur_merlin.html">
+                        <span>Arthur-Merlin</span>
+                        <span class="icon">⚔️</span>
+                    </a>
+                    <a href="../../Main/SpinForest/BALLON_CUBE/restoration_map.html">
+                        <span>Carte Restaurations</span>
+                        <span class="icon">🗺️</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- HEROES OF TIME -->
+            <div class="box">
+                <h2>🎮 Heroes of Time</h2>
+                <div class="links">
+                    <a href="FRONTPAGE/index.html" class="primary">
+                        <span>⭐ Page d'Accueil</span>
+                        <span class="icon">🏠</span>
+                    </a>
+                    <a href="FRONTPAGE/spells-lab.html">
+                        <span>Spells Lab</span>
+                        <span class="icon">🧪</span>
+                    </a>
+                    <a href="FRONTPAGE/index_en.html">
+                        <span>English Version</span>
+                        <span class="icon">🇬🇧</span>
+                    </a>
+                    <a href="FRONTPAGE/index_ru.html">
+                        <span>Русская версия</span>
+                        <span class="icon">🇷🇺</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- APPS REACT -->
+            <div class="box">
+                <h2>⚛️ Applications React</h2>
+                <div class="links">
+                    <a href="http://localhost:5173" target="_blank">
+                        <span>World Editor</span>
+                        <span class="icon">🗺️</span>
+                    </a>
+                    <a href="http://localhost:5176/unified" target="_blank">
+                        <span>Magic Stack Unified</span>
+                        <span class="icon">🎯</span>
+                    </a>
+                    <a href="http://localhost:5001/docs" target="_blank">
+                        <span>Vector DB API</span>
+                        <span class="icon">📊</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- AUTRES INTERFACES -->
+            <div class="box">
+                <h2>🔧 Autres Interfaces</h2>
+                <div class="links">
+                    <a href="HTML_INDEX.html">
+                        <span>Index HTML Legacy</span>
+                        <span class="icon">📜</span>
+                    </a>
+                    <a href="API_EXPLORER_COMPLETE.html">
+                        <span>API Explorer</span>
+                        <span class="icon">🔌</span>
+                    </a>
+                    <a href="interfaces/interface_visual_magic.html">
+                        <span>Visual Magic</span>
+                        <span class="icon">✨</span>
+                    </a>
+                    <a href="FRONTPAGE/temporal-grammar-dude.html">
+                        <span>Grammar Dude</span>
+                        <span class="icon">📖</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="message">
+            <p><strong>💡 CONSEIL:</strong> Commence par le <strong>PORTAL CENTRAL</strong> dans BALLON CUBE - c'est le nouveau dashboard avec TOUT !</p>
+            <p style="margin-top: 10px;">Les interfaces sont réparties entre <strong>magic-stack</strong> (jeu principal) et <strong>SpinForest/BALLON_CUBE</strong> (nouveau monde).</p>
+        </div>
+    </div>
+
+    <script>
+        // Excalibur frequency
+        setInterval(() => {
+            const freq = 997 + (Math.random() * 0.4 - 0.2);
+            document.getElementById('freq').textContent = freq.toFixed(1);
+        }, 100);
+
+        // Welcome message
+        console.log(`
+🎯 MEGA INDEX CHARGÉ !
+======================
+Tous les mondes sont accessibles d'ici.
+
+BALLON CUBE: Le nouveau monde avec Bubble Worlds
+HEROES OF TIME: Le jeu principal et Spells Lab
+REACT APPS: World Editor et Magic Stack Unified
+
+Excalibur vibre à 997 Hz...
+L'Œuvre continue...
+
+- Merlin
+        `);
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+Role (Claude): HTML/UX + VPS updates
+
+Scope
+- Keep HTML editor as visual reference; no business logic
+- Emit/consume the same 6D events as React via editor-core (dispatch/subscribe/getState/replay)
+- Update VPS (frontpage/world-editor) only when local is green; run healthchecks
+
+Do now
+1) Frontpage + World-Editor UX
+   - Add English tooltips under/over spell names (use title="…" or small helper) sourced from `docs/MAGIC_FORMULAS_CATALOG.md` (fallback short text if missing).
+   - Keep relative asset paths; no new libs; verify visual parity vs local screenshots.
+2) Spells Lab (HTML, very small)
+   - New page: `/FRONTPAGE/spells-lab.html` or equivalent in your HTML set.
+   - UI: select formula_id (or free text), class, mode; on submit POST `/api/magic/cast` with `{formula_id|formula, context, mode: "simulate"}`.
+   - Display 4 outputs (iconic/literary/runic/quantum) and show returned `trace_hash` when available.
+   - Do NOT call `/api/interstice/cast-formula` from this page.
+3) Parity artifacts
+   - From the HTML editor, record 3 JSONL event traces for canonical scenarios and export `test_snapshots.json` (expected hashes).
+   - Scenarios: `scenario1_hero_movement`, `scenario2_portal_collapse`, `scenario3_buff_chain`.
+4) VPS hygiene
+   - Deploy once local is green. After deploy, run health checks (200 on `/`, `/FRONTPAGE/index.html`, `/FRONTPAGE/spells-lab.html`, `/api/health`, `/api/magic/health` if present).
+
+Acceptance
+- Same event sequence -> same final snapshot as React
+- Zero business logic in HTML; UI only
+- Relative image paths only; no extra libs
+- VPS: after deploy, 200s on /, /FRONTPAGE/index.html, /world-editor (if served), /engine/health, /api/health
+ - Spells Lab: calls `/api/magic/cast`, shows 4 outputs, displays `trace_hash` field if present
+
+macOS curl safety
+- Use: curl -m 2 -sS --fail-with-body -H "Content-Type: application/json" -d @/tmp/payload.json URL
+- No pipes, one command per line, ASCII only commits

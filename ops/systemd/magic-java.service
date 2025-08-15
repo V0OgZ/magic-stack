@@ -1,4 +1,25 @@
 [Unit]
+Description=Magic Stack Java Backend (API Gateway)
+After=network-online.target magic-rust.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=magic
+Group=magic
+WorkingDirectory=/opt/magic-stack/backends/java
+Environment=RUST_BASE_URL=http://localhost:3001
+ExecStartPre=/opt/magic-stack/ops/prestart_port_guard.sh 8082
+ExecStart=/usr/bin/java -jar /opt/magic-stack/backends/java/target/magic-stack-backend-1.0.0-APOLLO.jar
+Restart=always
+RestartSec=3
+TimeoutStartSec=30
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
 Description=Magic Stack Java Backend (Spring Boot)
 After=network.target
 

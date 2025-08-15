@@ -94,18 +94,23 @@ class CastingManager {
       forceMode?: OutputMode;
       silent?: boolean;
       subtle?: boolean;
+      useRealEngine?: boolean;
     }
   ): Promise<CastResult> {
     const config = this.classConfig[caster.class];
     const mode = options?.forceMode || config.preferredMode;
-    
-    // Appel au backend Java pour la traduction
-    const result = await MagicStack.java.castFormula(formula, {
-      mode,
-      caster_class: caster.class,
-      caster_level: caster.level || 1,
-      target_position: target,
-      request_modes: ['iconic', 'literary', 'runic', 'quantum'] // On demande tous les modes
+
+    // Mode réel uniquement (pas de fallback démo)
+    const result = await MagicStack.java.magicCast({
+      formula: formula,
+      context: {
+        mode,
+        caster_class: caster.class,
+        caster_level: caster.level || 1,
+        target_position: target,
+        request_modes: ['iconic', 'literary', 'runic', 'quantum']
+      },
+      mode: 'simulate'
     });
     
     // Affichage sur la map selon le mode et la classe

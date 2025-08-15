@@ -12,6 +12,7 @@ import { ResourceBar } from '../../shared/components/ResourceBar';
 import { TemporalDisplay } from '../../shared/components/TemporalDisplay';
 import { AssetsService } from '../../services/AssetsService';
 import { audioManager } from '../../services/AudioManager';
+import { coreStore } from '../../shared/world6dCore';
 
 interface GameEntity {
   id: string;
@@ -72,10 +73,33 @@ export function PlayMapBridge(): React.ReactElement {
 
   const [selectedEntity, setSelectedEntity] = useState<GameEntity | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [inventory, setInventory] = useState<any>({ wood: 0, stone: 0, herbs: 0, flowers: 0, gold: 0, crystals: 0, energy: 0, temporal: 0, xp: 0 });
+  const [activeBuffs, setActiveBuffs] = useState<Array<{ id: string; name: string; expiresAt: number; params?: any }>>([]);
 
   // Initialiser les assets
   useEffect(() => {
     AssetsService.initialize();
+    // Load inventory once
+    syncInventory();
+  }, []);
+
+  // Helpers
+  const getApiBase = () => (window.location.hostname === 'localhost' ? 'http://127.0.0.1:8082' : '');
+  const syncInventory = async () => {
+    try {
+      const r = await fetch(`${getApiBase()}/api/game/inventory/local`);
+      if (r.ok) {
+        const data = await r.json();
+        setInventory({ xp: 0, ...data });
+      }
+    } catch {}
+  };
+  useEffect(() => {
+    const i = setInterval(() => {
+      const now = Date.now();
+      setActiveBuffs(prev => prev.filter(b => b.expiresAt > now));
+    }, 1000);
+    return () => clearInterval(i);
   }, []);
 
   // Convertir les resources de la map en entités de jeu
@@ -114,6 +138,21 @@ export function PlayMapBridge(): React.ReactElement {
     });
 
     setGameState(prev => ({ ...prev, entities }));
+
+    // Sync minimal world to 6D core (hero/portal/buff mapping)
+    try {
+      coreStore.reset();
+      entities.forEach(e => {
+        const pos = { x: e.position.x, y: e.position.y, z: e.position.z || 0, t: 0, psi: 0, sigma: 0 } as any;
+        if (e.type === 'hero') {
+          coreStore.upsertEntity({ id: e.id, type: 'hero', name: e.name, pos, amplitude: 1 });
+        } else if (e.type === 'portal') {
+          coreStore.upsertEntity({ id: e.id, type: 'portal', state: 'stable', pos });
+        } else {
+          coreStore.upsertEntity({ id: e.id, type: 'buff', kind: e.type, level: 1, pos });
+        }
+      });
+    } catch {}
   }, [currentMap]);
 
   // Gérer les événements temporels
@@ -161,6 +200,58 @@ export function PlayMapBridge(): React.ReactElement {
         }));
       }
     });
+
+    // Spawners journaliers (basique): growth_rules + spawners
+    try {
+      const day = gameState.temporal.currentDay;
+      const newEntities: GameEntity[] = [];
+      // growth_rules → ressources globales
+      if ((currentMap as any).growth_rules) {
+        for (const gr of (currentMap as any).growth_rules) {
+          const spawnCount = Math.floor(gr.dailySpawn || 0);
+          for (let i = 0; i < spawnCount; i++) {
+            newEntities.push({
+              id: `grow_${gr.kind}_${day}_${i}`,
+              type: 'resource',
+              position: { x: Math.random() * 800, y: Math.random() * 600, z: 0 },
+              icon: gr.kind === 'wood' ? '🪵' : gr.kind === 'stone' ? '🪨' : gr.kind === 'flower' ? '🌸' : '🌿',
+              name: gr.kind,
+              owner: 0,
+            });
+          }
+        }
+      }
+      if ((currentMap as any).spawners) {
+        for (const sp of (currentMap as any).spawners) {
+          if (sp.rateDays && sp.rateDays > 0 && day % sp.rateDays === 0) {
+            newEntities.push({
+              id: `sp_${sp.type}_${day}_${Math.random().toString(36).slice(2,6)}`,
+              type: (sp.type as any) || 'resource',
+              position: { x: sp.area ? sp.area.x + Math.random() * sp.area.width : Math.random() * 800, y: sp.area ? sp.area.y + Math.random() * sp.area.height : Math.random() * 600, z: 0 },
+              icon: sp.emoji || '✨',
+              name: sp.name || sp.subtype || sp.type,
+              owner: 0,
+            });
+          }
+        }
+      }
+      if (newEntities.length > 0) {
+        setGameState(prev2 => ({ ...prev2, entities: [...prev2.entities, ...newEntities] }));
+        // Sync vers core 6D
+        try {
+          newEntities.forEach(e => {
+            const pos: any = { x: e.position.x, y: e.position.y, z: e.position.z || 0, t: day, psi: 0, sigma: 0 };
+            if (e.type === 'hero') {
+              coreStore.upsertEntity({ id: e.id, type: 'hero', name: e.name, pos, amplitude: 1 });
+            } else if (e.type === 'portal') {
+              coreStore.upsertEntity({ id: e.id, type: 'portal', state: 'stable', pos });
+            } else {
+              coreStore.upsertEntity({ id: e.id, type: 'buff', kind: e.type, level: 1, pos });
+            }
+          });
+        } catch {}
+      }
+    } catch {}
   }, [gameState.temporal.currentDay, currentMap]);
 
   // Fin de tour
@@ -205,7 +296,7 @@ export function PlayMapBridge(): React.ReactElement {
       }
 
       const pickups = movedEntities.filter(e =>
-        (e.type === 'artifact' || e.type === 'resource') && e.id !== entityId && isNear(e.position, { x: newX, y: newY })
+        (e.type === 'artifact' || e.type === 'resource' || e.type === 'creature') && e.id !== entityId && isNear(e.position, { x: newX, y: newY })
       );
 
       if (pickups.length === 0) {
@@ -225,6 +316,7 @@ export function PlayMapBridge(): React.ReactElement {
 
       const resourceName = (name?: string) => (name || '').toLowerCase();
 
+      const creatures: GameEntity[] = [];
       for (const p of pickups) {
         const n = resourceName(p.name);
         if (p.type === 'resource') {
@@ -239,6 +331,8 @@ export function PlayMapBridge(): React.ReactElement {
           // Bonus léger par défaut
           crystalsDelta += 3;
           energyDelta += 5;
+        } else if (p.type === 'creature') {
+          creatures.push(p);
         }
       }
 
@@ -256,6 +350,15 @@ export function PlayMapBridge(): React.ReactElement {
       if (pickups.length > 0) {
         console.log(`🎁 Pickup x${pickups.length} → +${goldDelta} gold, +${crystalsDelta} crystals, +${energyDelta} energy, +${temporalDelta} temporal`);
       }
+
+      // Core events: move + collapse on pickups
+      try {
+        const movedBefore = (prev.entities.find(e => e.id === entityId) || { position: { x: newX, y: newY } }) as any;
+        const dx = newX - (movedBefore.position?.x || 0);
+        const dy = newY - (movedBefore.position?.y || 0);
+        coreStore.dispatch({ type: 'move6d', entityId, delta: { x: dx, y: dy } as any });
+        pickups.forEach(p => coreStore.dispatch({ type: 'collapse', targetId: p.id, reason: 'decay' }));
+      } catch {}
 
       // Effets: son + bulles
       try { audioManager.play('pickup_item'); } catch {}
@@ -288,7 +391,7 @@ export function PlayMapBridge(): React.ReactElement {
 
       // Push backend (Java) pour inventaire Dr Stone + économie
       try {
-        const base = window.location.hostname === 'localhost' ? 'http://127.0.0.1:8082' : '';
+        const base = getApiBase();
         fetch(`${base}/api/game/resources/pickup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -303,8 +406,47 @@ export function PlayMapBridge(): React.ReactElement {
             energyDelta,
             temporalDelta,
           }),
-        }).catch(() => {});
+        }).then(() => syncInventory()).catch(() => {});
       } catch {}
+
+      // Encounters: auto-resolve for nearby creatures, then grant rewards
+      if (creatures.length > 0) {
+        const base = getApiBase();
+        for (const c of creatures) {
+          // Try derive creatureId from name (fallback) or stats.id if present
+          const cid = (c as any).stats?.id || (c.name || '').toLowerCase().replace(/\s+/g, '_');
+          try {
+            const ac = new AbortController();
+            const t = setTimeout(() => ac.abort(), 800);
+            fetch(`${base}/api/encounter/resolve`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ playerId: 'local', creatureId: cid, stack: 1 }),
+              signal: ac.signal,
+            })
+              .then(r => r.ok ? r.json() : null)
+              .then(data => {
+                if (!data || data.status !== 'OK') return;
+                const rw = data.rewards || {};
+                setGameState(prev2 => ({
+                  ...prev2,
+                  resources: {
+                    ...prev2.resources,
+                    gold: (prev2.resources as any).gold + (rw.gold || 0),
+                    crystals: prev2.resources.crystals + (rw.crystals || 0),
+                    energy: Math.min(100, prev2.resources.energy + (rw.energy || 0)),
+                    temporal: prev2.resources.temporal + (rw.temporal || 0),
+                  },
+                }));
+                syncInventory();
+                if (rw.gold) mkBubble(`+${rw.gold} gold`, '#ffd700');
+                if (rw.crystals) mkBubble(`+${rw.crystals} crystals`, '#7dd3fc');
+              })
+              .catch(() => {})
+              .finally(() => clearTimeout(t));
+          } catch {}
+        }
+      }
 
       return {
         ...prev,
@@ -498,6 +640,47 @@ export function PlayMapBridge(): React.ReactElement {
                   </div>
                 )}
               </div>
+              {/* Treasure opening if chest */}
+              {(selectedEntity.type === 'artifact' && (selectedEntity.name?.toLowerCase().includes('chest') || selectedEntity.icon === '📦')) && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const r = await fetch(`${getApiBase()}/api/treasure/open`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ playerId: 'local', treasureType: 'chest_common' })
+                      });
+                      if (r.ok) {
+                        const data = await r.json();
+                        const rw = data.rewards || {};
+                        setGameState(prev2 => ({
+                          ...prev2,
+                          resources: {
+                            ...prev2.resources,
+                            gold: (prev2.resources as any).gold + (rw.gold || 0),
+                            crystals: prev2.resources.crystals + (rw.crystals || 0),
+                            energy: Math.min(100, prev2.resources.energy + (rw.energy || 0)),
+                            temporal: prev2.resources.temporal + (rw.temporal || 0),
+                          },
+                          entities: prev2.entities.filter(e => e.id !== selectedEntity.id),
+                        }));
+                        syncInventory();
+              (data.buffs || []).forEach((b: any) => setActiveBuffs(prev => [...prev, { id: b.id, name: b.name, expiresAt: Date.now() + (b.durationSec || 30) * 1000, params: b.params }]));
+              try { coreStore.dispatch({ type: 'artifactApplied', entityId: selectedEntity.id, modifier: { key: 'treasure', factor: 1.1 } }); } catch {}
+                        setSelectedEntity(null);
+                        try { audioManager.play('success'); } catch {}
+                      }
+                    } catch {}
+                  }}
+                  style={{
+                    marginTop: 12,
+                    padding: '8px 12px',
+                    background: 'linear-gradient(135deg, #f6ad55, #ed8936)',
+                    border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 12,
+                  }}
+                >
+                  Ouvrir le coffre
+                </button>
+              )}
               <button
                 onClick={() => setSelectedEntity(null)}
                 style={{
@@ -601,6 +784,30 @@ export function PlayMapBridge(): React.ReactElement {
           ✏️ Retour à l'éditeur
         </button>
       </footer>
+
+      {/* Inventory HUD */}
+      <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(102,126,234,0.4)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+        <div style={{ display: 'flex', gap: 10, color: 'white' }}>
+          <span>🪵 {inventory.wood ?? 0}</span>
+          <span>🪨 {inventory.stone ?? 0}</span>
+          <span>🌿 {inventory.herbs ?? 0}</span>
+          <span>🌸 {inventory.flowers ?? 0}</span>
+          <span>🪙 {inventory.gold ?? 0}</span>
+          <span>💠 {inventory.crystals ?? 0}</span>
+          <span>⚡ {inventory.energy ?? 0}</span>
+          <span>⏱ {inventory.temporal ?? 0}</span>
+          {'xp' in inventory ? <span>XP {inventory.xp}</span> : null}
+        </div>
+        {activeBuffs.length > 0 && (
+          <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {activeBuffs.map(b => (
+              <span key={`${b.id}-${b.expiresAt}`} style={{ padding: '2px 6px', borderRadius: 6, background: 'rgba(102,126,234,0.3)', color: 'white', border: '1px solid rgba(102,126,234,0.5)' }}>
+                {b.name} ({Math.max(0, Math.ceil((b.expiresAt - Date.now())/1000))}s)
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

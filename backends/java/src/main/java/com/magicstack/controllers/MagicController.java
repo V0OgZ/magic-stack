@@ -7,6 +7,7 @@ import com.magicstack.models.*;
 import com.magicstack.dto.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 🎮 Main Magic API Controller
@@ -19,6 +20,8 @@ public class MagicController {
     
     @Autowired
     private MagicEngineService magicEngine;
+    @Autowired
+    private com.magicstack.services.ScenarioTranslationService scenarioTranslator;
     
     @GetMapping("/health")
     public Map<String, Object> health() {
@@ -63,11 +66,31 @@ public class MagicController {
     
     @GetMapping("/formulas")
     public Map<String, Object> listFormulas() {
-        return magicEngine.getAllFormulas();
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("registry", magicEngine.getRegistryInfo());
+        resp.put("formulas", magicEngine.getAllCachedFormulas());
+        return resp;
     }
     
     @GetMapping("/dimensions/{entityId}")
     public Position6D getEntityPosition(@PathVariable String entityId) {
         return magicEngine.getEntityPosition(entityId);
+    }
+
+    @GetMapping("/world-state/changes")
+    public Map<String, Object> recentChanges(@RequestParam(value = "limit", required = false) Integer limit) {
+        return magicEngine.getRecentChanges(limit);
+    }
+
+    @PostMapping("/translate-scenario")
+    public Map<String, Object> translateScenario(@RequestBody Map<String, Object> body) {
+        String script = Objects.toString(body.getOrDefault("hots", ""));
+        Long seed = null;
+        Object s = body.get("seed");
+        if (s instanceof Number) seed = ((Number) s).longValue();
+        String md = scenarioTranslator.translateHotsScriptToMarkdown(script, seed);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("markdown", md);
+        return resp;
     }
 }

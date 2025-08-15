@@ -1,475 +1,198 @@
-# 🚀 DEVOPS - GUIDE DE DÉPLOIEMENT PRODUCTION - JOUR 36
+# 🚀 DEVOPS SIMPLE - HEROES OF TIME
+> Guide clair et direct pour Vincent et l'équipe - Mis à jour 14/08/2025
 
-## 📦 ARCHITECTURE COMPLÈTE ✅
+---
 
-```
-MAGIC STACK (STATUS: TOUT FONCTIONNE!)
-├── Frontend (1 seul!)
-│   └── React App (5175) → apps/magic-stack-unified ✅
-│
-├── Backend (2 services principaux)
-│   ├── Rust (3001) → backends/rust      [Calculs 6D, Q*] ✅
-│   └── Java (8082) → backends/java      [CRUD, APIs] ✅
-│
-├── Services IA (ACTIFS!)
-│   ├── Vector DB (7500) → scripts/vector_db ✅
-│   └── LLM Clippy (7501) → scripts/clippy ✅
-│
-└── Bridge (NOUVEAU!)
-    └── MCP Server (9000) → mcp_server.py [Unifie tout] ✅
-```
+## 🔑 CONNEXION AU VPS (Super Important!)
 
-### Ports en production:
-- **5175**: Frontend React (Vite)
-- **3001**: Backend Rust (calculs complexes)
-- **8082**: Backend Java (Spring Boot) ⚠️ NOTE: Port 8082, pas 8080!
-- **7500**: Vector DB (recherche sémantique)
-- **7501**: LLM Clippy (IA conversationnelle)
-- **9000**: MCP Server (bridge unifié) NOUVEAU!
-- **8000**: HTML Server (anciens UIs)
-
-## 🤖 COMMENT FONCTIONNE LE LLM CLIPPY (DÉTAILS)
-
-### Stack Technique LLM Clippy
-```
-Port 7501: scripts/clippy/clippy_memento_server.py
-├── Framework: FastAPI (Python async moderne)
-├── Serveur: Uvicorn (ASGI haute performance)
-├── Modèle IA: 
-│   ├── Option 1: OpenAI API (gpt-3.5/gpt-4)
-│   ├── Option 2: Ollama local (llama2, mistral)
-│   └── Option 3: HuggingFace Transformers
-├── Mémoire: Session RAM + persistence Vector DB
-└── Embeddings: sentence-transformers
-```
-
-### Installation LLM Clippy
 ```bash
-# Dépendances Python
-pip3 install fastapi uvicorn openai
-pip3 install sentence-transformers numpy
-pip3 install python-dotenv aiohttp
-
-# Si modèle local avec Ollama:
-curl https://ollama.ai/install.sh | sh
-ollama pull llama2
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178
 ```
 
-### Fonctionnement Détaillé
-1. **Démarrage**: 
+**Si ça marche pas :**
+1. Va sur console Hostinger
+2. Connecte-toi en root
+3. Colle : `echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBtlP4hW+7uJPXxp2elYTz71mNgKbFlfwXXSHVARJeZs vincent@magic" >> /root/.ssh/authorized_keys`
+
+---
+
+## 🎮 COMMANDES PRINCIPALES
+
+### LANCER LE JEU EN LOCAL
+```bash
+./go start     # Lance TOUT (backends + frontend)
+./go game      # Ouvre direct le jeu dans le navigateur
+./go stop      # Arrête tout proprement
+```
+
+### DÉPLOYER SUR LE VPS
+```bash
+./deploy vps    # Deploy rapide (juste les fichiers)
+./deploy full   # Build + deploy complet
+./deploy health # Vérifier que tout marche
+```
+
+---
+
+## 📦 ORGANISATION DES FICHIERS
+
+### CE QUI EST IMPORTANT :
+```
+magic-stack/
+├── 🎮 FRONTPAGE/         → Page d'accueil du jeu
+├── 🚀 go                 → Script pour lancer en local
+├── 🚀 deploy             → Script pour déployer
+├── 📝 DEVOPS.md          → CE FICHIER
+├── 📝 CONNECT_111.md     → Doc connexion SSH
+└── 🗺️ .sitemap           → Carte de toutes les pages
+```
+
+### OÙ SONT LES TRUCS :
+- **Jeux HTML** : À la racine (*.html)
+- **React Apps** : Dans `apps/`
+- **Backends** : Dans `backends/` (Java, Rust, Python)
+- **Vieux scripts** : Archivés dans `scripts_old/`
+- **Vieux docs** : Archivés dans `docs_archive/`
+
+---
+
+## 🌐 URLS DU SITE
+
+### PRODUCTION (heroesoftime.online)
+- **Page d'accueil** : https://heroesoftime.online/FRONTPAGE/
+- **Jeu principal** : https://heroesoftime.online/HOT_GAME_UNIFIED.html
+- **Combat IA** : https://heroesoftime.online/IA_VS_IA_AUTOPLAY.html
+- **Multijoueur** : https://heroesoftime.online/MULTIPLAYER_DEMO_HOMM3.html
+
+### LOCAL (ton Mac)
+- **Tout** : http://localhost:8000
+- **API Java** : http://localhost:8082
+- **Engine Rust** : http://localhost:3001
+- **Vector DB** : http://localhost:7500
+
+---
+
+## 🔧 SCRIPTS ESSENTIELS
+
+### Les 3 scripts principaux :
+1. **`go`** - Pour bosser en local
+2. **`deploy`** - Pour déployer sur le VPS
+3. **`h`** - Helper avec plein de commandes
+
+### Scripts de déploiement qui restent :
+- `DEPLOY_SIMPLE.sh` - Deploy basique
+- `HEALTH_CHECK.sh` - Vérifier santé du site
+- `TEST_SSH.sh` - Tester connexion SSH
+
+---
+
+## 🆘 PROBLÈMES FRÉQUENTS
+
+### "Je peux pas me connecter au VPS"
+```bash
+./TEST_SSH.sh  # Test la connexion
+```
+
+### "Le site marche pas"
+```bash
+./HEALTH_CHECK.sh  # Vérifie toutes les pages
+```
+
+### "J'ai cassé la page d'accueil"
+```bash
+# Restaurer depuis backup
+cp backups/2024-08-14/index.html.backup-* FRONTPAGE/index.html
+./deploy vps
+```
+
+### "Les backends sont morts"
+```bash
+# Sur le VPS
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178
+systemctl restart caddy magic-java magic-rust magic-vector magic-clippy
+```
+
+---
+
+## 📊 VÉRIFIER QUE TOUT MARCHE
+
+### Check rapide local :
+```bash
+./go status
+```
+
+### Check complet VPS :
+```bash
+./deploy health
+```
+
+### Voir les logs VPS :
+```bash
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "journalctl -fu caddy"
+```
+
+---
+
+## 🔐 INFOS IMPORTANTES
+
+### Serveur VPS
+- **IP** : 191.101.2.178
+- **Domaine** : heroesoftime.online
+- **User** : root (ou hot)
+- **Clé SSH** : ~/.ssh/hot_magic_key
+
+### Ports des services
+- **80/443** : Caddy (reverse proxy)
+- **8082** : Java API
+- **3001** : Rust Engine
+- **7500** : Vector DB
+- **7777** : Clippy AI
+
+### GitHub
+- **Repo** : https://github.com/V0OgZ/magic-stack
+- **Branch** : prod (principale)
+
+---
+
+## 💡 TIPS POUR VINCENT
+
+1. **TOUJOURS faire un backup avant de modifier FRONTPAGE**
    ```bash
-   cd scripts/clippy
-   python3 clippy_memento_server.py
-   # Écoute sur http://localhost:7501
+   ./deploy backup
    ```
 
-2. **Architecture Interne**:
-   ```python
-   # Pseudo-code simplifié
-   @app.post("/chat")
-   async def chat(message: str):
-       # 1. Enrichit avec contexte Vector DB
-       context = await vector_db.search(message)
-       
-       # 2. Appel LLM avec contexte
-       response = await llm.generate(
-           prompt=f"{context}\nUser: {message}"
-       )
-       
-       # 3. Sauvegarde en mémoire
-       session.add(message, response)
-       
-       return {"response": response}
-   ```
+2. **Si tu modifies sur le VPS directement**, dis-le à Claude/GPT pour pas écraser
 
-3. **Endpoints Disponibles**:
-   - `POST /chat` - Conversation normale
-   - `POST /character/speak` - Fait parler un personnage
-   - `POST /dialogue` - Dialogue entre personnages
-   - `POST /ai/think` - Génère stratégie IA
-   - `GET /memory` - Récupère historique session
-   - `POST /embed` - Convertit texte en vecteur
+3. **Le script `go` fait TOUT** - Plus besoin des 57 autres scripts
 
-### Vector DB (Port 7500)
-```
-Port 7500: scripts/vector_db/vector_server.py
-├── Framework: FastAPI aussi
-├── Base de données: ChromaDB ou FAISS
-├── Index: ~10000 documents du jeu
-├── Embeddings: all-MiniLM-L6-v2
-└── Recherche: Similarité cosinus, top-k=5
-```
+4. **Si Cursor déconnecte**, vérifie que t'es bien sur Opus (pas Sonnet)
 
-### Comment ils communiquent:
-```
-User → Frontend (5175) → LLM Clippy (7501)
-                              ↓
-                         Vector DB (7500)
-                              ↓
-                         Contexte enrichi
-                              ↓
-                         Réponse LLM
-```
+5. **Les outils dev sont cachés** dans la page d'accueil (bouton "Outils Développeur")
 
-## 🔧 PRÉREQUIS SERVEUR
+---
+
+## 📝 COMMANDES RAPIDES À COPIER
 
 ```bash
-# OS: Ubuntu 22.04 LTS recommandé
-# RAM: 8GB minimum, 16GB recommandé
-# CPU: 4 cores minimum
-# Disque: 50GB minimum
+# Connexion VPS
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178
 
-# Installer les dépendances système
-sudo apt update
-sudo apt install -y \
-    build-essential \
-    curl \
-    git \
-    nginx \
-    postgresql-14 \
-    redis-server \
-    python3-pip \
-    openjdk-17-jdk \
-    maven
-    
-# Installer Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Lancer local
+./go start
 
-# Installer Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
+# Déployer
+./deploy vps
+
+# Vérifier santé
+./HEALTH_CHECK.sh
+
+# Git push
+git add -A && git commit -m "update" && git push
 ```
 
-## 📁 STRUCTURE DÉPLOIEMENT
+---
 
-```bash
-/opt/magic-stack/
-├── app/              # Code source
-├── logs/             # Logs des services
-├── data/             # Données persistantes
-│   ├── postgres/
-│   ├── redis/
-│   └── vector_db/
-└── scripts/          # Scripts de gestion
-```
+**C'EST TOUT !** Si t'as un problème, regarde d'abord ici. 
+Si c'est pas là, demande à Claude Opus (pas Sonnet!).
 
-## 🚀 SCRIPT DE DÉPLOIEMENT
-
-### 1. Clone et Setup Initial
-
-```bash
-#!/bin/bash
-# deploy.sh
-
-# Variables
-DEPLOY_DIR="/opt/magic-stack"
-REPO_URL="https://github.com/YOUR_USERNAME/magic-stack.git"
-
-# Création structure
-sudo mkdir -p $DEPLOY_DIR/{app,logs,data,scripts}
-cd $DEPLOY_DIR
-
-# Clone du repo
-git clone $REPO_URL app
-cd app
-
-# Installation des dépendances
-cd backends/rust && cargo build --release
-cd ../java && ./mvnw clean package
-cd ../python && pip3 install -r requirements.txt
-cd ../../apps/magic-stack-unified && npm ci && npm run build
-```
-
-### 2. Configuration Nginx
-
-```nginx
-# /etc/nginx/sites-available/magic-stack
-
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    # Frontend React
-    location / {
-        proxy_pass http://localhost:5175;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # API Rust
-    location /api/v2/ {
-        proxy_pass http://localhost:3001;
-    }
-
-    # API Java
-    location /api/ {
-        proxy_pass http://localhost:8080;
-    }
-
-    # WebSocket
-    location /ws {
-        proxy_pass http://localhost:8001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-}
-```
-
-### 3. Services SystemD
-
-```ini
-# /etc/systemd/system/magic-rust.service
-[Unit]
-Description=Magic Stack Rust Backend
-After=network.target
-
-[Service]
-Type=simple
-User=magic
-WorkingDirectory=/opt/magic-stack/app/backends/rust
-ExecStart=/opt/magic-stack/app/backends/rust/target/release/magic-rust
-Restart=always
-Environment="RUST_LOG=info"
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```ini
-# /etc/systemd/system/magic-java.service
-[Unit]
-Description=Magic Stack Java Backend
-After=network.target
-
-[Service]
-Type=simple
-User=magic
-WorkingDirectory=/opt/magic-stack/app/backends/java
-ExecStart=/usr/bin/java -jar target/magic-stack.jar
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```ini
-# /etc/systemd/system/magic-frontend.service
-[Unit]
-Description=Magic Stack Frontend
-After=network.target
-
-[Service]
-Type=simple
-User=magic
-WorkingDirectory=/opt/magic-stack/app/apps/magic-stack-unified
-ExecStart=/usr/bin/npm run preview
-Restart=always
-Environment="NODE_ENV=production"
-
-[Install]
-WantedBy=multi-user.target
-```
-
-## 🔑 VARIABLES D'ENVIRONNEMENT
-
-```bash
-# /opt/magic-stack/.env
-
-# Database
-DATABASE_URL=postgresql://magic:password@localhost/magic_stack
-REDIS_URL=redis://localhost:6379
-
-# Ports
-RUST_PORT=3001
-JAVA_PORT=8080
-PYTHON_PORT=5001
-FRONTEND_PORT=5175
-
-# API Keys (optionnel)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=...
-
-# Logs
-LOG_LEVEL=info
-LOG_DIR=/opt/magic-stack/logs
-```
-
-## 📊 MONITORING
-
-### Script de santé
-
-```bash
-#!/bin/bash
-# health-check.sh
-
-check_service() {
-    if curl -f http://localhost:$1/health 2>/dev/null; then
-        echo "✅ $2 OK"
-    else
-        echo "❌ $2 DOWN"
-    fi
-}
-
-echo "=== MAGIC STACK HEALTH ==="
-check_service 5175 "Frontend"
-check_service 3001 "Rust Backend"
-check_service 8080 "Java Backend"
-check_service 5001 "Python Backend"
-```
-
-### Logs centralisés
-
-```bash
-# Tous les logs dans /opt/magic-stack/logs/
-tail -f /opt/magic-stack/logs/*.log
-```
-
-## 🚀 COMMANDES DE GESTION
-
-```bash
-# Démarrer tous les services
-sudo systemctl start magic-rust magic-java magic-frontend
-
-# Arrêter tous les services
-sudo systemctl stop magic-rust magic-java magic-frontend
-
-# Redémarrer
-sudo systemctl restart magic-rust magic-java magic-frontend
-
-# Voir les logs
-journalctl -u magic-rust -f
-journalctl -u magic-java -f
-journalctl -u magic-frontend -f
-
-# Status
-systemctl status magic-*
-```
-
-## 🔒 SÉCURITÉ
-
-1. **Firewall**
-```bash
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
-```
-
-2. **HTTPS avec Let's Encrypt**
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
-```
-
-3. **Utilisateur dédié**
-```bash
-sudo useradd -r -s /bin/bash magic
-sudo chown -R magic:magic /opt/magic-stack
-```
-
-## 🐳 OPTION DOCKER
-
-### docker-compose.yml
-```yaml
-version: '3.8'
-
-services:
-  frontend:
-    build: ./apps/magic-stack-unified
-    ports:
-      - "5175:5175"
-    depends_on:
-      - rust
-      - java
-
-  rust:
-    build: ./backends/rust
-    ports:
-      - "3001:3001"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-
-  java:
-    build: ./backends/java
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-
-  postgres:
-    image: postgres:14
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=magic_stack
-      - POSTGRES_USER=magic
-      - POSTGRES_PASSWORD=password
-
-volumes:
-  postgres_data:
-```
-
-### Déploiement Docker
-```bash
-# Build et lancement
-docker-compose up -d
-
-# Voir les logs
-docker-compose logs -f
-
-# Arrêt
-docker-compose down
-```
-
-## 🎯 CHECKLIST DÉPLOIEMENT
-
-- [ ] Serveur configuré avec prérequis
-- [ ] Code cloné dans /opt/magic-stack
-- [ ] Dépendances installées
-- [ ] Variables d'environnement configurées
-- [ ] Services SystemD créés
-- [ ] Nginx configuré
-- [ ] SSL/HTTPS activé
-- [ ] Firewall configuré
-- [ ] Monitoring en place
-- [ ] Backups configurés
-- [ ] Tests de santé OK
-
-## 📝 NOTES IMPORTANTES
-
-1. **Ports en production**: Changer les ports par défaut
-2. **Secrets**: Ne JAMAIS commiter les .env en prod
-3. **Backups**: Sauvegarder /opt/magic-stack/data quotidiennement
-4. **Logs**: Rotation automatique avec logrotate
-5. **Updates**: Script de mise à jour avec zero-downtime
-
-## 🆘 TROUBLESHOOTING
-
-### Service ne démarre pas
-```bash
-journalctl -xe
-systemctl status magic-*
-```
-
-### Port déjà utilisé
-```bash
-sudo lsof -i:PORT
-sudo kill -9 PID
-```
-
-### Permissions
-```bash
-sudo chown -R magic:magic /opt/magic-stack
-```
-
-### Reset complet
-```bash
-sudo systemctl stop magic-*
-cd /opt/magic-stack/app
-git pull
-# Rebuild...
-sudo systemctl start magic-*
-```
+🎮 **Bon dev Vincent !**

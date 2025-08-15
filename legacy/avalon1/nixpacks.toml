@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["openjdk17", "nodejs-18_x"]
+
+[phases.build]
+cmds = [
+  "cd frontend && npm install",
+  "cd frontend && npm run build",
+  "cd backend && ./mvnw clean package -DskipTests"
+]
+
+[start]
+cmd = "cd backend && java -jar target/demo-0.0.1-SNAPSHOT.jar" 

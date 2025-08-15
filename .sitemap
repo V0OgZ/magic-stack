@@ -1,0 +1,173 @@
+# 🎮 HEROES OF TIME - SITEMAP COMPLETE
+# Dernière mise à jour: 14/08/2025 08:00
+
+## 🌐 VPS ONLINE (https://heroesoftime.online/)
+
+### 📱 FRONTPAGE/
+- index.html (Accueil principal)
+- index_en.html (English)
+- index_ru.html (Русский)
+- temporal-grammar-dude.html
+
+### 🎮 JEUX PRINCIPAUX
+- HOT_GAME_UNIFIED.html ⭐ (Jeu principal complet)
+- CHASSE_TEMPORELLE_MEGA_MAP.html (Chasse temporelle)
+- MULTIPLAYER_DEMO_HOMM3.html (Mode multijoueur)
+- IA_VS_IA_AUTOPLAY.html (Combat automatique IA)
+- SPECTATOR_GOD_MODE.html (Mode spectateur)
+- HOMM3_PWA_IPAD_CLIPPY.html (Version iPad PWA)
+
+### 🗺️ EDITEURS
+- MEGA_EDITOR.html (Éditeur principal)
+- MAP_EDITOR_6D_ADAPTER.html (Éditeur 6D - nouveau!)
+- world-editor/ (React app - éditeur monde)
+- WORKFLOW_MANAGER.html (Gestionnaire workflow)
+
+### 🛠️ OUTILS DEV
+- API_EXPLORER_COMPLETE.html ⭐ (Dashboard API complet)
+- VECTOR_DB_EXPLORER_UI.html (Explorateur Vector DB)
+- VECTOR_DB_EXPLORER.html (Version alternative)
+- test_parity.html (Tests de parité)
+- compare-apis.html (Comparaison APIs)
+- TEST_PORTAILS.html (Test des portails)
+
+### 📚 DOCUMENTATION
+- MANUEL_DU_JOUEUR_HOT.html (Manuel du joueur)
+- MANUEL_FACILE_EASY_MODE.html (Mode facile)
+- HTML_INDEX.html (Dashboard principal)
+- index.html (Index racine)
+
+### 🔧 BACKENDS (via Caddy proxy)
+- /api/health → Java Spring Boot (Port 8082)
+- /engine/health → Rust Actix (Port 3001)
+- /vector/health → Vector DB Python (Port 7500)
+- /clippy/health → AI Assistant (Port 7777)
+
+---
+
+## 💻 LOCAL DEV STRUCTURE
+
+### 📂 apps/
+- magic-stack-unified/ (React - migration en cours avec GPT)
+  - src/modes/unified/
+  - src/shared/world6dCore.ts
+  - dist/ (build de production)
+- world-editor/ (React TypeScript - déployé)
+  - dist/ (servi via Caddy)
+
+### 📂 backends/
+- java/ (Spring Boot - API principale)
+  - HeroController.java
+  - CreatureController.java
+  - ArtifactController.java
+- rust/ (Actix - Engine 6D)
+  - Calculs géométriques
+  - Paradoxes temporels
+- python/
+  - Vector DB (Gestion assets)
+  - Clippy (Assistant IA)
+  - MCP Server
+
+### 📂 FRONTPAGE/
+- assets/
+  - HD/ (Images haute résolution)
+  - SD/ (Images standard)
+  - compressed/ (Images optimisées JPG)
+  - new0812/ (Nouveaux assets du 12/08)
+    - portraits/
+    - spells/
+- config/
+  - frontpage_hero_map.json
+
+### 🚀 SCRIPTS PRINCIPAUX
+- go (Script DevOps complet - start/stop/status/build)
+- DEPLOY_SIMPLE.sh ✅ (Deploy rapide VPS)
+- TEST_SSH.sh (Test connexion SSH)
+- h (Script helper local)
+- START_ALL.sh / STOP_ALL.sh
+- hot-redeploy (sur le VPS - pull + build + restart)
+- hot-check (sur le VPS - vérification statut)
+
+### 📝 FICHIERS CONFIG IMPORTANTS
+- .connectvps (Config SSH actuelle)
+- .map (URLs et routes VPS)
+- .ports (Mapping des ports services)
+- .sitemap (CE FICHIER)
+- .dualclaude / .dualgpt (Sync Claude/GPT)
+- CONNECT_111.md (Doc SSH rapide)
+- JOUR_37_PLAN.md (Objectifs actuels)
+- Caddyfile (Config reverse proxy)
+
+---
+
+## 🎯 PAGES PRIORITAIRES
+
+1. **HOT_GAME_UNIFIED.html** - Jeu principal avec tout intégré
+2. **API_EXPLORER_COMPLETE.html** - Dashboard API pour tests
+3. **FRONTPAGE/index.html** - Page d'accueil multilingue
+4. **MEGA_EDITOR.html** - Éditeur de maps principal
+
+---
+
+## 🔥 STATUT ACTUEL
+
+### ✅ FONCTIONNEL
+- SSH sans mot de passe (clé: ~/.ssh/hot_magic_key)
+- Déploiement avec ./DEPLOY_SIMPLE.sh
+- Tous les HTML accessibles sur heroesoftime.online
+- Backends actifs (Java, Rust, Vector, Clippy)
+- Services systemd configurés
+- Caddy reverse proxy opérationnel
+
+### 🚧 EN COURS
+- Migration React (GPT travaille dessus)
+- Tests de parité HTML/React
+- Intégration combat TCG
+- Mode multiplayer WebSocket
+
+### 📅 TODO (Jour 37)
+- Connecter système combat aux APIs
+- Implémenter cartes depuis Vector DB
+- Brouillard de causalité
+- Switch intelligent entre modes map
+
+---
+
+## 🌐 URLS HEALTH CHECK
+- https://heroesoftime.online/api/health (Java)
+- https://heroesoftime.online/engine/health (Rust)
+- https://heroesoftime.online/vector/health (Vector)
+- https://heroesoftime.online/clippy/health (AI)
+
+---
+
+## 📦 EMPLACEMENTS VPS
+- App principale: /opt/hot/app
+- Caddy config: /etc/caddy/Caddyfile
+- Services: /etc/systemd/system/magic-*.service
+- Logs: journalctl -fu [service-name]
+
+---
+
+## 🔑 COMMANDES RAPIDES
+
+```bash
+# Connexion VPS
+ssh -i ~/.ssh/hot_magic_key root@191.101.2.178
+
+# Deploy local → VPS
+./DEPLOY_SIMPLE.sh
+
+# Script go (local)
+./go start    # Lance tous les services
+./go stop     # Arrête tout
+./go status   # Vérifie l'état
+./go game     # Lance le jeu direct
+
+# Sur le VPS
+hot-redeploy  # Git pull + build + restart
+hot-check     # Vérifie tous les services
+```
+
+---
+FIN DU SITEMAP

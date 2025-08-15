@@ -1,0 +1,33 @@
+# Claude Status Report
+
+## Completed ✅
+
+1. **Relative paths** - Changed 31 absolute paths to relative in FRONTPAGE/index.html
+   - Before: `/FRONTPAGE/assets/`
+   - After: `assets/`
+   - Screenshots: `screenshot_before_local.png`, `screenshot_after_local.png`
+
+2. **6D Core Adapter** - Created `MAP_EDITOR_6D_ADAPTER.html`
+   - Uses same event types as React core (Move6D, Collapse, ArtifactApplied)
+   - Dispatch/subscribe/getState/replay implementation
+   - Zero business logic, UI only
+
+3. **Test Traces** - 3 JSONL scenarios in `test_traces/`
+   - `scenario1_hero_movement.jsonl` - Basic hero movement in 6D
+   - `scenario2_portal_collapse.jsonl` - Portal interactions and collapse
+   - `scenario3_buff_chain.jsonl` - Buff applications and complex interactions
+
+4. **VPS Health** - All green (200s)
+   - `/` - 200
+   - `/FRONTPAGE/index.html` - 200
+   - `/world-editor` - 200
+   - `/engine/health` - 200
+   - `/api/health` - 200
+
+## Ready for parity testing
+
+HTML adapter ready to consume same events as React. Same event sequence should produce same final state.
+
+## Next: Deploy to VPS when ready
+
+Run `./DEPLOY_PWA.sh` to deploy FRONTPAGE with relative paths + PWA support.

@@ -1,0 +1,147 @@
+================================================================================
+                         VPS ACCESS & DEPLOYMENT GUIDE
+                        heroesoftime.online (82.66.30.184)
+================================================================================
+
+SSH ACCESS FOR VINCENT (Mac)
+-----------------------------
+# Your key is on your Mac Desktop
+ssh -i ~/Desktop/HOT_VPS_KEY hot@heroesoftime.online
+
+# Or if you configured ~/.ssh/config:
+ssh hot-vps
+
+SSH ACCESS FOR AI ASSISTANTS (Cursor)
+--------------------------------------
+# Keys are stored in project:
+.ssh/hot_cursor_ed25519 (private key)
+.ssh/hot_cursor_ed25519.pub (public key)
+
+# Connect using:
+ssh -i /Volumes/HOT_DEV/Magic/magic-stack/.ssh/hot_cursor_ed25519 hot@heroesoftime.online
+
+# Add to SSH config for easier access:
+echo "Host hot-vps
+    HostName heroesoftime.online
+    User hot
+    IdentityFile /Volumes/HOT_DEV/Magic/magic-stack/.ssh/hot_cursor_ed25519
+    StrictHostKeyChecking no" >> ~/.ssh/config
+
+# Then connect with:
+ssh hot-vps
+
+DEPLOYMENT PROCEDURE
+--------------------
+
+1. TEST LOCALLY:
+   ./go status
+   open http://localhost:8000/FRONTPAGE/index.html
+
+2. COMMIT & PUSH:
+   git add -A
+   git commit -m "update: description"
+   git push origin prod
+
+3. DEPLOY TO VPS:
+   # Deploy static files
+   rsync -avz --exclude node_modules --exclude .git \
+     FRONTPAGE/ hot@heroesoftime.online:/opt/hot/app/FRONTPAGE/
+   
+   # Deploy specific HTML files
+   rsync -avz *.html hot@heroesoftime.online:/opt/hot/app/
+   
+   # Deploy React build (if updated)
+   rsync -avz apps/world-editor/dist/ \
+     hot@heroesoftime.online:/opt/hot/app/apps/world-editor/dist/
+
+4. ON VPS - PULL LATEST:
+   ssh hot@heroesoftime.online
+   cd /opt/hot/app
+   git pull origin prod
+
+5. RESTART SERVICES (if backend changed):
+   ssh hot@heroesoftime.online
+   sudo systemctl restart magic-java magic-rust magic-vector magic-clippy
+   sudo systemctl restart caddy
+
+6. CHECK STATUS:
+   ssh hot@heroesoftime.online
+   sudo systemctl status caddy magic-java magic-rust
+   curl https://heroesoftime.online/api/health
+   curl https://heroesoftime.online/engine/health
+
+QUICK DEPLOY COMMANDS
+---------------------
+
+# Deploy only frontpage
+rsync -avz FRONTPAGE/ hot@heroesoftime.online:/opt/hot/app/FRONTPAGE/
+
+# Deploy only HTML games
+rsync -avz *.html hot@heroesoftime.online:/opt/hot/app/
+
+# Deploy and restart everything
+ssh hot@heroesoftime.online "cd /opt/hot/app && git pull && sudo systemctl restart caddy magic-*"
+
+# Check logs
+ssh hot@heroesoftime.online "sudo journalctl -fu caddy -n 50"
+ssh hot@heroesoftime.online "sudo journalctl -fu magic-java -n 50"
+
+IMPORTANT FILES ON VPS
+----------------------
+/opt/hot/app/               → Application root
+/etc/caddy/Caddyfile        → Web server config
+/etc/systemd/system/        → Service definitions
+/var/log/caddy/             → Caddy logs
+/home/hot/.ssh/             → SSH authorized keys
+
+TROUBLESHOOTING
+---------------
+
+1. SSH Connection Refused:
+   - Check IP: 82.66.30.184
+   - Check user: hot (not root)
+   - Check key permissions: chmod 600 ~/.ssh/hot_cursor_ed25519
+
+2. Images not loading:
+   - Check Caddyfile for /FRONTPAGE/assets/* rule
+   - Verify file exists: ssh hot@heroesoftime.online "ls -la /opt/hot/app/FRONTPAGE/assets/assets/HD/"
+   - Check browser console for 404s
+
+3. Backend not responding:
+   ssh hot@heroesoftime.online
+   sudo systemctl status magic-java magic-rust
+   sudo systemctl restart magic-java magic-rust
+   
+4. Permission denied on VPS:
+   # Most commands need sudo
+   sudo systemctl restart caddy
+   sudo nano /etc/caddy/Caddyfile
+   sudo journalctl -fu caddy
+
+AI ASSISTANT CHECKLIST
+-----------------------
+Before deploying:
+[ ] Test locally with ./go status
+[ ] Commit all changes to git
+[ ] Check image paths start with /FRONTPAGE/assets/
+[ ] Verify API endpoints use relative paths (/api/*)
+
+To deploy:
+[ ] Use rsync commands above
+[ ] Always exclude node_modules
+[ ] Pull on VPS after rsync
+[ ] Restart services if backend changed
+
+After deploy:
+[ ] Test live site: https://heroesoftime.online/
+[ ] Check browser console for errors
+[ ] Verify images load correctly
+[ ] Test API endpoints
+
+NEVER DO:
+- git reset --hard on VPS
+- rm -rf without explicit permission
+- Modify Caddyfile without backup
+- Use force push to origin
+
+================================================================================

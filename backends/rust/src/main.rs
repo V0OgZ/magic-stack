@@ -11,6 +11,8 @@
 //! It works alongside the Java Spring Boot backend, handling performance-critical tasks.
 
 use magic_stack_core::*;
+use magic_stack_core::temporal_grammar::{ExecutionContext as TgExecutionContext};
+use sha2::{Digest, Sha256};
 use magic_stack_core::pathfinding::{a_star_path_weighted, Cell as PfCell, PathfindingOptions as PfOpts, Topology as PfTopology};
 use magic_stack_core::mapgen::{generate_map, MapGenParams};
 
@@ -278,6 +280,7 @@ async fn main() {
         .route("/api/world-state/nodes", post(create_node))
         .route("/api/world-state/nodes/:id", get(get_node))
         .route("/api/world-state/nodes/:id/position", post(update_position))
+        .route("/api/world-state/changes", get(get_recent_changes))
         .route("/api/world-state/identities/:id/doubles", get(get_identity_doubles))
         .route("/api/world-state/nodes/radius", get(get_nodes_in_radius))
         .route("/api/world-state/collapse", post(observation_collapse))
@@ -290,6 +293,10 @@ async fn main() {
         .route("/explorer", get(api_explorer_handler))
         .route("/api/map/generate", post(map_generate))
         .route("/api/map/init", post(map_init))
+        // Temporal grammar endpoints (for Java integration)
+        .route("/temporal/parse", post(temporal_parse))
+        .route("/temporal/execute", post(temporal_execute))
+        .route("/temporal/apply", post(temporal_apply))
         // Archives (Vector DB local proxy)
         .route("/api/archives/status", get(archives_status))
         .route("/api/archives/search", post(archives_search))
@@ -895,6 +902,19 @@ async fn update_position(
     }
 }
 
+/// Get recent world-state changes (default 50)
+async fn get_recent_changes(
+    State(state): State<AppState>,
+    Query(q): Query<std::collections::HashMap<String, String>>,
+) -> Json<serde_json::Value> {
+    let limit = q.get("limit").and_then(|s| s.parse::<usize>().ok()).unwrap_or(50);
+    let changes = state.world_state.get_recent_changes(limit);
+    Json(serde_json::json!({
+        "count": changes.len(),
+        "changes": changes
+    }))
+}
+
 /// Get nodes within radius
 async fn get_nodes_in_radius(
     State(state): State<AppState>,
@@ -1194,6 +1214,166 @@ async fn openapi_ui_handler() -> Html<String> {
 async fn api_explorer_handler() -> Html<String> {
     let html = include_str!("../explorer.html");
     Html(html.to_string())
+}
+
+// ===== Temporal grammar endpoints =====
+#[derive(Deserialize)]
+struct TemporalParseReq { formula: String }
+
+#[derive(Serialize)]
+struct TemporalParseResp { ok: bool, ast: serde_json::Value, normalized: String }
+
+async fn temporal_parse(Json(req): Json<TemporalParseReq>) -> Result<Json<TemporalParseResp>, StatusCode> {
+    let mut parser = TemporalParser::new();
+    match parser.parse(&req.formula) {
+        Ok(tf) => {
+            let ast = serde_json::to_value(&tf.ast).unwrap_or(serde_json::json!({"error":"serialize_ast"}));
+            Ok(Json(TemporalParseResp { ok: true, ast, normalized: tf.source }))
+        }
+        Err(e) => {
+            eprintln!("temporal_parse error: {}", e);
+            Err(StatusCode::BAD_REQUEST)
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct TemporalExecuteReq { formula: String, context: Option<serde_json::Value>, seed: Option<u64> }
+
+#[derive(Serialize)]
+struct TemporalExecuteResp { ok: bool, result: serde_json::Value, trace_hash: String }
+
+async fn temporal_execute(Json(req): Json<TemporalExecuteReq>) -> Result<Json<TemporalExecuteResp>, StatusCode> {
+    let mut parser = TemporalParser::new();
+    let tf = parser.parse(&req.formula).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let ctx_json = req.context.unwrap_or_else(|| serde_json::json!({}));
+    let mut vars = std::collections::HashMap::new();
+    if let Some(map) = ctx_json.as_object() {
+        for (k, v) in map.iter() { vars.insert(k.clone(), v.clone()); }
+    }
+    let ctx = TgExecutionContext { variables: vars, temporal_position: 0.0, causal_probability: 1.0, identity_coherence: 0.8 };
+    let result = parser.execute(&tf, &ctx).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    // Stable trace hash: hash of normalized source + seed (if any) + result JSON canonical
+    let mut hasher = Sha256::new();
+    hasher.update(tf.source.as_bytes());
+    if let Some(s) = req.seed { hasher.update(&s.to_le_bytes()); }
+    hasher.update(serde_json::to_vec(&result).unwrap_or_default());
+    let trace_hash = format!("{:x}", hasher.finalize());
+    Ok(Json(TemporalExecuteResp { ok: true, result, trace_hash }))
+}
+
+// ===== Minimal apply endpoint (stub) =====
+#[derive(Deserialize)]
+struct TemporalApplyReq { formula: String, context: Option<serde_json::Value>, seed: Option<u64> }
+
+#[derive(Serialize)]
+struct TemporalApplyResp { ok: bool, world_diff: serde_json::Value, trace_hash: String }
+
+async fn temporal_apply(State(state): State<AppState>, Json(req): Json<TemporalApplyReq>) -> Result<Json<TemporalApplyResp>, StatusCode> {
+    // Try execute for deterministic trace_hash; if parser fails (e.g., runic input), hash raw inputs
+    let trace_hash = match temporal_execute(Json(TemporalExecuteReq { formula: req.formula.clone(), context: req.context.clone(), seed: req.seed })).await {
+        Ok(res) => res.0.trace_hash.clone(),
+        Err(_) => {
+            let mut hasher = Sha256::new();
+            hasher.update(req.formula.as_bytes());
+            if let Some(ctx) = &req.context { hasher.update(serde_json::to_vec(ctx).unwrap_or_default()); }
+            if let Some(s) = req.seed { hasher.update(&s.to_le_bytes()); }
+            format!("{:x}", hasher.finalize())
+        }
+    };
+    // Minimal real world diff: detect MOV(Name, @x,y), Δt+N and TL(timeline) to upsert and shift nodes
+    let mut entities_created = 0usize;
+    let mut entities_updated = 0usize;
+    let mut changes: Vec<serde_json::Value> = Vec::new();
+
+    // Extract Δt+N (time offset)
+    let mut delta_t: f64 = 0.0;
+    if let Some(dt_i) = req.formula.find("Δt+") {
+        let tail = &req.formula[dt_i + 3..];
+        let num: String = tail.chars().take_while(|c| c.is_ascii_digit()).collect();
+        if let Ok(v) = num.parse::<f64>() { delta_t = v; }
+    }
+    // Extract TL(name) timeline hint
+    let mut timeline_hint: Option<String> = None;
+    if let Some(tl_i) = req.formula.find("TL(") {
+        let rest = &req.formula[tl_i + 3..];
+        if let Some(end) = rest.find(')') {
+            let name = rest[..end].trim();
+            if !name.is_empty() { timeline_hint = Some(name.to_string()); }
+        }
+    }
+    if let Some(mov_idx) = req.formula.find("MOV(") {
+        let rest = &req.formula[mov_idx + 4..]; // after 'MOV('
+        if let Some(end_paren) = rest.find(')') {
+            let inner = &rest[..end_paren];
+            // inner like: "Arthur, @10,10" or "Arthur, @10.0,10.0"
+            let mut name = String::new();
+            let mut part_iter = inner.splitn(2, ',');
+            if let Some(n) = part_iter.next() { name = n.trim().to_string(); }
+            let after_name = part_iter.next().unwrap_or("");
+            let at_pos = after_name.find('@');
+            if let Some(at_i) = at_pos {
+                let coords = &after_name[at_i+1..];
+                let mut xy_iter = coords.split(|c| c == ',' || c == ' ');
+                let x_str = xy_iter.next().unwrap_or("").trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
+                let y_str = xy_iter.next().unwrap_or("").trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
+                if let (Ok(x), Ok(y)) = (x_str.parse::<f64>(), y_str.parse::<f64>()) {
+                    let hero_id = format!("hero:{}", name);
+                    match state.world_state.get_node(&hero_id) {
+                        Some(mut existing) => {
+                            // Compute new time and timeline
+                            let new_t = existing.position.t + delta_t;
+                            let new_pos = Position6D::new(x, y, existing.position.z, new_t, existing.position.c, existing.position.psi)
+                                .map_err(|_| StatusCode::BAD_REQUEST)?;
+                            let _ = state.world_state.update_position(&hero_id, new_pos);
+                            entities_updated += 1;
+                            changes.push(serde_json::json!({"nodeId": hero_id, "type": "positionChanged", "x": x, "y": y, "t": new_t}));
+                            if let Some(tl) = timeline_hint.clone() {
+                                existing.timeline_id = Some(tl.clone());
+                                let _ = state.world_state.update_node(existing);
+                                changes.push(serde_json::json!({"nodeId": hero_id, "type": "timelineChanged", "timeline": tl}));
+                            }
+                        }
+                        None => {
+                            let t0 = delta_t; // start at offset
+                            let pos = Position6D::new(x, y, 0.0, t0, 1.0, 0.5).map_err(|_| StatusCode::BAD_REQUEST)?;
+                            let node = world_state::StateNode {
+                                id: hero_id.clone(),
+                                position: pos,
+                                node_type: world_state::NodeType::Entity,
+                                properties: {
+                                    let mut m = std::collections::HashMap::new();
+                                    m.insert("name".to_string(), serde_json::json!(name));
+                                    m
+                                },
+                                connections: std::collections::HashSet::new(),
+                                last_updated: now_ms(),
+                                identity_id: None,
+                                timeline_id: Some(timeline_hint.clone().unwrap_or_else(|| "principale".to_string())),
+                            };
+                            let _ = state.world_state.update_node(node);
+                            entities_created += 1;
+                            changes.push(serde_json::json!({"nodeId": hero_id, "type": "nodeCreated", "x": x, "y": y, "t": t0, "timeline": timeline_hint}));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let now = now_ms();
+    let world_nodes = state.world_state.node_count();
+    let diff = serde_json::json!({
+        "entitiesUpdated": entities_updated,
+        "entitiesCreated": entities_created,
+        "entitiesRemoved": 0,
+        "branches": {"created": [], "merged": []},
+        "changes": changes,
+        "notes": "apply processed (MVP MOV detector)",
+        "timestamp": now,
+        "worldNodes": world_nodes
+    });
+    Ok(Json(TemporalApplyResp { ok: true, world_diff: diff, trace_hash }))
 }
 
 // ===== Vector Archives Proxy =====

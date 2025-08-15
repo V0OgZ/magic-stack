@@ -1,4 +1,27 @@
 [Unit]
+Description=Magic Stack Rust Engine (Temporal Grammar, Q*, World Graph)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=magic
+Group=magic
+WorkingDirectory=/opt/magic-stack/backends/rust
+Environment=RUST_PORT=3001
+Environment=RUST_LOG=info
+Environment=RUST_BACKTRACE=1
+ExecStartPre=/opt/magic-stack/ops/prestart_port_guard.sh 3001
+ExecStart=/opt/magic-stack/backends/rust/target/release/magic-stack-server
+Restart=always
+RestartSec=3
+TimeoutStartSec=30
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
 Description=Magic Stack Rust Engine
 After=network.target
 

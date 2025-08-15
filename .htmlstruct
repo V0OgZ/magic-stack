@@ -1,0 +1,154 @@
+================================================================================
+                    MAGIC STACK - HTML STRUCTURE & PORTS MAP
+================================================================================
+
+LOCAL DEVELOPMENT PORTS
+-----------------------
+3001  → Rust Engine (6D calculations)
+8082  → Java Backend (CRUD, Magic Engine, APIs)
+7500  → Vector DB (document search)
+7501  → Clippy LLM (AI conversation)
+9000  → MCP Server (unified bridge)
+5173  → WorldEditor React (hex terrain editor)
+5175  → Unified App React (broken)
+5176  → Unified App React (alternative)
+8000  → Python HTTP Server (HTML files)
+
+PRODUCTION VPS ROUTES (heroesoftime.online)
+--------------------------------------------
+/engine/*  → localhost:3001 (Rust)
+/api/*     → localhost:8082 (Java)
+/vector/*  → localhost:7500 (Vector DB)
+/clippy/*  → localhost:7501 (Clippy)
+/mcp/*     → localhost:9000 (MCP)
+
+HTML PAGES STRUCTURE
+--------------------
+
+[ROOT LEVEL]
+/
+├── index.html                          → Redirects to /FRONTPAGE/
+├── FRONTPAGE/index.html                → Main landing page
+├── HTML_INDEX.html                     → Dashboard/Hub for all UIs
+├── WORKFLOW_MANAGER.html               → Map editor workflow orchestrator
+├── MEGA_EDITOR.html                    → All-in-one editor (buggy)
+│
+├── [GAME PAGES]
+│   ├── CHASSE_TEMPORELLE_MEGA_MAP.html → Main playable HoMM3-style game
+│   ├── HOT_GAME_UNIFIED.html           → Unified game interface
+│   ├── MULTIPLAYER_DEMO_HOMM3.html     → Multiplayer demo
+│   ├── IA_VS_IA_AUTOPLAY.html          → AI vs AI auto-play
+│   └── SPECTATOR_GOD_MODE.html         → Spectator mode
+│
+├── [TOOLS & EXPLORERS]
+│   ├── API_EXPLORER_COMPLETE.html      → API documentation/testing
+│   ├── VECTOR_DB_EXPLORER_UI.html      → Vector database UI
+│   └── HOMM3_PWA_IPAD_CLIPPY.html      → PWA version with Clippy
+│
+├── [ASSETS/]
+│   └── assets/
+│       ├── MAP_ICON_PLACER_ADVANCED.html → Advanced icon placement editor
+│       ├── MAP_ICON_PLACER.html          → Basic icon placement
+│       └── ICON_EXPLORER.html            → Icon browser
+│
+├── [INTERFACES/]
+│   └── interfaces/
+│       ├── interface_visual_magic.html   → Visual magic translator
+│       ├── interface.html                → Basic interface
+│       └── interface_nocturne.html       → Night mode interface
+│
+├── [DEMOS/]
+│   └── demos/
+│       ├── index.html                    → Demo hub
+│       └── game/
+│           └── CHASSE_TEMPORELLE_MEGA_MAP.html
+│
+└── [DOCS/]
+    └── docs/
+        ├── index.html                    → Documentation hub
+        ├── demo.html
+        ├── easy-mode.html
+        ├── manuel.html
+        ├── pwa.html
+        ├── spectator.html
+        ├── test-runner.html
+        └── vector-explorer.html
+
+REACT APPS STRUCTURE
+---------------------
+
+[apps/world-editor/]
+├── src/
+│   └── ui/
+│       ├── HexGrid.tsx                  → Hexagonal grid component
+│       ├── IconPalette.tsx              → Terrain/icon selector
+│       ├── MapView.tsx                  → Main map editor view
+│       └── RegionTools.tsx              → Region painting tools
+└── dist/                                → Built for production
+
+[apps/magic-stack-unified/]
+├── src/
+│   ├── modes/
+│   │   ├── game/GameView.tsx           → Game mode
+│   │   ├── unified/
+│   │   │   ├── UnifiedMapSystem.tsx    → Unified map system
+│   │   │   └── PlayMapBridge.tsx       → Bridge to game mode
+│   │   └── editor/
+│   │       └── MapIconPlacerWrapper.tsx → Icon placer wrapper
+│   └── services/
+│       ├── AudioManager.ts             → Sound effects
+│       └── FXManager.ts                 → Visual effects
+└── dist/                                → Not deployed (broken)
+
+LAUNCH COMMANDS (./go script)
+------------------------------
+./go front        → HTML server on 8000
+./go we           → WorldEditor React on 5173
+./go map          → MAP_ICON_PLACER_ADVANCED
+./go editor       → Alias for map
+./go workflow     → WORKFLOW_MANAGER
+./go wf           → Alias for workflow
+./go unified      → Unified React app (broken)
+./go rust         → Rust backend on 3001
+./go java         → Java backend on 8082
+./go vector       → Vector DB on 7500
+./go clippy       → Clippy LLM on 7501
+./go status       → Check all services
+
+KEY WORKFLOWS
+-------------
+
+1. MAP CREATION WORKFLOW:
+   WORKFLOW_MANAGER.html → orchestrates:
+   - Step 1: WorldEditor (5173) - terrain
+   - Step 2: MAP_ICON_PLACER - objects
+   - Step 3: CHASSE_TEMPORELLE - play test
+
+2. STANDALONE EDITING:
+   - WorldEditor React (5173) for terrain only
+   - MAP_ICON_PLACER_ADVANCED.html for icons only
+   - Direct play in CHASSE_TEMPORELLE_MEGA_MAP.html
+
+3. API TESTING:
+   - API_EXPLORER_COMPLETE.html for backend APIs
+   - interface_visual_magic.html for magic translation
+
+FILE TYPES & LOCATIONS
+-----------------------
+HTML Files:      Root, /assets/, /interfaces/, /demos/, /docs/
+React Source:    /apps/*/src/
+React Builds:    /apps/*/dist/
+Java Backend:    /backends/java/
+Rust Backend:    /backends/rust/
+Python Services: /backends/python/
+Shared Assets:   /FRONTPAGE/assets/
+Config Files:    .ports, .services, .map, .htmlstruct
+
+VPS DEPLOYMENT
+--------------
+SSH:     ssh hot@heroesoftime.online
+Deploy:  rsync -avz --exclude node_modules ./dist/ hot@heroesoftime.online:/opt/hot/app/
+Restart: ssh hot@heroesoftime.online "sudo systemctl restart caddy magic-*"
+Logs:    ssh hot@heroesoftime.online "journalctl -fu caddy"
+
+================================================================================

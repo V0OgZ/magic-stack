@@ -19,6 +19,7 @@ import { HeroBackstoryEditor } from './modes/editor/HeroBackstoryEditor';
 import { UnifiedMapSystem } from './modes/unified/UnifiedMapSystem';
 import AIBattleWrapper from './modes/combat/AIBattleWrapper';
 import ChasseMegaMapWrapper from './modes/chasse/ChasseMegaMapWrapper';
+import ParityPage from './pages/ParityPage';
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,9 @@ export function App(): React.ReactElement {
             
             {/* ⚔️ CHASSE TEMPORELLE MEGA MAP 6x6 */}
             <Route path="/chasse-mega" element={<ChasseMegaMapWrapper />} />
+
+            {/* Parity */}
+            <Route path="/parity" element={<ParityPage />} />
             
             {/* Autres pages */}
             <Route path="/settings" element={<SettingsPage />} />

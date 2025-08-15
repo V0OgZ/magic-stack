@@ -1,0 +1,77 @@
+# 🤝 DUAL CLAUDE/GPT STATUS - 14/08/2025 08:20
+
+## 🟢 CLAUDE (Opus) - CE QUE J'AI FAIT
+✅ Réorganisé les boutons FRONTPAGE (orienté joueur)
+✅ Nettoyé 100+ scripts et docs (archivés dans scripts_old/ et docs_archive/)
+✅ Créé DEVOPS.md simple et clair
+✅ Configuré SSH sans mot de passe (clé: ~/.ssh/hot_magic_key)
+✅ Installé VPS auto-sync intelligent (préserve configs)
+✅ Vérifié santé complète : 28/28 pages OK
+
+## 🔵 GPT - CE QU'IL FAIT
+- Migration React unifiée
+- QuickCast Panel intégré
+- Basculement vers moteur réel (`/api/magic/cast`)
+- Formula Registry avec Vector DB
+- Tests de parité HTML/React
+
+## 🎯 SYNC POINTS ACTUELS
+
+### Pour GPT :
+1. **Parity tests** : Valider avec `test_snapshots.json`
+2. **QuickCast** : Finaliser avec flag `useRealEngine`
+3. **Backend magic** : Compléter Formula Registry
+
+### Pour Claude :
+1. **Spells Lab HTML** : À créer dans FRONTPAGE/
+2. **Tooltips formules** : Ajouter depuis `MAGIC_FORMULAS_CATALOG.md`
+3. **VPS deploy** : Après validation locale
+
+## 📁 FICHIERS DE SYNC
+- `.dualclaude` - Mes instructions
+- `.dualgpt` - Instructions GPT
+- `.dual_sync_report.md` - Dernier rapport
+- `.gpt_sync_continue.md` - Next steps GPT
+- `MAP_EDITOR_6D_ADAPTER.html` - HTML de référence
+- `test_traces/` - Scenarios de test
+- `test_snapshots.json` - États attendus
+
+## 🔄 COMMENT SYNCHRONISER
+
+### Claude → GPT :
+```bash
+# Après modifications HTML/UX
+git add -A && git commit -m "🎨 Claude: [description]" && git push
+# Créer .claude_handoff.md avec changements
+```
+
+### GPT → Claude :
+```bash
+# Après modifications React/Backend
+git add -A && git commit -m "⚛️ GPT: [description]" && git push
+# Mettre à jour .gpt_sync_continue.md
+```
+
+## 🚀 PROCHAINES ÉTAPES
+
+### PRIORITÉ 1 : Finaliser QuickCast
+- GPT : Connecter au vrai moteur
+- Claude : Créer Spells Lab HTML
+
+### PRIORITÉ 2 : Tests de parité
+- GPT : Valider les 3 scenarios
+- Claude : Vérifier HTML adapter
+
+### PRIORITÉ 3 : Deploy VPS
+- Claude : Deploy après validation
+- GPT : Vérifier endpoints API
+
+## 📊 ÉTAT GLOBAL
+- **VPS** : ✅ 100% opérationnel, auto-sync configuré
+- **React** : 🟡 Migration en cours (GPT)
+- **HTML** : ✅ Pages réorganisées, boutons orientés joueur
+- **Backend** : ✅ Tous services actifs
+- **Tests** : 🟡 Parity tests à valider
+
+---
+**Vincent peut réactiver le système dual maintenant !**

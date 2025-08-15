@@ -34,6 +34,7 @@ import { ToolPalette } from './components/ToolPalette';
 import { TimelineBar } from './components/TimelineBar';
 import { PlayControls } from './components/PlayControls';
 import { StatusBar } from './components/StatusBar';
+import { QuickCastPanel } from './components/QuickCastPanel';
 import { PlayMapBridge } from './PlayMapBridge';
 
 export function UnifiedMapSystem(): React.ReactElement {
@@ -295,6 +296,8 @@ export function UnifiedMapSystem(): React.ReactElement {
           overflow: 'hidden',
         }}>
           {renderEditor()}
+          {/* QuickCast panel flottant toujours visible */}
+          <QuickCastPanel />
         </main>
         
         {/* Contrôles de jeu à droite (mode play) */}

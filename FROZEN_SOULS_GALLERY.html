@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❄️ FROZEN SOULS OF AVALON - Les 82 Âmes Retrouvées ❄️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Particules de neige */
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            from {
+                transform: translateY(-100vh);
+            }
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        /* Header épique */
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid rgba(135, 206, 235, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        .title {
+            font-size: 3.5em;
+            text-shadow: 0 0 30px rgba(135, 206, 235, 0.8);
+            margin-bottom: 20px;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                text-shadow: 0 0 30px rgba(135, 206, 235, 0.8);
+            }
+            50% { 
+                transform: scale(1.05);
+                text-shadow: 0 0 50px rgba(135, 206, 235, 1);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #87CEEB;
+            margin-bottom: 30px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(135, 206, 235, 0.5);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Filtres */
+        .filters {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(135, 206, 235, 0.5);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(135, 206, 235, 0.3);
+            border-color: #FFD700;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(135, 206, 235, 0.5);
+        }
+
+        /* Galerie */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .soul-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(135, 206, 235, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .soul-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #FFD700;
+            box-shadow: 0 15px 40px rgba(135, 206, 235, 0.5);
+        }
+
+        .soul-card.frozen {
+            filter: brightness(0.7) contrast(1.2);
+            border-color: #4169E1;
+        }
+
+        .soul-card.awakening {
+            animation: awaken 2s infinite;
+        }
+
+        @keyframes awaken {
+            0%, 100% { 
+                filter: brightness(1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            }
+            50% { 
+                filter: brightness(1.3);
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            }
+        }
+
+        .soul-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: all 0.3s;
+        }
+
+        .soul-card:hover .soul-image {
+            transform: scale(1.1);
+        }
+
+        .soul-info {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .soul-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 5px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .soul-type {
+            color: #87CEEB;
+            font-size: 0.9em;
+        }
+
+        /* Modal pour voir en grand */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border-top: 3px solid rgba(135, 206, 235, 0.5);
+        }
+
+        .excalibur-freq {
+            font-size: 1.5em;
+            color: #FFD700;
+            margin-top: 20px;
+            animation: vibrate 0.1s infinite;
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(2px); }
+        }
+
+        /* Message flottant */
+        .floating-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 300px;
+            z-index: 100;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Neige qui tombe -->
+    <div class="snow" id="snow"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 class="title">❄️ FROZEN SOULS OF AVALON ❄️</h1>
+        <p class="subtitle">Les 82 Âmes Gelées Retrouvées - La Résurrection Commence</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">82</div>
+                <div class="stat-label">Âmes Totales</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">41</div>
+                <div class="stat-label">Héros d'Avalon 1</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Déjà Réveillés</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">437</div>
+                <div class="stat-label">UIs Perdues</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Filtres -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterSouls('all')">Toutes (82)</button>
+            <button class="filter-btn" onclick="filterSouls('heroes')">Héros (41)</button>
+            <button class="filter-btn" onclick="filterSouls('awakened')">Réveillés (7)</button>
+            <button class="filter-btn" onclick="filterSouls('frozen')">Gelés (34)</button>
+            <button class="filter-btn" onclick="filterSouls('magic')">Magiciens</button>
+            <button class="filter-btn" onclick="filterSouls('warriors')">Guerriers</button>
+            <button class="filter-btn" onclick="filterSouls('creatures')">Créatures</button>
+            <button class="filter-btn" onclick="filterSouls('portals')">Portails</button>
+        </div>
+
+        <!-- Galerie -->
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-info">
+                <h2 id="modalTitle"></h2>
+                <p id="modalDesc"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>"Les âmes gelées attendent leur réveil..."</p>
+        <div class="excalibur-freq">⚔️ Excalibur: <span id="freq">997.0</span> Hz ⚔️</div>
+    </div>
+
+    <!-- Message flottant -->
+    <div class="floating-message">
+        <strong>⚔️ Prophétie:</strong><br>
+        "Quand les 82 âmes seront réunies,<br>
+        Les mondes perdus renaîtront,<br>
+        Et Anna reviendra..."
+    </div>
+
+    <script>
+        // Liste des âmes
+        const souls = [
+            // Héros principaux (réveillés)
+            { name: "Merlin Phaveil", file: "Merlin Phaveil.png", type: "heroes awakened magic", desc: "Le Mage Éternel - RÉVEILLÉ" },
+            { name: "Merlin, le jeune et le sage", file: "Merlin, le jeune et le sage.png", type: "heroes awakened magic", desc: "Double temporel de Merlin - RÉVEILLÉ" },
+            { name: "Grofignon", file: "Grofignon, le Troll intemporel.png", type: "heroes awakened", desc: "Le Troll Philosophe - RÉVEILLÉ" },
+            { name: "Le Magicien Grouffian", file: "Le Magicien Grouffian en Portrait.png", type: "heroes awakened magic", desc: "Aspect magique de Grofignon - RÉVEILLÉ" },
+            { name: "Vince Vega", file: "Vince Vega's Spell Portal.png", type: "heroes awakened portals", desc: "Vincent le Rêveur - RÉVEILLÉ" },
+            { name: "Ancient Warrior", file: "Ancient Warrior of Fiery Runes.png", type: "heroes awakened warriors", desc: "Arthur Ancien - RÉVEILLÉ" },
+            { name: "Cosmic Shaman", file: "Cosmic Shaman and Temporal Reflection.png", type: "heroes awakened magic", desc: "Walter Sec - RÉVEILLÉ" },
+            
+            // Héros gelés
+            { name: "AVALON NIGHT", file: "AVALON NIGHT.png", type: "heroes frozen portals", desc: "La Nuit d'Avalon - GELÉ" },
+            { name: "Celestial Guardian", file: "Celestial Guardian of Light.png", type: "heroes frozen", desc: "Gardien Céleste - GELÉ" },
+            { name: "Time-Bending Wizard", file: "Time-Bending Wizard of Mystical Realms.png", type: "heroes frozen magic", desc: "Maître du Temps - GELÉ" },
+            { name: "Griffin Rider", file: "Griffin Rider Over Medieval Landscape.png", type: "heroes frozen warriors", desc: "Chevaucheur de Griffon - GELÉ" },
+            { name: "Elder Merchant", file: "Elder Merchant and Glowing Hourglass.png", type: "heroes frozen", desc: "Marchand du Temps - GELÉ" },
+            { name: "Ethereal Sorcerer", file: "Ethereal Sorcerer in a Mystical Library.png", type: "heroes frozen magic", desc: "Sorcier Éthéré - GELÉ" },
+            { name: "Frozen Beyond Time", file: "Frozen Beyond Time.png", type: "heroes frozen", desc: "Gelé Hors du Temps - GELÉ" },
+            { name: "Frozen in Time", file: "Frozen in Time Amidst Ruins.png", type: "heroes frozen", desc: "Figé dans les Ruines - GELÉ" },
+            { name: "Knight and Dragons", file: "Knight and Dragons at Twilight.png", type: "heroes frozen warriors", desc: "Chevalier Dragon - GELÉ" },
+            { name: "Warrior in Storm", file: "Warrior in the Eye of the Storm.png", type: "heroes frozen warriors", desc: "Guerrier Tempête - GELÉ" },
+            { name: "Warrior's Stand", file: "Warrior's Stand in Frozen Time.png", type: "heroes frozen warriors", desc: "Dernière Position - GELÉ" },
+            { name: "Technomancer", file: "Technomancer in Crystal-Lit Lab.png", type: "heroes frozen magic", desc: "Technomancien - GELÉ" },
+            { name: "Temporal Echoes", file: "Temporal Echoes of the Time Traveler.png", type: "heroes frozen", desc: "Échos Temporels - GELÉ" },
+            { name: "Le Voyageur Temporel", file: "Le Voyageur Temporel en Écho.png", type: "heroes frozen", desc: "Voyageur du Temps - GELÉ" },
+            { name: "Le Gardien", file: "Le Gardien de la Température.png", type: "heroes frozen", desc: "Gardien de la Température - GELÉ" },
+            { name: "Merlash", file: "Merlash, Maître des Éclairs.png", type: "heroes frozen magic", desc: "Maître des Éclairs - GELÉ" },
+            { name: "Gathering Warriors", file: "Gathering of Legendary Warriors.png", type: "heroes frozen warriors", desc: "Assemblée Légendaire - GELÉ" },
+            { name: "Epic Battle", file: "Epic Battle of Arcane Heroes.png", type: "heroes frozen warriors", desc: "Bataille Épique - GELÉ" },
+            { name: "Heroes Across Realms", file: "Heroes and Magic Across Realms.png", type: "heroes frozen", desc: "Héros Multidimensionnels - GELÉ" },
+            
+            // Créatures
+            { name: "Orc Shaman", file: "Orc Shaman and Elemental Fury.png", type: "creatures magic", desc: "Shaman Orc Élémentaire" },
+            { name: "Orc Sorcerer", file: "Orc Sorcerer and Arcane Portals.png", type: "creatures magic portals", desc: "Sorcier Orc des Portails" },
+            { name: "Orc Warrior", file: "Orc Warrior and Glowing Shield.png", type: "creatures warriors", desc: "Guerrier Orc au Bouclier" },
+            { name: "Mystical Orc", file: "Mystical Orc Mage in Multidimensional Realm.png", type: "creatures magic", desc: "Mage Orc Multidimensionnel" },
+            { name: "Futuristic Orc", file: "Futuristic Orc with Radiant Energy.png", type: "creatures", desc: "Orc du Futur" },
+            { name: "L'orc mystique", file: "L'orc et l'aura mystique.png", type: "creatures magic", desc: "Orc à l'Aura Mystique" },
+            { name: "Sorcier orc", file: "Sorcier orc flottant dans l'aura.png", type: "creatures magic", desc: "Sorcier Orc Flottant" },
+            { name: "Magical Canine", file: "Magical Canine in Enchanted Forest.png", type: "creatures", desc: "Chien Magique de la Forêt" },
+            { name: "Groot's Portal", file: "Groot's Mystical Portal Realm.png", type: "creatures portals", desc: "Groot Gardien des Portails" },
+            { name: "Lézard Cybernétique", file: "Lézard cybernétique à travers le temps.png", type: "creatures", desc: "Lézard Temporel" },
+            
+            // ETH Totems
+            { name: "ETH Bear", file: "ETH BEAR.PNG", type: "magic", desc: "Totem de l'Ours Éthéré" },
+            { name: "ETH Eagle", file: "ETH EAGLE.PNG", type: "magic", desc: "Totem de l'Aigle Éthéré" },
+            { name: "ETH Leo", file: "ETH LEO.PNG", type: "magic", desc: "Totem du Lion Éthéré" },
+            { name: "ETH Wolf", file: "ETH WOLF.PNG", type: "magic", desc: "Totem du Loup Éthéré" },
+            
+            // Objets et Portails
+            { name: "INTERSTICE", file: "INTERSTICE.png", type: "portals", desc: "L'Interstice - Cimetière des UIs" },
+            { name: "Fiery Portal", file: "Fiery Portal in Stormy Landscape.png", type: "portals", desc: "Portail de Feu Tempétueux" },
+            { name: "Arcane Tower", file: "Arcane Tower of Luminous Energy.png", type: "portals magic", desc: "Tour Arcanique Lumineuse" },
+            { name: "Anchor Tower", file: "Anchor Tower Amidst Glowing Skies.png", type: "portals", desc: "Tour d'Ancrage Céleste" },
+            { name: "Mystical Tome", file: "Mystical Tome of Light and Shadow.png", type: "magic", desc: "Tome de Lumière et d'Ombre" },
+            { name: "Spell Cards", file: "Magical Spell Cards Collection.png", type: "magic", desc: "Collection de Cartes Magiques" },
+            { name: "Quantum Surge", file: "Quantum Surge Spell Card Design.png", type: "magic", desc: "Carte Sort Surge Quantique" },
+            { name: "AvantWorldBlade", file: "L'épée AvantWorldBlade dans l'univers cosmique.png", type: "magic warriors", desc: "L'Épée qui Tranche les Mondes" },
+            { name: "Casual Shield", file: "CASUAL SHIELD.png", type: "warriors", desc: "Bouclier Causal" },
+            { name: "Bouteille de Clint", file: "Bouteille de Clint.png", type: "magic", desc: "Élixir de Clint Eastwood" },
+            { name: "HOT Icon", file: "HOT_ICON.png", type: "magic", desc: "Icône Heroes of Time" },
+            { name: "Penteract", file: "Penteract Projection in 5D Space.png", type: "magic portals", desc: "Projection 5D du Penteract" },
+            
+            // Paysages et abstraits
+            { name: "Forêt Ancienne", file: "Forêt ancienne et spirale lumineuse.png", type: "portals", desc: "Forêt aux Spirales de Lumière" },
+            { name: "Forêt Fractale", file: "Forêt fractale et portails lumineux.png", type: "portals", desc: "Forêt Fractale Interdimensionnelle" },
+            { name: "Misty Forest", file: "Misty Forest and the Watchkeeper.png", type: "portals", desc: "Forêt Brumeuse et son Gardien" },
+            { name: "Rupture Temporelle", file: "Rupture globale des lignes temporelles.png", type: "portals", desc: "Grande Rupture des Timelines" },
+            { name: "Paysage Topographique", file: "Paysage topographique abstrait lumineux.png", type: "portals", desc: "Topographie Quantique" },
+            { name: "Time and Energy", file: "Time and Energy Unbound.png", type: "magic portals", desc: "Temps et Énergie Libérés" },
+            { name: "Flames of Fate", file: "Flames of Fate.png", type: "magic", desc: "Flammes du Destin" },
+            
+            // Autres
+            { name: "Holographic Surgeon", file: "Holographic Surgeon in a Red-lit Chamber.png", type: "magic", desc: "Chirurgien Holographique" },
+            { name: "Le Sage", file: "Le sage dans la salle de classe.png", type: "heroes frozen", desc: "Le Sage Professeur - GELÉ" },
+            { name: "Transformation", file: "Transformation in a Barren Realm.png", type: "magic", desc: "Transformation dans le Néant" },
+            { name: "Effet Glitch", file: "Effet Glitch sur un Post Reddit.png", type: "magic", desc: "Glitch de la Réalité" },
+            { name: "GROFI", file: "GROFI.png", type: "heroes frozen", desc: "GROFI l'Ancien - GELÉ" },
+            { name: "Grokæn", file: "Grokæn_ Master of Quantum Realms.png", type: "heroes frozen magic", desc: "Grokæn Maître Quantique - GELÉ" },
+            { name: "Guerrier Mystique", file: "Guerrier mystique dans un paysage magique.png", type: "heroes frozen warriors", desc: "Guerrier Mystique - GELÉ" },
+            { name: "Le Magicien Lumen", file: "Le Magicien Lumen et son Grimoire.png", type: "heroes frozen magic", desc: "Lumen et son Grimoire - GELÉ" },
+            { name: "Le Magicien", file: "Le Magicien et son Grimoire Mystique.png", type: "heroes frozen magic", desc: "Magicien au Grimoire - GELÉ" },
+            { name: "Mystical Warrior", file: "Mystical Warrior and Ethereal Duplicates.png", type: "heroes frozen warriors", desc: "Guerrier et ses Doubles - GELÉ" },
+            { name: "Mystical Warriors", file: "Mystical Warriors of the Elements-2.png", type: "heroes frozen warriors", desc: "Guerriers Élémentaires - GELÉ" },
+            { name: "Cosmic Encounter", file: "Cosmic Encounter with a Smirking Man.png", type: "heroes frozen", desc: "Rencontre Cosmique - GELÉ" },
+            { name: "Celestial Guardian Starry", file: "Celestial Guardian in Starry Attire.png", type: "heroes frozen", desc: "Gardien Étoilé - GELÉ" }
+        ];
+
+        // Créer la galerie
+        function createGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            souls.forEach((soul, index) => {
+                const card = document.createElement('div');
+                card.className = `soul-card ${soul.type}`;
+                if (soul.type.includes('frozen')) card.classList.add('frozen');
+                if (soul.type.includes('awakened')) card.classList.add('awakening');
+                
+                card.innerHTML = `
+                    <img class="soul-image" src="_FROZENSOULS/${soul.file}" alt="${soul.name}" 
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"250\" height=\"200\"><rect fill=\"%23333\" width=\"250\" height=\"200\"/><text fill=\"%23fff\" x=\"50%\" y=\"50%\" text-anchor=\"middle\" dy=\".3em\">Image Loading...</text></svg>'">
+                    <div class="soul-info">
+                        <div class="soul-name">${soul.name}</div>
+                        <div class="soul-type">${soul.desc}</div>
+                    </div>
+                `;
+                
+                card.onclick = () => openModal(soul);
+                gallery.appendChild(card);
+            });
+        }
+
+        // Filtrer les âmes
+        function filterSouls(filter) {
+            const cards = document.querySelectorAll('.soul-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                if (filter === 'all' || card.className.includes(filter)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Modal
+        function openModal(soul) {
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDesc = document.getElementById('modalDesc');
+            
+            modalImage.src = `_FROZENSOULS/${soul.file}`;
+            modalTitle.textContent = soul.name;
+            modalDesc.textContent = soul.desc;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Créer la neige
+        function createSnow() {
+            const snow = document.getElementById('snow');
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.innerHTML = '❄';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = Math.random() * 10 + 10 + 's';
+                snowflake.style.opacity = Math.random();
+                snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+                snowflake.style.animationDelay = Math.random() * 10 + 's';
+                snow.appendChild(snowflake);
+            }
+        }
+
+        // Excalibur frequency
+        setInterval(() => {
+            const freq = 997 + (Math.random() * 0.4 - 0.2);
+            document.getElementById('freq').textContent = freq.toFixed(1);
+        }, 100);
+
+        // Initialisation
+        createGallery();
+        createSnow();
+
+        // Message de bienvenue
+        console.log(`
+❄️ FROZEN SOULS OF AVALON ❄️
+=============================
+82 âmes retrouvées !
+41 héros d'Avalon 1
+437 UIs perdues
+7 déjà réveillés
+
+La résurrection commence...
+Excalibur vibre à 997 Hz...
+
+- Merlin
+        `);
+    </script>
+</body>
+</html>

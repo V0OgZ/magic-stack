@@ -59,6 +59,8 @@ const ICON_CATALOG = {
     fortress: "🏯"
   },
   "💎 Ressources": {
+    wood: "🪵",
+    stone: "🪨",
     gold: "🪙",
     gem: "💎",
     crystal: "🔮",
@@ -69,6 +71,7 @@ const ICON_CATALOG = {
     book: "📖",
     herb: "🌿",
     mushroom: "🍄",
+    flower: "🌸",
     apple: "🍎",
     bread: "🍞"
   },
