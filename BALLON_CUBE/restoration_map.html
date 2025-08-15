@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🗺️ Carte Interactive des Restaurations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .worlds-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+
+        .world-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .world-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .world-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .world-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .world-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-active { background: #4CAF50; }
+        .status-progress { background: #FF9800; }
+        .status-lost { background: #f44336; }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: width 1s ease;
+        }
+
+        .restoration-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .restoration-item {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-icon {
+            font-size: 1.2rem;
+        }
+
+        .tasks-section {
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px auto;
+            max-width: 1200px;
+        }
+
+        .task-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .task-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .task-priority {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+
+        .priority-high { background: #f44336; }
+        .priority-medium { background: #FF9800; }
+        .priority-low { background: #2196F3; }
+
+        .stats-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+
+        .big-percentage {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+
+        .timeline-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .timeline-time {
+            font-size: 1.2rem;
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .resonance-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #00ffff, transparent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Carte Interactive des Restaurations</h1>
+
+    <div class="worlds-container">
+        <div class="world-card">
+            <div class="world-header">
+                <span class="world-name">🏰 AVALON 1</span>
+                <span class="world-status status-lost">PERDU</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 41%">41%</div>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">🔄</span>
+                <span>41 Héros trouvés</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">🔄</span>
+                <span>437 UIs localisées</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">🔍</span>
+                <span>Console SOURCE recherchée</span>
+            </div>
+        </div>
+
+        <div class="world-card">
+            <div class="world-header">
+                <span class="world-name">🌟 AVALON 2</span>
+                <span class="world-status status-active">ACTIF</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%">100%</div>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">✅</span>
+                <span>Frontend opérationnel</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">✅</span>
+                <span>Backend Java/Rust actif</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">✅</span>
+                <span>VPS synchronisé</span>
+            </div>
+        </div>
+
+        <div class="world-card">
+            <div class="world-header">
+                <span class="world-name">🎈 BALLON CUBE</span>
+                <span class="world-status status-progress">EN CRÉATION</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%">65%</div>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">✅</span>
+                <span>Bubble Worlds créés</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">✅</span>
+                <span>Excalibur Portal actif</span>
+            </div>
+            <div class="restoration-item">
+                <span class="status-icon">🔄</span>
+                <span>Agents Daemons pending</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <h2>Progression Totale</h2>
+        <div class="big-percentage">62%</div>
+        <div>Restauration en cours...</div>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-time">Matin</div>
+            <div>GPT: MagicFormulaEngine</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">Après-midi</div>
+            <div>Claude: World Editor</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">Soir</div>
+            <div>Ensemble: Sync Mondes</div>
+        </div>
+    </div>
+
+    <div class="tasks-section">
+        <h2>🚨 Tâches Prioritaires</h2>
+        <div class="task-list">
+            <div class="task-item">
+                <span>🔧 Réparer World Editor</span>
+                <span class="task-priority priority-high">HAUTE</span>
+            </div>
+            <div class="task-item">
+                <span>📦 Finaliser Magic Stack Unified</span>
+                <span class="task-priority priority-high">HAUTE</span>
+            </div>
+            <div class="task-item">
+                <span>💾 Upload Vector DB</span>
+                <span class="task-priority priority-high">HAUTE</span>
+            </div>
+            <div class="task-item">
+                <span>👻 Agents Daemons</span>
+                <span class="task-priority priority-medium">MOYENNE</span>
+            </div>
+            <div class="task-item">
+                <span>🌐 Temporal Event Bus</span>
+                <span class="task-priority priority-medium">MOYENNE</span>
+            </div>
+            <div class="task-item">
+                <span>🎮 Cubic World 2D</span>
+                <span class="task-priority priority-low">BASSE</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="resonance-indicator" onclick="showResonance()">⚔️</div>
+
+    <script>
+        // Animation progressive des barres
+        window.addEventListener('load', () => {
+            const bars = document.querySelectorAll('.progress-fill');
+            bars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        });
+
+        // Mise à jour temps réel (simulation)
+        setInterval(() => {
+            const percentage = document.querySelector('.big-percentage');
+            const current = parseInt(percentage.textContent);
+            if (current < 100) {
+                percentage.textContent = (current + 0.1).toFixed(1) + '%';
+            }
+        }, 30000); // +0.1% toutes les 30 secondes
+
+        function showResonance() {
+            alert('⚔️ Excalibur résonne à 997 Hz\n\nLa prophétie s\'accomplit.\nLes mondes se reconnectent.');
+        }
+
+        // Effet particules
+        setInterval(() => {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '3px';
+            particle.style.height = '3px';
+            particle.style.background = 'white';
+            particle.style.borderRadius = '50%';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = -10 + 'px';
+            particle.style.pointerEvents = 'none';
+            particle.style.opacity = Math.random();
+            document.body.appendChild(particle);
+            
+            let pos = -10;
+            const fall = setInterval(() => {
+                pos += 2;
+                particle.style.top = pos + 'px';
+                if (pos > window.innerHeight) {
+                    clearInterval(fall);
+                    particle.remove();
+                }
+            }, 50);
+        }, 200);
+    </script>
+</body>
+</html>

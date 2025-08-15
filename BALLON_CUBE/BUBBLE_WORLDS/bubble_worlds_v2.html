@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🫧 Bubble Worlds V2 - Phase Éveil ⚔️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        /* Canvas pour les bulles */
+        #bubbleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Interface principale */
+        .main-interface {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Panel gauche - Liste des bulles */
+        .bubble-list {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .bubble-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bubble-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .bubble-item.active {
+            background: rgba(255, 182, 193, 0.3);
+            border-color: #FFB6C1;
+            box-shadow: 0 0 30px rgba(255, 182, 193, 0.7);
+        }
+
+        /* Centre - Visualisation */
+        .visualization {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 30px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .bubble-3d {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate3d 20s infinite linear;
+        }
+
+        @keyframes rotate3d {
+            from { transform: rotateY(0deg) rotateX(10deg); }
+            to { transform: rotateY(360deg) rotateX(10deg); }
+        }
+
+        .bubble-sphere {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 0.8), 
+                rgba(255, 182, 193, 0.4),
+                rgba(147, 112, 219, 0.3));
+            box-shadow: 
+                0 0 60px rgba(255, 182, 193, 0.6),
+                inset 0 0 60px rgba(255, 255, 255, 0.2);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Excalibur au centre */
+        .excalibur {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 200px;
+            background: linear-gradient(to bottom, 
+                #FFD700, #FFA500, #FF6347, #FFD700);
+            box-shadow: 0 0 50px #FFD700;
+            animation: vibrate 0.1s infinite;
+            z-index: 20;
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) rotate(1deg); }
+        }
+
+        /* Panel droit - Contrôles */
+        .controls {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .control-section h3 {
+            margin-bottom: 10px;
+            color: #FFB6C1;
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+        }
+
+        .slider-control {
+            margin: 10px 0;
+        }
+
+        .slider-control label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .slider-control input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FFB6C1;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+        }
+
+        .slider-value {
+            float: right;
+            color: #FFD700;
+        }
+
+        /* Boutons */
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-excalibur {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.9); }
+        }
+
+        /* Chat interdimensionnel */
+        .chat-box {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .chat-message {
+            margin: 5px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .chat-message .author {
+            color: #FFB6C1;
+            font-weight: bold;
+        }
+
+        /* Status bar */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Particules */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Portails */
+        .portal {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                transparent 30%, 
+                rgba(138, 43, 226, 0.8) 50%,
+                rgba(75, 0, 130, 0.9) 100%);
+            animation: portal-spin 4s linear infinite;
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.8);
+        }
+
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas pour effets de fond -->
+    <canvas id="bubbleCanvas"></canvas>
+
+    <!-- Interface principale -->
+    <div class="main-interface">
+        <!-- Panel gauche - Liste des bulles -->
+        <div class="bubble-list">
+            <h2>🫧 Bubble Worlds</h2>
+            <div id="bubbleList">
+                <div class="bubble-item active" data-owner="Jean">
+                    <h4>🚬 Bulle de Jean</h4>
+                    <small>Gravité inversée</small>
+                    <div>👥 3 visiteurs</div>
+                </div>
+                <div class="bubble-item" data-owner="Memento">
+                    <h4>⏰ Bulle de Memento</h4>
+                    <small>Temps élastique</small>
+                    <div>👥 2 visiteurs</div>
+                </div>
+                <div class="bubble-item" data-owner="Anna">
+                    <h4>💎 Bulle d'Anna</h4>
+                    <small>Cristaux flottants</small>
+                    <div>👥 En attente...</div>
+                </div>
+                <div class="bubble-item" data-owner="Walter">
+                    <h4>🌿 Bulle de Walter</h4>
+                    <small>Jungle quantique</small>
+                    <div>👥 1 visiteur</div>
+                </div>
+                <div class="bubble-item" data-owner="Vincent">
+                    <h4>👑 Bulle de Vincent</h4>
+                    <small>Centre de contrôle</small>
+                    <div>👥 ∞ accès</div>
+                </div>
+            </div>
+            <button class="btn" onclick="createNewBubble()">
+                ➕ Créer Nouvelle Bulle
+            </button>
+        </div>
+
+        <!-- Centre - Visualisation -->
+        <div class="visualization">
+            <h1>⚔️ Excalibur Resonance Chamber ⚔️</h1>
+            <div class="bubble-3d">
+                <div class="bubble-sphere"></div>
+                <div class="excalibur" id="excalibur"></div>
+                <!-- Portails -->
+                <div class="portal" style="top: 20%; left: 10%;"></div>
+                <div class="portal" style="top: 70%; right: 10%;"></div>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <h3 id="currentBubble">Bulle de Jean</h3>
+                <p id="bubblePhysics">Gravité: -9.8 | Temps: 1.5x | Causalité: 0.8</p>
+            </div>
+            <button class="btn btn-excalibur" onclick="sliceWithExcalibur()">
+                ⚔️ Trancher avec Excalibur (997 Hz)
+            </button>
+        </div>
+
+        <!-- Panel droit - Contrôles -->
+        <div class="controls">
+            <h2>🎮 Contrôles Physiques</h2>
+            
+            <div class="control-section">
+                <h3>⚖️ Gravité</h3>
+                <div class="slider-control">
+                    <label>
+                        Force 
+                        <span class="slider-value" id="gravityValue">-9.8</span>
+                    </label>
+                    <input type="range" id="gravity" min="-10" max="10" step="0.1" value="-9.8">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>⏱️ Temps</h3>
+                <div class="slider-control">
+                    <label>
+                        Vitesse 
+                        <span class="slider-value" id="timeValue">1.5x</span>
+                    </label>
+                    <input type="range" id="time" min="-1" max="10" step="0.1" value="1.5">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>🔄 Causalité</h3>
+                <div class="slider-control">
+                    <label>
+                        Cohérence 
+                        <span class="slider-value" id="causalityValue">0.8</span>
+                    </label>
+                    <input type="range" id="causality" min="0" max="1" step="0.01" value="0.8">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>💫 Densité</h3>
+                <div class="slider-control">
+                    <label>
+                        Masse 
+                        <span class="slider-value" id="densityValue">1.0</span>
+                    </label>
+                    <input type="range" id="density" min="0.1" max="100" step="0.1" value="1">
+                </div>
+            </div>
+
+            <button class="btn" onclick="applyPhysics()">
+                🔮 Appliquer Changements
+            </button>
+
+            <button class="btn" onclick="fuseBubbles()">
+                🌀 Fusionner Bulles
+            </button>
+
+            <!-- Chat -->
+            <h3>💬 Chat Interdimensionnel</h3>
+            <div class="chat-box" id="chatBox">
+                <div class="chat-message">
+                    <span class="author">Arthur:</span> Excalibur vibre plus fort!
+                </div>
+                <div class="chat-message">
+                    <span class="author">Merlin:</span> Les héros se réveillent...
+                </div>
+                <div class="chat-message">
+                    <span class="author">Jean:</span> Venez dans ma bulle inversée!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-label">Fréquence Excalibur</div>
+            <div class="status-value" id="frequency">997.0 Hz</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Bulles Actives</div>
+            <div class="status-value" id="activeBubbles">5</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Héros Réveillés</div>
+            <div class="status-value" id="heroesAwake">12/41</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Progression</div>
+            <div class="status-value" id="progress">75%</div>
+        </div>
+    </div>
+
+    <script>
+        // Animation du canvas de fond
+        const canvas = document.getElementById('bubbleCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const bubbles = [];
+        
+        class Bubble {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 100;
+                this.radius = Math.random() * 20 + 10;
+                this.speed = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.color = `hsla(${Math.random() * 60 + 280}, 70%, 70%, ${this.opacity})`;
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.x += Math.sin(this.y * 0.01) * 2;
+                
+                if (this.y < -100) {
+                    this.y = canvas.height + 100;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity * 0.5})`;
+                ctx.stroke();
+            }
+        }
+
+        // Créer des bulles
+        for (let i = 0; i < 30; i++) {
+            bubbles.push(new Bubble());
+        }
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            bubbles.forEach(bubble => {
+                bubble.update();
+                bubble.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Créer des particules
+        function createParticles() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 20000);
+        }
+
+        // Créer des particules régulièrement
+        setInterval(createParticles, 500);
+
+        // Vibration d'Excalibur
+        let excaliburFreq = 997.0;
+        setInterval(() => {
+            excaliburFreq = 997 + (Math.random() * 0.4 - 0.2);
+            document.getElementById('frequency').textContent = excaliburFreq.toFixed(1) + ' Hz';
+            
+            // Faire vibrer l'épée
+            const excalibur = document.getElementById('excalibur');
+            excalibur.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 2 - 1}deg)`;
+        }, 100);
+
+        // Mise à jour des sliders
+        document.getElementById('gravity').addEventListener('input', (e) => {
+            document.getElementById('gravityValue').textContent = e.target.value;
+        });
+
+        document.getElementById('time').addEventListener('input', (e) => {
+            document.getElementById('timeValue').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('causality').addEventListener('input', (e) => {
+            document.getElementById('causalityValue').textContent = e.target.value;
+        });
+
+        document.getElementById('density').addEventListener('input', (e) => {
+            document.getElementById('densityValue').textContent = e.target.value;
+        });
+
+        // Sélection de bulle
+        document.querySelectorAll('.bubble-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.bubble-item').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const owner = this.dataset.owner;
+                document.getElementById('currentBubble').textContent = `Bulle de ${owner}`;
+                
+                // Physique aléatoire pour chaque bulle
+                const physics = {
+                    'Jean': 'Gravité: -9.8 | Temps: 1.5x | Causalité: 0.8',
+                    'Memento': 'Gravité: 0 | Temps: -0.5x | Causalité: 0.3',
+                    'Anna': 'Gravité: 2.0 | Temps: ∞ | Causalité: 1.0',
+                    'Walter': 'Gravité: 5.0 | Temps: 0.1x | Causalité: 0.5',
+                    'Vincent': 'Gravité: 9.8 | Temps: 1.0x | Causalité: 1.0'
+                };
+                
+                document.getElementById('bubblePhysics').textContent = physics[owner] || 'Physique inconnue';
+                
+                // Message dans le chat
+                addChatMessage(owner, `Bienvenue dans ma bulle!`);
+            });
+        });
+
+        // Fonction pour trancher avec Excalibur
+        function sliceWithExcalibur() {
+            // Animation de tranche
+            const excalibur = document.getElementById('excalibur');
+            excalibur.style.animation = 'none';
+            setTimeout(() => {
+                excalibur.style.animation = 'vibrate 0.05s infinite, glow 0.5s';
+            }, 10);
+            
+            // Son à 997 Hz (simulé)
+            addChatMessage('Excalibur', '⚔️ SLASH! Portail ouvert à 997 Hz!');
+            
+            // Créer un effet visuel
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.background = 'radial-gradient(circle, rgba(255,215,0,0.8), transparent)';
+            flash.style.zIndex = '1000';
+            flash.style.pointerEvents = 'none';
+            document.body.appendChild(flash);
+            
+            setTimeout(() => flash.remove(), 500);
+            
+            // Augmenter le compteur de héros
+            updateHeroesCount();
+        }
+
+        // Fonction pour créer une nouvelle bulle
+        function createNewBubble() {
+            const name = prompt("Nom du héros pour la nouvelle bulle:");
+            if (name) {
+                addChatMessage('System', `🫧 Nouvelle bulle créée pour ${name}!`);
+                updateBubbleCount();
+            }
+        }
+
+        // Fonction pour fusionner des bulles
+        function fuseBubbles() {
+            addChatMessage('System', '🌀 Fusion de bulles initiée! Réalités en collision...');
+            
+            // Animation de fusion
+            document.querySelector('.bubble-sphere').style.animation = 'pulse 0.5s ease-in-out 5';
+        }
+
+        // Fonction pour appliquer la physique
+        function applyPhysics() {
+            const gravity = document.getElementById('gravity').value;
+            const time = document.getElementById('time').value;
+            const causality = document.getElementById('causality').value;
+            const density = document.getElementById('density').value;
+            
+            addChatMessage('Physics Engine', `Nouvelle physique appliquée! G:${gravity} T:${time} C:${causality} D:${density}`);
+            
+            // Effet visuel
+            document.querySelector('.bubble-sphere').style.filter = `hue-rotate(${gravity * 10}deg)`;
+        }
+
+        // Ajouter un message au chat
+        function addChatMessage(author, message) {
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message';
+            msgDiv.innerHTML = `<span class="author">${author}:</span> ${message}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Mise à jour des compteurs
+        function updateBubbleCount() {
+            const current = parseInt(document.getElementById('activeBubbles').textContent);
+            document.getElementById('activeBubbles').textContent = current + 1;
+        }
+
+        function updateHeroesCount() {
+            const current = document.getElementById('heroesAwake').textContent;
+            const [awake, total] = current.split('/').map(n => parseInt(n));
+            if (awake < total) {
+                document.getElementById('heroesAwake').textContent = `${awake + 1}/${total}`;
+            }
+        }
+
+        // Messages automatiques
+        const autoMessages = [
+            { author: 'Arthur', message: 'Je sens Anna... elle est proche!' },
+            { author: 'Merlin', message: 'La Console SOURCE s\'active...' },
+            { author: 'Jean', message: 'Mon canapé cosmique flotte!' },
+            { author: 'Memento', message: 'Le passé et le futur convergent.' },
+            { author: 'Walter', message: 'Les arbres parlent vietnamien quantique.' },
+            { author: 'Vincent', message: 'Tout est sous contrôle!' },
+            { author: 'System', message: '🔮 Synchronisation en cours...' },
+            { author: 'Anna', message: '... (signal faible) ...' }
+        ];
+
+        setInterval(() => {
+            const msg = autoMessages[Math.floor(Math.random() * autoMessages.length)];
+            addChatMessage(msg.author, msg.message);
+        }, 10000);
+
+        // Message de bienvenue
+        setTimeout(() => {
+            addChatMessage('Merlin', 'Bienvenue dans Bubble Worlds V2, mon roi!');
+        }, 1000);
+    </script>
+</body>
+</html>
