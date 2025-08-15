@@ -1655,7 +1655,14 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
         });
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(()=>{});
+            navigator.serviceWorker.register('/sw.js').then((reg)=>{
+                // Auto-reload when a new SW takes control
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    try { window.location.reload(); } catch {}
+                });
+                // Periodic update check (no heavy downloads thanks to cache-first images)
+                setInterval(() => { try { reg.update(); } catch {} }, 60000);
+            }).catch(()=>{});
         }
     </script>
 </body>

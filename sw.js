@@ -1,11 +1,13 @@
+const STATIC_VERSION = 'hot-static-v2';
+const HEAVY_IMAGE_PREFIX = '/FRONTPAGE/assets/assets/'; // leave cache-first for these only
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open('hot-static-v1').then((cache) => {
+    caches.open(STATIC_VERSION).then((cache) => {
       return cache.addAll([
         '/',
         '/FRONTPAGE/index.html',
-        '/BERENICE_BRUHNNICE_GAME.html',
-        '/FRONTPAGE/assets/hero-bg.jpg',
+        '/FRONTPAGE/berenice.html',
         '/icons/icon-192.png',
         '/icons/icon-512.png'
       ]);
@@ -30,27 +32,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for static
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      return cached || fetch(req, { cache: 'no-store' }).then((res) => {
+  // Strategy: network-first for HTML/JS/CSS to auto-refresh; cache-first only for heavy images
+  const isHeavyImage = url.pathname.startsWith(HEAVY_IMAGE_PREFIX) || url.pathname.endsWith('.png') || url.pathname.endsWith('.jpg') || url.pathname.endsWith('.webp');
+  if (isHeavyImage) {
+    event.respondWith(
+      caches.match(req).then(cached => cached || fetch(req).then(res => {
         const copy = res.clone();
-        caches.open('hot-static-v1').then((cache) => cache.put(req, copy));
+        caches.open(STATIC_VERSION).then(cache => cache.put(req, copy));
         return res;
-      }).catch(() => {
-        // Offline fallback to shell
-        if (url.pathname === '/' || url.pathname.endsWith('.html')) {
-          return caches.match('/FRONTPAGE/index.html');
-        }
-      });
-    })
+      }))
+    );
+    return;
+  }
+  // For app shell and scripts: network-first to get updates, fallback cache offline
+  event.respondWith(
+    fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(STATIC_VERSION).then(cache => cache.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req).then(cached => cached || caches.match('/FRONTPAGE/index.html')))
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
-      keys.filter(k => k !== 'hot-static-v1').map(k => caches.delete(k))
+      keys.filter(k => k !== STATIC_VERSION && k !== 'hot-v1').map(k => caches.delete(k))
     )).then(() => self.clients.claim())
   );
 });
