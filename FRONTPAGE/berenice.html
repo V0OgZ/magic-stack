@@ -194,6 +194,67 @@
             .card-desc, .card-effect { display: none; }
         }
 
+        /* Mini-map HUD */
+        #minimapHUD {
+            position: absolute;
+            top: 50px;
+            right: 8px;
+            width: 180px;
+            height: 180px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            z-index: 55;
+            display: none;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+        
+        #minimapHeader {
+            background: rgba(0,255,255,0.1);
+            padding: 4px 8px;
+            border-bottom: 1px solid #0ff;
+            font-size: 11px;
+            font-weight: bold;
+            color: #0ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #minimapCanvas {
+            width: 176px;
+            height: 150px;
+            background: #111;
+            image-rendering: pixelated;
+        }
+        
+        #visibilityToggle {
+            background: transparent;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        
+        #visibilityToggle:hover {
+            background: rgba(0,255,255,0.1);
+        }
+        
+        @media (max-width: 480px) {
+            #minimapHUD {
+                width: 140px;
+                height: 140px;
+                top: 45px;
+                right: 4px;
+            }
+            #minimapCanvas {
+                width: 136px;
+                height: 110px;
+            }
+        }
+
         #dialogue {
             position: absolute;
             top: 10px;
@@ -2078,6 +2139,130 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 showDialogue("System", "Tu peux installer le jeu! (A2HS)");
             }
         });
+
+        // Mini-map HUD functionality
+        let minimapEnabled = false;
+        let minimapInterval = null;
+        let lastWorldDiff = null;
+
+        function initMinimap() {
+            const canvas = document.getElementById('minimapCanvas');
+            const ctx = canvas.getContext('2d');
+            const toggle = document.getElementById('visibilityToggle');
+            
+            // Toggle visibility polling
+            toggle.onclick = () => {
+                minimapEnabled = !minimapEnabled;
+                toggle.textContent = minimapEnabled ? 'ON' : 'OFF';
+                toggle.style.color = minimapEnabled ? '#0f0' : '#f00';
+                
+                if (minimapEnabled) {
+                    startMinimapPolling();
+                } else {
+                    stopMinimapPolling();
+                    clearMinimap();
+                }
+            };
+        }
+
+        function startMinimapPolling() {
+            if (minimapInterval) clearInterval(minimapInterval);
+            
+            minimapInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(CONFIG.JAVA_API + '/visibility/worldDiff');
+                    if (response.ok) {
+                        const data = await response.json();
+                        lastWorldDiff = data;
+                        renderMinimap(data);
+                    }
+                } catch (error) {
+                    console.warn('Minimap polling error:', error);
+                }
+            }, 2000); // Poll every 2 seconds
+        }
+
+        function stopMinimapPolling() {
+            if (minimapInterval) {
+                clearInterval(minimapInterval);
+                minimapInterval = null;
+            }
+        }
+
+        function renderMinimap(data) {
+            const canvas = document.getElementById('minimapCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw bbox if present
+            if (data.bbox) {
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 2;
+                const x = (data.bbox.x || 0) * 20 + 10;
+                const y = (data.bbox.y || 0) * 20 + 10;
+                const w = (data.bbox.width || 1) * 20;
+                const h = (data.bbox.height || 1) * 20;
+                ctx.strokeRect(x, y, w, h);
+            }
+            
+            // Draw diffs
+            if (data.diffs && data.diffs.length > 0) {
+                data.diffs.forEach(diff => {
+                    const x = (diff.x || 0) * 20 + 12;
+                    const y = (diff.y || 0) * 20 + 12;
+                    
+                    // Different colors for different diff types
+                    ctx.fillStyle = diff.type === 'add' ? '#0f0' : 
+                                   diff.type === 'remove' ? '#f00' : '#ff0';
+                    ctx.fillRect(x, y, 16, 16);
+                });
+            }
+            
+            // Draw timestamp
+            ctx.fillStyle = '#0ff';
+            ctx.font = '10px monospace';
+            const timeStr = new Date(data.ts).toLocaleTimeString();
+            ctx.fillText(timeStr, 4, canvas.height - 4);
+        }
+
+        function clearMinimap() {
+            const canvas = document.getElementById('minimapCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw "OFFLINE" message
+            ctx.fillStyle = '#666';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('OFFLINE', canvas.width/2, canvas.height/2);
+            ctx.textAlign = 'left';
+        }
+
+        // Initialize minimap when game starts
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initMinimap, 100);
+        });
+
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then((reg)=>{
