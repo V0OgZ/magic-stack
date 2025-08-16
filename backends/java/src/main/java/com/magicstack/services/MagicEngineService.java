@@ -361,7 +361,6 @@ public class MagicEngineService {
 	            translations.put("literary", narrative);
 	            translations.put("runic", extractRunicGlyph(normalized));
 	            translations.put("iconic", buildIconicFromText(normalized));
-	            translations.put("quantum", normalized);
 	        } else {
 	            // Non-runic: try JSON-asset translation then fallback to redacted description
 	            String literary =
@@ -370,11 +369,11 @@ public class MagicEngineService {
 	            translations.put("literary", literary);
 	            translations.put("runic", deriveRunicToken(normalized));
 	            translations.put("iconic", buildIconicFromText(normalized));
-	            translations.put("quantum", normalized);
 	        }
 	        
         // Optional: include quantum/trace by simulating a no-op execution in Rust
         if (Boolean.TRUE.equals(request.getIncludeQuantum())) {
+            translations.put("quantum", normalized);
             try {
                 RustTemporalClient.ExecuteResult exec = rust.execute(normalized, Map.of(), null);
                 translations.put("traceHash", exec.traceHash);
