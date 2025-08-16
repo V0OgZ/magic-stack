@@ -24,10 +24,10 @@ async function testBereniceLevels() {
     });
     
     const levels = [
-        { level: 1, name: 'Berenice_Game', expected: 'Berenice actuelle avec ber0' },
-        { level: 2, name: 'PWA_Clippy', expected: 'PWA avec Clippy et écran chargement' },
-        { level: 3, name: 'MAP_ICON_PLACER', expected: 'MAP_ICON_PLACER_ADVANCED interface' },
-        { level: 4, name: 'Dashboard_Unified', expected: 'Dashboard système unifié' }
+        { level: 1, name: 'Hakir_Game', expected: 'Hakir game (renamed from Berenice)' },
+        { level: 2, name: 'Alice_Prime_PWA', expected: 'Alice Prime PWA avec Clippy' },
+        { level: 3, name: 'Alice_vs_Vincent', expected: 'Alice vs Vincent Multiplayer' },
+        { level: 4, name: 'Alice_Prime_Advanced', expected: 'Alice Prime Advanced PWA' }
     ];
     
     for (const levelInfo of levels) {
@@ -67,11 +67,11 @@ async function testBereniceLevels() {
             let validation = '❓ Unknown';
             
             if (levelInfo.level === 1) {
-                // Level 1: Should stay on Berenice
+                // Level 1: Should stay on Hakir (berenice.html)
                 if (finalUrl.includes('berenice.html')) {
-                    validation = '✅ Correct - Stayed on Berenice';
+                    validation = '✅ Correct - Stayed on Hakir game';
                 } else {
-                    validation = '❌ Error - Should stay on Berenice';
+                    validation = '❌ Error - Should stay on Hakir game';
                 }
             } else {
                 // Levels 2-4: Should redirect

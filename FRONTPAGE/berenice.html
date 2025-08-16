@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>BruhNice - Hackeuse Temporelle</title>
+    <title>Hakir - Hackeuse Temporelle</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,34 +22,34 @@
             
             switch (level) {
                 case 1:
-                    // Level 1: Current Berenice game (stay here)
+                    // Level 1: Current Hakir game (stay here)
                     localStorage.setItem('directLevel', directLevel);
                     break;
                     
                 case 2:
                     // Level 2: PWA with Clippy and loading screen
-                    window.location.href = '/docs/pwa.html?mode=berenice&level=2';
+                    window.location.href = '/docs/pwa.html?mode=hakir&level=2';
                     break;
                     
                 case 3:
-                    // Level 3: MAP_ICON_PLACER_ADVANCED
-                    window.location.href = '/apps/magic-stack-unified/public/assets/MAP_ICON_PLACER_ADVANCED.html?level=3';
+                    // Level 3: Alice vs Vincent Multiplayer
+                    window.location.href = '/demos/multiplayer/MULTIPLAYER_DEMO_HOMM3.html?level=3';
                     break;
                     
                 case 4:
-                    // Level 4: Unified Map System Dashboard
-                    window.location.href = '/apps/magic-stack-unified/public/dashboard.html?level=4';
+                    // Level 4: Alice Prime Advanced PWA
+                    window.location.href = '/HOMM3_PWA_IPAD_CLIPPY.html?level=4';
                     break;
                     
                 default:
-                    // Default: Level 1 (current Berenice)
+                    // Default: Level 1 (current Hakir)
                     localStorage.setItem('directLevel', '1');
             }
         }
         
         // Legacy PWA flag support
         if (usePwaUI && !directLevel) {
-            window.location.href = '/docs/pwa.html?mode=berenice';
+            window.location.href = '/docs/pwa.html?mode=hakir';
         }
     </script>
     <style>
@@ -689,7 +689,7 @@
             <div class="terminal-line">Tape 'help' pour voir les commandes.</div>
         </div>
         <div id="terminal-input">
-            <span id="terminal-prompt">berenice@interstice:~$ </span>
+            <span id="terminal-prompt">hakir@interstice:~$ </span>
             <input type="text" id="terminal-cmd" autofocus>
         </div>
     </div>
@@ -776,7 +776,7 @@
             <div id="objectiveChip">Objectif</div>
         </div>
         
-        <!-- Berenice Portrait (only visible in game levels) -->
+        <!-- Hakir Portrait (only visible in game levels) -->
         <div id="berPortrait" style="position: fixed; top: 20px; left: 20px; z-index: 1000; width: 80px; height: 80px; border: 3px solid #0ff; border-radius: 12px; background: #001018; padding: 4px; box-shadow: 0 0 15px rgba(0,255,255,0.5); display: none;">
             <img id="berImage" src="/BALLON_CUBE/PICS_CHARACTERS/ber0.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="Bérénice">
         </div>
@@ -864,7 +864,7 @@
         let gameState = {
             currentLevel: 0,
             player: {
-                id: 'berenice_bruhnnice',
+                id: 'hakir_bruhnnice',
                 hp: 30,
                 maxHp: 30,
                 mana: 3,
@@ -917,7 +917,7 @@
                 }
             },
             whoami: () => {
-                return `berenice - Hackeuse temporelle (10 ans)
+                return `hakir - Hackeuse temporelle (10 ans)
 Discord: BruhNice
 Connexions: Quelques contacts utiles dans l'Interstice
 Status: PERDUE DANS L'INTERSTICE`;
@@ -1016,7 +1016,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 // Affiche la commande
                 const cmdLine = document.createElement('div');
                 cmdLine.className = 'terminal-line';
-                cmdLine.textContent = 'berenice@interstice:~$ ' + input;
+                cmdLine.textContent = 'hakir@interstice:~$ ' + input;
                 terminal.appendChild(cmdLine);
 
                 // Exécute la commande
@@ -1241,7 +1241,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     cost: 6,
                     desc: "Escalade de privilèges",
                     effect: "Contrôle 1 ennemi",
-                    code: "sudo chown berenice enemy",
+                    code: "sudo chown hakir enemy",
                     action: async (target) => {
                         target.controller = 'player';
                     }
@@ -1863,7 +1863,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             };
             if (btnHero) btnHero.onclick = async () => {
                 try {
-                    const res = await fetch(CONFIG.JAVA_API + '/heroes/berenice_temporalhacker');
+                    const res = await fetch(CONFIG.JAVA_API + '/heroes/hakir_temporalhacker');
                     if (res.ok) {
                         const hero = await res.json();
                         const name = hero.name || 'Bérénice';
