@@ -9,20 +9,47 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     
-    <!-- PWA Switch Feature Flag -->
+    <!-- Multi-Level System -->
     <script>
-        // Check for PWA UI feature flag and level parameter
+        // Check for level parameter and redirect to appropriate interface
         const urlParams = new URLSearchParams(window.location.search);
-        const usePwaUI = urlParams.get('ui') === 'pwa' || localStorage.getItem('usePwaUI') === '1';
         const directLevel = urlParams.get('level');
+        const usePwaUI = urlParams.get('ui') === 'pwa' || localStorage.getItem('usePwaUI') === '1';
         
-        if (usePwaUI) {
-            window.location.href = '/docs/pwa.html?mode=berenice';
+        // Multi-level system: each level = different interface
+        if (directLevel) {
+            const level = parseInt(directLevel);
+            
+            switch (level) {
+                case 1:
+                    // Level 1: Current Berenice game (stay here)
+                    localStorage.setItem('directLevel', directLevel);
+                    break;
+                    
+                case 2:
+                    // Level 2: PWA with Clippy and loading screen
+                    window.location.href = '/docs/pwa.html?mode=berenice&level=2';
+                    break;
+                    
+                case 3:
+                    // Level 3: MAP_ICON_PLACER_ADVANCED
+                    window.location.href = '/apps/magic-stack-unified/public/assets/MAP_ICON_PLACER_ADVANCED.html?level=3';
+                    break;
+                    
+                case 4:
+                    // Level 4: Unified Map System Dashboard
+                    window.location.href = '/apps/magic-stack-unified/public/dashboard.html?level=4';
+                    break;
+                    
+                default:
+                    // Default: Level 1 (current Berenice)
+                    localStorage.setItem('directLevel', '1');
+            }
         }
         
-        // Store direct level access for later use
-        if (directLevel) {
-            localStorage.setItem('directLevel', directLevel);
+        // Legacy PWA flag support
+        if (usePwaUI && !directLevel) {
+            window.location.href = '/docs/pwa.html?mode=berenice';
         }
     </script>
     <style>
