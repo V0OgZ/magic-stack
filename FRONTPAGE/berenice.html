@@ -8,6 +8,17 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- PWA Switch Feature Flag -->
+    <script>
+        // Check for PWA UI feature flag
+        const urlParams = new URLSearchParams(window.location.search);
+        const usePwaUI = urlParams.get('ui') === 'pwa' || localStorage.getItem('usePwaUI') === '1';
+        
+        if (usePwaUI) {
+            window.location.href = '/docs/pwa.html?mode=berenice';
+        }
+    </script>
     <style>
         * {
             margin: 0;
@@ -657,6 +668,7 @@
             <button class="top-btn" id="btnHero">Héroïne</button>
             <button class="top-btn" id="btnLevels">Niveaux</button>
             <button class="top-btn" id="btnMinimap">Visibility</button>
+            <button class="top-btn" id="btnPwaUI" style="background: #4a90e2; color: white;">Try PWA UI</button>
         </div>
         
         <!-- Mini-map HUD -->
@@ -1602,7 +1614,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                             }
                         }
                     }
-                } catch (_) { /* ignore */ }
+                } catch (err) { 
+                    console.warn('Visibility API unavailable:', err.message);
+                }
             })();
 
             // Causality Fog: mark tiles visible by any creature (their FOV)
@@ -1765,6 +1779,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const btnHero = document.getElementById('btnHero');
             const btnLevels = document.getElementById('btnLevels');
             const btnMinimap = document.getElementById('btnMinimap');
+            const btnPwaUI = document.getElementById('btnPwaUI');
             if (btnHelp) btnHelp.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
             if (btnInfo) btnInfo.onclick = () => { document.getElementById('helpOverlay').style.display = 'block'; };
             // if (btnEditor) btnEditor.onclick = () => { document.getElementById('editorOverlay').style.display = 'block'; };
@@ -1772,6 +1787,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             if (btnMinimap) btnMinimap.onclick = () => { 
                 const hud = document.getElementById('minimapHUD');
                 hud.style.display = hud.style.display === 'none' ? 'block' : 'none';
+            };
+            if (btnPwaUI) btnPwaUI.onclick = () => {
+                localStorage.setItem('usePwaUI', '1');
+                window.location.reload();
             };
             if (btnHero) btnHero.onclick = async () => {
                 try {
@@ -1839,6 +1858,8 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     }
                 } catch (error) {
                     console.warn('Minimap polling error:', error);
+                    clearMinimap(); // Show OFFLINE
+                    stopMinimapPolling(); // Stop polling on error
                 }
             }, 2000); // Poll every 2 seconds
         }

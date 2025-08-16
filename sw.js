@@ -1,4 +1,4 @@
-const STATIC_VERSION = 'hot-static-v4';
+const STATIC_VERSION = 'hot-static-v5';
 const HEAVY_IMAGE_PREFIX = '/FRONTPAGE/assets/assets/'; // leave cache-first for these only
 
 self.addEventListener('install', (event) => {

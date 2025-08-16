@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 @Service
 public class MagicEngineService {
     private static final Logger log = LoggerFactory.getLogger(MagicEngineService.class);
+    private static final boolean STRICT_ENGINE = "1".equals(System.getenv("STRICT_ENGINE"));
     
     private final Map<String, Object> activeSpells = new HashMap<>();
     private final Random random = new Random();
@@ -296,7 +297,13 @@ public class MagicEngineService {
                     }
                 } catch (Exception e) {
                     log.error("Apply mode failed (rust unavailable or parse error)", e);
-                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "rust_unavailable");
+                    if (STRICT_ENGINE) {
+                        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "rust_unavailable");
+                    } else {
+                        response.setSuccess(false);
+                        response.setMessage("engine_unavailable");
+                        // Do NOT set worldDiff in error path
+                    }
                 }
             }
         } catch (Exception e) {
