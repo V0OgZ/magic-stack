@@ -11,12 +11,18 @@
     
     <!-- PWA Switch Feature Flag -->
     <script>
-        // Check for PWA UI feature flag
+        // Check for PWA UI feature flag and level parameter
         const urlParams = new URLSearchParams(window.location.search);
         const usePwaUI = urlParams.get('ui') === 'pwa' || localStorage.getItem('usePwaUI') === '1';
+        const directLevel = urlParams.get('level');
         
         if (usePwaUI) {
             window.location.href = '/docs/pwa.html?mode=berenice';
+        }
+        
+        // Store direct level access for later use
+        if (directLevel) {
+            localStorage.setItem('directLevel', directLevel);
         }
     </script>
     <style>
@@ -934,7 +940,15 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             
             if (services.allUp) {
                 document.getElementById('loading').style.display = 'none';
-                startLevel(0);
+                
+                // Check for direct level access
+                const directLevel = localStorage.getItem('directLevel');
+                if (directLevel) {
+                    localStorage.removeItem('directLevel'); // Use once
+                    startLevel(parseInt(directLevel));
+                } else {
+                    startLevel(0);
+                }
             } else {
                 document.getElementById('loading').innerHTML = `
                     <div style="color:#f00">ERREUR: Services manquants!</div>
@@ -1673,9 +1687,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             avatar.style.position = 'absolute';
             const cellSize = 63; // 60px + 3px gap
             const padding = 15;
-            // Perfect center alignment in cell
-            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 12) + 'px';
-            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 12) + 'px';
+            // Perfect center alignment in cell (case 63px, avatar 40px = offset 11.5px)
+            avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 11) + 'px';
+            avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 11) + 'px';
             // Make avatar bigger and more visible
             avatar.style.width = '40px';
             avatar.style.height = '40px';

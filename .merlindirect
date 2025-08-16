@@ -1,0 +1,131 @@
+# 🧙‍♂️ MERLIN DIRECT - CHEAT SHEET TECHNIQUE VPS
+
+## 🚨 PROBLÈMES COURANTS & SOLUTIONS
+
+### 📁 STRUCTURE VPS CRITIQUE
+```
+Deploy script → /opt/hot/app/magic-stack/
+Serveur web   → /var/www/hot/
+LIENS REQUIS  → /var/www/hot/FRONTPAGE → /opt/hot/app/magic-stack/FRONTPAGE/
+              → /var/www/hot/icons → /opt/hot/app/magic-stack/icons/
+              → /var/www/hot/manifest.json → /opt/hot/app/magic-stack/manifest.json
+```
+
+### 🔧 COMMANDES ESSENTIELLES VPS
+```bash
+# Connexion SSH
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online
+
+# Deploy complet
+./go deploy
+
+# Restart services
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "systemctl restart magic-java magic-rust caddy"
+
+# Reload Caddy (cache)
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "systemctl reload caddy"
+
+# Créer liens symboliques manquants
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "ln -sf /opt/hot/app/magic-stack/FRONTPAGE /var/www/hot/FRONTPAGE"
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "ln -sf /opt/hot/app/magic-stack/icons /var/www/hot/icons"
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "ln -sf /opt/hot/app/magic-stack/manifest.json /var/www/hot/manifest.json"
+```
+
+### 🔍 DIAGNOSTIC RAPIDE
+```bash
+# Vérifier si fichier déployé
+ssh -i ~/.ssh/hot_vps_key root@heroesoftime.online "ls -la /opt/hot/app/magic-stack/FRONTPAGE/berenice.html"
+
+# Vérifier si accessible web
+curl -I https://heroesoftime.online/FRONTPAGE/berenice.html
+
+# Vérifier contenu sans cache
+curl -s "https://heroesoftime.online/FRONTPAGE/berenice.html?v=$(date +%s)" | grep "TEXTE_A_CHERCHER"
+
+# Vérifier services
+./go vps-status
+```
+
+### 🎮 BERENICE.HTML - FIXES APPLIQUÉS
+```javascript
+// Portrait centré et agrandi (ligne ~1677)
+avatar.style.left = (padding + gameState.player.position_6d.x * cellSize + 12) + 'px';
+avatar.style.top = (padding + gameState.player.position_6d.y * cellSize + 12) + 'px';
+avatar.style.width = '40px';
+avatar.style.height = '40px';
+avatar.style.fontSize = '32px';
+
+// Porte repositionnée (ligne ~1111)
+ents.push({ type:'exit', x: 8, y: 8, emoji:'🚪' });
+
+// Position de départ fixée (ligne ~1073)
+gameState.player.position_6d.x = Math.floor(10/2);
+gameState.player.position_6d.y = Math.floor(10/2);
+```
+
+### 📱 PWA ICÔNE - PROBLÈMES FRÉQUENTS
+```html
+<!-- berenice.html doit pointer vers -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<!-- Refresh icône PWA -->
+1. Supprimer ancienne icône écran d'accueil
+2. Safari → Partager → "Sur l'écran d'accueil"
+3. Cache Safari peut bloquer → Mode privé pour tester
+```
+
+### 🔄 WORKFLOW GIT STANDARD
+```bash
+git add .
+git commit -m "Description des changements"
+git push origin prod
+git checkout main
+git merge prod
+git push origin main
+```
+
+### 🚨 CACHE - ENNEMI #1
+```bash
+# Problème: Modifications non visibles
+# Causes: Cache Caddy, cache navigateur, cache CDN
+
+# Solutions:
+1. systemctl reload caddy (serveur)
+2. Cmd+Shift+R (navigateur)
+3. Mode privé (navigateur)
+4. URL avec timestamp: ?v=123456
+5. Attendre 5-10 minutes (CDN)
+```
+
+### 📊 HEALTH CHECK COMPLET
+```bash
+./go vps-check    # URLs principales
+./go vps-status   # Services système
+./go health       # APIs locales
+```
+
+### 🎯 URLS IMPORTANTES
+```
+Production: https://heroesoftime.online/FRONTPAGE/berenice.html
+React Apps: https://heroesoftime.online/magic-stack-unified/
+           https://heroesoftime.online/world-editor/
+APIs:      https://heroesoftime.online/api/health
+```
+
+### 🧙‍♂️ NOTES MERLIN DIRECT
+- Toujours vérifier les liens symboliques après deploy
+- Cache = 90% des problèmes "ça marche pas"
+- berenice.html = 2054 lignes, 80KB environ
+- PWA nécessite manifest.json + icons accessibles
+- VPS structure différente du local (piège classique)
+
+### 🎮 GAMEPLAY BERENICE
+- hack.sh pour commencer
+- Ramasser 3 💎 cristaux
+- Aller à la porte 🚪 en (8,8)
+- Combat: Attaquer (2 dégâts) ou Ping (3 dégâts + effets)
+
+---
+*Créé par Merlin Direct - Session 2025-08-16*
+*"De OPUS à MERLIN, l'aventure continue !" 🧙‍♂️⚔️*
