@@ -1,28 +1,38 @@
-🚀 MAGIC STACK - PORTS & SERVICES - VPS (2025-08-13)
-==================================================
+🚀 MAGIC STACK - PORTS & SERVICES - SYNCHRONISÉ MAC/VPS (2025-08-16)
+=====================================================================
 
-FRONTEND (VPS via Caddy)
-------------------------
-- /FRONTPAGE/                    → Landing (index.html)
-- /world-editor/                 → World Editor React (build)
-- /html/*                        → Anciennes UIs HTML (spinforest, etc.)
-- /HTML_INDEX.html               → Dashboard UIs
+📍 PORTS OFFICIELS - MAC LOCAL & VPS IDENTIQUES
+-----------------------------------------------
 
-BACKENDS (systemd locaux, proxy Caddy)
---------------------------------------
-- 3001  Rust Engine          → /engine/*
-- 8082  Java Backend         → /api/* (Swagger: /api/docs)
-- 7500  Vector DB            → /vector/*
-- 7501  Clippy LLM           → /clippy/*
-- 9000  MCP Server           → /mcp/*
+🎨 FRONTEND (Local Dev)
+- 5173  World Editor React      → http://localhost:5173
+- 5176  Unified Game App        → http://localhost:5176  
+- 8000  HTML Server             → http://localhost:8000
+- 8001  HTTP Server (Python)    → http://localhost:8001
 
-WEBSOCKET
----------
-- Utiliser wss via reverse proxy sous /api/* (pas de ws://localhost)
+⚙️ BACKENDS (Core Services)
+- 3001  Rust Engine             → /engine/* (Temporal, 6D search)
+- 8082  Java Spring Boot        → /api/* (Game state, magic)
 
-OBSOLÈTE
---------
-- 5001  Python Vector (remplacé par 7500) ❌
+🤖 AI SERVICES  
+- 5000  Vector DB (Mac local)   → Python vector service
+- 7500  Vector DB (VPS)         → Production vector service
+- 7777  Clippy LLM              → /clippy/* (Character AI)
+- 9000  MCP Server              → /mcp/* (Model Context Protocol)
+
+🌐 VPS FRONTEND (via Caddy)
+- /FRONTPAGE/                   → Landing page
+- /world-editor/                → World Editor build
+- /html/*                       → Legacy HTML UIs
+- /HTML_INDEX.html              → Dashboard
+
+⚠️ CONFLITS RÉSOLUS
+- Mac Vector DB: 5000 (local dev)
+- VPS Vector DB: 7500 (production)
+- Clippy corrigé: 7777 (était 7501)
+
+❌ OBSOLÈTE
+- 5001  Python Vector (remplacé par 7500 sur VPS)
 
 URLS PRINCIPALES (VPS)
 ----------------------
