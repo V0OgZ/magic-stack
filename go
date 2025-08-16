@@ -542,6 +542,52 @@ vps_status() {
     echo ""
 }
 
+caddy_fix() {
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}    🔧 CADDY CACHE FIX${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo ""
+    
+    echo -e "${CYAN}🚨 Fixing Caddy cache issues...${NC}"
+    
+    # Test SSH connection first
+    if ! ssh -i ~/.ssh/hot_vps_key -o ConnectTimeout=5 root@191.101.2.178 "echo 'SSH OK'" >/dev/null 2>&1; then
+        echo -e "${RED}❌ SSH connection failed${NC}"
+        return 1
+    fi
+    
+    echo -e "${CYAN}1. Restarting Caddy service...${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 "systemctl restart caddy"
+    
+    echo -e "${CYAN}2. Clearing any cached files...${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 "find /tmp -name '*caddy*' -delete 2>/dev/null || true"
+    
+    echo -e "${CYAN}3. Checking file sizes...${NC}"
+    LOCAL_SIZE=$(wc -l < "$MAGIC_DIR/FRONTPAGE/berenice.html")
+    VPS_SIZE=$(ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 "wc -l < /opt/hot/app/magic-stack/FRONTPAGE/berenice.html")
+    WEB_SIZE=$(curl -s "https://heroesoftime.online/FRONTPAGE/berenice.html" | wc -l)
+    
+    echo -e "  📁 Local:  ${LOCAL_SIZE} lines"
+    echo -e "  🖥️  VPS:    ${VPS_SIZE} lines"
+    echo -e "  🌐 Web:    ${WEB_SIZE} lines"
+    
+    if [ "$LOCAL_SIZE" = "$VPS_SIZE" ] && [ "$VPS_SIZE" = "$WEB_SIZE" ]; then
+        echo -e "${GREEN}✅ All files synchronized!${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Cache still active. Try:${NC}"
+        echo -e "  • Hard refresh: Cmd+Shift+R"
+        echo -e "  • Private mode"
+        echo -e "  • Wait 10-15 minutes"
+        echo -e "  • Use: ?v=$(date +%s) in URL"
+    fi
+    
+    echo ""
+    echo -e "${CYAN}🔗 Test URLs:${NC}"
+    echo "  https://heroesoftime.online/FRONTPAGE/berenice.html?level=1&v=$(date +%s)"
+    echo "  https://heroesoftime.online/FRONTPAGE/berenice.html?level=2&v=$(date +%s)"
+    echo ""
+}
+
 # ═══════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════
@@ -648,6 +694,11 @@ case "$1" in
         start_python
         ;;
     
+    # CADDY FIX
+    "caddyfix"|"caddy-fix"|"fix-cache")
+        caddy_fix
+        ;;
+    
     # HELP (et cas par défaut)
     "help"|"--help"|"-h"|"")
         echo -e "${MAGENTA}═══════════════════════════════════${NC}"
@@ -682,6 +733,9 @@ case "$1" in
         echo "  ./go rust       - Démarre seulement Rust (3001)"
         echo "  ./go java       - Démarre seulement Java (8082)"
         echo "  ./go python     - Démarre services Python (5000, 7777)"
+        echo ""
+        echo -e "${CYAN}🚨 Dépannage:${NC}"
+        echo "  ./go caddyfix   - Répare les problèmes de cache Caddy"
         echo ""
         echo -e "${CYAN}📍 Ports actuels:${NC}"
         echo "  3001 - Rust (moteur temporel)"
