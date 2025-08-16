@@ -429,6 +429,66 @@ vps_check() {
     echo ""
 }
 
+vps_status() {
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo -e "${BLUE}    📊 VPS SERVICES STATUS${NC}"
+    echo -e "${BLUE}═══════════════════════════════════${NC}"
+    echo ""
+    
+    # Test SSH connection first
+    if ! ssh -i ~/.ssh/hot_vps_key -o ConnectTimeout=5 root@191.101.2.178 "echo 'SSH OK'" >/dev/null 2>&1; then
+        echo -e "${RED}❌ SSH connection failed${NC}"
+        echo "Make sure VPS is accessible and SSH key is configured"
+        return 1
+    fi
+    
+    echo -e "${CYAN}🔧 Services Status:${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
+        for service in magic-java magic-rust magic-vector magic-clippy caddy; do
+            if systemctl is-active --quiet $service; then
+                echo -e "  ✅ $service (active)"
+            else
+                echo -e "  ❌ $service (inactive)"
+            fi
+        done
+    '
+    
+    echo ""
+    echo -e "${CYAN}📡 API Endpoints:${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
+        # Test Java backend
+        if curl -s http://localhost:8082/api/health >/dev/null 2>&1; then
+            echo -e "  ✅ Java Backend (8082)"
+        else
+            echo -e "  ❌ Java Backend (8082)"
+        fi
+        
+        # Test Rust backend
+        if curl -s http://localhost:3001/health >/dev/null 2>&1; then
+            echo -e "  ✅ Rust Backend (3001)"
+        else
+            echo -e "  ❌ Rust Backend (3001)"
+        fi
+        
+        # Test worldDiff endpoint
+        if curl -s http://localhost:8082/api/visibility/worldDiff >/dev/null 2>&1; then
+            echo -e "  ✅ WorldDiff API"
+        else
+            echo -e "  ❌ WorldDiff API"
+        fi
+    '
+    
+    echo ""
+    echo -e "${CYAN}💾 System Info:${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
+        echo -e "  📊 Load: $(uptime | cut -d":" -f4-)"
+        echo -e "  💾 Memory: $(free -h | grep Mem | awk "{print \$3\"/\"\$2}")"
+        echo -e "  💿 Disk: $(df -h / | tail -1 | awk "{print \$3\"/\"\$2\" (\"\$5\" used)\"}")"
+        echo -e "  🕐 Uptime: $(uptime -p)"
+    '
+    echo ""
+}
+
 # ═══════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════
@@ -475,6 +535,10 @@ case "$1" in
     
     "vps-check"|"vc")
         vps_check
+        ;;
+    
+    "vps-status"|"vs")
+        vps_status
         ;;
     
     # UI SHORTCUTS
@@ -543,6 +607,7 @@ case "$1" in
         echo "  ./go restart    - Redémarre tout"
         echo "  ./go status     - État des services [alias: s]"
         echo "  ./go health     - Test complet des APIs [alias: h]"
+        echo "  ./go vps-status - Status services VPS [alias: vs]"
         echo ""
         echo -e "${CYAN}🔨 Build & Deploy:${NC}"
         echo "  ./go compile    - Compile tout (Rust + Java + React)"
