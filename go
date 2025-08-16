@@ -332,6 +332,8 @@ show_status() {
     echo -e "${CYAN}🐍 Services Python:${NC}"
     check_port 5000 && echo -e "  ${GREEN}✅${NC} Vector DB (5000)" || echo -e "  ${YELLOW}⚪${NC} Vector DB (5000)"
     check_port 7777 && echo -e "  ${GREEN}✅${NC} Clippy IA (7777)" || echo -e "  ${YELLOW}⚪${NC} Clippy IA (7777)"
+    check_port 8001 && echo -e "  ${GREEN}✅${NC} HTTP Server (8001)" || echo -e "  ${YELLOW}⚪${NC} HTTP Server (8001)"
+    check_port 9000 && echo -e "  ${GREEN}✅${NC} MCP Server (9000)" || echo -e "  ${YELLOW}⚪${NC} MCP Server (9000)"
     
     echo ""
 }
@@ -444,7 +446,7 @@ vps_status() {
     
     echo -e "${CYAN}🔧 Services Status:${NC}"
     ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
-        for service in magic-java magic-rust magic-vector magic-clippy caddy magic-mcp; do
+        for service in magic-java magic-rust magic-vector magic-clippy caddy; do
             if systemctl is-active --quiet $service; then
                 echo -e "  ✅ $service (active)"
             else
@@ -478,18 +480,12 @@ vps_status() {
         fi
         
         # Test Clippy LLM
-        if curl -s http://localhost:7501/health >/dev/null 2>&1; then
-            echo -e "  ✅ Clippy LLM (7501)"
+        if curl -s http://localhost:7777/health >/dev/null 2>&1; then
+            echo -e "  ✅ Clippy LLM (7777)"
         else
-            echo -e "  ❌ Clippy LLM (7501)"
+            echo -e "  ❌ Clippy LLM (7777)"
         fi
         
-        # Test MCP Server
-        if curl -s http://localhost:9000/health >/dev/null 2>&1; then
-            echo -e "  ✅ MCP Server (9000)"
-        else
-            echo -e "  ❌ MCP Server (9000)"
-        fi
         
         # Test worldDiff endpoint
         if curl -s http://localhost:8082/api/visibility/worldDiff >/dev/null 2>&1; then
