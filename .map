@@ -1,4 +1,9 @@
-# 🗺️ CARTE COMPLETE MAGIC-STACK - VPS (2025-08-13)
+# 🗺️ CARTE COMPLETE MAGIC-STACK - VPS (2025-08-16)
+
+## 🚨 SETUP VPS IMPORTANT
+- Deploy script → `/opt/hot/app/magic-stack/`
+- Serveur web Caddy → `/var/www/hot/`
+- LIEN SYMBOLIQUE créé: `/var/www/hot/FRONTPAGE → /opt/hot/app/magic-stack/FRONTPAGE/`
 
 ## 🎯 APPS REACT PRINCIPALES
 
@@ -7,20 +12,47 @@
 - Build: apps/world-editor/dist (servi via Caddy)
 
 ### Magic-Stack-Unified (React)
-- En cours de migration, non exposé en prod (pas /unified)
+- URL VPS: https://heroesoftime.online/magic-stack-unified/
+- Build: apps/magic-stack-unified/dist (servi via Caddy)
+
+## 🎮 FRONTPAGE GAMES (NOUVEAU - 2025-08-16)
+- URL VPS: https://heroesoftime.online/FRONTPAGE/
+- **berenice.html** - Jeu Berenice/BruhNice (FIXÉ: portrait aligné, porte fonctionnelle)
+- **spells-lab.html** - Laboratoire de sorts
+- **index.html** - Page d'accueil FRONTPAGE
 
 ## 📦 ASSETS HTML STANDALONE
 - https://heroesoftime.online/assets/MAP_ICON_PLACER_ADVANCED.html
 - https://heroesoftime.online/assets/MAP_ICON_PLACER.html
 - https://heroesoftime.online/assets/ICON_EXPLORER.html
 
-## 🎮 JEUX HTML (Racine)
+## 🎮 JEUX HTML (Racine - Anciens)
 - https://heroesoftime.online/HOT_GAME_UNIFIED.html
 - https://heroesoftime.online/CHASSE_TEMPORELLE_MEGA_MAP.html
 - https://heroesoftime.online/HOMM3_PWA_IPAD_CLIPPY.html
 - https://heroesoftime.online/MULTIPLAYER_DEMO_HOMM3.html
 - https://heroesoftime.online/IA_VS_IA_AUTOPLAY.html
 - https://heroesoftime.online/SPECTATOR_GOD_MODE.html
+
+## 🔧 BACKENDS & APIs
+- **Java Spring Boot**: https://heroesoftime.online/api/ (port 8082)
+- **Rust Engine**: port 3001 (moteur temporel)
+- **Vector DB**: port 7500 (base de données vectorielle)
+- **Clippy LLM**: port 7777 (assistant IA)
+
+## 📁 STRUCTURE VPS
+```
+/opt/hot/app/magic-stack/     ← Deploy destination
+├── FRONTPAGE/                ← Jeux HTML (berenice.html, etc.)
+├── backends/java/            ← Backend Java
+├── backends/rust/            ← Backend Rust
+└── apps/                     ← Apps React
+
+/var/www/hot/                 ← Serveur web Caddy
+├── FRONTPAGE/ → /opt/hot/... ← LIEN SYMBOLIQUE (créé 2025-08-16)
+├── world-editor/             ← Build React
+└── magic-stack-unified/      ← Build React
+```
 
 ## 🛠️ OUTILS & ADMIN
 - https://heroesoftime.online/API_EXPLORER_COMPLETE.html
