@@ -16,7 +16,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("/api/magic")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5176", "https://heroesoftime.online"})
 public class MagicController {
     
     @Autowired

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @RestController
 @RequestMapping("/api/heroes")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5176", "https://heroesoftime.online"})
 public class HeroController {
 
     // Stockage en mémoire pour l'instant

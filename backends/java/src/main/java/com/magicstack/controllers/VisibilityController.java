@@ -7,7 +7,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/visibility")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5176", "https://heroesoftime.online"})
 public class VisibilityController {
 
     @Autowired

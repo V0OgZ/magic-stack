@@ -10,7 +10,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/game")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5176", "https://heroesoftime.online"})
 public class GameController {
 
     private final ConcurrentHashMap<String, Inventory> inventories = new ConcurrentHashMap<>();

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @RestController
 @RequestMapping("/api/combat")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5176", "https://heroesoftime.online"})
 public class CombatController {
 
     private final Map<String, GameState> games = new ConcurrentHashMap<>();
