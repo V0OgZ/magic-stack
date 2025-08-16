@@ -304,7 +304,37 @@ deploy_vps() {
         "$MAGIC_DIR/" \
         root@191.101.2.178:/opt/hot/app/magic-stack/
     
-    echo -e "${GREEN}✅ Deploy VPS terminé!${NC}"
+    # Sync Java backend
+    echo -e "${CYAN}📤 Sync Java backend...${NC}"
+    rsync -avz --delete \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
+        "$MAGIC_DIR/backends/java/src/" \
+        root@191.101.2.178:/opt/hot/app/backends/java/src/
+    rsync -avz \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
+        "$MAGIC_DIR/backends/java/pom.xml" \
+        root@191.101.2.178:/opt/hot/app/backends/java/
+    
+    # Sync Rust backend
+    echo -e "${CYAN}📤 Sync Rust backend...${NC}"
+    rsync -avz --delete \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
+        "$MAGIC_DIR/backends/rust/src/" \
+        root@191.101.2.178:/opt/hot/app/backends/rust/src/
+    rsync -avz \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
+        "$MAGIC_DIR/backends/rust/Cargo.toml" \
+        root@191.101.2.178:/opt/hot/app/backends/rust/
+    
+    # Rebuild and restart services
+    echo -e "${CYAN}🔨 Rebuild & restart services...${NC}"
+    ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 "
+        cd /opt/hot/app/backends/java && mvn package -DskipTests -q &&
+        cd /opt/hot/app/backends/rust && cargo build --release &&
+        systemctl restart magic-java magic-rust
+    "
+    
+    echo -e "${GREEN}✅ Deploy VPS complet terminé!${NC}"
     echo -e "${CYAN}🌐 Voir: https://heroesoftime.online${NC}"
 }
 
