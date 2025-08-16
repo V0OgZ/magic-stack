@@ -444,7 +444,7 @@ vps_status() {
     
     echo -e "${CYAN}🔧 Services Status:${NC}"
     ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
-        for service in magic-java magic-rust magic-vector magic-clippy caddy; do
+        for service in magic-java magic-rust magic-vector magic-clippy caddy magic-mcp; do
             if systemctl is-active --quiet $service; then
                 echo -e "  ✅ $service (active)"
             else
@@ -468,6 +468,27 @@ vps_status() {
             echo -e "  ✅ Rust Backend (3001)"
         else
             echo -e "  ❌ Rust Backend (3001)"
+        fi
+        
+        # Test Vector DB
+        if curl -s http://localhost:7500/health >/dev/null 2>&1; then
+            echo -e "  ✅ Vector DB (7500)"
+        else
+            echo -e "  ❌ Vector DB (7500)"
+        fi
+        
+        # Test Clippy LLM
+        if curl -s http://localhost:7501/health >/dev/null 2>&1; then
+            echo -e "  ✅ Clippy LLM (7501)"
+        else
+            echo -e "  ❌ Clippy LLM (7501)"
+        fi
+        
+        # Test MCP Server
+        if curl -s http://localhost:9000/health >/dev/null 2>&1; then
+            echo -e "  ✅ MCP Server (9000)"
+        else
+            echo -e "  ❌ MCP Server (9000)"
         fi
         
         # Test worldDiff endpoint
