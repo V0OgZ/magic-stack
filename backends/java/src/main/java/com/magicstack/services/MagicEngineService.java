@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import com.magicstack.models.Position6D;
 import com.magicstack.dto.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 /**
  * Core Magic Engine - handles all magical operations
@@ -20,7 +23,8 @@ public class MagicEngineService {
     private final FormulaRegistryService registry;
     private final UltimateSpecService ultimates;
     private final RustTemporalClient rust;
-    // In-memory world diff ring buffer (latest snapshots only; process memory)
+     // Latest snapshot (lock-free read), plus un historique léger si besoin
+    private final AtomicReference<Map<String,Object>> latestWorldDiff = new AtomicReference<>();
     private final Deque<Map<String, Object>> recentWorldDiffSnapshots = new ArrayDeque<>();
     private static final int WORLD_DIFF_HISTORY_LIMIT = 50;
 
@@ -47,7 +51,7 @@ public class MagicEngineService {
      * Record a world diff snapshot in memory, normalizing to the shape:
      * { ts: <ms>, diffs: [...], bbox: {xMin,xMax,yMin,yMax} | null }
      */
-    public synchronized void recordWorldDiff(Object diffRaw) {
+    public void recordWorldDiff(Object diffRaw) {
         try {
             long ts = System.currentTimeMillis();
             List<Object> diffs = new ArrayList<>();
@@ -77,10 +81,14 @@ public class MagicEngineService {
             snapshot.put("ts", ts);
             snapshot.put("diffs", diffs);
             snapshot.put("bbox", bbox);
-            if (recentWorldDiffSnapshots.size() >= WORLD_DIFF_HISTORY_LIMIT) {
-                recentWorldDiffSnapshots.pollFirst();
+            
+            latestWorldDiff.set(snapshot); // lecture instantanée côté GET
+            synchronized (recentWorldDiffSnapshots) {
+                if (recentWorldDiffSnapshots.size() >= WORLD_DIFF_HISTORY_LIMIT) {
+                    recentWorldDiffSnapshots.pollFirst();
+                }
+                recentWorldDiffSnapshots.addLast(snapshot);
             }
-            recentWorldDiffSnapshots.addLast(snapshot);
         } catch (Exception e) {
             if (log.isDebugEnabled()) log.debug("recordWorldDiff failed: {}", e.getMessage());
         }
@@ -118,8 +126,8 @@ public class MagicEngineService {
     }
     
     /** Return the most recent world diff snapshot, or an empty one. */
-    public synchronized Map<String, Object> getLatestWorldDiffSnapshot() {
-        Map<String, Object> last = recentWorldDiffSnapshots.peekLast();
+    public Map<String, Object> getLatestWorldDiffSnapshot() {
+        Map<String, Object> last = latestWorldDiff.get();
         if (last == null) {
             Map<String, Object> empty = new HashMap<>();
             empty.put("ts", System.currentTimeMillis());
@@ -127,9 +135,7 @@ public class MagicEngineService {
             empty.put("bbox", null);
             return empty;
         }
-        // defensive copy
-        Map<String, Object> copy = new HashMap<>(last);
-        return copy;
+        return new HashMap<>(last); // defensive copy
     }
 
     public CastResponse cast(CastRequest request) {
@@ -288,35 +294,14 @@ public class MagicEngineService {
                         response.setWorldDiff(fallback);
                         recordWorldDiff(fallback);
                     }
-                } catch (Exception ignore) {
-                    if (log.isWarnEnabled()) {
-                        log.warn("Apply mode failed to parse or call Rust; using fallback worldDiff", ignore);
-                    }
-                    Map<String, Object> diff = new HashMap<>();
-                    diff.put("entitiesUpdated", 0);
-                    diff.put("notes", "apply fallback; rust unavailable");
-                    response.setWorldDiff(diff);
-                    recordWorldDiff(diff);
+                } catch (Exception e) {
+                    log.error("Apply mode failed (rust unavailable or parse error)", e);
+                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "rust_unavailable");
                 }
             }
         } catch (Exception e) {
-            // Fallback to previous placeholder
-            Map<String, String> outputs = new HashMap<>();
-            outputs.put("literary", response.getMessage());
-            outputs.put("iconic", handledAsUltimate ? "🛡️" : "✨");
-            outputs.put("runic", handledAsUltimate ? "MILLENNIUM" : "ᚠᚢᚦ");
-            outputs.put("quantum", handledAsUltimate ? "SEQ(transform→mass_rez→exhaustion→recovery)" : normalized);
-            response.setOutputs(outputs);
-            if (handledAsUltimate) {
-                response.setEffects(Arrays.asList("ultimate_transform","divine_bubble","mass_resurrection","divine_exhaustion","recovery"));
-                response.setSounds(Arrays.asList("aura_dbz","bubble","rez_mass","exhaust","recover"));
-            } else {
-                response.setEffects(Arrays.asList("magic_cast"));
-                response.setSounds(Arrays.asList("magic_cast"));
-            }
-            response.setTraceHash(Integer.toHexString(normalized.hashCode()));
-            boolean isApply = "apply".equalsIgnoreCase(request.getMode());
-            response.setApplied(isApply);
+            log.error("Cast failed", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "cast_failed");
         }
         
         return response;
