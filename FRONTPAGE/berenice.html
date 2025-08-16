@@ -682,14 +682,15 @@
         <div id="helpOverlay" class="overlay">
             <div class="box">
                 <button class="close" onclick="document.getElementById('helpOverlay').style.display='none'">Fermer</button>
-                <h3>Guide rapide</h3>
-                <ol style="text-align:left; color:#0ff;">
-                    <li>Tape ./hack.sh pour démarrer</li>
-                    <li>Niveau 1: Récupère 3 💎 puis va sur 🚪</li>
-                    <li>Déplacement: touche une case adjacente</li>
-                    <li>Combat: joue une carte (Ping/Firewall/Debug)</li>
-                    <li>Les dialogues s’affichent automatiquement</li>
+                <h3>🎮 Comment jouer</h3>
+                <ol style="text-align:left; color:#0ff; font-size: 16px; line-height: 1.6;">
+                    <li><strong>Démarrer:</strong> Tape <code>./hack.sh</code> dans le terminal</li>
+                    <li><strong>Se déplacer:</strong> <span style="color:#ff0;">CLIQUE sur une case</span> ou utilise les flèches ← ↑ → ↓</li>
+                    <li><strong>Ramasser:</strong> <span style="color:#ff0;">CLIQUE sur un cristal</span> 💎 pour le prendre</li>
+                    <li><strong>Sortir:</strong> Quand tu as 3 💎, <span style="color:#ff0;">CLIQUE sur la porte</span> 🚪</li>
+                    <li><strong>Combat:</strong> Choisis une carte (Ping/Firewall/Debug)</li>
                 </ol>
+                <p style="color:#0f0; font-weight: bold; margin-top: 10px;">💡 La porte 🚪 est dans le coin bas-droite !</p>
             </div>
         </div>
         <div id="editorOverlay" class="overlay">
@@ -740,6 +741,11 @@
             <!-- Avatar du joueur -->
             <img id="playerAvatar" class="player-avatar avatar-ber0" style="display:none;">
             <div id="objectiveChip">Objectif</div>
+        </div>
+        
+        <!-- Berenice Portrait (only visible in game levels) -->
+        <div id="berPortrait" style="position: fixed; top: 20px; left: 20px; z-index: 1000; width: 80px; height: 80px; border: 3px solid #0ff; border-radius: 12px; background: #001018; padding: 4px; box-shadow: 0 0 15px rgba(0,255,255,0.5); display: none;">
+            <img id="berImage" src="/BALLON_CUBE/PICS_CHARACTERS/ber0.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="Bérénice">
         </div>
         
         <!-- Stats compactes (tap pour détails) -->
@@ -1008,9 +1014,11 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             if (level === 0) {
                 document.getElementById('level0').style.display = 'flex';
                 document.getElementById('gameContainer').style.display = 'none';
+                document.getElementById('berPortrait').style.display = 'none';
             } else {
                 document.getElementById('level0').style.display = 'none';
                 document.getElementById('gameContainer').style.display = 'block';
+                document.getElementById('berPortrait').style.display = 'block';
                 initLevel(level);
             }
         }
@@ -1023,7 +1031,7 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                     map: generateMap(10, 10, 'prairie'),
                     cards: ["Ping", "Firewall", "Debug"],
                     enemies: ["Virus Lapin", "Bug Syntaxique"],
-                    dialogue: "SÉRIEUX?! Un avatar cartoon?! Je DÉTESTE ça! Bruh!"
+                    dialogue: "SÉRIEUX?! Un avatar cartoon?! Je DÉTESTE ça! Bruh! Bon... CLIQUE sur les cases pour bouger, ramasse 3 💎 puis va à la porte 🚪 !"
                 },
                 2: {
                     name: "Serveur Quantique",
@@ -1061,9 +1069,9 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             gameState.world.visited = Array.from({length:10}, ()=>Array(10).fill(false));
             initWorldContent(level);
 
-            // Set initial position
-            gameState.player.position_6d.x = 1;
-            gameState.player.position_6d.y = 1;
+            // Set initial position (center of map)
+            gameState.player.position_6d.x = Math.floor(width/2);
+            gameState.player.position_6d.y = Math.floor(height/2);
             
             // Start rendering
             renderGame();
@@ -1086,9 +1094,10 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
                 map.push(row);
             }
 
-            // Add objectives
-            map[5][5] = '💎'; // Crystal
+            // Clear path to exit and ensure it's visible
             map[height-2][width-2] = '🚪'; // Exit
+            map[height-3][width-2] = '·'; // Clear path to exit
+            map[height-2][width-3] = '·'; // Clear path to exit
 
             return map;
         }
@@ -1100,10 +1109,17 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const size = 10;
             // Exit
             ents.push({ type:'exit', x: 9, y: 9, emoji:'🚪' });
-            // Treasures
-            const treasureCount = level===1?4:(level===2?6:8);
-            for(let i=0;i<treasureCount;i++){
-                ents.push({ type:'item', subtype:'crystal', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji:'💎' });
+            // Treasures - Fixed positions for level 1 to guarantee visibility
+            if (level === 1) {
+                // 3 crystals in fixed, visible positions
+                ents.push({ type:'item', subtype:'crystal', x: 2, y: 2, emoji:'💎' });
+                ents.push({ type:'item', subtype:'crystal', x: 7, y: 3, emoji:'💎' });
+                ents.push({ type:'item', subtype:'crystal', x: 3, y: 7, emoji:'💎' });
+            } else {
+                const treasureCount = level===2?6:8;
+                for(let i=0;i<treasureCount;i++){
+                    ents.push({ type:'item', subtype:'crystal', x: rndInt(1,size-2), y: rndInt(1,size-2), emoji:'💎' });
+                }
             }
             // Artefacts
             const arts=['🗡️','🛡️','🧪','📜'];
@@ -1434,14 +1450,21 @@ HACK RÉUSSI! Téléportation vers Niveau 1...`;
             const playerAvatar = document.getElementById('playerAvatar');
             if (playerAvatar) {
                 playerAvatar.className = 'player-avatar avatar-' + gameState.player.avatar;
-                // Show the correct image based on level
-                if (gameState.currentLevel === 1) {
-                    showDialogue("Bérénice", "SÉRIEUX?! Cet avatar cartoon?! Je DÉTESTE!");
-                } else if (gameState.currentLevel === 2) {
-                    showDialogue("Bérénice", "Enfin! Ça c'est mieux! Mode hacker activé!");
-                } else if (gameState.currentLevel === 3) {
-                    showDialogue("Bérénice", "Maintenant on parle! Cyberpunk mode ON!");
-                }
+            }
+            
+            // Update portrait image
+            const berImage = document.getElementById('berImage');
+            if (berImage) {
+                berImage.src = `/BALLON_CUBE/PICS_CHARACTERS/${gameState.player.avatar}.png`;
+            }
+            
+            // Show the correct dialogue based on level
+            if (gameState.currentLevel === 1) {
+                showDialogue("Bérénice", "SÉRIEUX?! Cet avatar cartoon?! Je DÉTESTE!");
+            } else if (gameState.currentLevel === 2) {
+                showDialogue("Bérénice", "Enfin! Ça c'est mieux! Mode hacker activé!");
+            } else if (gameState.currentLevel === 3) {
+                showDialogue("Bérénice", "Maintenant on parle! Cyberpunk mode ON!");
             }
             // Update hero overlay portrait if open
             const heroPortrait = document.getElementById('heroPortrait');
