@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 # Base dir
-MAGIC_DIR="/Volumes/HOT_DEV/Magic/magic-stack"
+MAGIC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Vérifier port
 check_port() {
@@ -281,7 +281,7 @@ deploy_vps() {
     
     # Test SSH
     echo -e "${CYAN}📡 Test connexion SSH...${NC}"
-    if ssh -i ~/.ssh/hot_magic_key root@191.101.2.178 "echo 'SSH OK'" >/dev/null 2>&1; then
+    if ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 "echo 'SSH OK'" >/dev/null 2>&1; then
         echo -e "${GREEN}✅ SSH OK${NC}"
     else
         echo -e "${RED}❌ Erreur SSH - vérifiez la clé${NC}"
@@ -291,14 +291,14 @@ deploy_vps() {
     # Sync FRONTPAGE
     echo -e "${CYAN}📤 Sync FRONTPAGE...${NC}"
     rsync -avz --delete \
-        -e "ssh -i ~/.ssh/hot_magic_key" \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
         "$MAGIC_DIR/FRONTPAGE/" \
         root@191.101.2.178:/opt/hot/app/magic-stack/FRONTPAGE/
     
     # Sync HTML files
     echo -e "${CYAN}📤 Sync HTML files...${NC}"
     rsync -avz \
-        -e "ssh -i ~/.ssh/hot_magic_key" \
+        -e "ssh -i ~/.ssh/hot_vps_key" \
         --include="*.html" \
         --exclude="*" \
         "$MAGIC_DIR/" \
@@ -446,7 +446,7 @@ vps_status() {
     
     echo -e "${CYAN}🔧 Services Status:${NC}"
     ssh -i ~/.ssh/hot_vps_key root@191.101.2.178 '
-        for service in magic-java magic-rust magic-vector magic-clippy caddy; do
+        for service in magic-java magic-rust magic-vector magic-clippy caddy magic-mcp; do
             if systemctl is-active --quiet $service; then
                 echo -e "  ✅ $service (active)"
             else
@@ -486,6 +486,12 @@ vps_status() {
             echo -e "  ❌ Clippy LLM (7777)"
         fi
         
+        # Test MCP Server
+        if curl -s http://localhost:9000/mcp/health >/dev/null 2>&1; then
+            echo -e "  ✅ MCP Server (9000)"
+        else
+            echo -e "  ❌ MCP Server (9000)"
+        fi
         
         # Test worldDiff endpoint
         if curl -s http://localhost:8082/api/visibility/worldDiff >/dev/null 2>&1; then
@@ -657,7 +663,7 @@ case "$1" in
         echo "  8082 - Java Spring Boot"
         echo ""
         echo -e "${CYAN}🔑 SSH VPS:${NC}"
-        echo "  ssh -i ~/.ssh/hot_magic_key root@191.101.2.178"
+        echo "  ssh -i ~/.ssh/hot_vps_key root@191.101.2.178"
         echo ""
         echo -e "${GREEN}📚 Docs: ./DEVOPS.md${NC}"
         ;;
